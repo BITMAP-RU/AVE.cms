@@ -1,0 +1,22 @@
+<div class="static_page system-public-auth">
+  <div class="page_title"><div class="page_title_inner"><h1 class="page_title_heading">{{ page.title }}</h1></div></div>
+  <div class="static_page_inner">
+    <p>{{ user.firstname ? 'Здравствуйте, ' ~ user.firstname ~ '!' : 'Здравствуйте!' }}</p>
+    {% if page.description %}<p class="text-muted">{{ page.description }}</p>{% endif %}
+    {% if commerce_available %}
+      <div class="form-row">
+        <div class="form-group col-md-4"><strong>{{ orders_total }}</strong><span>Всего заказов</span></div>
+        <div class="form-group col-md-4"><strong>{{ orders_paid }}</strong><span>Оплачено</span></div>
+        <div class="form-group col-md-4"><strong>{{ favorites_count }}</strong><span>В избранном</span></div>
+      </div>
+    {% endif %}
+    {% if account_extensions %}
+      <div class="system-auth-account-extensions">
+        {% for extension in account_extensions %}
+          <a href="{{ base }}{{ extension.url }}"><strong>{{ extension.count }}</strong><span>{{ extension.title }}</span><small>{{ extension.description }}</small></a>
+        {% endfor %}
+      </div>
+    {% endif %}
+    <p><a class="btn btn-primary" href="{{ base }}{{ auth_urls.profile }}">{{ page.submit_label }}</a></p>
+  </div>
+</div>

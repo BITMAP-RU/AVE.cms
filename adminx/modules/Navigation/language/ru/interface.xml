@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="navigation_parity_tag">[tag:if_every:2]чётный[tag:if_else]нечётный[tag:/if]</phrase>
+	<phrase data="auto_bf209b0159668b33">, а обычный и активный пункты — элементы</phrase>
+	<phrase data="auto_3475d30e6543216b">, начало и конец уровня — список</phrase>
+	<phrase data="auto_e9530a7c53465961">. Поля уровней 2–3 нужны только для вложенного меню.</phrase>
+	<phrase data="auto_93d63369c857c786">. Редакторы расположены в порядке сборки HTML.</phrase>
+	<phrase data="auto_a52738a5b29b6db7">0 из</phrase>
+	<phrase data="auto_daed835119849c8c">&lt;nav class=&quot;site-navigation&quot; aria-label=&quot;Основная навигация&quot;&gt;</phrase>
+	<phrase data="auto_7572be6cdf241d5b">ID, название или алиас</phrase>
+	<phrase data="auto_de535fa245b8a657">Активный пункт</phrase>
+	<phrase data="auto_73dfa7ea85e8eb75">Алиас</phrase>
+	<phrase data="auto_b11f29cdb631ad91">без алиаса</phrase>
+	<phrase data="auto_7d6613f2a9127b0d">В новом окне</phrase>
+	<phrase data="auto_13d02127fcff628c">в текущем фильтре,</phrase>
+	<phrase data="auto_895fbeb7dd320709">В этом окне</phrase>
+	<phrase data="auto_89715f5b9948ee95">Внешняя обёртка всего меню</phrase>
+	<phrase data="auto_31de01636108eec7">Все уровни</phrase>
+	<phrase data="auto_c703c9c49b94ef4f">Всего навигаций</phrase>
+	<phrase data="auto_a7bbea7ed2337936">всего.</phrase>
+	<phrase data="auto_351edbe4180b1ac4">Вставить тег</phrase>
+	<phrase data="auto_7c6ab13571afdc2e">Вторая ступень вложенного меню</phrase>
+	<phrase data="auto_fab9a0a0491dc356">Выберите группы</phrase>
+	<phrase data="auto_5bf3e247170791a1">Выберите пункт меню</phrase>
+	<phrase data="auto_bdda7682fb64d386">Выбрать все</phrase>
+	<phrase data="auto_9f3b3c3b78133faa">Выбрать документ</phrase>
+	<phrase data="auto_d7d9310af67c647b">Выбрать изображение</phrase>
+	<phrase data="auto_b09834c7cb1c205b">Выводится один раз перед деревом пунктов.</phrase>
+	<phrase data="auto_3bafb215662faff1">выключена</phrase>
+	<phrase data="auto_71efad347b8790c0">Готовый шаблон первого уровня уже заполнен.</phrase>
+	<phrase data="auto_7e8692a57c2aa378">группы</phrase>
+	<phrase data="auto_1e9b9882dbfae49a">Группы доступа</phrase>
+	<phrase data="auto_e7adb22422703b43">Группы публичных пользователей не созданы.</phrase>
+	<phrase data="auto_dc8ad6500fde94aa">Группы тегов</phrase>
+	<phrase data="auto_9610c0151327ff86">Данные пункта меню</phrase>
+	<phrase data="auto_29fab881eb05ff3b">Дерево пунктов меню и шаблоны их вывода.</phrase>
+	<phrase data="auto_a6d06dad6920911f">Доступ к навигации на сайте</phrase>
+	<phrase data="auto_29bf15fbd8505f76">Есть вложенный уровень</phrase>
+	<phrase data="auto_a08a44a7fba955e4">Закрывает общую обёртку после всех уровней.</phrase>
+	<phrase data="auto_f67e82dc985e43e4">Закрывает список второго уровня.</phrase>
+	<phrase data="auto_51aee5cc379df27a">Закрывает список первого уровня.</phrase>
+	<phrase data="auto_622c7d636f86fb8c">Закрывает список третьего уровня.</phrase>
+	<phrase data="auto_56a1fd52891d1c0f">Изображение</phrase>
+	<phrase data="auto_d892e5fbe89baa8f">Используется для текущей страницы и её активной ветки.</phrase>
+	<phrase data="auto_4b353607db7c3c0e">Каждый N-й пункт</phrase>
+	<phrase data="auto_8b950f4a43ee8fb2">Конец навигации</phrase>
+	<phrase data="auto_cb41b06d65019ecd">Конец уровня</phrase>
+	<phrase data="auto_53abe4a34d84e2f3">Конструктор меню сайта</phrase>
+	<phrase data="auto_3757f7f85265ba50">Корень меню</phrase>
+	<phrase data="auto_7e48574e31811533">Корневые пункты меню</phrase>
+	<phrase data="auto_95345ca9528501dd">Кроме каждого N-го</phrase>
+	<phrase data="auto_8009b776b5493987">Меню навигации</phrase>
+	<phrase data="auto_c0e24d04b6dd297b">Меню, вызываемые тегами</phrase>
+	<phrase data="auto_e77fb2fa732521da">Навигации</phrase>
+	<phrase data="auto_7219a9ed0cc16d10">Навигации не найдены.</phrase>
+	<phrase data="auto_ae6968bf7aee2f99">Навигация #1 защищена от удаления; тег можно скопировать из списка.</phrase>
+	<phrase data="auto_c18046694faf9391">Начало навигации</phrase>
+	<phrase data="auto_762dda45ede5a55b">Начало уровня</phrase>
+	<phrase data="auto_92250813ceb742a9">Не выбран</phrase>
+	<phrase data="auto_c610cbf449544098">не выбран</phrase>
+	<phrase data="auto_61053c5dc4e3e947">Не первый пункт</phrase>
+	<phrase data="auto_6fa7a54a5dee778e">Не последний пункт</phrase>
+	<phrase data="auto_c6e6cba290bfd3a2">Нет вложенного уровня</phrase>
+	<phrase data="auto_b5dc778970fa525c">Новая навигация</phrase>
+	<phrase data="auto_a5a60296ff78c6f0">Обычный пункт</phrase>
+	<phrase data="auto_dac3e3b4b5ee707c">Обёртка вложенного списка второго уровня.</phrase>
+	<phrase data="auto_91fe561f4e2f3243">Обёртка вложенного списка третьего уровня.</phrase>
+	<phrase data="auto_b4e3fbf082df4fd2">Обёртка корневого списка. Тег [tag:content] определяет место вывода пунктов.</phrase>
+	<phrase data="auto_0194a44cc89494f3">Обёртка формирует</phrase>
+	<phrase data="auto_76efe7c7e20308f4">Обёртки</phrase>
+	<phrase data="auto_adf905f367477309">Основа</phrase>
+	<phrase data="auto_97d8a75430674d01">Основная навигация</phrase>
+	<phrase data="auto_8e69fbfe61581b0c">Отметьте, кому показывать эту навигацию.</phrase>
+	<phrase data="auto_e32a0222da8a9a71">Первая ступень вложенного меню</phrase>
+	<phrase data="auto_4d95414c0b5e3049">Первый пункт</phrase>
+	<phrase data="auto_2a812c1383643855">Поиск тегов</phrase>
+	<phrase data="auto_0c5f91b7350e41e4">Порядок и вложенность пунктов.</phrase>
+	<phrase data="auto_0bcb8de2baef313e">Последний пункт</phrase>
+	<phrase data="auto_c03a7ea7c49590c6">пример чётности</phrase>
+	<phrase data="auto_c7a9ec419aae855c">Публичные группы</phrase>
+	<phrase data="auto_e13b4bdc24d987d2">Пункт</phrase>
+	<phrase data="auto_141924f7e6e6cff8">Пункт меню</phrase>
+	<phrase data="auto_401d91ec80eff65d">пунктов</phrase>
+	<phrase data="auto_032620f5130641c9">Пунктов меню</phrase>
+	<phrase data="auto_2f296338463d9686">Пункты меню</phrase>
+	<phrase data="auto_2b7bc3187b5e647a">Разворачивание</phrase>
+	<phrase data="auto_06b5236605852d27">Родитель</phrase>
+	<phrase data="auto_98ec9cca8586db53">С алиасом</phrase>
+	<phrase data="auto_9f91d63167704d38">С группами доступа</phrase>
+	<phrase data="auto_4b43cbb15837e71d">Сбросить изменения</phrase>
+	<phrase data="auto_ac18b1187fa47440">Свойства пункта</phrase>
+	<phrase data="auto_f428bbb3b6140e6e">Секции шаблона навигации</phrase>
+	<phrase data="auto_be6772e9526be149">Снять выбор</phrase>
+	<phrase data="auto_81835716a29303d3">Содержимое вложенных пунктов</phrase>
+	<phrase data="auto_f938a2e0de0e4573">Создать навигацию</phrase>
+	<phrase data="auto_296f86beb5b001fd">Сохранить пункт</phrase>
+	<phrase data="auto_bbd0d0e19a87f418">Ссылка / alias</phrase>
+	<phrase data="auto_3b69d33f7253edc0">Ссылка, родитель и оформление.</phrase>
+	<phrase data="auto_1a4a85e95ad35531">Структура меню</phrase>
+	<phrase data="auto_d2bc848f6f7a7b2d">Структура меню.</phrase>
+	<phrase data="auto_1d34b74d4ff86db7">Текущий уровень</phrase>
+	<phrase data="auto_536c7c5c874917cd">Только активная ветка</phrase>
+	<phrase data="auto_ab30701c85ebee86">Убрать документ</phrase>
+	<phrase data="auto_cfb2b15208f2db7b">Убрать изображение</phrase>
+	<phrase data="auto_50fa71be94dbeb13">Уровень 1</phrase>
+	<phrase data="auto_cd0b995b4ac664c4">Уровень 2</phrase>
+	<phrase data="auto_71a2dbf76a91220d">Уровень 3</phrase>
+	<phrase data="auto_f724238d6a355a17">Условие с альтернативой</phrase>
+	<phrase data="auto_5b1c65c008232b00">Условия</phrase>
+	<phrase data="auto_a5c0a98486381e76">Шаблон активной ссылки второго уровня.</phrase>
+	<phrase data="auto_6054f5e986f28fb3">Шаблон активной ссылки третьего уровня.</phrase>
+	<phrase data="auto_dc9ebef17cac63b4">Шаблон неактивной ссылки второго уровня.</phrase>
+	<phrase data="auto_1574e6d983df2c58">Шаблон неактивной ссылки первого уровня.</phrase>
+	<phrase data="auto_ea88467022ba5350">Шаблон неактивной ссылки третьего уровня.</phrase>
+	<phrase data="auto_0e192653f3f0abde">Шаблоны меню</phrase>
+	<phrase data="auto_121c6b91516ce0ec">Шаблоны уровней поддерживают теги пунктов меню.</phrase>
+	<phrase data="auto_d09bf6d4c36412be">&quot; data-tooltip=&quot;Вкл/выкл&quot; aria-label=&quot;Вкл/выкл&quot;&gt;&lt;i class=&quot;ti ti-power&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_d32b8258ca6f9d3e">&quot; data-tooltip=&quot;Изменить&quot; aria-label=&quot;Изменить&quot;&gt;&lt;i class=&quot;ti ti-pencil&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_a8e608c1f7384d26">&quot; data-tooltip=&quot;Удалить&quot; aria-label=&quot;Удалить&quot;&gt;&lt;i class=&quot;ti ti-trash&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_68ee41202091a86a">(копия)</phrase>
+	<phrase data="auto_7287413ae60a4181">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm navigation-action-level&quot; type=&quot;button&quot; data-navigation-item-indent=&quot;-1&quot; data-tooltip=&quot;Уменьшить уровень&quot; aria-label=&quot;Уменьшить уровень&quot;&gt;&lt;i class=&quot;ti ti-indent-decrease&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_542e162a598ab71f">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm navigation-action-level&quot; type=&quot;button&quot; data-navigation-item-indent=&quot;1&quot; data-tooltip=&quot;Увеличить уровень&quot; aria-label=&quot;Увеличить уровень&quot;&gt;&lt;i class=&quot;ti ti-indent-increase&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_967a51d5b40eac36">&lt;div class=&quot;modal-body&quot;&gt;&lt;div class=&quot;input-wrap navigation-document-search&quot;&gt;&lt;i class=&quot;ti ti-search&quot;&gt;&lt;/i&gt;&lt;input class=&quot;input&quot; type=&quot;search&quot; placeholder=&quot;ID, название или alias&quot; data-navigation-document-search&gt;&lt;/div&gt;&lt;div class=&quot;navigation-picker-status&quot; data-navigation-document-status&gt;Загрузка...&lt;/div&gt;&lt;div class=&quot;navigation-document-list&quot; data-navigation-document-list&gt;&lt;/div&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_af23cc9cdbff9203">&lt;div class=&quot;modal-footer&quot;&gt;&lt;div class=&quot;mf-left navigation-picker-count&quot; data-navigation-document-count&gt;&lt;/div&gt;&lt;button class=&quot;btn btn-ghost&quot; type=&quot;button&quot; data-navigation-picker-close&gt;Закрыть&lt;/button&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_7f0cd82e07f3d267">&lt;div class=&quot;modal-header&quot;&gt;&lt;span class=&quot;dialog-icon info&quot;&gt;&lt;i class=&quot;ti ti-file-search&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;div&gt;&lt;h3 id=&quot;navigationDocumentPickerTitle&quot;&gt;Выбрать документ&lt;/h3&gt;&lt;p class=&quot;text-secondary&quot;&gt;Название и ссылка заполнятся автоматически.&lt;/p&gt;&lt;/div&gt;&lt;button class=&quot;modal-close&quot; type=&quot;button&quot; data-navigation-picker-close aria-label=&quot;Закрыть&quot;&gt;&lt;i class=&quot;ti ti-x&quot;&gt;&lt;/i&gt;&lt;/button&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_915098e02d6dfa95">&lt;option value=&quot;0&quot;&gt;Корень меню&lt;/option&gt;</phrase>
+	<phrase data="auto_b7cb5fb992168c7a">Алиас свободен</phrase>
+	<phrase data="auto_4297c5c52ad0e7c1">Алиас сохранён</phrase>
+	<phrase data="auto_32b74a3c47908c1e">Без названия</phrase>
+	<phrase data="auto_b63a1af63b674733">Все группы</phrase>
+	<phrase data="auto_c6a433696290fb08">Выберите хотя бы одну группу</phrase>
+	<phrase data="auto_ded8be85355b425b">Группа&#32;
+        detail.textContent =</phrase>
+	<phrase data="auto_beed168817322eeb">из</phrase>
+	<phrase data="auto_ed03d91e453e7a9d">Кеш навигации очищен</phrase>
+	<phrase data="auto_edbe417e021a142f">Контент</phrase>
+	<phrase data="auto_ace6b3bf4c06d407">Копия создана</phrase>
+	<phrase data="auto_e37824987d64ee7d">Навигация</phrase>
+	<phrase data="auto_f3be21f58a8bb0a1">Навигация&#32;
+			}
+
+			$row = self::raw($id);
+			if (!$row) {
+				return false;
+			}
+
+			self::clearCache($id, isset($row[</phrase>
+	<phrase data="auto_ae086cab4ca2484c">Навигация не найдена</phrase>
+	<phrase data="auto_4ec5548679b3ebb0">Навигация создана</phrase>
+	<phrase data="auto_b723b372cc14b332">Навигация сохранена</phrase>
+	<phrase data="auto_26588837b8cade08">Навигация удалена</phrase>
+	<phrase data="auto_b1100b5e4642367c">Навигация: просмотр</phrase>
+	<phrase data="auto_6762b310f3eec8e4">Навигация: управление</phrase>
+	<phrase data="auto_802ef4dbf9d97a12">Не удалось загрузить навигацию</phrase>
+	<phrase data="auto_650078bec041bcf9">Не удалось загрузить пункт</phrase>
+	<phrase data="auto_c2b70c3bb20678a7">Не удалось применить фильтры</phrase>
+	<phrase data="auto_3f48d3d91a14d8a0">Недостаточно прав</phrase>
+	<phrase data="auto_dced636fe29b1021">Некорректный порядок пунктов</phrase>
+	<phrase data="auto_3c7f06641873483c">Некорректный родитель</phrase>
+	<phrase data="auto_9069eda7952045d2">Никому не доступна</phrase>
+	<phrase data="auto_3697bef0b3fc93f5">новый</phrase>
+	<phrase data="auto_6f6792553955fa39">Новый пункт меню</phrase>
+	<phrase data="auto_39807bbe8580ef40">Передан неполный порядок пунктов</phrase>
+	<phrase data="auto_710b4d61663b2ab5">Перетащить</phrase>
+	<phrase data="auto_22b85f14d5be7427">Перетащить пункт</phrase>
+	<phrase data="auto_208dc9f48624bb45">Порядок пунктов сохранён</phrase>
+	<phrase data="auto_d951fdfa04ae12be">Порядок содержит неизвестный или повторяющийся пункт</phrase>
+	<phrase data="auto_29d2f0e6febdd8f5">Проверьте поля пункта</phrase>
+	<phrase data="auto_42039dbdd60cceb2">Проверьте поля формы</phrase>
+	<phrase data="auto_98cbd327a3aa71b3">Просмотр шаблонов и пунктов навигации.</phrase>
+	<phrase data="auto_86d7d177db686474">Пункт включён</phrase>
+	<phrase data="auto_34dfbf456f5da0cd">Пункт выключен</phrase>
+	<phrase data="auto_df17a685427a2d4f">Пункт навигации не найден</phrase>
+	<phrase data="auto_df528107d2e0567a">Пункт навигации создан</phrase>
+	<phrase data="auto_5f09026ac8e4a929">Пункт навигации сохранён</phrase>
+	<phrase data="auto_904c5f881102a4b1">Пункт навигации удалён или выключен</phrase>
+	<phrase data="auto_11609834a799e96c">редактирование</phrase>
+	<phrase data="auto_2e5a0ee59bcd97f1">Родитель пункта не принадлежит этой навигации</phrase>
+	<phrase data="auto_217e3ec23341fe67">Рубрика&#32;
+            +</phrase>
+	<phrase data="auto_9d6ebbf754ddaef7">Создание, изменение, копирование, удаление и импорт навигаций.</phrase>
+	<phrase data="auto_a9ee2e2619804624">Такой алиас уже используется</phrase>
+	<phrase data="auto_0e3ea3a6b1f56530">Только A-Z, 0-9, дефис и подчёркивание, до 20 символов; не число</phrase>
+	<phrase data="auto_a372421af1ae609a">Укажите активный шаблон первого уровня</phrase>
+	<phrase data="auto_5ca79a23d7935521">Укажите алиас</phrase>
+	<phrase data="auto_0916c48921c3c502">Укажите название</phrase>
+	<phrase data="auto_16dc23ba6ac5700c">Укажите название пункта</phrase>
+	<phrase data="auto_a9b24e78923fdab4">Укажите ссылку или alias</phrase>
+	<phrase data="auto_5066c4cbc040221a">Укажите шаблон ссылки первого уровня</phrase>
+</language>

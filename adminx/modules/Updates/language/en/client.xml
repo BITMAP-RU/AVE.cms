@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="auto_1afff5662e7decff">Prepare</phrase>
+	<phrase data="auto_21ca5fcdf159a532">The patch will be downloaded and tested. The site files will not change yet.</phrase>
+	<phrase data="auto_29f3b29df0d0e54f">Restore</phrase>
+	<phrase data="auto_2abb4a7554844839">Operation failed</phrase>
+	<phrase data="auto_344fcf507175b29d">Cancel preparation?</phrase>
+	<phrase data="auto_404c2e6238fe9cad">Install a kernel update?</phrase>
+	<phrase data="auto_48362256f8e10aa2">Official source restored</phrase>
+	<phrase data="auto_555ad1c0c33d26b3">Cancel</phrase>
+	<phrase data="auto_58ce20a6847caff0">The downloaded ZIP and staging will be deleted. The site files have not changed yet.</phrase>
+	<phrase data="auto_6941e805ab49050b">Prepare update</phrase>
+	<phrase data="auto_6c5ec600998dd461">Cancel patch</phrase>
+	<phrase data="auto_783f66035d97040b">Rollback</phrase>
+	<phrase data="auto_933d567aea6d6e00">Update source saved</phrase>
+	<phrase data="auto_9a0447cf822b517f">The files and database backup will be restored from the journal of this task.</phrase>
+	<phrase data="auto_a272bdd981b267ad">Update error</phrase>
+	<phrase data="auto_a3f8d64f888bc5ca">AVE.cms will create a backup, temporarily close the public site and replace system files.</phrase>
+	<phrase data="auto_ad8f7fc66dd077b8">Prepare an update?</phrase>
+	<phrase data="auto_bfa0110d97e0f1f4">The current URL and public update key will be replaced with the data from the trusted build profile.</phrase>
+	<phrase data="auto_ce88d35b18763af7">Install</phrase>
+	<phrase data="auto_cf805699f613dec2">Stage completed</phrase>
+	<phrase data="auto_e37e4654dc656742">Restore the official source?</phrase>
+	<phrase data="auto_f5e129827719e97c">Roll back the update?</phrase>
+	<phrase data="runtime_0c5b8470b3d44ff9">Update source saved</phrase>
+</language>

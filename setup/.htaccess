@@ -1,0 +1,17 @@
+Options -Indexes
+
+<IfModule mod_headers.c>
+	Header set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+	Header set Pragma "no-cache"
+	Header set Expires "0"
+</IfModule>
+
+<FilesMatch "^(Installer\.php|schema\.sql)$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Order allow,deny
+    Deny from all
+  </IfModule>
+</FilesMatch>

@@ -1,0 +1,115 @@
+# Настройки и валидация поля
+
+← [К разделу «Поля документов»](README.md)
+
+## settingsSchema()
+
+Тип описывает настройки массивом дескрипторов. `FieldSettingsForm` строит из
+них контролы конструктора рубрики и симметрично нормализует POST в JSON.
+
+```php
+public function settingsSchema()
+{
+    return array(
+        array(
+            'key' => 'unit',
+            'type' => 'text',
+            'label' => 'Единица измерения',
+            'default' => 'балл',
+            'hint' => 'Показывается после значения.',
+        ),
+        array(
+            'key' => 'presentation',
+            'type' => 'select',
+            'label' => 'Вид',
+            'options' => array(
+                'number' => 'Число',
+                'stars' => 'Звёзды',
+            ),
+            'default' => 'number',
+        ),
+    );
+}
+```
+
+Поддержанные виды контролов:
+
+| `type` | Значение |
+| --- | --- |
+| `text` | Строка. |
+| `int` | Целое число. |
+| `number` | Число. |
+| `bool` | Переключатель. |
+| `select` | Один вариант из `options`. |
+| `list` | Массив строк, одна на строку. |
+| `map` | Список стабильных пар `ключ → подпись`. |
+| `rubric` | Массив ID рубрик. |
+
+Читать настройки вручную из JSON не требуется:
+
+```php
+$unit = (string) $ctx->setting('unit', '');
+$all = $ctx->settings();
+```
+
+## validationSchema()
+
+`AbstractFieldType` уже добавляет подходящие базовые правила в зависимости от
+`isNumeric()`, `isMultiple()`, `isFile()` и `isChoice()`. Метод можно
+переопределить полностью:
+
+```php
+public function validationSchema()
+{
+    return array(
+        array('key' => 'required', 'type' => 'bool', 'label' => 'Обязательное'),
+        array('key' => 'min', 'type' => 'number', 'label' => 'Минимум'),
+        array('key' => 'max', 'type' => 'number', 'label' => 'Максимум'),
+    );
+}
+```
+
+Стандартные правила:
+
+| Правило | Назначение |
+| --- | --- |
+| `required` | Значение обязательно. |
+| `min`, `max` | Границы числа. |
+| `minLength`, `maxLength` | Длина текста. |
+| `minCount`, `maxCount` | Количество элементов структуры. |
+| `allowedValues` | Только разрешённые ключи. |
+| `allowedExtensions` | Расширения файлов через запятую. |
+| `regex` | Регулярное выражение. |
+| `date`, `email`, `url`, `numeric` | Проверки формата. |
+
+## Специальная проверка модуля
+
+Если стандартных правил недостаточно, подпишитесь на
+`content.field.validating`. Обработчик должен ограничиться своим типом:
+
+```php
+use App\Common\LifecycleEvent;
+
+public static function validate(LifecycleEvent $event)
+{
+    if ($event->value('type') !== 'rating') {
+        return;
+    }
+
+    $value = (int) $event->value('value', 0);
+    if ($value < 0 || $value > 10) {
+        $event->setResult('Рейтинг должен быть от 0 до 10');
+    }
+}
+```
+
+`null` в результате означает отсутствие ошибки, строка — сообщение рядом с
+полем. Подписка объявляется в `module.php`; полный контракт описан в разделе
+[Хуки полей](../hooks/fields.md).
+
+## Изменение настроек
+
+Изменение подписи, визуального формата и единицы измерения не должно требовать
+перезаписи документов. Изменение формы хранения (`scalar → JSON`, новая
+семантика ключей) является миграцией данных и требует новой версии модуля,
+отдельной миграции и обратной совместимости чтения на период обновления.

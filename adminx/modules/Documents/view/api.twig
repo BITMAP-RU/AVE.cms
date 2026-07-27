@@ -1,0 +1,199 @@
+{% extends '@adminx/main.twig' %}
+
+{% block title %}JSON API документов{% endblock %}
+
+{% block content %}
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i>
+  <a href="{{ ADMINX_BASE }}/documents">Документы</a><i class="ti ti-chevron-right"></i>
+  <span>JSON API</span>
+</nav>
+
+<div class="page-header">
+  <div class="between">
+    <div>
+      <h1>JSON API документов</h1>
+      <p class="text-secondary" style="margin-top:5px">Ключи доступа для внешних сервисов и интеграций.</p>
+    </div>
+    <button class="btn btn-primary" type="button" data-open-drawer="documentApiTokenDrawer">
+      <i class="ti ti-key"></i>Создать токен
+    </button>
+  </div>
+</div>
+
+<div class="tabs documents-page-tabs" role="tablist" aria-label="Разделы документов">
+  <a class="tab" href="{{ ADMINX_BASE }}/documents"><i class="ti ti-files"></i>Документы</a>
+  <a class="tab" href="{{ ADMINX_BASE }}/documents/views"><i class="ti ti-chart-line"></i>Просмотры</a>
+  <a class="tab" href="{{ ADMINX_BASE }}/documents/redirects"><i class="ti ti-route"></i>Редиректы</a>
+  <a class="tab is-active" href="{{ ADMINX_BASE }}/documents/api"><i class="ti ti-api"></i>JSON API</a>
+</div>
+
+<input type="hidden" value="{{ csrf_token }}" data-documents-csrf>
+
+<div class="documents-api-layout">
+  <div class="alert alert-info documents-api-info">
+    <i class="ti ti-shield-lock alert-ic"></i>
+    <div>
+      <b class="alert-title">Секретный ключ показывается один раз</b>
+      <span>В базе хранится только его SHA-256-хеш. Утраченный ключ нужно отозвать и выпустить заново.</span>
+    </div>
+  </div>
+
+  <section class="card documents-card documents-api-card">
+    <div class="documents-section-head">
+      <div class="documents-section-title">
+        <span class="icon-tile documents-head-icon" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-key"></i></span>
+        <div>
+          <h2>Токены доступа</h2>
+          <p class="text-secondary">Используйте отдельный токен для каждой интеграции.</p>
+        </div>
+      </div>
+      <span class="badge badge-blue" data-api-token-count>{{ tokens|length }}</span>
+    </div>
+
+    <div class="table-scroll documents-api-table-scroll">
+      <table class="table documents-api-table">
+        <thead>
+          <tr>
+            <th>Интеграция</th>
+            <th>Владелец</th>
+            <th>Разрешения</th>
+            <th>Последний запрос</th>
+            <th>Действует до</th>
+            <th>Состояние</th>
+            <th aria-label="Действия"></th>
+          </tr>
+        </thead>
+        <tbody data-api-token-list>
+          {% for token in tokens %}
+          <tr data-api-token-row data-id="{{ token.id }}">
+            <td data-label="Интеграция">
+              <div class="documents-api-name">
+                <b>{{ token.name }}</b>
+                <small class="mono">{{ token.token_prefix }}…</small>
+              </div>
+            </td>
+            <td data-label="Владелец">{{ token.user_name ?: token.user_email }}</td>
+            <td data-label="Разрешения">
+              <div class="documents-api-scopes">
+                {% for scope in token.scopes_list %}
+                <span class="badge badge-blue">{{ scope == 'documents:read' ? 'Чтение' : (scope == 'documents:write' ? 'Запись' : 'Полный доступ') }}</span>
+                {% endfor %}
+              </div>
+            </td>
+            <td data-label="Последний запрос"><span class="documents-api-date">{{ token.last_used_at ?: 'Ни разу' }}</span></td>
+            <td data-label="Действует до"><span class="documents-api-date">{{ token.expires_at ?: 'Без срока' }}</span></td>
+            <td data-label="Состояние">
+              <span class="badge badge-{{ token.state == 'active' ? 'green' : (token.state == 'expired' ? 'amber' : 'gray') }}" data-api-token-state>
+                {{ token.state == 'active' ? 'Активен' : (token.state == 'expired' ? 'Истёк' : 'Отозван') }}
+              </span>
+            </td>
+            <td class="documents-api-actions">
+              {% if token.state == 'active' %}
+              <button class="btn btn-ghost btn-icon btn-sm documents-action-danger" type="button" data-api-token-revoke data-tooltip="Отозвать" aria-label="Отозвать токен">
+                <i class="ti ti-key-off"></i>
+              </button>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr data-api-token-empty>
+            <td colspan="7">
+              <div class="empty-state documents-api-empty">
+                <span class="icon-tile" style="--tile-bg:var(--gray-100);--tile-fg:var(--gray-600)"><i class="ti ti-key"></i></span>
+                <div><b>Токенов пока нет</b><span>Создайте отдельный ключ для первой интеграции.</span></div>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<aside class="drawer drawer-right drawer-lg documents-api-token-drawer" id="documentApiTokenDrawer" role="dialog" aria-modal="true" aria-labelledby="documentApiTokenTitle" hidden>
+  <div class="drawer-header">
+    <div>
+      <h3 id="documentApiTokenTitle">Новый API-токен</h3>
+      <p class="text-secondary text-sm" data-api-token-subtitle>Права доступа для одной внешней интеграции.</p>
+    </div>
+    <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть">
+      <i class="ti ti-x"></i>
+    </button>
+  </div>
+
+  <form data-api-token-form data-base="{{ ADMINX_BASE }}">
+    <div class="drawer-body documents-api-drawer-body">
+      <div class="documents-api-token-fields" data-api-token-fields>
+        <section class="documents-api-form-section">
+          <div class="documents-api-form-heading">
+            <span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-plug-connected"></i></span>
+            <div><b>Интеграция</b><span>Название поможет найти и отозвать нужный ключ.</span></div>
+          </div>
+          <label class="field">
+            <span class="field-label">Название</span>
+            <input class="input" type="text" name="name" placeholder="Например, публикация в Дзен" maxlength="190" autocomplete="off" required>
+          </label>
+        </section>
+
+        <section class="documents-api-form-section">
+          <div class="documents-api-form-heading">
+            <span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-shield-check"></i></span>
+            <div><b>Разрешения</b><span>Выдайте только тот доступ, который нужен сервису.</span></div>
+          </div>
+          <div class="documents-api-scope-grid">
+            <label class="documents-api-scope">
+              <input type="checkbox" name="scopes[]" value="documents:read" checked>
+              <span class="documents-api-scope-icon"><i class="ti ti-eye"></i></span>
+              <span><b>Чтение</b><small>Получение JSON документа по ID или alias.</small></span>
+              <i class="ti ti-check documents-api-scope-check"></i>
+            </label>
+            <label class="documents-api-scope">
+              <input type="checkbox" name="scopes[]" value="documents:write">
+              <span class="documents-api-scope-icon"><i class="ti ti-pencil"></i></span>
+              <span><b>Создание и обновление</b><small>Запись документов через POST, PUT и PATCH.</small></span>
+              <i class="ti ti-check documents-api-scope-check"></i>
+            </label>
+          </div>
+        </section>
+
+        <section class="documents-api-form-section">
+          <div class="documents-api-form-heading">
+            <span class="icon-tile" style="--tile-bg:var(--amber-100);--tile-fg:var(--amber-600)"><i class="ti ti-calendar-time"></i></span>
+            <div><b>Срок действия</b><span>Для постоянной серверной интеграции можно не ограничивать.</span></div>
+          </div>
+          <label class="field">
+            <span class="field-label">Действует до <span class="opt">необязательно</span></span>
+            <input class="input" type="datetime-local" name="expires_at">
+          </label>
+        </section>
+      </div>
+
+      <section class="documents-api-secret" data-api-token-secret hidden>
+        <div class="documents-api-secret-status"><i class="ti ti-circle-check"></i></div>
+        <h4>Токен создан</h4>
+        <p>Скопируйте секрет сейчас. После закрытия панели увидеть его снова будет невозможно.</p>
+        <label class="field">
+          <span class="field-label">Секретный ключ</span>
+          <div class="documents-api-secret-control">
+            <input class="input mono" type="text" readonly data-api-token-value>
+            <button class="btn btn-primary" type="button" data-api-token-copy>
+              <i class="ti ti-copy"></i><span data-api-token-copy-label>Копировать</span>
+            </button>
+          </div>
+        </label>
+        <div class="alert alert-warning">
+          <i class="ti ti-alert-triangle alert-ic"></i>
+          <div><b class="alert-title">Не отправляйте токен в URL</b><span>Передавайте его только в заголовке <code>Authorization: Bearer …</code>.</span></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="drawer-footer">
+      <button class="btn btn-ghost" type="button" data-close-drawer><i class="ti ti-x"></i>Закрыть</button>
+      <button class="btn btn-primary" type="submit" data-api-token-submit><i class="ti ti-key"></i>Создать токен</button>
+    </div>
+  </form>
+</aside>
+{% endblock %}

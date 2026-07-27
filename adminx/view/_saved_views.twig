@@ -1,0 +1,24 @@
+<div class="saved-views"
+     data-saved-views
+     data-filter-form="{{ saved_views_form }}"
+     data-save-url="{{ saved_views_save_url }}"
+     data-delete-url="{{ saved_views_delete_url }}"
+     data-fields="{{ saved_views_fields|json_encode|e('html_attr') }}"
+     data-csrf="{{ csrf_token }}">
+  <div class="saved-views-main">
+    <span class="saved-views-icon" aria-hidden="true"><i class="ti ti-bookmarks"></i></span>
+    <select class="select" data-saved-views-select aria-label="Сохранённые представления">
+      <option value="">Сохранённые представления</option>
+      {% for view in saved_views %}
+      <option value="{{ view.id }}" data-filters="{{ view.filters|json_encode|e('html_attr') }}">{{ view.title }}</option>
+      {% endfor %}
+    </select>
+    <button class="btn btn-ghost btn-icon btn-sm" type="button" data-saved-views-create data-tooltip="Сохранить текущий фильтр" aria-label="Сохранить текущий фильтр"><i class="ti ti-bookmark-plus"></i></button>
+    <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-delete" type="button" data-saved-views-delete data-tooltip="Удалить представление" aria-label="Удалить представление" disabled><i class="ti ti-trash"></i></button>
+  </div>
+  <div class="saved-views-editor" data-saved-views-editor hidden>
+    <input class="input" type="text" maxlength="60" placeholder="Например, без упаковки" data-saved-views-title>
+    <button class="btn btn-primary btn-sm" type="button" data-saved-views-submit><i class="ti ti-check"></i>Сохранить</button>
+    <button class="btn btn-ghost btn-icon btn-sm" type="button" data-saved-views-cancel aria-label="Отмена" data-tooltip="Отмена"><i class="ti ti-x"></i></button>
+  </div>
+</div>

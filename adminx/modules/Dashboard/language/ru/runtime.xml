@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="runtime_f7c5138921a6c036">Быстрый доступ</phrase>
+	<phrase data="runtime_bc35f8cd58df46c6">Дашборд</phrase>
+	<phrase data="runtime_607decee1e0350c6">Доброе утро</phrase>
+	<phrase data="runtime_882435f684c8aad1">Доброй ночи</phrase>
+	<phrase data="runtime_318060f569ed9465">Добрый вечер</phrase>
+	<phrase data="runtime_7c58eacae277eac4">Добрый день</phrase>
+	<phrase data="runtime_f306e1182c02bd53">Документы, пользователи, 404 и SQL ошибки.</phrase>
+	<phrase data="runtime_424b8f8a29b44dd9">Документы, пользователи, 404 и ошибки базы данных.</phrase>
+	<phrase data="runtime_8eb454939ab35607">Недавние документы</phrase>
+	<phrase data="runtime_bd3a5be11e2addf7">Обзор</phrase>
+	<phrase data="runtime_4314946b8a73cac4">Переходы к основным разделам.</phrase>
+	<phrase data="runtime_ca53c68f7dad6440">Последние измененные документы в виде таблицы.</phrase>
+	<phrase data="runtime_8c81ce9f11ea3eb1">Состояние системы</phrase>
+	<phrase data="runtime_7b90b380e3b5abb7">Ссылки на основные рабочие разделы системы.</phrase>
+	<phrase data="runtime_430edd41f22ebc9b">Таблица последних измененных документов.</phrase>
+</language>

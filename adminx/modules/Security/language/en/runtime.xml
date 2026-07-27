@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="runtime_b0e4a4ba0f35f67f">IP address blocked</phrase>
+	<phrase data="runtime_132018db5d38ba1e">IP address unblocked</phrase>
+	<phrase data="runtime_de417a7fe0cb9ba0">IP blocking</phrase>
+	<phrase data="runtime_7ddeb002ba7925a2">IP blocking: view</phrase>
+	<phrase data="runtime_645a0d7c31200ec1">IP blocking: management</phrase>
+	<phrase data="runtime_d90121745924a07f">Security</phrase>
+	<phrase data="runtime_6d285f1f49050c7c">Blocking and unblocking IP addresses.</phrase>
+	<phrase data="runtime_e770b9cc7b5f5286">View blocked IP addresses.</phrase>
+	<phrase data="runtime_6da215b1bdac9524">System</phrase>
+</language>

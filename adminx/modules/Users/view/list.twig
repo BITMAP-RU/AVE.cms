@@ -1,0 +1,147 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}Пользователи{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i>
+  <span>Пользователи</span>
+</nav>
+
+<div class="page-header">
+  <div class="between">
+    <div>
+      <h1>Пользователи</h1>
+      <p class="text-secondary">{{ users|length }} учётных записей · создание, роли и доступ</p>
+    </div>
+    {% if can_manage %}
+    <button class="btn btn-primary" data-user-new data-open-drawer="userDrawer"><i class="ti ti-plus"></i>Создать</button>
+    {% endif %}
+  </div>
+</div>
+
+<div class="ax-summary">
+  <div class="card stat-tile"><div class="stat-ico"><i class="ti ti-users"></i></div><div><div class="stat-val">{{ stats.total }}</div><div class="stat-label">Всего</div></div></div>
+  <div class="card stat-tile"><div class="stat-ico" style="background:var(--color-success-soft);color:var(--color-success)"><i class="ti ti-user-check"></i></div><div><div class="stat-val">{{ stats.active }}</div><div class="stat-label">Активные</div></div></div>
+  <div class="card stat-tile"><div class="stat-ico" style="background:var(--background-inset);color:var(--text-muted)"><i class="ti ti-user-off"></i></div><div><div class="stat-val">{{ stats.inactive }}</div><div class="stat-label">Отключённые</div></div></div>
+  <div class="card stat-tile"><div class="stat-ico" style="background:var(--color-violet-soft);color:var(--color-violet)"><i class="ti ti-shield-lock"></i></div><div><div class="stat-val">{{ stats.roles }}</div><div class="stat-label">Ролей</div></div></div>
+</div>
+
+<div class="section-header ax-panel-header users-panel-header">
+  <div class="section-icon"><i class="ti ti-list-details"></i></div>
+  <div>
+    <div class="section-eyebrow">Данные</div>
+    <h2>Учётные записи</h2>
+    <p class="section-desc">Поиск и фильтр по роли, включение/выключение и редактирование.</p>
+  </div>
+  <div class="section-header-right">
+    <form class="users-filter" method="get" action="{{ ADMINX_BASE }}/users">
+      <div class="input-wrap"><i class="ti ti-search"></i>
+        <input class="input" type="search" name="q" value="{{ q }}" placeholder="Поиск: имя, email, логин">
+      </div>
+      <select class="select" name="role" onchange="this.form.submit()">
+        <option value="">Все роли</option>
+        {% for code, label in roles %}<option value="{{ code }}"{{ code == role ? ' selected' : '' }}>{{ label }}</option>{% endfor %}
+      </select>
+      <button class="btn btn-secondary" type="submit"><i class="ti ti-filter"></i>Найти</button>
+    </form>
+  </div>
+</div>
+
+<div class="card ax-list-card">
+  <div class="ax-list-head"><div class="ax-list-title"><span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-users"></i></span><div><h2>Администраторы</h2><p class="text-secondary">Учётные записи, роли и состояние доступа к Adminx.</p></div></div><span class="badge badge-blue">{{ users|length }}</span></div>
+  <div class="table-scroll">
+    <table class="table">
+      <thead>
+        <tr>
+          <th style="width:48px">ID</th>
+          <th>Имя</th>
+          <th>Email</th>
+          <th style="width:120px">Роль</th>
+          <th style="width:110px">Статус</th>
+          <th style="width:150px">Создан</th>
+          {% if can_manage %}<th style="width:96px"></th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        {% set is_self = u.id == current_id %}
+        <tr data-id="{{ u.id }}" data-name="{{ u.name }}" data-email="{{ u.email }}" data-login="{{ u.login }}" data-phone="{{ u.phone }}" data-role="{{ u.role }}" data-role-label="{{ roles[u.role]|default(u.role) }}" data-active="{{ u.is_active }}" data-created="{{ u.created_at }}" data-updated="{{ u.updated_at }}"{{ is_self ? ' data-self' : '' }}>
+          <td class="mono text-muted">{{ u.id }}</td>
+          <td>
+            <span class="cluster" style="gap:8px">
+              <span class="avatar avatar-sm">{{ u.name|slice(0,2)|upper }}</span>
+              <span style="min-width:0">
+                <b style="display:block">{{ u.name }}</b>
+                {% if u.login %}<span class="text-muted text-xs mono">@{{ u.login }}</span>{% endif %}
+              </span>
+            </span>
+          </td>
+          <td class="mono text-sm">{{ u.email }}</td>
+          <td><span class="badge badge-{{ u.role == 'admin' ? 'violet' : (u.role == 'manager' ? 'blue' : 'gray') }}" title="{{ u.role }}">{{ roles[u.role]|default(u.role) }}</span></td>
+          <td>
+            {% if can_manage and not is_self %}
+            <label class="switch" data-tooltip="{{ u.is_active ? 'Отключить' : 'Включить' }}"><input type="checkbox" data-user-toggle {{ u.is_active ? 'checked' : '' }}><span></span></label>
+            {% elseif can_manage and is_self %}
+            <label class="switch" data-tooltip="Нельзя отключить свою учётную запись"><input type="checkbox" checked disabled><span></span></label>
+            {% else %}
+            <span class="badge badge-{{ u.is_active ? 'green' : 'gray' }} badge-dot">{{ u.is_active ? 'Активен' : 'Отключён' }}</span>
+            {% endif %}
+          </td>
+          <td class="text-muted text-sm">{{ u.created_at ? u.created_at|slice(0,10) : '—' }}</td>
+          {% if can_manage %}
+          <td>
+            <div class="cluster" style="gap:4px">
+              <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-edit" data-user-edit data-open-drawer="userDrawer" data-tooltip="Изменить" aria-label="Изменить"><i class="ti ti-pencil"></i></button>
+              {% if not is_self %}
+              <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-danger" data-user-delete data-tooltip="Удалить" aria-label="Удалить"><i class="ti ti-trash"></i></button>
+              {% endif %}
+            </div>
+          </td>
+          {% endif %}
+        </tr>
+        {% else %}
+        <tr><td colspan="{{ can_manage ? 7 : 6 }}"><div class="empty-state">Ничего не найдено</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if can_manage %}
+<aside class="drawer drawer-right users-drawer" id="userDrawer" role="dialog" aria-modal="true" aria-labelledby="userDrawerTitle" hidden>
+  <div class="drawer-header">
+    <div><h3 id="userDrawerTitle">Новый пользователь</h3><p>Учётная запись сотрудника и доступ к Adminx</p></div>
+    <button class="btn btn-ghost btn-icon" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <form id="userForm" data-base="{{ ADMINX_BASE }}">
+    <div class="drawer-body">
+      <div class="users-editor">
+        <input type="hidden" name="id" value="">
+        <div class="users-editor-summary"><span class="avatar" data-user-preview-avatar>НП</span><div><b data-user-preview-name>Новый пользователь</b><span data-user-preview-meta>Учётная запись ещё не сохранена</span></div><span class="badge badge-blue" data-user-preview-role>Пользователь</span></div>
+
+        <section class="users-editor-section"><div class="users-editor-section-head"><span class="icon-tile"><i class="ti ti-id"></i></span><div><b>Основные данные</b><span>Имя и контакты сотрудника.</span></div></div><div class="form-grid">
+          <label class="field col-6"><span class="field-label">Имя</span><input class="input" type="text" name="name" placeholder="Например, Иван Петров" required><span class="field-error" data-error="name"></span></label>
+          <label class="field col-6"><span class="field-label">Email</span><span class="input-wrap users-field-input"><i class="ti ti-mail"></i><input class="input" type="email" name="email" placeholder="user@example.com" required></span><span class="field-error" data-error="email"></span></label>
+          <label class="field col-6"><span class="field-label">Логин <span class="text-muted">(необязательно)</span></span><input class="input" type="text" name="login" placeholder="ivan.petrov" autocomplete="off"><span class="field-error" data-error="login"></span></label>
+          <label class="field col-6"><span class="field-label">Телефон</span><span class="input-wrap users-field-input"><i class="ti ti-phone"></i><input class="input" type="text" name="phone" placeholder="+7 (900) 000-00-00"></span><span class="field-error" data-error="phone"></span></label>
+        </div></section>
+
+        <section class="users-editor-section"><div class="users-editor-section-head"><span class="icon-tile" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-shield-lock"></i></span><div><b>Доступ</b><span>Роль определяет доступные разделы и действия.</span></div></div><div class="users-access-grid">
+          <label class="field"><span class="field-label">Роль</span><select class="select" name="role">{% for code, label in roles %}<option value="{{ code }}">{{ label }}</option>{% endfor %}</select><span class="field-hint" data-user-self-role-hint hidden>Свою роль изменить нельзя.</span><span class="field-error" data-error="role"></span></label>
+          <label class="users-active-card"><span><b>Доступ разрешён</b><small data-user-active-hint>Отключённый пользователь не сможет войти.</small></span><span class="switch"><input type="checkbox" name="is_active" value="1" checked><span></span></span></label>
+        </div></section>
+
+        <section class="users-editor-section"><div class="users-editor-section-head"><span class="icon-tile" style="--tile-bg:var(--amber-100);--tile-fg:var(--amber-600)"><i class="ti ti-key"></i></span><div><b>Безопасность</b><span data-pass-hint>Пароль обязателен для новой учётной записи.</span></div></div><div class="field"><span class="field-label">Новый пароль</span><div class="input-wrap"><input class="input has-action" type="password" name="password" placeholder="Минимум 6 символов" autocomplete="new-password" data-pw-input><button class="input-action" type="button" data-pw-toggle aria-label="Показать пароль" data-tooltip="Показать / скрыть"><i class="ti ti-eye"></i></button></div><div class="cluster pw-actions" style="gap:6px;margin-top:6px"><button type="button" class="btn btn-ghost btn-xs" data-pw-generate><i class="ti ti-wand"></i>Сгенерировать</button><button type="button" class="btn btn-ghost btn-xs" data-pw-copy data-tooltip="Скопировать в буфер"><i class="ti ti-copy"></i>Копировать</button></div><div class="pw-strength" data-level="" aria-hidden="true"><span></span><span></span><span></span><span></span></div><span class="field-hint" data-pw-hint>Минимум 6 символов, желательно буквы разных регистров и цифры</span><span class="field-error" data-error="password"></span></div></section>
+
+        <div class="users-editor-dates" data-user-dates hidden><span><i class="ti ti-calendar-plus"></i>Создан: <b data-user-created>—</b></span><span><i class="ti ti-refresh"></i>Изменён: <b data-user-updated>—</b></span></div>
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <button class="btn btn-secondary" type="button" data-close-drawer>Закрыть</button>
+      <button class="btn btn-primary" type="submit" style="margin-left:auto"><i class="ti ti-check"></i>Сохранить</button>
+    </div>
+  </form>
+</aside>
+{% endif %}
+
+{% endblock %}

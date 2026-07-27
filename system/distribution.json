@@ -1,0 +1,15 @@
+{
+    "format": "ave-repository-profile-v1",
+    "name": "Официальный канал AVE.cms",
+    "channel": "stable",
+    "core_updates": {
+        "url": "https://ave-cms.ru/updates/core/index.json",
+        "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEA36kM3AeIPxaH7WgqPS6/\nP51VfUr0xgd7kxDdqV1DV3My1G9SVvmXdVDvpSpLKpuJHUi2uadDOrr0T4ayNa0c\n7+d6PCTjS8jBOP1AG/R0B+vRbcAHF3AoSH5OpCqEhAS5yi19V5jmVEXv264kp30t\ncZS8ov0/3zLh4Hj44dzJuvONMRyVEKzy3e55plMACNHXR5vU0pkoDC5PJS4rL7oF\nTgq+WTLVNm2c4ExrqDZdvx6btKc848r6NtqPrJ5iTet/zpv4Yv0WLHwlywoub5vx\nW+6BgmH3WEPz4n6/9e95NinNwymkKyTRxH78b2N3DQM33S7c6z+grmcTvsoZlJcX\nDF1vj6ObgbR/GLx/Q+ox/gIs7wSaJjeO1qnkxFs+qNnp3GHpJOrS05dLPh4Uiqvm\n5dRM9e1Xm6lXVBqfgdo+1WD0WW0NSYfs1zCZPJcS01NNZSVUnZLX3UHIatyngCpB\nj0aw4iuNXUldabRES2ZNT6xyXDdXpUmWZ3KMz2Rcu4qlAgMBAAE=\n-----END PUBLIC KEY-----",
+        "fingerprint": "ADB2:8584:508E:CE77:29EF:ADDE"
+    },
+    "modules": {
+        "url": "https://ave-cms.ru/updates/modules/index.json",
+        "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEA0J+rFPH9DbGktsckYRbc\nN+YySCd6QXXFp27fn+Q0pO7VbeK9cFhCnmJkDoqS6OduUGsL19Ot4WQz2XulU8qg\numwqVeu2ixUmpZE2c1za/j8asHS7DHvccmee0DtcYATnrRnBCY4munEUeVy8TitQ\nqJ+jX/Sx+aFbrj8ImA58dV6OKWEYU4R/BXFpt8vEJMaXjGW5oDffa9Y7OuSD4w3G\nXJlsaHZzxGU5POoraVgqKDAKIAeOMoeMr4IuhC4x3Mkrj6hf7Eghj++X+QXnyjnS\nhi2EjPOVC7CU0N9VESKuWvhFKdMCgNSNLCh1eGNH6Dk74tCco7MmswNAvMCe4S+3\nfi+RhRDB3njgbSHfiClN4P9ET7V9CGozH3pWpvnu5QVhiTxXJ0K4Asfl7tUHHv8W\nTjfCx43ZMzdGBShjkGMciPyefaLc+smkggO5f4tKnCCpmE/CQLCscQ+GWlaDcAUL\nmiM9gDtKcqzYwNtdNuZGLtHLsMZIxVrU/FdX+RlPkAjlAgMBAAE=\n-----END PUBLIC KEY-----",
+        "fingerprint": "591E:3FFA:EDEE:9C6B:2289:3FFB"
+    }
+}

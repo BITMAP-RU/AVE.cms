@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="auto_06f37f2d7b6e8b22">Не удалось скопировать</phrase>
+	<phrase data="auto_0cf25610228dc363">Минимум 6 символов, желательно буквы разных регистров и цифры</phrase>
+	<phrase data="auto_17f83198acde283f">Оставьте пароль пустым, если его не нужно менять.</phrase>
+	<phrase data="auto_25906c15eac595d8">Удалить пользователя?</phrase>
+	<phrase data="auto_2752c33b8a5db20d">Пароль скопирован в буфер</phrase>
+	<phrase data="auto_51aff18539497f49">Пользователь</phrase>
+	<phrase data="auto_5f2b736648be4ba7">) будет удалён без возможности восстановления.</phrase>
+	<phrase data="auto_5f79bc5f4784e177">Пароль сгенерирован</phrase>
+	<phrase data="auto_721da5d070ce0d16">Не удалось удалить</phrase>
+	<phrase data="auto_7c3f2ca256870af9">Не удалось</phrase>
+	<phrase data="auto_86ea33aef5e95d4f">Удалить</phrase>
+	<phrase data="auto_909c49f237faebd3">Сначала введите или сгенерируйте пароль</phrase>
+	<phrase data="auto_9641f77f4d972b7d">слабый</phrase>
+	<phrase data="auto_96807da1db18186a">Надёжность:</phrase>
+	<phrase data="auto_a1f60d3adb508c79">Новый пользователь</phrase>
+	<phrase data="auto_ad01d64df312c581">Пароль обязателен для новой учётной записи.</phrase>
+	<phrase data="auto_be5056724d4c98ce">Учётная запись ещё не сохранена</phrase>
+	<phrase data="auto_c00aca49199296d7">Ошибка сети</phrase>
+	<phrase data="auto_ccb273c580334a41">Нельзя отключить свою учётную запись</phrase>
+	<phrase data="auto_ccbb0564affe8d84">Минимум 6 символов</phrase>
+	<phrase data="auto_d5f5ec340f5cbb80">хороший</phrase>
+	<phrase data="auto_d912ab21dc72b811">Отключённый пользователь не сможет войти.</phrase>
+	<phrase data="auto_e529d154b41c6fc2">Собственную учётную запись отключить нельзя.</phrase>
+	<phrase data="auto_f2d6a66eee4f2dba">средний</phrase>
+	<phrase data="auto_f2f391cf89444519">отличный</phrase>
+	<phrase data="auto_f89814d87e446cdd">Изменение:</phrase>
+</language>

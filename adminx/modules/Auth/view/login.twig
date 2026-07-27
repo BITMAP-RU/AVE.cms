@@ -1,0 +1,43 @@
+{% extends '@adminx/auth.twig' %}
+{% block title %}{{ lang.app_login_title|default('Вход в админпанель') }}{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="card auth-card">
+    <div class="auth-head">
+      <h1 class="auth-logo-h"><img class="auth-logo" src="{{ asset_ver(ADMINX_BASE ~ '/assets/img/logo.svg') }}" alt="AVE.cms" width="132" height="47"></h1>
+      <p class="text-secondary">{{ lang.app_login_subtitle|default('Вход в панель управления') }}</p>
+    </div>
+
+    {% if error %}
+    <div class="alert alert-danger" role="alert"><i class="ti ti-alert-triangle"></i><span>{{ error }}</span></div>
+    {% endif %}
+
+    <form method="post" action="{{ ADMINX_BASE }}/login" class="auth-form">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <div class="field">
+        <label for="login">{{ lang.field_login_email|default('Логин или email') }}</label>
+        <input class="input" type="text" id="login" name="login" value="{{ login_prev|default('') }}" autocomplete="username" autofocus required>
+      </div>
+      <div class="field">
+        <label for="password">{{ lang.field_password|default('Пароль') }}</label>
+        <input class="input" type="password" id="password" name="password" autocomplete="current-password" required>
+      </div>
+      <label class="switch-row">
+        <input type="checkbox" name="remember" value="1"> <span>{{ lang.auth_remember|default('Запомнить меня') }}</span>
+      </label>
+      <button class="btn btn-primary btn-block" type="submit"><i class="ti ti-login"></i>{{ lang.btn_login|default('Войти') }}</button>
+    </form>
+  </div>
+  <div class="auth-language" aria-label="{{ lang.topbar_language|default('Язык интерфейса') }}">
+    {% for locale_code, locale_label in admin_locales %}
+    <form method="post" action="{{ ADMINX_BASE }}/locale">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <input type="hidden" name="locale" value="{{ locale_code }}">
+      <input type="hidden" name="_return" value="{{ ADMINX_BASE }}/login">
+      <button class="btn btn-ghost{{ current_lang == locale_code ? ' active' : '' }}" type="submit"><span class="locale-code">{{ locale_code|upper }}</span>{{ locale_label }}</button>
+    </form>
+    {% endfor %}
+  </div>
+  <div class="auth-foot text-muted text-xs">AVE.cms · /adminx</div>
+</div>
+{% endblock %}

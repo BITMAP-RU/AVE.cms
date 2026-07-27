@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="runtime_dda4176567d3acad">Patch archive not loaded</phrase>
+	<phrase data="runtime_72c3f617318fe308">The patch archive exceeds 50 MB</phrase>
+	<phrase data="runtime_f7e1be2bbf933713">Loading and running signed kernel executable code.</phrase>
+	<phrase data="runtime_0c5b8470b3d44ff9">Update source saved</phrase>
+	<phrase data="runtime_e7ccaa64c3b9f017">The update catalog has been checked</phrase>
+	<phrase data="runtime_4ec3af2ed3f0a443">Configuring the official source of kernel updates.</phrase>
+	<phrase data="runtime_15c0e3a4e6190132">The update will change the kernel executables and may perform database migrations.</phrase>
+	<phrase data="runtime_455471db0cfb8950">Updates</phrase>
+	<phrase data="runtime_252dfa27857d25cb">Updates: Settings</phrase>
+	<phrase data="runtime_ee72d0486cc0c17f">Updates: view</phrase>
+	<phrase data="runtime_d6362801f9a12b1e">Updates: installation</phrase>
+	<phrase data="runtime_25edf7a429b64ab9">The official update source has been restored</phrase>
+	<phrase data="runtime_cb5e7637c9fcef1a">Patch downloaded and tested</phrase>
+	<phrase data="runtime_3efd1a71830dc207">Patch checked</phrase>
+	<phrase data="runtime_f790619460054127">View version, signed catalog and update history.</phrase>
+	<phrase data="runtime_6da215b1bdac9524">System</phrase>
+	<phrase data="runtime_d93c4d370462e08a">First save the update public key</phrase>
+</language>

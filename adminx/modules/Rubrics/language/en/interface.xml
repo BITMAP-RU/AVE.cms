@@ -1,0 +1,1144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="rubrics_conditions_enable">Enable conditions for this rubric</phrase>
+	<phrase data="rubrics_image_path_tag">[tag:img:/path]</phrase>
+	<phrase data="rubrics_thumbnail_path_tag">[tag:c200x100:/path]</phrase>
+	<phrase data="rubrics_image_from_path">&lt;img&gt; from path ([tag:value] is supported)</phrase>
+	<phrase data="rubrics_image_from_path_text">from path ([tag:value] is supported)</phrase>
+	<phrase data="auto_381991ed7a2c9bf0">$hook-&gt;fail('Reason')</phrase>
+	<phrase data="auto_8df8c5049d584c27">(disabled)</phrase>
+	<phrase data="auto_a831008d647ee67d">, use</phrase>
+	<phrase data="auto_41ae92bf4fc7840a">12 columns</phrase>
+	<phrase data="auto_f9fc9f4e8e078cfa">; finished field output:</phrase>
+	<phrase data="auto_8af661ceb4e6bfc1">; wet field:</phrase>
+	<phrase data="auto_841d81c1d4e57013">&lt;img&gt; from the path (you can use [tag:value])</phrase>
+	<phrase data="auto_edfbfbf492f0c70a">[tag:c200x100:/path]</phrase>
+	<phrase data="auto_0de9b53f2783b5b5">[tag:img:/path]</phrase>
+	<phrase data="auto_a44aa5c726379bb7">Header, main template and footer of the section.</phrase>
+	<phrase data="auto_a3943a807c780a0c">HTML element template</phrase>
+	<phrase data="auto_54e9da895b7cce36">HTML templates for displaying fields and requests.</phrase>
+	<phrase data="auto_6754497b3d9b60b3">ID is already available. Changed document properties are automatically written again without re-running hooks; field values ​​are saved after the handler.</phrase>
+	<phrase data="auto_31134f61f351a5a9">ID, title, alias or description</phrase>
+	<phrase data="auto_978de461f93f231f">Legacy fields cannot be deleted yet</phrase>
+	<phrase data="auto_b782057ce20ccef2">OG markup</phrase>
+	<phrase data="auto_8ea1e889fe3b118e">PHP and JavaScript are prohibited. Document and added field tags are available.</phrase>
+	<phrase data="auto_00bcaade5f17e1d2">{{ type.enabled ? 'Disable' : 'Enable' }} type {{ type.name }}</phrase>
+	<phrase data="auto_620cfa1003908f58">{{ type.enabled ? 'Remove from new field choices' : 'Add to new field choices' }}</phrase>
+	<phrase data="auto_52eeea2aea762bbf">· turn on</phrase>
+	<phrase data="auto_5695330ffb54d443">Auto</phrase>
+	<phrase data="auto_1591cc9d268aed50">Auto meta</phrase>
+	<phrase data="auto_741870459d8833ba">Automatically</phrase>
+	<phrase data="auto_be2f932e34f46d0c">active</phrase>
+	<phrase data="auto_ddab4a046f5f6005">Active</phrase>
+	<phrase data="auto_d0609055863c5138">Active</phrase>
+	<phrase data="auto_73dfa7ea85e8eb75">Alias</phrase>
+	<phrase data="auto_735d5b6d6c735a9f">field alias</phrase>
+	<phrase data="auto_ed175b28d11da55a">Announcement</phrase>
+	<phrase data="auto_2f258806b7ad2100">Announcements</phrase>
+	<phrase data="auto_ca45b3d4b2524c12">archive files and is not included in a clean installation.</phrase>
+	<phrase data="auto_36a115ca2e90d494">Basic markup</phrase>
+	<phrase data="auto_e8ade67af65fb8ca">Basic parameters of the category.</phrase>
+	<phrase data="auto_b11f29cdb631ad91">without alias</phrase>
+	<phrase data="auto_94921ebedb12dd57">Without a group</phrase>
+	<phrase data="auto_284355addd46a03f">Secure HTML Markup</phrase>
+	<phrase data="auto_a52c8b9c21c73d13">The database uses</phrase>
+	<phrase data="auto_13d02127fcff628c">in the current filter,</phrase>
+	<phrase data="auto_b0918da1c276f001">Template option for category documents.</phrase>
+	<phrase data="auto_2ee0510046cd11ff">Type of documents</phrase>
+	<phrase data="auto_4f35d323c8a23bd0">Type of documents in the category</phrase>
+	<phrase data="auto_10e6721b1e7e0731">Visibility, accessibility and commitment</phrase>
+	<phrase data="auto_85dd4d46ca064b09">Enabled</phrase>
+	<phrase data="auto_66be7e0c9aeed3c4">Enable</phrase>
+	<phrase data="auto_4e9ac524914cd776">Enable group condition</phrase>
+	<phrase data="auto_5bda4c996e36f444">Enable form conditions</phrase>
+	<phrase data="auto_3d3f7a39fdc0759e">Enable form conditions for a category</phrase>
+	<phrase data="auto_12b6f10396228616">Enabled</phrase>
+	<phrase data="auto_684841dbc005b8be">Included</phrase>
+	<phrase data="auto_5ec7b0f52bbcb31e">Manually</phrase>
+	<phrase data="auto_c21a23a52ff7f959">All types</phrase>
+	<phrase data="auto_a7bbea7ed2337936">everything.</phrase>
+	<phrase data="auto_f3fc027de0e921f3">Select the added field</phrase>
+	<phrase data="auto_ccef672747a7cbe4">Select a history entry above.</phrase>
+	<phrase data="auto_89b85d0b6ac3c232">Select a field on the canvas</phrase>
+	<phrase data="auto_3eb77d3c13c51f92">Select revision</phrase>
+	<phrase data="auto_fec5e9df3ed67d99">Select a field type.</phrase>
+	<phrase data="auto_3fb2d64b4c9666ea">Choice</phrase>
+	<phrase data="auto_ff70fed10525ebd1">Selected fields as columns</phrase>
+	<phrase data="auto_a846b3ee0fe9ebe6">off</phrase>
+	<phrase data="auto_2106134f75e7db0f">Off</phrase>
+	<phrase data="auto_29623c0fa988cdd5">Off</phrase>
+	<phrase data="auto_d07430deb3582f26">Executed when a document page is generated. Does not apply to saving.</phrase>
+	<phrase data="auto_6aa18dd9e46fd665">ready</phrase>
+	<phrase data="auto_618d4264f1cef909">A ready-made group of fields without changing existing data.</phrase>
+	<phrase data="auto_2b10d0e51c3ed6e4">Group</phrase>
+	<phrase data="auto_a69f9800d3aaad58">A group of fields within a category.</phrase>
+	<phrase data="auto_dc8ad6500fde94aa">Tag groups</phrase>
+	<phrase data="auto_4d02a8a630bdd0bb">Action on match</phrase>
+	<phrase data="auto_c9f13de5674c0aba">Before saving the document</phrase>
+	<phrase data="auto_eea240d47e81ce08">Add new fields to selection</phrase>
+	<phrase data="auto_2ff8e6e9c57c9d69">Add selected set</phrase>
+	<phrase data="auto_3b5d2611679980d3">Add set</phrase>
+	<phrase data="auto_d9fcb4d2e3656be3">Add the required data to the view.</phrase>
+	<phrase data="auto_996349d2febe3506">document</phrase>
+	<phrase data="auto_577db482bf4dd221">Document and fields via</phrase>
+	<phrase data="auto_ebaf63f8d8bc38cf">document</phrase>
+	<phrase data="auto_61c54621e3d6d27e">documents</phrase>
+	<phrase data="auto_a54d948b7fb1448f">add. templates</phrase>
+	<phrase data="auto_f640eb69467e437b">Additional</phrase>
+	<phrase data="auto_d230d3bfd987691b">Additional Templates</phrase>
+	<phrase data="auto_d66e1ae76336a8fb">Additional template</phrase>
+	<phrase data="auto_d132654178760358">Available</phrase>
+	<phrase data="auto_0896b586aecc5d98">Available fields</phrase>
+	<phrase data="auto_9fccb29eca47322f">Available tags</phrase>
+	<phrase data="auto_9af4d5bccdb902e1">if the field is filled</phrase>
+	<phrase data="auto_ced9ad169fe6effe">if the field is empty</phrase>
+	<phrase data="auto_fd697cbde2b72e79">There are unsaved changes</phrase>
+	<phrase data="auto_ae9b63a9d62e0672">Not yet posted on the form.</phrase>
+	<phrase data="auto_bbf16118a0c3bafd">Deny change</phrase>
+	<phrase data="auto_9c2befc07b143734">Here you can change the caption, format and width.</phrase>
+	<phrase data="auto_61eb11b4384feacd">The exact list of changes before the restore will appear here.</phrase>
+	<phrase data="auto_a027b1fa0176085d">Default value</phrase>
+	<phrase data="auto_1e852bd95cd9416b">default value</phrase>
+	<phrase data="auto_d21d8dd02ca1fa6d">entire field value</phrase>
+	<phrase data="auto_a59e2c2429fe7a88">and</phrase>
+	<phrase data="auto_fcca7e22a774a1a1">Changing the template does not rewrite the URLs of already created documents.</phrase>
+	<phrase data="auto_c335a4841d76991d">Changes will appear in the first entry. For a new document</phrase>
+	<phrase data="auto_9b753d6b103fa132">Change value if matched</phrase>
+	<phrase data="auto_56a1fd52891d1c0f">Image</phrase>
+	<phrase data="auto_d8a3393ef523f42f">The image is specified by the category field</phrase>
+	<phrase data="auto_30bb0333ca158311">or</phrase>
+	<phrase data="auto_bc8e043aeea5d482">Index value</phrase>
+	<phrase data="auto_03854c14d383a9f9">Usage</phrase>
+	<phrase data="auto_899d131a788c72e3">Used</phrase>
+	<phrase data="auto_8fc1c5557339314a">Used by documents through the `rubric_tmpl_id` field.</phrase>
+	<phrase data="auto_d7edc1337879465b">History of aliases</phrase>
+	<phrase data="auto_348e965b64c82879">History of fields, groups, layouts and conditions of the form.</phrase>
+	<phrase data="auto_caab952890f6c58c">The document alias is added to the expanded template. An empty template leaves the document at the root.</phrase>
+	<phrase data="auto_2318d16faaeb7af0">How to make a template</phrase>
+	<phrase data="auto_5192311771985c6c">How the address is formed</phrase>
+	<phrase data="auto_0d825eb1da6be1bd">Canonical URL</phrase>
+	<phrase data="auto_a0d17d23d2c9fd7c">Cards</phrase>
+	<phrase data="auto_59ddef8a55503c83">kg</phrase>
+	<phrase data="auto_4cd24b63e38f03e9">click - paste into active editor</phrase>
+	<phrase data="auto_4f7ba1062746b88b">Category code</phrase>
+	<phrase data="auto_b5ba10cd1a441291">Template code</phrase>
+	<phrase data="auto_a21b608ba6deae3c">Document form designer.</phrase>
+	<phrase data="auto_5fadb71981cff17e">Context and system APIs</phrase>
+	<phrase data="auto_7ff5bc3f5e8101a1">Public Output Context</phrase>
+	<phrase data="auto_065edae6bacea0cf">Copy</phrase>
+	<phrase data="auto_8e90af342894dab7">The root legacy folder has been deleted; public and Adminx use only native handlers.</phrase>
+	<phrase data="auto_b7bf7b110b5aecf1">The root folder contains</phrase>
+	<phrase data="auto_5e30f01694b5d357">Materials</phrase>
+	<phrase data="auto_37efe2aa9ea48229">Meta tags for social networks and instant messengers on the pages of this section.</phrase>
+	<phrase data="auto_8358572fd682c744">Label</phrase>
+	<phrase data="auto_9cb0080487eebb5d">thumbnail: c-crop/r-resize/f-fit</phrase>
+	<phrase data="auto_512dca2759a79e5d">You can hide a group or prevent changes to all its fields.</phrase>
+	<phrase data="auto_59512661c8359d90">Field set</phrase>
+	<phrase data="auto_72cb3245f1f630fb">field name</phrase>
+	<phrase data="auto_d8003257d294b3b2">Site name</phrase>
+	<phrase data="auto_923497eb520a69e2">Title, URL alias and description of the category.</phrase>
+	<phrase data="auto_ac3706d439cc73d4">Name, alias, type and group of the field.</phrase>
+	<phrase data="auto_f8c8442114bcbd39">Name, code or purpose</phrase>
+	<phrase data="auto_31b23143bc8b855f">Name</phrase>
+	<phrase data="auto_d0267640b018d09a">Find field</phrase>
+	<phrase data="auto_7815cebaac6b4849">Setting up a list in the documents section.</phrase>
+	<phrase data="auto_e33f60f54f872fd5">The settings will appear here and will be saved along with the layout.</phrase>
+	<phrase data="auto_c9856e041cbc0e86">Settings depending on the selected field type.</phrase>
+	<phrase data="auto_208518c5823f0535">Set up a workspace for new rubrics. Disabling does not affect already created fields.</phrase>
+	<phrase data="auto_2e149b44fcc4eb4e">Set up the composition of the form, then immediately go to the materials of the selected category.</phrase>
+	<phrase data="auto_33f0d86f638140a7">The native registry covers the working base</phrase>
+	<phrase data="auto_92250813ceb742a9">Not selected</phrase>
+	<phrase data="auto_681d01462e5f184c">Do not change</phrase>
+	<phrase data="auto_8b3b73811a10a8ef">Don't index</phrase>
+	<phrase data="auto_8976fe0108ce3e2e">Not saved</phrase>
+	<phrase data="auto_278f69be66b25911">No handlers:</phrase>
+	<phrase data="auto_55c6879c603672d7">New group</phrase>
+	<phrase data="auto_789159f7e27adb92">New section</phrase>
+	<phrase data="auto_1d29cbf2f275c548">New meaning</phrase>
+	<phrase data="auto_3ad78d4634845d06">New field</phrase>
+	<phrase data="auto_29368b773c8007ef">New types</phrase>
+	<phrase data="auto_0f9ccee053fe3b6b">New</phrase>
+	<phrase data="auto_0e2995249fbfdd9b">Document save handlers and public output code.</phrase>
+	<phrase data="auto_79abc30de1539c5e">Normal meaning</phrase>
+	<phrase data="auto_49e7d92c4d862921">Regular parts of the path are written directly. Date markers are taken from the publication date of the document.</phrase>
+	<phrase data="auto_7db6d80e63cfbc36">Required when showing</phrase>
+	<phrase data="auto_344ca01189f66d08">Mandatoryness is configured in the “Type Editor” → Validation.</phrase>
+	<phrase data="auto_849e4069148c24ae">Limit options</phrase>
+	<phrase data="auto_9f9afbfd53d56c42">Description, use, and availability of each type when creating a field.</phrase>
+	<phrase data="auto_6659789552679ba5">Main</phrase>
+	<phrase data="auto_24fd76d0e81f5b31">Main conclusion</phrase>
+	<phrase data="auto_eb63e84eea0d7d50">Basic template</phrase>
+	<phrase data="auto_d7e1c69de6e85281">Basic template and additional options.</phrase>
+	<phrase data="auto_9d30b977c4b847be">Disabled</phrase>
+	<phrase data="auto_94d07a2171746fb1">Disable</phrase>
+	<phrase data="auto_c9467860d8ed0d8d">Disabled</phrase>
+	<phrase data="auto_3981c5177492c836">Open the tag palette, insert a media field and add a format</phrase>
+	<phrase data="auto_a773b54f4ad85681">Open documents</phrase>
+	<phrase data="auto_2a31d4cdcab62a6e">Open category materials</phrase>
+	<phrase data="auto_7a39b5e0e9036875">Formatting in the document</phrase>
+	<phrase data="auto_bbc2dd99640cfe4e">Design of the selected field.</phrase>
+	<phrase data="auto_10c662efbc9fab3b">Clear field</phrase>
+	<phrase data="auto_c394f7f85f63a738">error</phrase>
+	<phrase data="auto_c15e7b73df5ae9b6">Registry errors</phrase>
+	<phrase data="auto_1efb20307a13fe38">The first documents in the category, without saving settings.</phrase>
+	<phrase data="auto_e36a97696325f42f">Drag fields by the handle.</phrase>
+	<phrase data="auto_993f3350e395f3de">Drag the rows by the handle to change the order.</phrase>
+	<phrase data="auto_289fb7333d7ee50c">Field plugins</phrase>
+	<phrase data="auto_c602f690739149cd">No types were found for the selected conditions.</phrase>
+	<phrase data="auto_a5dcf372a249c770">Signature</phrase>
+	<phrase data="auto_2a812c1383643855">Search tags</phrase>
+	<phrase data="auto_1626b1c6d15204e3">Search, value type and default value.</phrase>
+	<phrase data="auto_3ec9ead0431eec9a">Show group</phrase>
+	<phrase data="auto_9e4178b7a4da928c">Show field</phrase>
+	<phrase data="auto_e4581328523b18e4">Show, hide, block and make fields mandatory depending on the entered values.</phrase>
+	<phrase data="auto_500ff6c3bbcb0491">fields</phrase>
+	<phrase data="auto_97c557fb133f1f95">fields</phrase>
+	<phrase data="auto_630e64b089b00a54">Fields in the database</phrase>
+	<phrase data="auto_fc92aebd2b4cb4a8">Full</phrase>
+	<phrase data="auto_6ec8d1bd9f42005f">Half</phrase>
+	<phrase data="auto_e3d30019ea18523a">Fields in a compact grid</phrase>
+	<phrase data="auto_ae157a71ef815099">Category fields</phrase>
+	<phrase data="auto_2885cf71c3504eb2">Once added, the field disappears from this list.</phrase>
+	<phrase data="auto_463a2ab3a738a261">After saving the document</phrase>
+	<phrase data="auto_15ed6e53b6a5c8ba">Consequences of recovery</phrase>
+	<phrase data="auto_56ae2d10b3e2039f">Prefix</phrase>
+	<phrase data="auto_c0f66de79ea7ad6e">When publicly displaying a document</phrase>
+	<phrase data="auto_bc578af69feb64f4">If there is a match, leave only the marked values</phrase>
+	<phrase data="auto_fda23dbe40cc5074">Example</phrase>
+	<phrase data="auto_6e858ea2844bbdcd">Prefix</phrase>
+	<phrase data="auto_70cd7f40d90927f3">check</phrase>
+	<phrase data="auto_4008c5920a67da7e">Also checked on the server</phrase>
+	<phrase data="auto_0267dc0e672c1ddd">continue to work.</phrase>
+	<phrase data="auto_45da03e555267bd0">View the structure of categories.</phrase>
+	<phrase data="auto_83271b3977462982">Direct connections:</phrase>
+	<phrase data="auto_aa0daec4094f7259">Publishing and output</phrase>
+	<phrase data="auto_20d71efb793e60ef">Public teaser template for site lists and requests.</phrase>
+	<phrase data="auto_8ab91ce27aa298c7">Empty category</phrase>
+	<phrase data="auto_d777ea43c9a512c4">equals</phrase>
+	<phrase data="auto_7b889736000e14ee">Sections of rubrics</phrase>
+	<phrase data="auto_3cc800858b7f5897">Advanced settings</phrase>
+	<phrase data="auto_f85820c3340bf64a">Real order, groups and width of fields.</phrase>
+	<phrase data="auto_acf699335391def5">Schema revisions</phrase>
+	<phrase data="auto_d98f642cf4ba9c89">Rubric scheme revisions</phrase>
+	<phrase data="auto_97e4d4f4a697543b">Type editor</phrase>
+	<phrase data="auto_532901b2df5277e3">Presentation mode</phrase>
+	<phrase data="auto_c205d1bc5da200e8">Rubrik</phrase>
+	<phrase data="auto_df748fb44738407e">The category will be created without additional fields.</phrase>
+	<phrase data="auto_9a325c17d34e5017">Categories</phrase>
+	<phrase data="auto_d2df1095539213a5">No categories found.</phrase>
+	<phrase data="auto_e7c3b4c1c8133062">Your own template</phrase>
+	<phrase data="auto_c8d3e9321109a45c">Properties of the selected field.</phrase>
+	<phrase data="auto_9d8a238a9257bd1e">Related</phrase>
+	<phrase data="auto_cf916415013cfaf6">System Document Table</phrase>
+	<phrase data="auto_85276940e55f1c5f">Hide group</phrase>
+	<phrase data="auto_1849eff414f3035f">Hide field</phrase>
+	<phrase data="auto_3a3475de41775a97">Hidden</phrase>
+	<phrase data="auto_c2d117448eac62e6">On the left, for example. No., $.</phrase>
+	<phrase data="auto_b7e20023950b2aa8">Snapshots of the circuit</phrase>
+	<phrase data="auto_7863497d3fa7d8cf">No photo selected</phrase>
+	<phrase data="auto_6cc4052270604f8a">Compatible with legacy code</phrase>
+	<phrase data="auto_b1ca841c9379553e">Create material</phrase>
+	<phrase data="auto_27fae5f2c7c8064a">Create material in the {{ rubric.rubric_title|e('html_attr') }} category</phrase>
+	<phrase data="auto_1e02edc4b87a2bb0">Create a category</phrase>
+	<phrase data="auto_c37407200657ced7">Composition</phrase>
+	<phrase data="auto_1024569cd23deb75">Composition and order</phrase>
+	<phrase data="auto_8ecfa8690763d602">Field Type Status</phrase>
+	<phrase data="auto_3a28152cf5fb0ed3">Save View</phrase>
+	<phrase data="auto_ae62a41e8b4adb3d">Save layout</phrase>
+	<phrase data="auto_49e7020530433fb0">List of categories</phrase>
+	<phrase data="auto_794b4bb139ebcdb9">Add method</phrase>
+	<phrase data="auto_57946564091e2612">Method for adding a set</phrase>
+	<phrase data="auto_3bfd1965114a185f">On the right, for example ₽, kg, %.</phrase>
+	<phrase data="auto_c22ff4f48cdb8a42">Will fire once when the condition is met. The value can be canceled before saving the document.</phrase>
+	<phrase data="auto_7b84ec2fed83f864">Average</phrase>
+	<phrase data="auto_c341df4f1504f483">Standard</phrase>
+	<phrase data="auto_9a07699446aa0c73">Starter set of fields</phrase>
+	<phrase data="auto_9384260d491f54a3">Document structure</phrase>
+	<phrase data="auto_a247256662e080ff">Suffix</phrase>
+	<phrase data="auto_f2729fd738c7bd47">Table</phrase>
+	<phrase data="auto_00fa87f0c54b1087">Current document:</phrase>
+	<phrase data="auto_c22457c431288230">Field type</phrase>
+	<phrase data="auto_90c2a0d370e9452d">The field type is stored in the category format, the admin editor builds adminx.</phrase>
+	<phrase data="auto_efbde855efcb7d93">types; registered</phrase>
+	<phrase data="auto_7f3560429f01c34f">Types of materials, their fields and design.</phrase>
+	<phrase data="auto_10144e7fa309567f">Field types</phrase>
+	<phrase data="auto_043acf41e5172e0b">No field types found.</phrase>
+	<phrase data="auto_1351bf476f27420e">Third</phrase>
+	<phrase data="auto_7b004e44375e1143">Remove from selection of new fields</phrase>
+	<phrase data="auto_cdf3f562597e8eae">Delete photo</phrase>
+	<phrase data="auto_bec305a4fd9c25dc">Narrow</phrase>
+	<phrase data="auto_d064fa8628d2b2ff">Narrow margins fit into columns.</phrase>
+	<phrase data="auto_69644ddc89635fc5">Condition for the whole group</phrase>
+	<phrase data="auto_eb7b3782afd317b4">Form conditions</phrase>
+	<phrase data="auto_74c339ea478629f0">Conditions of the document form</phrase>
+	<phrase data="auto_e6a722b27d9093cb">Set value</phrase>
+	<phrase data="auto_e8d33f94c925404e">Participates in the search</phrase>
+	<phrase data="auto_a7594407dc84af45">Document form</phrase>
+	<phrase data="auto_b9563c38abcedf4b">Format</phrase>
+	<phrase data="auto_b8e6ce629e525faf">Store numeric index</phrase>
+	<phrase data="auto_8b16b0ed839b0fc7">part of the value №N (by “|”)</phrase>
+	<phrase data="auto_113d2ac2e345f69e">Quarter</phrase>
+	<phrase data="auto_4d0f3e5c745f8f59">Number</phrase>
+	<phrase data="auto_80e4ba60a4216026">Numeric</phrase>
+	<phrase data="auto_f9f543572a9f3843">Numeric value</phrase>
+	<phrase data="auto_ad815aa76490991f">What to do if there is a match</phrase>
+	<phrase data="auto_730c8bd3e279d236">Document URL Template</phrase>
+	<phrase data="auto_8bcfd03a28633689">Output template</phrase>
+	<phrase data="auto_93d4b04a5a3e7fc4">Category template</phrase>
+	<phrase data="auto_6380a6ec552d2fa4">Website template</phrase>
+	<phrase data="auto_7cc701980c957f8a">Website template, document visibility and meta generation.</phrase>
+	<phrase data="auto_162fcc40787e8390">Output templates</phrase>
+	<phrase data="auto_e2dd9760a11e488d">Category templates</phrase>
+	<phrase data="auto_d73c1c19330f1c97">Width</phrase>
+	<phrase data="auto_40e59f9d011495e8">Grid width and field prefix/suffix.</phrase>
+	<phrase data="auto_c27bf5347e3f7ab9">Width per line</phrase>
+	<phrase data="auto_bc5ac6884ec740e5">Field width</phrase>
+	<phrase data="auto_8181dea595663334">Wide</phrase>
+	<phrase data="auto_552b450ccd23fca8">— the entire payload of the document</phrase>
+	<phrase data="auto_16da4af13ffc7e24">— all transmitted field values</phrase>
+	<phrase data="auto_6f2ab320157e22c8">- change field</phrase>
+	<phrase data="auto_04eb0c428318ee55">- setting</phrase>
+	<phrase data="auto_8ba3a06f3bbe94b4">- stop saving</phrase>
+	<phrase data="auto_b3799a00cc740f34">&quot; data-document-color-picker aria-label=&quot;Pick a color&quot;&gt;</phrase>
+	<phrase data="auto_f9b0e153f618bfa5">&quot; placeholder=&quot;Value&quot; data-builder-condition-value</phrase>
+	<phrase data="auto_44a50838156e18a7">&quot; placeholder=&quot;Value name&quot; data-settings-map-label&gt;</phrase>
+	<phrase data="auto_2aaea63a47cfc5aa">&quot; placeholder=&quot;For example, 0&quot; data-settings-map-key&gt;</phrase>
+	<phrase data="auto_56e20fc1d77a571f">&quot;&gt;&lt;/i&gt;&lt;span&gt;&lt;b&gt;The conditions will be</phrase>
+	<phrase data="auto_9ee31f68aafb9810">' + (!result.linked_available ? ' disabled' : '') + '&gt;Linked set&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;'
+			  + (conflicts.length ? '&lt;div class=</phrase>
+	<phrase data="auto_c2629e8295a101da">(the original field is of type</phrase>
+	<phrase data="auto_88860a4c7550ac84">. Remove these connections first.</phrase>
+	<phrase data="auto_3f26cfe7b4458a76">0 or 1</phrase>
+	<phrase data="auto_95fa2401e2220abc">3 columns</phrase>
+	<phrase data="auto_5ef8b337b0703112">4 columns</phrase>
+	<phrase data="auto_c7371e9e32a9e493">6 columns</phrase>
+	<phrase data="auto_7cc96641479f36cf">: alias is occupied by type</phrase>
+	<phrase data="auto_bff7381ec8ba4f83">: You cannot automatically change the type of a populated or locally modified field</phrase>
+	<phrase data="auto_058afd23ac1ba4ca">&lt;/b&gt; requests&lt;/span&gt;</phrase>
+	<phrase data="auto_005cc05fe0d324b1">&lt;/b&gt; modules&lt;/span&gt;</phrase>
+	<phrase data="auto_4f78eec2a38a6c4b">&lt;/b&gt; templates&lt;/span&gt;</phrase>
+	<phrase data="auto_17ad131b9f57074a">&lt;/b&gt;&lt;small&gt;will change&lt;/small&gt;&lt;/span&gt;</phrase>
+	<phrase data="auto_c025bb03938916ee">&lt;/b&gt;&lt;small&gt;fields with changes&lt;/small&gt;&lt;/span&gt;&lt;span&gt;&lt;b&gt;</phrase>
+	<phrase data="auto_d56b234f1da820ef">&lt;/b&gt;&lt;small&gt;hidden · blocked</phrase>
+	<phrase data="auto_ff74356b508ce2b0">&lt;/b&gt;&lt;small&gt;forms will change behavior&lt;/small&gt;&lt;/span&gt;&lt;span&gt;&lt;b&gt;</phrase>
+	<phrase data="auto_b7c9123e2cb46545">&lt;/div&gt;&lt;button class=&quot;btn btn-ghost&quot; type=&quot;button&quot; data-impact-cancel&gt;Return&lt;/button&gt;&lt;button class=&quot;btn btn-primary&quot; type=&quot;button&quot; data-impact-confirm&gt;&lt;i class=&quot;ti ti-check&quot;&gt;&lt;/i&gt;Apply changes&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_060efa051d848c0f">&lt;/span&gt;&lt;small&gt;Total documents in the category:</phrase>
+	<phrase data="auto_e4426102ee5d468d">&lt;b&gt;Preview of edit mode&lt;/b&gt;</phrase>
+	<phrase data="auto_a4e0bf8fbb4a17be">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm ax-settings-map-remove&quot; type=&quot;button&quot; data-settings-map-remove data-tooltip-left=&quot;Delete&quot; aria-label=&quot;Delete value&quot;&gt;&lt;i class=&quot;ti ti-trash&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_af962c31c15d28d8">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm documents-drag-handle&quot; type=&quot;button&quot; data-doc-drag draggable=&quot;true&quot; data-tooltip=&quot;Drag&quot; aria-label=&quot;Drag&quot;&gt;&lt;i class=&quot;ti ti-grip-vertical&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_e01aed78c667a5aa">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm documents-value-remove&quot; type=&quot;button&quot; data-document-value-remove data-tooltip=&quot;Delete&quot; aria-label=&quot;Delete&quot;&gt;&lt;i class=&quot;ti ti-trash&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_713caabd15007366">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm rubrics-action-danger&quot; type=&quot;button&quot; data-builder-condition-group-remove data-tooltip-left=&quot;Delete group&quot; aria-label=&quot;Remove group&quot;&gt;&lt;i class=&quot;ti ti-trash&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_361753463ea8701b">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm rubrics-action-danger&quot; type=&quot;button&quot; data-builder-condition-remove data-tooltip-left=&quot;Remove condition&quot; aria-label=&quot;Remove condition&quot;&gt;&lt;i class=&quot;ti ti-trash&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_f363772efcc454c3">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm rubrics-action-danger&quot; type=&quot;button&quot; data-group-delete data-tooltip-left=&quot;Delete&quot; aria-label=&quot;Delete&quot;&gt;&lt;i class=&quot;ti ti-trash&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_f6c12709183c5dca">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm rubrics-action-edit&quot; type=&quot;button&quot; data-group-edit data-open-drawer=&quot;rubricGroupDrawer&quot; data-tooltip-left=&quot;Edit&quot; aria-label=&quot;Edit&quot;&gt;&lt;i class=&quot;ti ti-pencil&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_246b9315b5144605">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm rubrics-group-drag&quot; type=&quot;button&quot; data-group-drag-handle data-tooltip-right=&quot;Drag&quot; aria-label=&quot;Drag&quot;&gt;&lt;i class=&quot;ti ti-grip-vertical&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_6d2a563c3ecd863c">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm&quot; type=&quot;button&quot; data-builder-condition-add data-tooltip-left=&quot;Add condition&quot; aria-label=&quot;Add condition&quot;&gt;&lt;i class=&quot;ti ti-plus&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_30cd6684d09d7f7a">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm&quot; type=&quot;button&quot; data-builder-condition-group-add data-tooltip-left=&quot;Add group&quot; aria-label=&quot;Add nested group&quot;&gt;&lt;i class=&quot;ti ti-brackets&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_75285ce97dc1dc97">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm&quot; type=&quot;button&quot; data-document-value-down data-tooltip=&quot;Below&quot; aria-label=&quot;Below&quot;&gt;&lt;i class=&quot;ti ti-arrow-down&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_919be7c1e27ba64c">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm&quot; type=&quot;button&quot; data-document-value-up data-tooltip=&quot;Above&quot; aria-label=&quot;Above&quot;&gt;&lt;i class=&quot;ti ti-arrow-up&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_8c953b8ec9fe7c69">&lt;button class=&quot;btn btn-ghost btn-sm&quot; type=&quot;button&quot; data-document-value-clear&gt;&lt;i class=&quot;ti ti-trash&quot;&gt;&lt;/i&gt;Clear&lt;/button&gt;</phrase>
+	<phrase data="auto_b2303b18593af8dd">&lt;button class=&quot;btn btn-secondary btn-sm&quot; type=&quot;button&quot; data-document-value-add&gt;&lt;i class=&quot;ti ti-plus&quot;&gt;&lt;/i&gt;Add&lt;/button&gt;</phrase>
+	<phrase data="auto_1163f4bd16f75452">&lt;button type=&quot;button&quot; class=&quot;btn btn-ghost btn-icon btn-sm documents-relation-clear&quot; data-document-relation-clear data-tooltip=&quot;Clear&quot; aria-label=&quot;Clear&quot;</phrase>
+	<phrase data="auto_bf81bef5f9e96e01">&lt;button type=&quot;button&quot; class=&quot;documents-relation-choice&quot; data-document-relation-pick data-tooltip=&quot;Select document&quot;&gt;</phrase>
+	<phrase data="auto_369cf0160b0fe4fd">&lt;div class=&quot;empty-state&quot;&gt;Select a field type.&lt;/div&gt;</phrase>
+	<phrase data="auto_9ceff5bed0e940e9">&lt;div class=&quot;empty-state&quot;&gt;No groups created.&lt;/div&gt;</phrase>
+	<phrase data="auto_3507b867b5c6766d">&lt;div class=&quot;empty-state&quot;&gt;The field rules have not changed.&lt;/div&gt;</phrase>
+	<phrase data="auto_9e51c65ba4e17d7e">&lt;div class=&quot;empty-state&quot;&gt;There are no revisions yet. The first snapshot will appear after changing the fields or constructor.&lt;/div&gt;</phrase>
+	<phrase data="auto_6e11794136d6c8af">&lt;div class=&quot;modal-footer&quot;&gt;&lt;div class=&quot;mf-left text-secondary text-sm&quot;&gt;Documents checked:</phrase>
+	<phrase data="auto_9c7ad035c6f9ae71">&lt;div class=&quot;modal-header&quot;&gt;&lt;span class=&quot;dialog-icon warning&quot;&gt;&lt;i class=&quot;ti ti-git-compare&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;div class=&quot;rubrics-impact-heading&quot;&gt;&lt;h3 id=&quot;rubricsBuilderImpactTitle&quot;&gt;Check the impact of conditions&lt;/h3&gt;&lt;p&gt;Changes will affect the form of already created documents.&lt;/p&gt;&lt;/div&gt;&lt;button class=&quot;modal-close&quot; type=&quot;button&quot; data-impact-cancel aria-label=&quot;Close&quot;&gt;&lt;i class=&quot;ti ti-x&quot;&gt;&lt;/i&gt;&lt;/button&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_003bb8dcbde2aeaf">&lt;div class=&quot;rubrics-plugin-ok&quot;&gt;&lt;i class=&quot;ti ti-circle-check&quot;&gt;&lt;/i&gt;No critical problems found.&lt;/div&gt;</phrase>
+	<phrase data="auto_561fb8e45a18a6fe">&lt;div class=&quot;rubrics-revision-change-list&quot;&gt;&lt;b class=&quot;rubrics-revision-change-list-title&quot;&gt;Will be changed&lt;/b&gt;</phrase>
+	<phrase data="auto_d1c12b5740a8ee80">&lt;div class=&quot;rubrics-revision-dependencies-head&quot;&gt;&lt;div&gt;&lt;h5&gt;Schema dependencies&lt;/h5&gt;&lt;p&gt;</phrase>
+	<phrase data="auto_39cb7f7eefdb9264">&lt;div class=&quot;rubrics-revision-empty&quot;&gt;&lt;i class=&quot;ti ti-history&quot;&gt;&lt;/i&gt;&lt;b&gt;No photo selected&lt;/b&gt;&lt;span&gt;Select a history entry above.&lt;/span&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_f9f08fc12f94c770">&lt;div class=&quot;rubrics-revision-row-main&quot;&gt;&lt;div&gt;&lt;b&gt;Snapshot&#32;
+          +</phrase>
+	<phrase data="auto_18e45d8faa957ed3">&lt;label class=&quot;field&quot;&gt;&lt;span class=&quot;field-label&quot;&gt;Clip URL&lt;/span&gt;</phrase>
+	<phrase data="auto_8f3be74f47726fd2">&lt;label class=&quot;field&quot;&gt;&lt;span class=&quot;field-label&quot;&gt;Height&lt;/span&gt;&lt;input class=&quot;input&quot; type=&quot;number&quot; min=&quot;0&quot; name=&quot;</phrase>
+	<phrase data="auto_ae6f0838fde4e40b">&lt;label class=&quot;field&quot;&gt;&lt;span class=&quot;field-label&quot;&gt;Value</phrase>
+	<phrase data="auto_f083019347a2693d">&lt;label class=&quot;field&quot;&gt;&lt;span class=&quot;field-label&quot;&gt;Method&lt;/span&gt;&lt;select class=&quot;select&quot; name=&quot;</phrase>
+	<phrase data="auto_af8dbcac2f3c76c2">&lt;label class=&quot;field&quot;&gt;&lt;span class=&quot;field-label&quot;&gt;Width&lt;/span&gt;&lt;input class=&quot;input&quot; type=&quot;number&quot; min=&quot;0&quot; name=&quot;</phrase>
+	<phrase data="auto_b6e02e62e235424c">&lt;option value=&quot;&quot;&gt;Not selected&lt;/option&gt;</phrase>
+	<phrase data="auto_0e97d3501a14a783">&lt;p class=&quot;rubrics-impact-notice&quot;&gt;&lt;i class=&quot;ti ti-info-circle&quot;&gt;&lt;/i&gt;Verified</phrase>
+	<phrase data="auto_dd7f857f79292160">&lt;p class=&quot;text-secondary&quot;&gt;No changes.&lt;/p&gt;</phrase>
+	<phrase data="auto_c30ffc2a7d1251b2">&lt;select class=&quot;select&quot; data-builder-condition-join aria-label=&quot;Group logic&quot;&gt;&lt;option value=&quot;and&quot;</phrase>
+	<phrase data="auto_661c2484ed62b9f1">&lt;span class=&quot;field-hint&quot;&gt;Only documents from the category&#32;
+					:</phrase>
+	<phrase data="auto_aee5d2d122ff0911">&lt;span class=&quot;rubrics-builder-field-condition&quot; data-tooltip=&quot;Conditional field&quot; aria-label=&quot;Conditional field&quot;&gt;&lt;i class=&quot;ti ti-git-branch&quot;&gt;&lt;/i&gt;&lt;/span&gt;</phrase>
+	<phrase data="auto_ce40393d0f8e0d68">&lt;span class=&quot;text-secondary text-sm&quot;&gt;Options are not configured.&lt;/span&gt;</phrase>
+	<phrase data="auto_b90565bd1a34e7b4">&gt;'
+          + '&lt;div&gt;&lt;b&gt;' + esc(item.title) + '&lt;/b&gt;&lt;small&gt;Template&#32;
+          + '&lt;div class=</phrase>
+	<phrase data="auto_efb8a2ba9bb43027">&gt;' + links.length + '&lt;/span&gt;&lt;/div&gt;'
+		+ links.map(function (link) {
+		  var state = !link.available ? 'Source unavailable' : (link.update_available ? 'There is an update' : 'Relevant');
+		  var badge = !link.available ? 'badge-red' : (link.update_available ? 'badge-amber' : 'badge-green');
+		  return '&lt;article&gt;&lt;span&gt;&lt;b&gt;' + esc(link.title || link.code) + '&lt;/b&gt;&lt;small&gt;&lt;code&gt;' + esc(link.code) + '&lt;/code&gt;&lt;/small&gt;&lt;/span&gt;'
+			+ '&lt;span class=</phrase>
+	<phrase data="auto_fb39c8c4c9a4fc7c">&gt;&lt;/i&gt;' + esc(field.alias || 'without alias') + '&lt;/span&gt;&lt;span&gt;&lt;i class=</phrase>
+	<phrase data="auto_0d64e071740fec55">&gt;&lt;/i&gt;' + esc(field.type || '') + '&lt;/span&gt;&lt;code&gt;[field:' + esc(field.alias || field.id) + ']&lt;/code&gt;';
+      }
+    },
+
+    renderAdminViewTokens: function() {
+      var root = document.querySelector('[data-admin-view-tokens]');
+      if (!root || !this.adminViewState) { return; }
+      var tokens = [
+        { token: '[document:title]', label: 'Name' },
+        { token: '[document:id]', label: 'ID' },
+        { token: '[document:alias]', label: 'Alias' }
+      ];
+      this.adminViewState.items.forEach(function (item) {
+        tokens.push({ token: '[field:' + (item.alias || item.field_id) + ']', label: item.label });
+      });
+      root.innerHTML = tokens.map(function (item) {
+        return '&lt;button type=</phrase>
+	<phrase data="auto_4471259d5b8bcb5c">&gt;&lt;/i&gt;&lt;/span&gt;'
+          + '&lt;div&gt;&lt;h3&gt;' + esc(group.id ? group.title : 'Main fields') + '&lt;/h3&gt;&lt;p&gt;' + esc(group.description || (group.id ? 'Document field group' : 'Fields without separate group')) + '&lt;/p&gt;&lt;/div&gt;'
+		  + (groupCondition.tree ? '&lt;span class=</phrase>
+	<phrase data="auto_0b2b6e92febfb3d0">&gt;&lt;/i&gt;&lt;/span&gt;&lt;span&gt;&lt;b&gt;' + esc(result.title || 'Field set') + '&lt;/b&gt;&lt;small&gt;' + esc(result.description || 'No description specified') + '&lt;/small&gt;&lt;/span&gt;&lt;/div&gt;'
+			  + '&lt;div class=</phrase>
+	<phrase data="auto_2fd8236919dd9af8">&gt;&lt;/i&gt;&lt;b&gt;All fields are placed&lt;/b&gt;&lt;span&gt;There are no new fields to add.&lt;/span&gt;&lt;/div&gt;';
+      }
+      if (count) { count.textContent = items.length; }
+      var search = document.querySelector('[data-builder-search]');
+      if (search &amp;&amp; search.value) { this.filterBuilderPalette(search.value); }
+    },
+
+    resetBuilderInspector: function() {
+      this.builderSelectedId = 0;
+      document.querySelectorAll('[data-builder-select].is-selected').forEach(function (node) { node.classList.remove('is-selected'); });
+      var empty = document.querySelector('[data-builder-inspector-empty]');
+      if (empty) { empty.hidden = false; }
+      if (this.builderForm) { this.builderForm.hidden = true; }
+    },
+
+    unplaceBuilderField: function (row) {
+      if (!row) { return; }
+      var id = parseInt(row.getAttribute('data-id'), 10) || 0;
+      var field = this.builderField(id);
+      var palette = document.querySelector('[data-builder-palette]');
+      if (!field || !palette) { return; }
+      if (this.builderSelectedId === id) { this.captureBuilderInspector(); }
+      if (!palette.querySelector('[data-builder-palette-item][data-id=</phrase>
+	<phrase data="auto_fdd916f8f93ba9c7">&gt;&lt;/i&gt;&lt;b&gt;Type settings&lt;/b&gt;&lt;/div&gt;' + type.settings_html
+            : '&lt;p class=</phrase>
+	<phrase data="auto_fd6b8d9c3f2799c2">&gt;&lt;/i&gt;&lt;b&gt;No fields added&lt;/b&gt;&lt;span&gt;Select them in the left column. The name, status and actions of the document will remain system.&lt;/span&gt;&lt;/div&gt;';
+      var count = document.querySelector('[data-admin-view-item-count]');
+      if (count) { count.textContent = items.length + ' / 10'; }
+    },
+
+    renderAdminViewInspector: function() {
+      var empty = document.querySelector('[data-admin-view-inspector-empty]');
+      var form = document.querySelector('[data-admin-view-inspector]');
+      var item = this.adminViewItem(this.adminViewSelected);
+      if (empty) { empty.hidden = !!item; }
+      if (form) { form.hidden = !item; }
+      if (!item || !form) { return; }
+      form.querySelector('[data-admin-view-label]').value = item.label || '';
+      form.querySelector('[data-admin-view-format]').value = item.format || 'text';
+      var width = form.querySelector('input[name=</phrase>
+	<phrase data="auto_e7265caec578780c">&gt;&lt;/i&gt;&lt;b&gt;Linked sets&lt;/b&gt;&lt;span class=</phrase>
+	<phrase data="auto_ac2efb27774d1d01">&gt;&lt;/i&gt;&lt;div&gt;&lt;b&gt;Type conflict&lt;/b&gt;&lt;p&gt;' + esc(conflicts.join(', ')) + '&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;' : '&lt;div class=</phrase>
+	<phrase data="auto_791f45437cd73d9b">&gt;&lt;/i&gt;&lt;div&gt;&lt;b&gt;The set is not ready for import&lt;/b&gt;&lt;p&gt;' + esc(message) + '&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;';
+		stateRoot.hidden = true;
+	  };
+	  var preview = function (file) {
+		if (!file) { return; }
+		nameRoot.textContent = file.name || 'field-set.json';
+		if (file.size &gt; 262144) { showError('File exceeds 256 KB'); return; }
+		var reader = new FileReader();
+		reader.onerror = function () { showError('Could not read the selected file'); };
+		reader.onload = function() {
+		  descriptor = String(reader.result || '');
+		  stateRoot.hidden = false;
+		  stateRoot.classList.add('is-loading');
+		  stateRoot.innerHTML = '&lt;i class=</phrase>
+	<phrase data="auto_06fc6342d6a02414">&gt;&lt;/i&gt;&lt;div&gt;&lt;b&gt;Standard list of documents&lt;/b&gt;&lt;span&gt;ID, title, category, status, date and system actions.&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;';
+        return;
+      }
+      if (!this.adminViewPreview.length) {
+        root.innerHTML = '&lt;div class=</phrase>
+	<phrase data="auto_72ba5177b9d934c4">&gt;&lt;/i&gt;&lt;span&gt;&lt;b&gt;Select JSON set&lt;/b&gt;&lt;small&gt;AVE.cms field-set, max 256 KB&lt;/small&gt;&lt;/span&gt;&lt;input type=</phrase>
+	<phrase data="auto_b091e89e90e8d13c">&gt;&lt;/i&gt;&lt;span&gt;&lt;b&gt;Checking the set&lt;/b&gt;&lt;small&gt;Comparing alias and field types.&lt;/small&gt;&lt;/span&gt;';
+		  previewRoot.hidden = true;
+		  applyButton.disabled = true;
+		  var data = new FormData();
+		  data.append('_csrf', self.form.elements._csrf.value);
+		  data.append('descriptor', descriptor);
+		  fetch(self.base() + '/rubrics/' + self.currentRubricId + '/field-sets/import/preview', {
+			method: 'POST', body: data, headers: { 'Accept': 'application/json' }, credentials: 'same-origin'
+		  }).then(function (response) { return response.json(); }).then(function (json) {
+			if (!json.success) { throw new Error(json.message || 'The set failed the test'); }
+			var result = json.data || {};
+			fingerprint = result.fingerprint || '';
+			var conflicts = result.conflicts || [];
+			importHasConflicts = !!conflicts.length;
+			stateRoot.hidden = true;
+			previewRoot.hidden = false;
+			previewRoot.innerHTML = '&lt;div class=</phrase>
+	<phrase data="auto_a35c2d7f1835196d">&gt;&lt;/i&gt;&lt;span&gt;&lt;b&gt;Check first&lt;/b&gt;&lt;small&gt;Documents and existing fields are not changed.&lt;/small&gt;&lt;/span&gt;&lt;/div&gt;&lt;div data-field-set-import-preview hidden&gt;&lt;/div&gt;&lt;/div&gt;'
+		+ '&lt;div class=</phrase>
+	<phrase data="auto_85c478a2e6b958a3">&gt;&lt;/i&gt;&lt;span&gt;There are no documents in the category yet&lt;/span&gt;&lt;/div&gt;';
+        return;
+      }
+      var self = this;
+      if (this.adminViewState.mode === 'table') {
+        root.innerHTML = '&lt;div class=</phrase>
+	<phrase data="auto_34d7bc4cd9cc3883">&gt;&lt;/i&gt;&lt;span&gt;Drag the field to this group&lt;/span&gt;&lt;/div&gt;';
+        }
+        canvas += '&lt;/div&gt;&lt;/section&gt;';
+      });
+      var canvasRoot = document.querySelector('[data-builder-canvas]');
+      var paletteRoot = document.querySelector('[data-builder-palette]');
+      var count = document.querySelector('[data-builder-field-count]');
+      if (canvasRoot) { canvasRoot.innerHTML = canvas || '&lt;div class=</phrase>
+	<phrase data="auto_89076c464d7fa8f7">&gt;&lt;/i&gt;&lt;span&gt;Fields not found&lt;/span&gt;&lt;/div&gt;';
+      var count = document.querySelector('[data-admin-view-field-count]');
+      if (count) { count.textContent = this.adminViewFields.length; }
+    },
+
+    renderAdminViewItems: function() {
+      var root = document.querySelector('[data-admin-view-items]');
+      if (!root || !this.adminViewState) { return; }
+      var self = this;
+      var items = this.adminViewState.items || [];
+      root.innerHTML = items.length ? items.map(function (item, index) {
+        return '&lt;article class=</phrase>
+	<phrase data="auto_04b12cc3bee9c2be">&gt;&lt;/i&gt;Loading settings like...&lt;/div&gt;';
+      fetch(this.base() + '/rubrics/fields/' + field.Id + '/plugin', { headers: { 'Accept': 'application/json' }, credentials: 'same-origin' })
+        .then(function (res) { return res.json(); })
+        .then(function (json) {
+          if (self.builderSelectedId !== parseInt(field.Id, 10)) { return; }
+          var data = json.data || {};
+          var type = data.type || {};
+          root.innerHTML = type.settings_html
+            ? '&lt;div class=</phrase>
+	<phrase data="auto_030eb56c20cb07df">&gt;&lt;/i&gt;Import&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;';
+	  document.body.appendChild(overlay);
+	  requestAnimationFrame(function () { overlay.classList.add('show'); });
+	  var fileInput = overlay.querySelector('[data-field-set-import-file]');
+	  var dropzone = overlay.querySelector('[data-field-set-dropzone]');
+	  var previewRoot = overlay.querySelector('[data-field-set-import-preview]');
+	  var stateRoot = overlay.querySelector('[data-field-set-import-state]');
+	  var applyButton = overlay.querySelector('[data-field-set-import-apply]');
+	  var nameRoot = overlay.querySelector('[data-field-set-import-name]');
+	  var descriptor = '';
+	  var fingerprint = '';
+	  var importMode = self.fieldSetMode;
+	  var importHasConflicts = false;
+	  var close = function() {
+		overlay.classList.remove('show');
+		setTimeout(function () { overlay.remove(); }, 160);
+	  };
+	  var showError = function (message) {
+		fingerprint = '';
+		importHasConflicts = true;
+		applyButton.disabled = true;
+		previewRoot.hidden = false;
+		previewRoot.innerHTML = '&lt;div class=</phrase>
+	<phrase data="auto_d4024acec92b3782">&gt;&lt;/i&gt;condition&lt;/span&gt;' : '')
+          + '&lt;span class=</phrase>
+	<phrase data="auto_e0c62efcb83fc6ba">&gt;&lt;b&gt;' + conflicts.length + '&lt;/b&gt;&lt;small&gt;conflicts&lt;/small&gt;&lt;/span&gt;&lt;/div&gt;'
+			  + '&lt;div class=</phrase>
+	<phrase data="auto_6c65284adea5af61">&gt;&lt;header&gt;&lt;div&gt;&lt;b&gt;' + esc(document.document_title) + '&lt;/b&gt;&lt;small&gt;#' + esc(document.Id) + ' · ' + esc(document.document_alias || 'without alias') + '&lt;/small&gt;&lt;/div&gt;&lt;i class=</phrase>
+	<phrase data="auto_88c496e9d438c90e">&gt;&lt;span&gt;'
+		  + esc(group.title || 'Tags') + '&lt;/span&gt;&lt;b&gt;' + items.length + '&lt;/b&gt;&lt;/button&gt;');
+		var buttons = items.map(function (tag) {
+		  var select = tag.select ? ' data-rubric-template-tag-select=</phrase>
+	<phrase data="auto_c5a50608144a8755">&gt;&lt;span&gt;' + esc(item.created_label) + '&lt;/span&gt;&lt;span&gt;' + esc(item.size_label) + '&lt;/span&gt;&lt;span&gt;' + item.docs_count + ' documents&lt;/span&gt;&lt;/div&gt;'
+          + '&lt;div class=</phrase>
+	<phrase data="auto_46a72cfa192a19fa">&gt;&lt;span&gt;&lt;b&gt;' + (result.field_count || 0) + '&lt;/b&gt;&lt;small&gt;total fields&lt;/small&gt;&lt;/span&gt;&lt;span&gt;&lt;b&gt;' + (result.create || 0) + '&lt;/b&gt;&lt;small&gt;will created&lt;/small&gt;&lt;/span&gt;&lt;span&gt;&lt;b&gt;' + (result.reuse || 0) + '&lt;/b&gt;&lt;small&gt;already exists&lt;/small&gt;&lt;/span&gt;&lt;span class=</phrase>
+	<phrase data="auto_4ca1bbe0aabfe8a3">&gt;&lt;span&gt;After import&lt;/span&gt;&lt;div class=</phrase>
+	<phrase data="auto_ab1575cb80736de7">&gt;&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th&gt;Document&lt;/th&gt;'
+          + this.adminViewState.items.map(function (item) { return '&lt;th&gt;' + esc(item.label) + '&lt;/th&gt;'; }).join('')
+          + '&lt;th&gt;&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;' + this.adminViewPreview.map(function (document) {
+            return '&lt;tr&gt;&lt;td&gt;&lt;b&gt;' + esc(document.document_title) + '&lt;/b&gt;&lt;small&gt;#' + esc(document.Id) + '&lt;/small&gt;&lt;/td&gt;'
+              + self.adminViewState.items.map(function (item) { return '&lt;td&gt;' + self.adminViewValueHtml(document, item) + '&lt;/td&gt;'; }).join('')
+              + '&lt;td&gt;&lt;i class=</phrase>
+	<phrase data="auto_4d264171d95fba0d">&gt;All · AND&lt;/option&gt;&lt;option value=&quot;or&quot;</phrase>
+	<phrase data="auto_96ffec17c3e84172">&gt;Add the first category field.&lt;/div&gt;'; }
+      if (paletteRoot) { paletteRoot.innerHTML = palette || '&lt;div class=</phrase>
+	<phrase data="auto_6db9f944ce4b987a">&gt;Additional templates have not been created.&lt;/div&gt;';
+        return;
+      }
+      root.innerHTML = templates.map(function (item) {
+        return '&lt;article class=</phrase>
+	<phrase data="auto_f17793f55ee4358e">&gt;Forbidden&lt;/option&gt;&lt;/select&gt;&lt;/label&gt;</phrase>
+	<phrase data="auto_7e0bc5ab28c0744a">&gt;Import a set of fields&lt;/h3&gt;&lt;p class=</phrase>
+	<phrase data="auto_ef3ba7c981b4b806">&gt;Any OR&lt;/option&gt;&lt;/select&gt;</phrase>
+	<phrase data="auto_6257dcff18bd7004">&gt;Failed to load type settings.&lt;/p&gt;'; });
+    },
+
+    applyBuilderSettingsDraft: function (root, settings) {
+      Object.keys(settings || {}).forEach(function (key) {
+        var controls = root.querySelectorAll('[name=</phrase>
+	<phrase data="auto_193f82b3a8921973">&gt;Independent copy&lt;/button&gt;&lt;button type=</phrase>
+	<phrase data="auto_accb2611c84b3cbc">&gt;Main fields&lt;/option&gt;';
+      this.currentGroups.forEach(function (group) {
+        html += '&lt;option value=</phrase>
+	<phrase data="auto_3ce0c3f160fae416">&gt;Fields not found.&lt;/div&gt;';
+        return;
+      }
+      root.innerHTML = fields.map(function (field) {
+        return '&lt;button class=</phrase>
+	<phrase data="auto_4c0d3cbb39dd1dd8">&gt;Checking the diagram before adding it to the current category.&lt;/p&gt;&lt;/div&gt;&lt;button class=</phrase>
+	<phrase data="auto_5795623f3228a9b0">&gt;Allowed&lt;/option&gt;</phrase>
+	<phrase data="auto_0511f03ba6840c2f">&gt;This type has no additional settings.&lt;/p&gt;';
+          if (draftSettings !== null) { self.applyBuilderSettingsDraft(root, draftSettings); }
+          self.hydrateSettingsMaps(root);
+          self.toggleBuilderDefaultField(type.admin_editor || {});
+          self.builderSettingsReady = true;
+        })
+        .catch(function () { root.innerHTML = '&lt;p class=</phrase>
+	<phrase data="auto_099f03c2b9e36ebf">]');
+      var width = row ? row.getAttribute('data-width') : (layout.width || this.builderAutoWidth(field));
+      var empty = document.querySelector('[data-builder-inspector-empty]');
+      if (empty) { empty.hidden = true; }
+      form.hidden = false;
+      this.builderHydrating = true;
+      var typeLabel = form.querySelector('[data-builder-type-label]');
+      var typeCode = form.querySelector('[data-builder-type-code]');
+      if (typeLabel) { typeLabel.textContent = field.type_label || field.rubric_field_type || 'Unknown type'; }
+      if (typeCode) { typeCode.textContent = field.rubric_field_type || '—'; }
+      form.elements.title.value = Object.prototype.hasOwnProperty.call(draft, 'title') ? draft.title : (field.rubric_field_title || ('Field&#32;
+      this.fillBuilderGroupSelect(row ? row.closest('[data-field-group-drop]').getAttribute('data-field-group-drop') : field.rubric_field_group);
+      var widthInput = form.querySelector('input[name=</phrase>
+	<phrase data="auto_c84e1c95cac6c7c3">API and structured preview receive:</phrase>
+	<phrase data="auto_536d006dd87dc104">API contracts</phrase>
+	<phrase data="auto_b6ed65d5c883a005">data-document-value-empty&gt;No rows added.&lt;/div&gt;</phrase>
+	<phrase data="auto_383bd57fde06cdc6">data-field-set-import-close&gt;Close&lt;/button&gt;&lt;button class=</phrase>
+	<phrase data="auto_b5b357c840ed996f">data-field-set-import-name&gt;File not selected&lt;/span&gt;&lt;button class=</phrase>
+	<phrase data="auto_295a8b54baed4032">Email, phone or URL with regime validation and secure public link.</phrase>
+	<phrase data="auto_b92abe956e5e595f">HEX color with native picker and synchronous manual input.</phrase>
+	<phrase data="auto_0bcd23c558425222">HTML/PHP-template for displaying field values on the site.</phrase>
+	<phrase data="auto_359282f9ef75e654">Document ID</phrase>
+	<phrase data="auto_deadfcfe544c586c">Field ID&#32;
+				}
+
+				$data[</phrase>
+	<phrase data="auto_1d00a5603a94c17d">Teaser ID/link</phrase>
+	<phrase data="auto_7572be6cdf241d5b">ID, name or alias</phrase>
+	<phrase data="auto_83bc4b17c7a8c2de">key|Name</phrase>
+	<phrase data="auto_4f8cd2670720989e">Native edit-render is done via FieldRegistry.</phrase>
+	<phrase data="auto_926b155081df2362">Native type did not return HTML for edit mode</phrase>
+	<phrase data="auto_ab8dfd761699cfb3">Native field type is not registered</phrase>
+	<phrase data="auto_82aabef2a4508ca8">Preview: inline JS handlers have been removed (</phrase>
+	<phrase data="auto_653fd211b847f8ca">Preview: legacy asset paths use the site root.</phrase>
+	<phrase data="auto_dc148953b8a1bf47">Preview: legacy asset paths are given to the site root (</phrase>
+	<phrase data="auto_b024780fcd0da0a9">Preview: legacy script tags disabled (</phrase>
+	<phrase data="auto_d5d0cbdc67a52bbd">URL or relative link.</phrase>
+	<phrase data="auto_657393e7eeaad390">YouTube video with additional options.</phrase>
+	<phrase data="auto_7aadb5df77d1a5d4">· auto action</phrase>
+	<phrase data="auto_9bcfa53bbe40ed57">· auto actions</phrase>
+	<phrase data="auto_c68bd5a5c900a5e3">· there is a condition</phrase>
+	<phrase data="auto_67dba597b184080a">· mandatory</phrase>
+	<phrase data="auto_8e7882b9ee99fd01">· limited</phrase>
+	<phrase data="auto_933240995632f86b">» added</phrase>
+	<phrase data="auto_41b0a9ade5ac0709">» imported</phrase>
+	<phrase data="auto_e17633d1f1fdc584">» updated and synchronized</phrase>
+	<phrase data="auto_b7cb5fb992168c7a">Alias is free</phrase>
+	<phrase data="auto_96a0ff987810a9da">Without a separate URL alias</phrase>
+	<phrase data="auto_e928419529529b45">Large text, cover, gallery and attached files.</phrase>
+	<phrase data="auto_1175bbbde80aff4c">Will be refunded</phrase>
+	<phrase data="auto_496045b649aaf093">Boolean value: enabled or disabled.</phrase>
+	<phrase data="auto_8062543f3d8a2727">PHP, JavaScript and executable HTML elements are not allowed in the administrative template</phrase>
+	<phrase data="auto_90a2028f00b46817">No more than 32 rules are allowed in one condition</phrase>
+	<phrase data="auto_393b99dec4427ca2">Options</phrase>
+	<phrase data="auto_7904133f7ae3d812">Product options</phrase>
+	<phrase data="auto_6b8bff8aba86ce59">product options</phrase>
+	<phrase data="auto_f4553a071702d456">The fields will return</phrase>
+	<phrase data="auto_d6b08d92a7694cd4">Weight,</phrase>
+	<phrase data="auto_8e7b9894c7ef0f57">Video</phrase>
+	<phrase data="auto_430628d9ba4762c5">Visual HTML editor with a full set of tools.</phrase>
+	<phrase data="auto_371d06dbf2f987b2">Medium height visual HTML editor.</phrase>
+	<phrase data="auto_f6d219b0e3cb8088">on</phrase>
+	<phrase data="auto_2e304ad8671e5f34">Included</phrase>
+	<phrase data="auto_54761209ae8056a2">included</phrase>
+	<phrase data="auto_dad1221b0fdca3f3">included</phrase>
+	<phrase data="auto_310fac7a14c290dc">Nested group</phrase>
+	<phrase data="auto_152539d0d2f5f513">instead of</phrase>
+	<phrase data="auto_29f3b29df0d0e54f">Restore</phrase>
+	<phrase data="auto_c335402efb82f578">Restore the rubric scheme?</phrase>
+	<phrase data="auto_ad4cc9931b4f3b23">Recovery</phrase>
+	<phrase data="auto_8352c93408e340d4">Recovery blocked</phrase>
+	<phrase data="auto_ff60e7d66fb1da05">Recovery blocked:</phrase>
+	<phrase data="auto_79d1897bb98c0733">All set fields are already in the category</phrase>
+	<phrase data="auto_fdf6d9b8ef84e424">All fields will again be available without conditional rules.</phrase>
+	<phrase data="auto_1ce5356e44ae11e8">All restore points for this section will be deleted.</phrase>
+	<phrase data="auto_007c911f4559f0a1">Select field type</phrase>
+	<phrase data="auto_6881846aa0f22323">Select from a list</phrase>
+	<phrase data="auto_5c0e2d903b7bb351">The selected group does not belong to the category</phrase>
+	<phrase data="auto_8854c24797952e79">Selected Default Keys</phrase>
+	<phrase data="auto_9f3b3c3b78133faa">Select document</phrase>
+	<phrase data="auto_2e31dae95f35e3b8">Select file</phrase>
+	<phrase data="auto_d934aed19632b4c8">Off</phrase>
+	<phrase data="auto_5091ae9abbe30090">turned off</phrase>
+	<phrase data="auto_ae665bfacddba20c">Dropdown list</phrase>
+	<phrase data="auto_b24a95db95addcf3">Height</phrase>
+	<phrase data="auto_a5ecb551ebd318c2">Height,</phrase>
+	<phrase data="auto_17e44239e9501b88">Higher</phrase>
+	<phrase data="auto_8e8ca8428150664e">g</phrase>
+	<phrase data="auto_e6f95e75e2cdc950">Gallery</phrase>
+	<phrase data="auto_3f68fac4335dce12">City/town</phrase>
+	<phrase data="auto_ae8ad7b53c3a02aa">Group</phrase>
+	<phrase data="auto_08a71a50417a964a">Group&#32;
+		}
+
+		protected static function settingLabel($key)
+		{
+			$known = array(</phrase>
+	<phrase data="auto_4134c7b9a64691ce">Group changed</phrase>
+	<phrase data="auto_c72070f69382be67">Group not found</phrase>
+	<phrase data="auto_d94a13b5e865c1d1">Group created</phrase>
+	<phrase data="auto_2f728e4825cc8252">Group saved</phrase>
+	<phrase data="auto_9916f21cea447ddc">Group deleted</phrase>
+	<phrase data="auto_1cb3d2d6c07c3029">Groups</phrase>
+	<phrase data="auto_8d2fab2d123f89ab">Yes</phrase>
+	<phrase data="auto_d4f57dba817bd3dd">yes</phrase>
+	<phrase data="auto_1fd0f9fbf8215925">Yes / included</phrase>
+	<phrase data="auto_683307341f965139">Document data will remain in place</phrase>
+	<phrase data="auto_a5b49d2ebad23bf2">Date</phrase>
+	<phrase data="auto_0011621b7aceabd7">Date and time</phrase>
+	<phrase data="auto_882cd6c6d4a3d51a">Date or date and time in one type with a custom public format.</phrase>
+	<phrase data="auto_11290498d03a56d3">The date or datetime in the document.</phrase>
+	<phrase data="auto_de23e05011746450">Start and end dates for events, publications, and time blocks.</phrase>
+	<phrase data="auto_374305036f84159f">Default date</phrase>
+	<phrase data="auto_92ba58bda6dece76">Two numbers</phrase>
+	<phrase data="auto_9d54a961c7f58a8e">The two numeric parts that legacy stores via a vertical bar.</phrase>
+	<phrase data="auto_b8b5ea12bdd7caa9">Length</phrase>
+	<phrase data="auto_6bee957a1f3ef55d">Length</phrase>
+	<phrase data="auto_36b046a7c2f15938">length|width|height</phrase>
+	<phrase data="auto_12560d84a04203f8">length|width|height|weight</phrase>
+	<phrase data="auto_443a01b1b24089d7">For multiple mode, list the keys separated by commas.</phrase>
+	<phrase data="auto_2fcf4b69193bb7c9">For the set, include field types:</phrase>
+	<phrase data="auto_695abe1f162c6981">The native admin editor is not registered for the type.</phrase>
+	<phrase data="auto_3c117b2c87d3ac0e">The admin editor is not registered for the field type:</phrase>
+	<phrase data="auto_80537195b6f973c8">The native admin editor is not registered for the field type:</phrase>
+	<phrase data="auto_1520dcf50638530a">Before</phrase>
+	<phrase data="auto_905cee77053de8f0">Added set &quot;</phrase>
+	<phrase data="auto_17f0173a8dd2b7c1">Document&#32;
+				$tokens .=</phrase>
+	<phrase data="auto_f61de80bf0ca15a4">No document selected</phrase>
+	<phrase data="auto_f5a8762273c68288">documents. Total numbers for the entire category may be higher.&lt;/p&gt;</phrase>
+	<phrase data="auto_b5f7aa103e265df2">Documents:</phrase>
+	<phrase data="auto_a529965f6d341346">Documents and other files for downloading.</phrase>
+	<phrase data="auto_f22a3ecb8fddb346">Longitude</phrase>
+	<phrase data="auto_324687f7dad26991">All rules inside must match</phrase>
+	<phrase data="auto_92b98f22aec69b42">House/building</phrase>
+	<phrase data="auto_d7907f4d435df378">Additionally</phrase>
+	<phrase data="auto_54e8eb3d568c84d3">Additional images of the material.</phrase>
+	<phrase data="auto_04259a314fb8f241">Additional news materials.</phrase>
+	<phrase data="auto_a5bf5e6d0d8c3be8">Additional template&#32;
+					array(</phrase>
+	<phrase data="auto_dc50de4d620af713">Complements dependency analysis before restoring the rubric schema</phrase>
+	<phrase data="auto_3195b41a3fe181fc">Any rule inside is enough</phrase>
+	<phrase data="auto_2800924324bf1bcd">available options</phrase>
+	<phrase data="auto_7746ff4e53bcc5ec">Single field with choice of plain text, Tiptap or CodeMirror.</phrase>
+	<phrase data="auto_0c71b6f4bbee99f8">Addiction</phrase>
+	<phrase data="auto_a8504d513adfb6f5">Heading</phrase>
+	<phrase data="auto_a90ed3357338f605">Loading...</phrase>
+	<phrase data="auto_ab2617656e5f6f04">Set ·</phrase>
+	<phrase data="auto_4ae50d30739d5840">Close</phrase>
+	<phrase data="auto_fbac34290042f11f">Blog Post</phrase>
+	<phrase data="auto_d9a63729fb8dacca">filled</phrase>
+	<phrase data="auto_e7fae86d1f98f4d5">Request&#32;
+						array(</phrase>
+	<phrase data="auto_95577cb274c4f415">Request&#32;
+					$details
+				);
+			}
+		}
+
+		protected static function collectRubricTemplates($rubricId, array $fields, array &amp;$report)
+		{
+			$rubric = DB::query(</phrase>
+	<phrase data="auto_412957758f09512c">Request&#32;
+		}
+
+		protected static function aliasMeta($alias)
+		{
+			$alias = trim((string) $alias);
+			return $alias !==</phrase>
+	<phrase data="auto_76dd8ec92a26345d">Requests</phrase>
+	<phrase data="auto_f288f1bbf5ad33ac">requests</phrase>
+	<phrase data="auto_10f2c299790840f8">meaning:</phrase>
+	<phrase data="auto_9f0b990967c8a2ad">Meaning</phrase>
+	<phrase data="auto_277d381a820333e3">value1|value2</phrase>
+	<phrase data="auto_0c6e93c122d03283">option values</phrase>
+	<phrase data="auto_beed168817322eeb">from</phrase>
+	<phrase data="auto_fb6d6bc351fbd8d0">Meas.&lt;/span&gt;&lt;/header&gt;</phrase>
+	<phrase data="auto_72148960578ed50b">Field changed&#32;
+			} catch (\Throwable $e) {
+				return $this-&gt;error($e-&gt;getMessage(), array(), 422);
+			}
+
+			return $this-&gt;success(</phrase>
+	<phrase data="auto_04b74e950676db16">Fields will change</phrase>
+	<phrase data="auto_92d617ce4b1adaff">Changed group order</phrase>
+	<phrase data="auto_47a92a5519a73f08">Changed field order</phrase>
+	<phrase data="auto_b338e57b8954a149">Illustrations and video recordings.</phrase>
+	<phrase data="auto_5e386041d5b3fd46">Illustrations and article files.</phrase>
+	<phrase data="auto_a38bb3d6176a0e3a">Imported set &quot;</phrase>
+	<phrase data="auto_53eb4aa001bbc6bc">Index</phrase>
+	<phrase data="auto_8b27b51f59c0b547">index|region|city|street|house|room|latitude|longitude</phrase>
+	<phrase data="auto_0ae4c2581b1c0a5f">Use 1 for enabled or 0 for disabled.</phrase>
+	<phrase data="auto_051ea779d1f909a1">History cleared</phrase>
+	<phrase data="auto_ec6be72560e6078a">The story is still empty</phrase>
+	<phrase data="auto_8290a3dbc0c83ae0">Source</phrase>
+	<phrase data="auto_fbffb216d6da6080">Data source: this column</phrase>
+	<phrase data="auto_8e30179491e33c90">Linked set source unavailable</phrase>
+	<phrase data="auto_f8eb6b729cbd06d1">Original circuit</phrase>
+	<phrase data="auto_1a7419eff6c22854">The catalog is built on this category</phrase>
+	<phrase data="auto_5c87c10d07dee030">Apartment/office</phrase>
+	<phrase data="auto_cc6ec0f06bf2d032">Key</phrase>
+	<phrase data="auto_8d44ef0a6cfd0869">Code before saving</phrase>
+	<phrase data="auto_e99fb1a66fa7289b">The dialing code is already occupied by the kernel or installed module:</phrase>
+	<phrase data="auto_faeec89d32b13160">Code after saving</phrase>
+	<phrase data="auto_5c4931fe4d0965a6">Public output code</phrase>
+	<phrase data="auto_40785832c27c3a51">Column 1</phrase>
+	<phrase data="auto_698ace159126e252">Column 2</phrase>
+	<phrase data="auto_2ec20105a2757791">Column 3</phrase>
+	<phrase data="auto_fec409176cc7882d">Column1|Column2|Column3</phrase>
+	<phrase data="auto_8ef03a56fee10ab7">Compact visual HTML editor.</phrase>
+	<phrase data="auto_73881ce1562ca1e5">Compact multiline text</phrase>
+	<phrase data="auto_ddbe04a014fb9ad6">Constructor</phrase>
+	<phrase data="auto_62f220e3a2ff5c67">Contact</phrase>
+	<phrase data="auto_edbe417e021a142f">Content</phrase>
+	<phrase data="auto_99c368c976944bba">Latin letter first, then letters, numbers or underscores, up to 20 characters</phrase>
+	<phrase data="auto_bf6379458cca6658">m</phrase>
+	<phrase data="auto_198be2a9a8164bab">Media</phrase>
+	<phrase data="auto_d6a125bb44a0f5b0">Media and source</phrase>
+	<phrase data="auto_0f1ae5644ddb5079">minimum|maximum</phrase>
+	<phrase data="auto_b8d125b76d752f1f">mm</phrase>
+	<phrase data="auto_104b54b9ac588460">Multiline text</phrase>
+	<phrase data="auto_552d5e4ff1a53655">Multiple Choice</phrase>
+	<phrase data="auto_09017097da76a906">Modules</phrase>
+	<phrase data="auto_154b21ca6f89ac95">Module &quot;Catalog&quot;</phrase>
+	<phrase data="auto_876452a5bc5e00a0">Module &quot;Products&quot;</phrase>
+	<phrase data="auto_75b7e1282a0c5f9a">You can use a period or a comma. In storage, the value is normalized automatically.</phrase>
+	<phrase data="auto_209f0ab7e0ad7f35">You can leave it blank or specify a number.</phrase>
+	<phrase data="auto_948d60c497e7c0c1">Can be left blank. The value will be substituted when creating the document.</phrase>
+	<phrase data="auto_a9afd09a68e3ea5c">Multi-select</phrase>
+	<phrase data="auto_db51a510d52f40b4">Set &quot;</phrase>
+	<phrase data="auto_979d8c7f4410c7dc">The set conflicts with the rubric fields:</phrase>
+	<phrase data="auto_133d072edced4fcf">The set is not associated with this category</phrase>
+	<phrase data="auto_ebc89a26b3d662c6">The field set is prepared</phrase>
+	<phrase data="auto_f9ef3beea7b8315c">The field set belongs to a disabled module</phrase>
+	<phrase data="auto_1bcaaef1c721015e">Set checked</phrase>
+	<phrase data="auto_0ff730d95f9c5bc3">click to select</phrase>
+	<phrase data="auto_3de49828e86a4016">Title</phrase>
+	<phrase data="auto_27237a987e20e24e">Purpose of goods:</phrase>
+	<phrase data="auto_f0cb3e0050a9c119">For example /catalog or https://example.com.</phrase>
+	<phrase data="auto_0d91beec439da182">Settings</phrase>
+	<phrase data="auto_7047b63aada387db">Directory settings</phrase>
+	<phrase data="auto_8cefab261ccfbb6d">directory settings</phrase>
+	<phrase data="auto_10a8547a847fa8ce">Field settings:</phrase>
+	<phrase data="auto_cb26bdc6c683d140">Home</phrase>
+	<phrase data="auto_36030c67ae103b5e">Start typing your name or ID</phrase>
+	<phrase data="auto_1ab4c4361e9555db">not included in</phrase>
+	<phrase data="auto_7faabdf7a4b648a5">Not specified</phrase>
+	<phrase data="auto_6ddd51c3f0234412">Not specified</phrase>
+	<phrase data="auto_c50d8ea8a872cbae">not specified</phrase>
+	<phrase data="auto_ce414779fdc7b155">not filled in</phrase>
+	<phrase data="auto_a4d765aa97521f40">does not contain</phrase>
+	<phrase data="auto_208c7ffd83c54bc7">Failed to restore the schema</phrase>
+	<phrase data="auto_e0b8fe4f27c488e1">Failed to upload documents</phrase>
+	<phrase data="auto_9da304d709611b05">Failed to load revisions</phrase>
+	<phrase data="auto_035c1bf59790f310">Failed to clear history</phrase>
+	<phrase data="auto_5025db81b8d73105">Failed to fully check directory dependencies.</phrase>
+	<phrase data="auto_684c8004cc7a183a">Failed to validate requests and API contracts.</phrase>
+	<phrase data="auto_4d036d50c26e3045">Failed to validate category templates.</phrase>
+	<phrase data="auto_742e1e640524f2c1">Failed to serialize field set</phrase>
+	<phrase data="auto_39227cd5c8b59f74">Failed to delete photo</phrase>
+	<phrase data="auto_3f48d3d91a14d8a0">Insufficient rights</phrase>
+	<phrase data="auto_f18dbdc258bca8e2">Unknown starting field set</phrase>
+	<phrase data="auto_07d176c4c5e9c78f">Invalid group condition</phrase>
+	<phrase data="auto_0da3626976a5b390">Invalid constructor data</phrase>
+	<phrase data="auto_7a6a8944b59571d4">Incorrect field settings</phrase>
+	<phrase data="auto_134184b078663610">Incorrect group order</phrase>
+	<phrase data="auto_d770a7380f36261c">Incorrect field order</phrase>
+	<phrase data="auto_eaca28dd90ffa230">Incorrect order of categories</phrase>
+	<phrase data="auto_9ecd8f0eea8141e2">Several options from the list, options are specified in the field settings.</phrase>
+	<phrase data="auto_bb3deb39a97ca8b1">Multiple values from a given set.</phrase>
+	<phrase data="auto_585b061bb5a3134c">Several options noted.</phrase>
+	<phrase data="auto_51bb8c8e7e42a8b1">Multiple checkboxes</phrase>
+	<phrase data="auto_f82a8219414c7c8e">No</phrase>
+	<phrase data="auto_ff6cd5f828336f10">No / disabled</phrase>
+	<phrase data="auto_e0f171745065220a">Below</phrase>
+	<phrase data="auto_1e1b70b17c42674c">Nothing found</phrase>
+	<phrase data="auto_30198e9ff12344eb">News</phrase>
+	<phrase data="auto_28bcb5ce2c722376">New fields are not deleted: they will go to the designer library. Document values ​​are not erased.</phrase>
+	<phrase data="auto_a0d610b7ea737ade">Cover</phrase>
+	<phrase data="auto_eea5b2a9a8323aea">Updated set &quot;</phrase>
+	<phrase data="auto_7f235f6fffedd816">A regular text field for a short value.</phrase>
+	<phrase data="auto_999bf5c4f0ec4b14">mandatory</phrase>
+	<phrase data="auto_3a4cd49df5662af3">One option from the list. Options are specified by strings.</phrase>
+	<phrase data="auto_cee7482a8c47aee7">One option per line</phrase>
+	<phrase data="auto_6aaf394d7198cbc5">One option per line.</phrase>
+	<phrase data="auto_9703f6018d1ab37e">One option per line. For keys, use key|Title.</phrase>
+	<phrase data="auto_7e00ac247e2112fd">Single or multiple selection with stable keys and JSON settings.</phrase>
+	<phrase data="auto_8cc0e064940745ae">One entry per line.</phrase>
+	<phrase data="auto_359ee14317f39b8e">One entry per line. For multiple columns, use the separator |.</phrase>
+	<phrase data="auto_ad0047f29190b8a1">One line per entry, parts separated by |.</phrase>
+	<phrase data="auto_f475b362bf564190">One line per value.</phrase>
+	<phrase data="auto_46934c8a3735ad47">One package per line: length|width|height|weight.</phrase>
+	<phrase data="auto_42f5ec752342e797">one of</phrase>
+	<phrase data="auto_e48960e8d2d2124b">One numeric value.</phrase>
+	<phrase data="auto_6e114b32bcc7a134">Single column list</phrase>
+	<phrase data="auto_ec5bfc700b5ae4bf">End</phrase>
+	<phrase data="auto_f5441f6aee76222c">Description</phrase>
+	<phrase data="auto_5cd09a302589be67">Main group</phrase>
+	<phrase data="auto_fd109ef039ff0505">The main image for the page and material card.</phrase>
+	<phrase data="auto_03fc5be2bdd6b2b2">The main content of a document with a visual editor.</phrase>
+	<phrase data="auto_a0843c27359f0f6c">The main content of the post.</phrase>
+	<phrase data="auto_b57c2da269a3afd3">Main news material.</phrase>
+	<phrase data="auto_d115af8c94ddfae2">Main material of the article.</phrase>
+	<phrase data="auto_720118e3e7dcd555">Main text</phrase>
+	<phrase data="auto_333e2fe65bcbf148">Basic fields</phrase>
+	<phrase data="auto_403ab0c70b279da9">Will remain without deletion</phrase>
+	<phrase data="auto_dd1abf2d44aeb35e">From</phrase>
+	<phrase data="auto_1d3c309b65b81b7b">clear value</phrase>
+	<phrase data="auto_c00aca49199296d7">Network error</phrase>
+	<phrase data="auto_3e8b08a79aef1960">Network error when downloading revisions</phrase>
+	<phrase data="auto_0db49b55557f2bde">Parameter</phrase>
+	<phrase data="auto_e2a76ecff8da5fb2">product feed parameters</phrase>
+	<phrase data="auto_18e28e575197be83">Before recovery</phrase>
+	<phrase data="auto_20faa3283904ccb6">Before adding the set &quot;</phrase>
+	<phrase data="auto_6d9c6de6e9596569">Before changing group&#32;
+				Model::saveGroup($groupId, 0, Request::postAll());
+				$this-&gt;captureSchemaAfter((int) $group[</phrase>
+	<phrase data="auto_ef074ba5f354db4a">Before changing the group order</phrase>
+	<phrase data="auto_87b2c7700de87311">Before changing the order of fields</phrase>
+	<phrase data="auto_49cfcda77c880ec8">Before importing the set &quot;</phrase>
+	<phrase data="auto_02d8d913687f5a30">Before synchronizing the dial &quot;</phrase>
+	<phrase data="auto_22b6593e08e0c296">Before creating a field</phrase>
+	<phrase data="auto_897bfeda43777719">Before saving the constructor</phrase>
+	<phrase data="auto_bf170eb1f2d7ebf2">Before deleting a group&#32;
+			if (!Model::deleteGroup($groupId)) {
+				return $this-&gt;error(</phrase>
+	<phrase data="auto_7c4b3713d3f5b800">Portable rubric form diagram &quot;</phrase>
+	<phrase data="auto_710b4d61663b2ab5">Drag</phrase>
+	<phrase data="auto_b2822e2bb3042a62">Period</phrase>
+	<phrase data="auto_2bb568f1c9bf0049">Default period</phrase>
+	<phrase data="auto_f232e1401c1af70a">Repeatable links with signature.</phrase>
+	<phrase data="auto_912892793e790278">A repeatable list of entries, legacy stores the values as a serialized array.</phrase>
+	<phrase data="auto_5bdbfb21f1279d0c">Iterable list of one value per line.</phrase>
+	<phrase data="auto_dd779dec3ae3b807">A repeatable three-part list, legacy uses the delimiter |.</phrase>
+	<phrase data="auto_4861634c74c2ec40">YYYY-MM-DD, timestamp or empty value are supported.</phrase>
+	<phrase data="auto_7a7e811d3c0c48ce">Editor's tip</phrase>
+	<phrase data="auto_7788a11e4dbfe918">Show</phrase>
+	<phrase data="auto_c52083faa73d3829">Field</phrase>
+	<phrase data="auto_3dc162c2751c4540">Field&#32;
+				}
+
+				if (!isset($validGroups[$groupId])) {
+					throw new \RuntimeException(</phrase>
+	<phrase data="auto_5e9883c468e24098">Field&#32;
+      var preview = row.querySelector(</phrase>
+	<phrase data="auto_4c75293d539bf403">Field changed</phrase>
+	<phrase data="auto_046256c31e517796">Field not found</phrase>
+	<phrase data="auto_6400c6e948f5b72e">Field saved</phrase>
+	<phrase data="auto_419546db9dc17c6c">Field removed</phrase>
+	<phrase data="auto_0b7ea7cc1d12e063">A complete visual HTML editor.</phrase>
+	<phrase data="auto_fe27eca938577adf">Fields</phrase>
+	<phrase data="auto_8fe60268a3f0942e">Fields without a separate group.</phrase>
+	<phrase data="auto_00c82781744d8205">Fields and filters:</phrase>
+	<phrase data="auto_f93ae956daec8740">directory section fields or filters</phrase>
+	<phrase data="auto_74a25f1c96d2284d">Fields, groups, layout and conditions of the form. Document values ​​are not included in the snapshot.</phrase>
+	<phrase data="auto_ceca858e57bfb9c9">Fields:</phrase>
+	<phrase data="auto_f6f1e5272fd39ea7">Order</phrase>
+	<phrase data="auto_3eba1c2bc0c2275a">The order of the groups is preserved</phrase>
+	<phrase data="auto_cd0a89e3c96f6a65">The order of the fields is preserved</phrase>
+	<phrase data="auto_b421f3ded10e76d4">The order of the categories has been preserved</phrase>
+	<phrase data="auto_fb7070540c505cd9">After recovery, check the clients that are passing the alias or ID of these fields.</phrase>
+	<phrase data="auto_cefd8d498fbc2d41">After recovery, check the listed locations.</phrase>
+	<phrase data="auto_3ca212f4fcd60543">rules</phrase>
+	<phrase data="auto_5d1611f2fbc0a7a1">rule</phrase>
+	<phrase data="auto_048bcf8fccdd156a">Conditions preview is out of date. Check the changes again.</phrase>
+	<phrase data="auto_f34d83879c2a1a56">Condition preview is out of date. Check the change again.</phrase>
+	<phrase data="auto_a2f64921e63d47ec">Document view saved</phrase>
+	<phrase data="auto_f8350cb18552d3ff">Attached files</phrase>
+	<phrase data="auto_d206fa2cc73df858">Apply migration of related field sets</phrase>
+	<phrase data="auto_768af677624eed27">Apply</phrase>
+	<phrase data="auto_a3e1a199308d37cc">Check out the group</phrase>
+	<phrase data="auto_bec1d875e9bb85dd">Check the field</phrase>
+	<phrase data="auto_556e2818269f4355">Check the category fields</phrase>
+	<phrase data="auto_ff58b9d76887b9ba">View categories, groups and fields.</phrase>
+	<phrase data="auto_8381ff3ecd66f660">Simple multiline text</phrase>
+	<phrase data="auto_78bfda36076e452e">No direct links to mutable fields were found.</phrase>
+	<phrase data="auto_eb8ec7038ec2681b">Publication</phrase>
+	<phrase data="auto_2838753cf4020c30">Public field output template.</phrase>
+	<phrase data="auto_99d406eeba4f9acb">Section</phrase>
+	<phrase data="auto_bc3c0b3b37411afc">Section uses this rubric</phrase>
+	<phrase data="auto_423e086b838336ae">catalog sections</phrase>
+	<phrase data="auto_6091bde898dd2bf6">Posted on the form</phrase>
+	<phrase data="auto_41e2028ded828690">Field layout saved</phrase>
+	<phrase data="auto_defc150c8003aa92">Revisions deleted</phrase>
+	<phrase data="auto_1703d7bb92009455">Revisions:</phrase>
+	<phrase data="auto_e355fb2f4ed33801">Revision not found</phrase>
+	<phrase data="auto_3e096d0063299173">Revision deleted</phrase>
+	<phrase data="auto_1089c8142df8266a">Region</phrase>
+	<phrase data="auto_f8e36737de55e7f2">Editing a group&#32;
+    },
+
+    submitGroup: function (confirmed, fingerprint) {
+      var id = this.groupForm.elements.id.value;
+      var rubricId = this.groupForm.elements.rubric_id.value || this.currentRubricId;
+      var self = this;
+      this.clearErrors(this.groupForm);
+	  var conditionRoot = this.groupForm.querySelector(</phrase>
+	<phrase data="auto_44c5a0837a8d1b95">Editing a field&#32;
+          self.setHint(</phrase>
+	<phrase data="auto_a264f408359849b0">The editor and public output mode are set in the type settings.</phrase>
+	<phrase data="auto_8e287cb490f5c0d4">Category&#32;
+			}
+
+			$docs = self::documentCount($id);
+			if ($docs &gt; 0) {
+				throw new \RuntimeException(</phrase>
+	<phrase data="auto_ecf75d7b2322f185">The category and starting set of fields have been created</phrase>
+	<phrase data="auto_0ee5515f751d593d">Category not found</phrase>
+	<phrase data="auto_ec6c7b420a5a1898">Rubric created</phrase>
+	<phrase data="auto_bbaf57cf67603098">Category saved</phrase>
+	<phrase data="auto_47982ea7fafb42d3">Category deleted</phrase>
+	<phrase data="auto_6375eed92599fce7">Headings and fields</phrase>
+	<phrase data="auto_11d0e63af3c34b42">Categories: viewing</phrase>
+	<phrase data="auto_3895c2959736293d">Category: management</phrase>
+	<phrase data="auto_66ad2314f9717615">With data</phrase>
+	<phrase data="auto_eafa8a9406f3748c">Linked set is synchronized</phrase>
+	<phrase data="auto_0e25d7b679539538">The connection to the set has been removed. Category fields are saved.</phrase>
+	<phrase data="auto_6d516bed514c8c01">char.</phrase>
+	<phrase data="auto_e196ddc3c8e71e22">Synchronization requires a manual solution:</phrase>
+	<phrase data="auto_222e53dc8a560fae">Synchronized set &quot;</phrase>
+	<phrase data="auto_84de063be9dacec5">System name</phrase>
+	<phrase data="auto_10729118a0e19a5c">Hide</phrase>
+	<phrase data="auto_df5763ef792cf2f4">cm</phrase>
+	<phrase data="auto_808ab22bfcac6452">Preview the set first</phrase>
+	<phrase data="auto_ee46e4c63f28ad77">Check the set changes first</phrase>
+	<phrase data="auto_b9917824e609b5b3">pictures</phrase>
+	<phrase data="auto_e5ae76634bcd72e4">Snapshot before restoring a revision&#32;
+					$current
+					(int)$revisionId
+				);
+				$result = Model::applySchemaSnapshot((int) $revision[</phrase>
+	<phrase data="auto_3332ef18a41dd97f">Photo deleted</phrase>
+	<phrase data="auto_5f2fbe2d4bb87c25">Contents</phrase>
+	<phrase data="auto_9d7967e0d4992163">Default content</phrase>
+	<phrase data="auto_0c0d58a11ba9633a">contains</phrase>
+	<phrase data="auto_dcabf8a192f05329">Creation</phrase>
+	<phrase data="auto_31cbb3872199a0ef">Creating a Rubric and Initial Outline</phrase>
+	<phrase data="auto_763265cb6235efbc">Create, change, delete, sort and import categories and fields.</phrase>
+	<phrase data="auto_4b9ec0383b69c6b1">Field created&#32;
+			} catch (\Throwable $e) {
+				return $this-&gt;error($e-&gt;getMessage(), array(), 422);
+			}
+
+			return $this-&gt;success(</phrase>
+	<phrase data="auto_f8eb0fd5b3cea63f">Sorting:</phrase>
+	<phrase data="auto_f40cc580daf1307b">Sortable list of boxes with dimensions and weight for delivery calculations.</phrase>
+	<phrase data="auto_c46cf8cde86bcdd8">The composition of the section has changed after verification. Preview again.</phrase>
+	<phrase data="auto_2cb807c0b374117f">New ones will be saved</phrase>
+	<phrase data="auto_aa377fec4ea36594">It is saved as HTML and edited through a general rich-text editor.</phrase>
+	<phrase data="auto_b3c3cbbb4600dcb2">Saved as legacy multi_line compatible HTML.</phrase>
+	<phrase data="auto_eaac62ff61af9056">Saved form designer</phrase>
+	<phrase data="auto_91fd627584d77019">List of entries</phrase>
+	<phrase data="auto_a6e6a936fd514789">Key-value list</phrase>
+	<phrase data="auto_e6f3ee693c187f9c">List of links</phrase>
+	<phrase data="auto_f62b19dd7b86bc2e">A list where the key is stored on the left and the signature is shown on the right.</phrase>
+	<phrase data="auto_046e475e5a9a0cd1">Link</phrase>
+	<phrase data="auto_7f2d1bc7bda10ebc">Link or document</phrase>
+	<phrase data="auto_90862e36972a1c82">Link to the original news source, if required.</phrase>
+	<phrase data="auto_1f6d3599e370e90f">Default link</phrase>
+	<phrase data="auto_8f91dd4e7581c212">Default links</phrase>
+	<phrase data="auto_53068219c2b2f1c9">Starter kit not available</phrase>
+	<phrase data="auto_7fd6de20cbe361b4">Article</phrase>
+	<phrase data="auto_9f0ad4c82c904c26">String</phrase>
+	<phrase data="auto_87b7429d24a08633">Default strings</phrase>
+	<phrase data="auto_8292e7c77124de1f">The scheme has been restored</phrase>
+	<phrase data="auto_dc58df513fa07c01">The layout changed after the preview. Check the revision again.</phrase>
+	<phrase data="auto_de2821b2ebf5dbde">The category layout or fields have changed since review. Preview again.</phrase>
+	<phrase data="auto_494d9e0e4a4b939d">The rubric scheme has been restored</phrase>
+	<phrase data="auto_7520eb0809ee7f75">Such an alias already exists in this section</phrase>
+	<phrase data="auto_a9ee2e2619804624">This alias is already in use</phrase>
+	<phrase data="auto_7883c6e6c328df0e">Tag inserted</phrase>
+	<phrase data="auto_4f73d11e0a067cfe">Text or field options</phrase>
+	<phrase data="auto_e4f4c08800f4843c">Default text</phrase>
+	<phrase data="auto_f030627ebefc77a0">Text, cover, gallery and video.</phrase>
+	<phrase data="auto_0a3dfe31461abd76">Text, cover, gallery and link to the source.</phrase>
+	<phrase data="auto_7a1dd0d799c1a26b">Text value</phrase>
+	<phrase data="auto_ded9413c36093e2e">Text content</phrase>
+	<phrase data="auto_79f650c36a447623">The current layout will first be saved as a separate snapshot. New fields and document values ​​are not deleted.</phrase>
+	<phrase data="auto_c8ca59549260b84a">Type not specified</phrase>
+	<phrase data="auto_9d7b158aab8818ff">Field type enabled</phrase>
+	<phrase data="auto_550ede0943cae0f1">Field type not registered</phrase>
+	<phrase data="auto_77e799c92f8d41a6">The field type is not registered in the system FieldRegistry</phrase>
+	<phrase data="auto_7b47c68d9308eee7">Field type not found</phrase>
+	<phrase data="auto_a44d86c6afbc1c76">Field type disabled</phrase>
+	<phrase data="auto_168058f2643416b7">product catalog presentation</phrase>
+	<phrase data="auto_9ab422813a4627ad">product feeds</phrase>
+	<phrase data="auto_c4bd1595146238e2">Three numbers</phrase>
+	<phrase data="auto_e9c57f45e85eb653">The three numeric parts that legacy stores via a vertical bar.</phrase>
+	<phrase data="auto_50008389d0e80992">Three column list</phrase>
+	<phrase data="auto_9c7449bfd16b63a0">Remove</phrase>
+	<phrase data="auto_ab30701c85ebee86">Remove document</phrase>
+	<phrase data="auto_5a7e56953fabd094">Field removed&#32;
+			} catch (\Throwable $e) {
+				return $this-&gt;error($e-&gt;getMessage(), array(), 422);
+			}
+
+			return $this-&gt;success(</phrase>
+	<phrase data="auto_86ea33aef5e95d4f">Delete</phrase>
+	<phrase data="auto_c3df07c7b5b795cf">Delete everything</phrase>
+	<phrase data="auto_6ffc449b1baa883f">Delete all schema history?</phrase>
+	<phrase data="auto_fa36b9b56e7fa75f">Delete a field? The document values ​​for this field will also be deleted.</phrase>
+	<phrase data="auto_95ae90ad56da2061">Delete the schematic snapshot?</phrase>
+	<phrase data="auto_32f5f556b7afabd8">Delete line</phrase>
+	<phrase data="auto_5ca79a23d7935521">Specify an alias</phrase>
+	<phrase data="auto_0916c48921c3c502">Please enter a name</phrase>
+	<phrase data="auto_ccec370f3d5a5c9e">Enter the name of the group</phrase>
+	<phrase data="auto_4b0645136585892a">Enter the field name</phrase>
+	<phrase data="auto_9e05569e9b1df2a0">Specify the name of the template</phrase>
+	<phrase data="auto_d0baaff9adcb1393">street</phrase>
+	<phrase data="auto_8cc1fb60fee5cb85">Default packaging</phrase>
+	<phrase data="auto_e0d05941c401c6a8">Product packaging</phrase>
+	<phrase data="auto_80ccd11ca563be10">Form condition</phrase>
+	<phrase data="auto_a328590258410cf8">request conditions</phrase>
+	<phrase data="auto_734485dc78f7af41">Form conditions will remain enabled</phrase>
+	<phrase data="auto_d6e21e0ee096a5e7">Form conditions will remain disabled</phrase>
+	<phrase data="auto_da54276709fb9bad">Form conditions:</phrase>
+	<phrase data="auto_fb422ffcf55d7c71">Conditions:</phrase>
+	<phrase data="auto_8f70be76ffdbd332">set value</phrase>
+	<phrase data="auto_d31faf0f9c4ad59a">Feed</phrase>
+	<phrase data="auto_f2cc217e9344de81">The feed is based on this category</phrase>
+	<phrase data="auto_d38839105b4e23ec">Checkbox</phrase>
+	<phrase data="auto_ff037a1e0e38e3cf">The form and server-side validation will begin to take into account the rules.</phrase>
+	<phrase data="auto_d0c4697de63876a5">The value format is determined by the contact type setting.</phrase>
+	<phrase data="auto_22e8c51ed950a3b3">String format: key|Name. One option per line.</phrase>
+	<phrase data="auto_0144c8ff3d199ae9">String format: URL|Title.</phrase>
+	<phrase data="auto_bb0c921ddc7b018c">Row format: column1|column2|column3.</phrase>
+	<phrase data="auto_c2b4e62229f69882">Format: value1|value2.</phrase>
+	<phrase data="auto_41836d94cd474b10">Format: value1|value2|value3.</phrase>
+	<phrase data="auto_6043010462d9b819">Format: start|end. YYYY-MM-DD and date with time are supported.</phrase>
+	<phrase data="auto_8f1ddad05666a032">Rich text</phrase>
+	<phrase data="auto_9aad34de167ec7ef">Stored as a Unix timestamp and edited by the browser's native controls.</phrase>
+	<phrase data="auto_84b22ed2aa3351be">Color</phrase>
+	<phrase data="auto_c98fd657a52d70e2">Default color</phrase>
+	<phrase data="auto_2c8c9cfd53a8bc30">Default numbers</phrase>
+	<phrase data="auto_9d9ac850b688dc0c">Default number</phrase>
+	<phrase data="auto_4b205aad37c0f7a2">A number with a customizable public format: amount, percentage, magnitude or rating.</phrase>
+	<phrase data="auto_a64b03d7781072e3">Read and write use the scheme:</phrase>
+	<phrase data="auto_2fd1bb90a8967719">request template</phrase>
+	<phrase data="auto_33106a743f3b73dd">Template in document</phrase>
+	<phrase data="auto_7b841b3df0ed8718">Template in request</phrase>
+	<phrase data="auto_1d53a7dc71b144d5">The template is used by documents and cannot be deleted</phrase>
+	<phrase data="auto_9cdce972a025ad9f">Template for processing a request value, if the field type uses it.</phrase>
+	<phrase data="auto_a9a2ce10d5405bf2">Result template:</phrase>
+	<phrase data="auto_ac0442729c4d0715">Category template not found</phrase>
+	<phrase data="auto_67cad9b67b767b3d">Templates</phrase>
+	<phrase data="auto_f106573d4bc2da30">Request templates &quot;</phrase>
+	<phrase data="auto_d0888e0521387c25">Width,</phrase>
+	<phrase data="auto_e4f7317068bacefd">Latitude</phrase>
+	<phrase data="auto_9deda260ec1105fa">This set is already associated with the category. Use the update in the list of related sets.</phrase>
+	<phrase data="auto_6a3745e5fb4cb013">This field type is disabled in the registry</phrase>
+	<phrase data="auto_5f2ed2661cf06c99">This restore point cannot be returned.</phrase>
+</language>

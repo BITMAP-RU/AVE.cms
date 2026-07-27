@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="auto_ebfc7688580909c4">CSS, JavaScript, images, fonts and service JSON/XML-files.</phrase>
+	<phrase data="auto_2bc54d4a3c101b0a">media, for example print</phrase>
+	<phrase data="auto_550ce7ffd2f34194">Twig theme wrapper</phrase>
+	<phrase data="auto_e2fb17b3c49a990b">ZIP up to 50 MB with required theme.json.</phrase>
+	<phrase data="auto_878d0abf729898d5">Theme ZIP package</phrase>
+	<phrase data="auto_6bd2ffd6e4454b1d">· active</phrase>
+	<phrase data="auto_1a6e2eca824086de">· version</phrase>
+	<phrase data="auto_4aff3a3d7af0683b">Activate</phrase>
+	<phrase data="auto_be2f932e34f46d0c">active</phrase>
+	<phrase data="auto_0d1cd34965dca83a">Assets and theme overrides work in both modes.</phrase>
+	<phrase data="auto_3b347f4d489178ac">A secure framework will be created with CSS, JS and theme.json.</phrase>
+	<phrase data="auto_b25cd718340a88fe">B</phrase>
+	<phrase data="auto_63834180a834f7b3">In the catalog</phrase>
+	<phrase data="auto_4ed96723a906268b">The values declared by this theme.</phrase>
+	<phrase data="auto_a59e2c2429fe7a88">and</phrase>
+	<phrase data="auto_1672e43bda20dbcc">The changes will be applied after saving the registry.</phrase>
+	<phrase data="auto_440e2b5d8061862a">Changed</phrase>
+	<phrase data="auto_8f8a4222dbca0498">Import a theme</phrase>
+	<phrase data="auto_55fd5f8a6afcc1c0">Import</phrase>
+	<phrase data="auto_aee78fe86022edaa">Name</phrase>
+	<phrase data="auto_f4d81cd32dabebc7">The directory is empty</phrase>
+	<phrase data="auto_78a5a7348cdccde3">Catalog code</phrase>
+	<phrase data="auto_90cb6aa8dffc27f5">Theme code</phrase>
+	<phrase data="auto_03d3d9dec218deb7">Click to select archive</phrase>
+	<phrase data="auto_4dc3bf5bff6516ab">Topic name</phrase>
+	<phrase data="auto_e9bf293c735f771c">Native AVE templates</phrase>
+	<phrase data="auto_1c0670bdf14a8143">file not specified</phrase>
+	<phrase data="auto_6d317322ebb21ad5">New topic</phrase>
+	<phrase data="auto_e7a6f2f732d650a7">They will appear after the first change to the text file.</phrase>
+	<phrase data="auto_cd4c03b72a738548">Defines the CSS and JS order for tags</phrase>
+	<phrase data="auto_79670c9ac1836b9d">Theme Options</phrase>
+	<phrase data="auto_54dacb06e8664c75">Move</phrase>
+	<phrase data="auto_93a8788e870cc0c7">Connections</phrase>
+	<phrase data="auto_c188eb08a13604ec">Connections</phrase>
+	<phrase data="auto_e21d183232b5b7f7">Show</phrase>
+	<phrase data="auto_f1d45fe771bb0f5f">Connection order is from top to bottom.</phrase>
+	<phrase data="auto_0bdce653048ac5ad">After saving, the public cache will be cleared automatically.</phrase>
+	<phrase data="auto_41f4446817d315d1">View</phrase>
+	<phrase data="auto_51b3c780fc270e8f">Applies after saving.</phrase>
+	<phrase data="auto_c35b36f403600f61">Public registration</phrase>
+	<phrase data="auto_f20bed02a1f94097">Asset size</phrase>
+	<phrase data="auto_12e31b816075c6ec">Extensions: css, js, json, svg, xml, txt.</phrase>
+	<phrase data="auto_4d60d98f499d1580">Audits</phrase>
+	<phrase data="auto_603875eb4c6c3035">File revisions</phrase>
+	<phrase data="auto_71d33e248ef8f5ae">No revisions yet</phrase>
+	<phrase data="auto_a60f629132fddf03">Audit</phrase>
+	<phrase data="auto_fc1e88e76bb5b116">File editor</phrase>
+	<phrase data="auto_de16113354981fd4">Connection registry</phrase>
+	<phrase data="auto_9f10d17e829058e3">The download mode is set for each file.</phrase>
+	<phrase data="auto_da375e816c476cb8">Download ZIP themes</phrase>
+	<phrase data="auto_0234459e1abe1a1f">Scripts</phrase>
+	<phrase data="auto_833227b622b538ec">Create a folder or upload theme files.</phrase>
+	<phrase data="auto_a7f1edf82e7bd561">Create a blank topic or import a ZIP package.</phrase>
+	<phrase data="auto_944b559c7663a5ec">Create a folder</phrase>
+	<phrase data="auto_d9d203ca7ff277c6">Create file</phrase>
+	<phrase data="auto_6d629a0a60fe77ef">Save connections</phrase>
+	<phrase data="auto_91d7fbc0ce1f5dc4">How to build a public page</phrase>
+	<phrase data="auto_f8038ce213d6e495">Site assembly method</phrase>
+	<phrase data="auto_6c6d955d152a74d0">Styles</phrase>
+	<phrase data="auto_ac366962de745a32">The page is assembled from a site template, categories, queries, blocks and navigation.</phrase>
+	<phrase data="auto_e46eaa637b74d8e0">Text versions are saved before being modified, loaded, or deleted.</phrase>
+	<phrase data="auto_9b18f50f55e2594d">Them</phrase>
+	<phrase data="auto_915f00b4c2f9ee08">No topics yet</phrase>
+	<phrase data="auto_1520dea47aef8f49">Only the assembly of the general page. CSS, JavaScript, theme images and its module design will remain connected.</phrase>
+	<phrase data="auto_9439866c937fee21">Delete topic</phrase>
+	<phrase data="auto_eaadead18b1f51d2">controls the overall composition of the page.</phrase>
+	<phrase data="auto_94b8df93b6ecdec9">File</phrase>
+	<phrase data="auto_91cda3fc62191ee0">Theme files</phrase>
+	<phrase data="auto_453413a5dbb9a500">Theme files</phrase>
+	<phrase data="auto_b560b7d0ff5b89de">Files, CSS/JS connections and public skin versions.</phrase>
+	<phrase data="auto_70ed40aa4ce15198">What will the switch change?</phrase>
+	<phrase data="auto_9e34e26f093877cb">) !== false) { throw new \InvalidArgumentException('Text asset contains binary data'); }
+		}
+
+		protected static function editorMode($extension)
+		{
+			if ($extension === 'css') { return 'text/css'; }
+			if (in_array($extension, array('js', 'mjs'), true)) { return 'text/javascript'; }
+			if (in_array($extension, array('json', 'map', 'webmanifest'), true)) { return 'application/json'; }
+			if (in_array($extension, array('svg', 'xml'), true)) { return 'xml'; }
+			return 'text/plain';
+		}
+
+		protected static function imageExtension($extension)
+		{
+			return in_array((string) $extension, array('png', 'jpg', 'jpeg', 'gif', 'webp', 'avif', 'bmp', 'ico', 'svg'), true);
+		}
+
+		protected static function initialContent($path)
+		{
+			$extension = strtolower((string) pathinfo((string) $path, PATHINFO_EXTENSION));
+			if ($extension === 'css') { return</phrase>
+	<phrase data="auto_3569ed34cd124745">. Errors:</phrase>
+	<phrase data="auto_63b1fa390e91f75c">0 B</phrase>
+	<phrase data="auto_c4eb5a7aea60dafd">&quot; will be removed from the topic. The text version will remain in revisions.</phrase>
+	<phrase data="auto_1ca6beeb6bb0b2fc">&quot;, its assets and revisions will be permanently deleted.</phrase>
+	<phrase data="auto_aa370155ac5f16ea">&quot; Connections will only be applied where new theme tags are installed.</phrase>
+	<phrase data="auto_8a4509bcfc42dd6f">Activate theme?</phrase>
+	<phrase data="auto_1abd196f40f96066">The theme does not include a Twig wrapper file</phrase>
+	<phrase data="auto_f79f3d992355453b">The file version cannot be restored.</phrase>
+	<phrase data="auto_29f3b29df0d0e54f">Restore</phrase>
+	<phrase data="auto_5963e9975982a831">Restore the revision?</phrase>
+	<phrase data="auto_ad4cc9931b4f3b23">Recovery</phrase>
+	<phrase data="auto_398c7d4f7b0d522a">Done</phrase>
+	<phrase data="auto_c98fa825d60a3b71">Loading</phrase>
+	<phrase data="auto_3f8c55176b7891d9">Import</phrase>
+	<phrase data="auto_bbd4ac5417cf093d">A name without a dot or service characters.</phrase>
+	<phrase data="auto_735d8993396a84ff">The history of text files will be cleared without the possibility of recovery.</phrase>
+	<phrase data="auto_0a1d18826741e77d">Catalog «</phrase>
+	<phrase data="auto_a84dcf3979eb714c">A directory with the same name already exists</phrase>
+	<phrase data="auto_8db0eb865503ec31">The directory contains a symbolic link</phrase>
+	<phrase data="auto_afb8bd281ddcda4e">Catalog created</phrase>
+	<phrase data="auto_edbe417e021a142f">Content</phrase>
+	<phrase data="auto_b9c0f063903c0a5e">Theme settings saved</phrase>
+	<phrase data="auto_de7fb9566c3ab6f8">Action failed</phrase>
+	<phrase data="auto_c756738db24d115b">Failed to write theme file</phrase>
+	<phrase data="auto_e27323528e74470c">Failed to create directory</phrase>
+	<phrase data="auto_9bcc6eadd7054ac9">Failed to save file</phrase>
+	<phrase data="auto_13f47f04ba060d79">Failed to delete file</phrase>
+	<phrase data="auto_972df4d9c20fc2c7">Theme connections saved</phrase>
+	<phrase data="auto_bf18fdaa443f0cb6">Previous version</phrase>
+	<phrase data="auto_658a0a40ed23298a">Check your theme settings</phrase>
+	<phrase data="auto_d01aa1dbce39eff7">View themes, files and the registry of connected assets.</phrase>
+	<phrase data="auto_30c43ec13cededdc">The public site will start using the theme &quot;</phrase>
+	<phrase data="auto_e1e8719cc085e2f8">File size must be between 1 byte and 10 MB</phrase>
+	<phrase data="auto_cc156ceb9bf090e8">File extension not allowed for theme</phrase>
+	<phrase data="auto_a2c325869c6b079e">Revision restored</phrase>
+	<phrase data="auto_e355fb2f4ed33801">Revision not found</phrase>
+	<phrase data="auto_3e096d0063299173">Revision deleted</phrase>
+	<phrase data="auto_b543bd83a14b6ad4">Register</phrase>
+	<phrase data="auto_ff3649dd979c8ec7">The theme registry cannot be deleted</phrase>
+	<phrase data="auto_26e47597abc4b498">Server unavailable</phrase>
+	<phrase data="auto_d258b559c0f5da2b">Symbolic links cannot be edited</phrase>
+	<phrase data="auto_3ac98f278c8c9081">System</phrase>
+	<phrase data="auto_dcabf8a192f05329">Creation</phrase>
+	<phrase data="auto_ad17d16b52f9eddc">Create, import, edit, activate and delete themes.</phrase>
+	<phrase data="auto_176c0503245e6ad7">You can create a CSS, JS, JSON, SVG, XML, Twig or text file</phrase>
+	<phrase data="auto_e0275b635c1c8e72">Saving</phrase>
+	<phrase data="auto_fb1e61efb4504d7c">The text file must not exceed 2 MB</phrase>
+	<phrase data="auto_a992ab4c9be30ed5">The current contents of the file will first be saved as a separate revision.</phrase>
+	<phrase data="auto_dc99e4e22dd4ea91">Theme activated</phrase>
+	<phrase data="auto_4c9cee40ff1f1caf">Theme imported</phrase>
+	<phrase data="auto_1e8bf2df10259c81">Topic created</phrase>
+	<phrase data="auto_5586c5f53054f3c2">Topic deleted</phrase>
+	<phrase data="auto_e2a19bbf9cd9b98c">Topics</phrase>
+	<phrase data="auto_85dc99d0776ebdab">Topics: viewing</phrase>
+	<phrase data="auto_c0cb79c08de97448">Topics: management</phrase>
+	<phrase data="auto_04963db06a10a410">Removal</phrase>
+	<phrase data="auto_dbb85f6efdd7c965">Revisions removed:</phrase>
+	<phrase data="auto_86ea33aef5e95d4f">Delete</phrase>
+	<phrase data="auto_c3df07c7b5b795cf">Delete everything</phrase>
+	<phrase data="auto_83fd45619005464a">Delete all revisions of a topic?</phrase>
+	<phrase data="auto_88d9445e61d23a8c">Delete folder?</phrase>
+	<phrase data="auto_ee1819dfbfb0e1b6">Delete revision?</phrase>
+	<phrase data="auto_039ccfe5ffc360de">Delete topic?</phrase>
+	<phrase data="auto_5ccd43e336951571">Delete the file?</phrase>
+	<phrase data="auto_7dd8b128b4f005a1">The file was not completely downloaded</phrase>
+	<phrase data="auto_97c2dcb6cfaba85a">File or directory not found</phrase>
+	<phrase data="auto_1a5254b3e2aa03b1">File or directory deleted</phrase>
+	<phrase data="auto_388b738c5c2db623">File not found</phrase>
+	<phrase data="auto_61becb056f6aefde">A file with the same name already exists</phrase>
+	<phrase data="auto_c8f07804d9f109df">File too big for editor</phrase>
+	<phrase data="auto_e7bf4ba598d3c1d1">File created</phrase>
+	<phrase data="auto_ec47b187febef414">File saved</phrase>
+	<phrase data="auto_651bd42c0cb9c120">Theme file not found</phrase>
+	<phrase data="auto_d48a9f80726dfcd8">The file already exists</phrase>
+	<phrase data="auto_dd1ed4693c8671fa">file(s) uploaded</phrase>
+	<phrase data="auto_47fafcc64df5143c">This directory name is reserved</phrase>
+	<phrase data="auto_adf3d9139654e366">This file type cannot be edited as text</phrase>
+</language>

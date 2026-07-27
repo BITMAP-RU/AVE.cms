@@ -1,0 +1,20 @@
+.DS_Store
+
+# Runtime configuration
+/configs/db.config.php
+
+# Runtime state and secrets
+/storage/*
+!/storage/.htaccess
+
+# Cache, logs and sessions
+/tmp/*
+!/tmp/.htaccess
+
+# Uploaded files
+/uploads/*
+!/uploads/.htaccess
+!/uploads/index.php
+
+# Installed optional modules
+/modules/*

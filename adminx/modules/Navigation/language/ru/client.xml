@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="auto_11609834a799e96c">редактирование</phrase>
+	<phrase data="auto_141924f7e6e6cff8">Пункт меню</phrase>
+	<phrase data="auto_1a4a85e95ad35531">Структура меню</phrase>
+	<phrase data="auto_22b85f14d5be7427">Перетащить пункт</phrase>
+	<phrase data="auto_29d2f0e6febdd8f5">Проверьте поля пункта</phrase>
+	<phrase data="auto_32b74a3c47908c1e">Без названия</phrase>
+	<phrase data="auto_3697bef0b3fc93f5">новый</phrase>
+	<phrase data="auto_3757f7f85265ba50">Корень меню</phrase>
+	<phrase data="auto_42039dbdd60cceb2">Проверьте поля формы</phrase>
+	<phrase data="auto_4297c5c52ad0e7c1">Алиас сохранён</phrase>
+	<phrase data="auto_542e162a598ab71f">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm navigation-action-level&quot; type=&quot;button&quot; data-navigation-item-indent=&quot;1&quot; data-tooltip=&quot;Увеличить уровень&quot; aria-label=&quot;Увеличить уровень&quot;&gt;&lt;i class=&quot;ti ti-indent-increase&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_650078bec041bcf9">Не удалось загрузить пункт</phrase>
+	<phrase data="auto_68ee41202091a86a">(копия)</phrase>
+	<phrase data="auto_6f6792553955fa39">Новый пункт меню</phrase>
+	<phrase data="auto_710b4d61663b2ab5">Перетащить</phrase>
+	<phrase data="auto_7287413ae60a4181">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm navigation-action-level&quot; type=&quot;button&quot; data-navigation-item-indent=&quot;-1&quot; data-tooltip=&quot;Уменьшить уровень&quot; aria-label=&quot;Уменьшить уровень&quot;&gt;&lt;i class=&quot;ti ti-indent-decrease&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_73dfa7ea85e8eb75">Алиас</phrase>
+	<phrase data="auto_7e8692a57c2aa378">группы</phrase>
+	<phrase data="auto_7f0cd82e07f3d267">&lt;div class=&quot;modal-header&quot;&gt;&lt;span class=&quot;dialog-icon info&quot;&gt;&lt;i class=&quot;ti ti-file-search&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;div&gt;&lt;h3 id=&quot;navigationDocumentPickerTitle&quot;&gt;Выбрать документ&lt;/h3&gt;&lt;p class=&quot;text-secondary&quot;&gt;Название и ссылка заполнятся автоматически.&lt;/p&gt;&lt;/div&gt;&lt;button class=&quot;modal-close&quot; type=&quot;button&quot; data-navigation-picker-close aria-label=&quot;Закрыть&quot;&gt;&lt;i class=&quot;ti ti-x&quot;&gt;&lt;/i&gt;&lt;/button&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_802ef4dbf9d97a12">Не удалось загрузить навигацию</phrase>
+	<phrase data="auto_9069eda7952045d2">Никому не доступна</phrase>
+	<phrase data="auto_915098e02d6dfa95">&lt;option value=&quot;0&quot;&gt;Корень меню&lt;/option&gt;</phrase>
+	<phrase data="auto_967a51d5b40eac36">&lt;div class=&quot;modal-body&quot;&gt;&lt;div class=&quot;input-wrap navigation-document-search&quot;&gt;&lt;i class=&quot;ti ti-search&quot;&gt;&lt;/i&gt;&lt;input class=&quot;input&quot; type=&quot;search&quot; placeholder=&quot;ID, название или alias&quot; data-navigation-document-search&gt;&lt;/div&gt;&lt;div class=&quot;navigation-picker-status&quot; data-navigation-document-status&gt;Загрузка...&lt;/div&gt;&lt;div class=&quot;navigation-document-list&quot; data-navigation-document-list&gt;&lt;/div&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_97d8a75430674d01">Основная навигация</phrase>
+	<phrase data="auto_9f3b3c3b78133faa">Выбрать документ</phrase>
+	<phrase data="auto_a8e608c1f7384d26">&quot; data-tooltip=&quot;Удалить&quot; aria-label=&quot;Удалить&quot;&gt;&lt;i class=&quot;ti ti-trash&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_ac18b1187fa47440">Свойства пункта</phrase>
+	<phrase data="auto_ace6b3bf4c06d407">Копия создана</phrase>
+	<phrase data="auto_af23cc9cdbff9203">&lt;div class=&quot;modal-footer&quot;&gt;&lt;div class=&quot;mf-left navigation-picker-count&quot; data-navigation-document-count&gt;&lt;/div&gt;&lt;button class=&quot;btn btn-ghost&quot; type=&quot;button&quot; data-navigation-picker-close&gt;Закрыть&lt;/button&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_b5dc778970fa525c">Новая навигация</phrase>
+	<phrase data="auto_b63a1af63b674733">Все группы</phrase>
+	<phrase data="auto_beed168817322eeb">из</phrase>
+	<phrase data="auto_c2b70c3bb20678a7">Не удалось применить фильтры</phrase>
+	<phrase data="auto_c610cbf449544098">не выбран</phrase>
+	<phrase data="auto_c6a433696290fb08">Выберите хотя бы одну группу</phrase>
+	<phrase data="auto_d09bf6d4c36412be">&quot; data-tooltip=&quot;Вкл/выкл&quot; aria-label=&quot;Вкл/выкл&quot;&gt;&lt;i class=&quot;ti ti-power&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_d32b8258ca6f9d3e">&quot; data-tooltip=&quot;Изменить&quot; aria-label=&quot;Изменить&quot;&gt;&lt;i class=&quot;ti ti-pencil&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_d7d9310af67c647b">Выбрать изображение</phrase>
+	<phrase data="auto_daed835119849c8c">&lt;nav class=&quot;site-navigation&quot; aria-label=&quot;Основная навигация&quot;&gt;</phrase>
+	<phrase data="auto_e13b4bdc24d987d2">Пункт</phrase>
+	<phrase data="auto_e37824987d64ee7d">Навигация</phrase>
+	<phrase data="runtime_287ef8ef854ce1aa">(копия)</phrase>
+	<phrase data="runtime_3c1c66978a08584e">Новая навигация</phrase>
+	<phrase data="runtime_918940a4450b8399">Копия создана</phrase>
+	<phrase data="runtime_c2d7ad38345f368a">Проверьте поля пункта</phrase>
+	<phrase data="runtime_e638fc3afbee1219">Навигация</phrase>
+	<phrase data="runtime_f0b0cead3b7827f7">&lt;nav class=&quot;site-navigation&quot; aria-label=&quot;Основная навигация&quot;&gt;</phrase>
+	<phrase data="runtime_fc64875af5270c8c">Проверьте поля формы</phrase>
+</language>

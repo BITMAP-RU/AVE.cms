@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="runtime_287ef8ef854ce1aa">(копия)</phrase>
+	<phrase data="runtime_f0b0cead3b7827f7">&lt;nav class=&quot;site-navigation&quot; aria-label=&quot;Основная навигация&quot;&gt;</phrase>
+	<phrase data="runtime_9f08ab94e04fe046">Активная ветка</phrase>
+	<phrase data="runtime_fb12a2f6974c2eed">Алиас свободен</phrase>
+	<phrase data="runtime_3ec73d7a82777956">В структуре меню обнаружен цикл</phrase>
+	<phrase data="runtime_56894a44502213bd">Все уровни</phrase>
+	<phrase data="runtime_9213a998579d5555">Выбранный родитель не принадлежит этой навигации</phrase>
+	<phrase data="runtime_a64e538b9b889e87">Кеш навигации очищен</phrase>
+	<phrase data="runtime_0bb52004950628f0">Контент</phrase>
+	<phrase data="runtime_918940a4450b8399">Копия создана</phrase>
+	<phrase data="runtime_02c79e1cee7249f6">Меню поддерживает не более трёх уровней</phrase>
+	<phrase data="runtime_e638fc3afbee1219">Навигация</phrase>
+	<phrase data="runtime_3fdca3a6f05ee95a">Навигация #1 является системной и не может быть удалена</phrase>
+	<phrase data="runtime_00aaf235b93ec747">Навигация не найдена</phrase>
+	<phrase data="runtime_145a4f001423ecbb">Навигация создана</phrase>
+	<phrase data="runtime_74f7a475e78ad740">Навигация сохранена</phrase>
+	<phrase data="runtime_8eeb02e4b4baeaac">Навигация удалена</phrase>
+	<phrase data="runtime_540195a9aa87e8b0">Навигация: просмотр</phrase>
+	<phrase data="runtime_476e8882c9aeca18">Навигация: управление</phrase>
+	<phrase data="runtime_6a6dc189e9143145">Недостаточно прав</phrase>
+	<phrase data="runtime_3f6f1016c49a52d4">Некорректный порядок пунктов</phrase>
+	<phrase data="runtime_d9ee1de332125ee3">Некорректный родитель</phrase>
+	<phrase data="runtime_9677d12498c7091c">Нельзя переместить пункт внутрь собственной ветки</phrase>
+	<phrase data="runtime_3c1c66978a08584e">Новая навигация</phrase>
+	<phrase data="runtime_3061b68db8c80410">Передан неполный порядок пунктов</phrase>
+	<phrase data="runtime_d6cb3730c7e03cf0">Порядок пунктов сохранён</phrase>
+	<phrase data="runtime_ea5d0b2f900ee0ee">Порядок содержит неизвестный или повторяющийся пункт</phrase>
+	<phrase data="runtime_c2d7ad38345f368a">Проверьте поля пункта</phrase>
+	<phrase data="runtime_fc64875af5270c8c">Проверьте поля формы</phrase>
+	<phrase data="runtime_4252b40d9bddd529">Просмотр шаблонов и пунктов навигации.</phrase>
+	<phrase data="runtime_4bc3c0d89db1c918">Пункт включён</phrase>
+	<phrase data="runtime_51fb93319be79256">Пункт выключен</phrase>
+	<phrase data="runtime_2a9b3d512ad1193d">Пункт меню не найден</phrase>
+	<phrase data="runtime_ededd448f4849a83">Пункт навигации не найден</phrase>
+	<phrase data="runtime_5bf1e4817684368c">Пункт навигации создан</phrase>
+	<phrase data="runtime_5aca69ca1f14838d">Пункт навигации сохранён</phrase>
+	<phrase data="runtime_5bffa288ecb3ee58">Пункт навигации удалён или выключен</phrase>
+	<phrase data="runtime_3adc5bbf446ec3bb">Родитель пункта меню не найден</phrase>
+	<phrase data="runtime_7d738b7bbdcdd74c">Родитель пункта не принадлежит этой навигации</phrase>
+	<phrase data="runtime_cc9def54b32e8196">Создание, изменение, копирование, удаление и импорт навигаций.</phrase>
+	<phrase data="runtime_e3c831e55003ef33">Такой алиас уже используется</phrase>
+	<phrase data="runtime_ca90b176e0312f02">Текущий уровень</phrase>
+	<phrase data="runtime_b7d7026a1299d752">Только A-Z, 0-9, дефис и подчёркивание, до 20 символов; не число</phrase>
+	<phrase data="runtime_de03d88d3f009eb3">Укажите активный шаблон первого уровня</phrase>
+	<phrase data="runtime_61d11540ec876734">Укажите алиас</phrase>
+	<phrase data="runtime_e45da69c3ec3408f">Укажите название</phrase>
+	<phrase data="runtime_5f7f2b5833b62b3c">Укажите название пункта</phrase>
+	<phrase data="runtime_034207f07efe9b73">Укажите ссылку или alias</phrase>
+	<phrase data="runtime_22d2eb1a56c2cf35">Укажите шаблон ссылки первого уровня</phrase>
+</language>

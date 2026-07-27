@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="runtime_e704077285159bcd">Выберите роль.</phrase>
+	<phrase data="runtime_89f33468d76dfe10">Доступ к разделу и списку пользователей.</phrase>
+	<phrase data="runtime_f436b337a904a80b">Изменения сохранены</phrase>
+	<phrase data="runtime_07a6f7be3bde6671">Некорректный email.</phrase>
+	<phrase data="runtime_c577fa233186edcc">Нельзя отключить собственную учётную запись</phrase>
+	<phrase data="runtime_73eabb6dfa0fc532">Нельзя удалить самого себя</phrase>
+	<phrase data="runtime_9eebac9257e9663a">Пароль не короче 6 символов.</phrase>
+	<phrase data="runtime_845595d6e899ecb0">Пользователи</phrase>
+	<phrase data="runtime_e6bd6e61f32b2884">Пользователь включён</phrase>
+	<phrase data="runtime_8ef54e373b981f07">Пользователь не найден</phrase>
+	<phrase data="runtime_3a357bed8d79e749">Пользователь отключён</phrase>
+	<phrase data="runtime_57225885a4608cab">Пользователь создан</phrase>
+	<phrase data="runtime_4bf44dca589bef0f">Пользователь удалён</phrase>
+	<phrase data="runtime_fc64875af5270c8c">Проверьте поля формы</phrase>
+	<phrase data="runtime_5c093ae1d0c7b04a">Просмотр пользователей</phrase>
+	<phrase data="runtime_6da215b1bdac9524">Система</phrase>
+	<phrase data="runtime_057882f055eaa505">Создание, изменение, удаление, вкл/выкл учётных записей.</phrase>
+	<phrase data="runtime_3b0daf9b9290282a">Укажите email.</phrase>
+	<phrase data="runtime_4d0f88b6e6fbd3c9">Укажите имя.</phrase>
+	<phrase data="runtime_d40e0bdeb83cdf61">Управление пользователями</phrase>
+	<phrase data="runtime_9dbd7e3b1a2b8fa8">Этот email уже занят.</phrase>
+	<phrase data="runtime_41859888161442dc">Этот логин уже занят.</phrase>
+</language>

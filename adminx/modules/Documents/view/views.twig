@@ -1,0 +1,42 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}Просмотры документов{% endblock %}
+{% block content %}
+<nav class="breadcrumbs" aria-label="Хлебные крошки"><a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i><a href="{{ ADMINX_BASE }}/documents">Документы</a><i class="ti ti-chevron-right"></i><span>Просмотры</span></nav>
+
+<div class="page-header"><div class="between"><div><h1>Просмотры документов</h1><p class="text-secondary" style="margin-top:5px">Подневная статистика из действующего счётчика фронта.</p></div></div></div>
+
+<div class="tabs documents-page-tabs" role="tablist" aria-label="Разделы документов">
+  <a class="tab" href="{{ ADMINX_BASE }}/documents"><i class="ti ti-files"></i>Документы</a>
+  <a class="tab is-active" href="{{ ADMINX_BASE }}/documents/views"><i class="ti ti-chart-line"></i>Просмотры</a>
+  <a class="tab" href="{{ ADMINX_BASE }}/documents/redirects"><i class="ti ti-route"></i>Редиректы</a>
+  <a class="tab" href="{{ ADMINX_BASE }}/documents/api"><i class="ti ti-api"></i>JSON API</a>
+</div>
+
+<section class="documents-views-panel">
+  <input type="hidden" value="{{ csrf_token }}" data-documents-csrf>
+  <div class="documents-summary">
+    <div class="card documents-stat"><span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-eye"></i></span><div><b>{{ view_stats.total }}</b><span>За период</span></div></div>
+    <div class="card documents-stat"><span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-chart-bar"></i></span><div><b>{{ view_stats.average }}</b><span>В среднем за день</span></div></div>
+    <div class="card documents-stat"><span class="icon-tile" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-file-analytics"></i></span><div><b>{{ view_stats.tracked_documents }}</b><span>Документов</span></div></div>
+    <div class="card documents-stat"><span class="icon-tile" style="--tile-bg:var(--gray-100);--tile-fg:var(--gray-600)"><i class="ti ti-database"></i></span><div><b>{{ view_stats.rows }}</b><span>Строк счётчика</span></div></div>
+  </div>
+
+  <div class="card documents-card">
+    <div class="documents-section-head">
+      <div class="documents-section-title"><span class="icon-tile documents-head-icon" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-calendar-stats"></i></span><div><h2>Период</h2><p class="text-secondary">Статистика не копируется и читается из рабочей таблицы.</p></div></div>
+      <div class="cluster"><select class="select" data-document-view-days>{% for days in [7,30,90,180,365] %}<option value="{{ days }}"{{ view_stats.days == days ? ' selected' : '' }}>{{ days }} дней</option>{% endfor %}</select>{% if can_manage %}<button class="btn btn-danger-soft" type="button" data-document-views-clear><i class="ti ti-trash"></i>Очистить статистику</button>{% endif %}</div>
+    </div>
+  </div>
+
+  <div class="documents-views-grid">
+    <section class="card documents-card">
+      <div class="documents-section-head"><div class="documents-section-title"><span class="icon-tile documents-head-icon" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-chart-line"></i></span><div><h2>По дням</h2><p class="text-secondary">Количество просмотров и охваченных документов.</p></div></div></div>
+      <div class="table-scroll"><table class="table table-compact"><thead><tr><th>Дата</th><th>Просмотры</th><th>Документы</th></tr></thead><tbody>{% for row in view_stats.daily %}<tr><td>{{ row.date_label }}</td><td class="mono"><b>{{ row.views }}</b></td><td class="mono">{{ row.documents }}</td></tr>{% else %}<tr><td colspan="3"><div class="empty-state">За период данных нет.</div></td></tr>{% endfor %}</tbody></table></div>
+    </section>
+    <section class="card documents-card">
+      <div class="documents-section-head"><div class="documents-section-title"><span class="icon-tile documents-head-icon" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-trophy"></i></span><div><h2>Популярные документы</h2><p class="text-secondary">Топ за выбранный период.</p></div></div></div>
+      <div class="table-scroll"><table class="table table-compact"><thead><tr><th>Документ</th><th>Просмотры</th></tr></thead><tbody>{% for row in view_stats.top %}<tr><td><a class="documents-view-link" href="{{ ADMINX_BASE }}/documents/{{ row.id }}/edit"><b>{{ row.title }}</b><small>#{{ row.id }} · {{ row.alias }}</small></a></td><td class="mono"><b>{{ row.views }}</b></td></tr>{% else %}<tr><td colspan="2"><div class="empty-state">Данных пока нет.</div></td></tr>{% endfor %}</tbody></table></div>
+    </section>
+  </div>
+</section>
+{% endblock %}

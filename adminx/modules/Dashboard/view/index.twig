@@ -1,0 +1,15 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}{{ lang.dashboard_title|default('Обзор') }}{% endblock %}
+{% block content %}
+<nav class="breadcrumbs" aria-label="{{ lang.dashboard_breadcrumbs|default('Хлебные крошки') }}"><span>{{ lang.dashboard_home|default('Главная') }}</span></nav>
+
+<div class="page-header dashboard-page-header"><div><h1>{{ greeting }}</h1><p class="text-secondary">{{ lang.dashboard_summary|default('Сводка системы и последние изменения') }}</p></div><div class="dashboard-date"><i class="ti ti-calendar"></i>{{ 'now'|date('d.m.Y') }}</div></div>
+
+{% if dashboard_widgets %}
+<div class="dashboard-module-widgets">
+  {% for dashboard_widget in dashboard_widgets %}
+    {% if dashboard_widget.template %}{% include dashboard_widget.template with {module_data: dashboard_widget.data, module_widget: dashboard_widget} %}{% endif %}
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

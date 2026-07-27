@@ -1,0 +1,485 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}{{ request ? 'Запрос: ' ~ request.request_alias : 'Новый запрос' }}{% endblock %}
+{% set flag_labels = {
+  'request_show_pagination': 'Показывать пагинацию',
+  'request_count_items': 'Подсчитывать все результаты',
+  'request_hide_current': 'Не показывать открытый документ',
+  'request_only_owner': 'Только свои',
+  'request_ajax': 'AJAX',
+  'request_external': 'Внешний вызов',
+  'request_lang': 'Учитывать язык',
+  'request_cache_elements': 'Кэшировать элементы',
+  'request_show_statistic': 'Показывать статистику',
+  'request_show_sql': 'SQL в публичной отладке',
+  'request_use_query': 'Свой запрос'
+} %}
+{% set basic_flags = ['request_show_pagination', 'request_count_items', 'request_hide_current'] %}
+{% macro sort_rule(rule, order_options, rubric_fields) %}
+<div class="request-sort-rule{{ rule.source == 'random' ? ' is-random' : '' }}" data-request-sort-rule>
+  <span class="request-sort-handle" draggable="true" data-request-sort-handle data-tooltip="Изменить приоритет"><i class="ti ti-grip-vertical"></i></span>
+  <span class="request-sort-position" data-request-sort-position>1</span>
+  <label><span>Сортировать по</span><select class="select" data-request-sort-source>
+    <optgroup label="Данные документа">
+      {% for value, label in order_options %}{% if value and value != 'RAND()' %}<option value="document:{{ value }}"{{ rule.source == 'document' and rule.key == value ? ' selected' : '' }}>{{ label }}</option>{% endif %}{% endfor %}
+    </optgroup>
+    {% if rubric_fields %}<optgroup label="Поля рубрики">{% for field in rubric_fields %}<option value="field:{{ field.Id }}"{{ rule.source == 'field' and rule.key == field.Id ? ' selected' : '' }}>{{ field.rubric_field_title }}{{ field.rubric_field_numeric ? ' · число' : '' }}</option>{% endfor %}</optgroup>{% endif %}
+    <optgroup label="Особый порядок"><option value="random:RAND()"{{ rule.source == 'random' ? ' selected' : '' }}>Случайный порядок</option></optgroup>
+  </select></label>
+  <div class="request-sort-direction" role="group" aria-label="Направление сортировки">
+    <button type="button" data-request-sort-direction="ASC" class="{{ rule.direction|default('ASC') == 'ASC' ? 'is-active' : '' }}" aria-pressed="{{ rule.direction|default('ASC') == 'ASC' ? 'true' : 'false' }}"><i class="ti ti-sort-ascending"></i><span>По возрастанию</span></button>
+    <button type="button" data-request-sort-direction="DESC" class="{{ rule.direction|default('ASC') == 'DESC' ? 'is-active' : '' }}" aria-pressed="{{ rule.direction|default('ASC') == 'DESC' ? 'true' : 'false' }}"><i class="ti ti-sort-descending"></i><span>По убыванию</span></button>
+  </div>
+  <div class="request-sort-seed" data-request-sort-seed>
+    <label><span>Ключ порядка</span><input class="input" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="10" value="{{ rule.seed|default('') }}" placeholder="Например, 2026" data-request-sort-seed-input></label>
+    <small>Одинаковый ключ сохраняет порядок между страницами. Оставьте пустым, чтобы перемешивать заново.</small>
+  </div>
+  <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-danger" type="button" data-request-sort-remove data-tooltip="Убрать уровень" aria-label="Убрать уровень"><i class="ti ti-trash"></i></button>
+</div>
+{% endmacro %}
+{% macro condition_field_option(f, selected) %}
+<option value="{{ f.Id }}" data-cond-alias="{{ f.rubric_field_alias|default('field_' ~ f.Id)|e('html_attr') }}" data-cond-kind="{{ f.condition_kind|default('text')|e('html_attr') }}" data-cond-type="{{ f.rubric_field_type|e('html_attr') }}" data-cond-type-label="{{ f.condition_type_label|default(f.rubric_field_type)|e('html_attr') }}" data-cond-mode="{{ f.condition_value_mode|default('string_scalar')|e('html_attr') }}" data-cond-options="{{ f.condition_options|default([])|json_encode|e('html_attr') }}" data-cond-rubrics="{{ f.condition_rubrics|default([])|join(',')|e('html_attr') }}" data-cond-operators="{{ f.condition_operators|default([])|json_encode|e('html_attr') }}"{{ selected ? ' selected' : '' }}>{{ f.rubric_field_title }}</option>
+{% endmacro %}
+{% macro condition_value(c, modes, can_manage) %}
+<div class="req-condition-value" data-condition-value>
+  <label class="req-condition-source-field"><span>Откуда взять значение</span><select class="select req-condition-source" data-cf="condition_value_source"{{ can_manage ? '' : ' disabled' }}>
+    <option value="literal"{{ c.value_source_ui == 'literal' ? ' selected' : '' }}>Готовое значение</option>
+    <option value="input"{{ c.value_source_ui == 'input' ? ' selected' : '' }}>Параметр URL или формы</option>
+    <option value="legacy" data-request-advanced-option{{ c.value_source_ui == 'legacy' ? ' selected' : '' }}>Код совместимости</option>
+  </select></label>
+  <label class="req-condition-literal" data-condition-literal{{ c.value_source_ui == 'input' ? ' hidden' : '' }}><span data-condition-literal-label>{{ c.value_source_ui == 'legacy' ? 'Сохранённый PHP-код' : 'Значение для сравнения' }}</span>
+    <input class="input" type="text" data-cf="condition_value" data-condition-literal-storage value="{{ c.condition_value|e('html_attr') }}"{{ can_manage ? '' : ' disabled' }}>
+    <span class="req-condition-smart-control" data-condition-smart-control></span>
+  </label>
+  <div class="req-condition-input" data-condition-input{{ c.value_source_ui != 'input' ? ' hidden' : '' }}>
+    <label class="req-condition-parameter"><span>Имя параметра</span><div class="input-wrap"><i class="ti ti-link"></i><input class="input mono" type="text" data-cf="condition_value_key" value="{{ c.value_key_ui|default('')|e('html_attr') }}" placeholder="Например, catalog"{{ can_manage ? '' : ' disabled' }}></div></label>
+    <label data-request-advanced><span>Как обработать параметр</span><select class="select" data-cf="condition_value_mode"{{ can_manage ? '' : ' disabled' }}>{% for mode, label in modes %}<option value="{{ mode }}"{{ c.value_mode_ui|default('string_scalar') == mode ? ' selected' : '' }}>{{ label }}</option>{% endfor %}</select></label>
+    <label data-condition-constant{{ c.value_mode_ui|default('') != 'presence_constant' ? ' hidden' : '' }}><span>Какое значение подставить</span><input class="input mono" type="text" data-cf="condition_value_constant" value="{{ c.value_constant_ui|default('')|e('html_attr') }}"{{ can_manage ? '' : ' disabled' }}></label>
+  </div>
+  <div class="req-condition-preview"><i class="ti ti-info-circle"></i><span data-condition-preview-text></span></div>
+  <details class="req-condition-technical" data-condition-technical{{ c.value_source_ui != 'input' ? ' hidden' : '' }}><summary>Служебное представление</summary><code data-condition-tag>{{ c.value_key_ui ? '[tag:cond:' ~ c.value_key_ui ~ ']' : '[tag:cond:alias]' }}</code></details>
+</div>
+{% endmacro %}
+
+{% macro condition_row(c, compares, rubric_fields, modes, can_manage) %}
+<tr data-cond-id="{{ c.Id }}">
+  {% if can_manage %}<td class="cond-drag-cell"><span class="cond-drag" data-cond-drag draggable="true" data-tooltip="Перетащить"><i class="ti ti-grip-vertical"></i></span></td>{% endif %}
+  <td class="req-condition-field-cell"><span class="req-condition-cell-label">Поле</span>
+    <select class="select" data-cf="condition_field_id"{{ can_manage ? '' : ' disabled' }}>
+      {% for f in rubric_fields %}{{ _self.condition_field_option(f, f.Id == c.condition_field_id) }}{% endfor %}
+    </select>
+  </td>
+  <td class="req-condition-compare-cell"><span class="req-condition-cell-label">Сравнение</span><select class="select" data-cf="condition_compare"{{ can_manage ? '' : ' disabled' }}>{% for op, opl in compares %}<option value="{{ op }}"{{ c.condition_compare == op ? ' selected' : '' }}>{{ opl }}</option>{% endfor %}{% if c.condition_compare not in compares|keys %}<option value="{{ c.condition_compare }}" selected>{{ c.condition_compare }}</option>{% endif %}</select></td>
+  <td class="req-condition-value-cell">{{ _self.condition_value(c, modes, can_manage) }}</td>
+  <td class="req-condition-status-cell"><span class="req-condition-cell-label">Работает</span><label class="switch"><input type="checkbox" data-cf="condition_status"{{ c.condition_status == '1' ? ' checked' : '' }}{{ can_manage ? '' : ' disabled' }}><span></span></label></td>
+  {% if can_manage %}<td class="req-condition-actions-cell"><div class="cluster cond-actions"><button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-ok" type="button" data-cond-save data-tooltip="Сохранить" aria-label="Сохранить"><i class="ti ti-check"></i></button><button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-danger" type="button" data-cond-delete data-tooltip="Удалить" aria-label="Удалить"><i class="ti ti-trash"></i></button></div></td>{% endif %}
+</tr>
+{% endmacro %}
+
+{% macro condition_group(group, compares, rubric_fields, modes, can_manage) %}
+<section class="req-condition-group{{ group.parent_id == 0 ? ' is-root' : '' }}" data-cond-group data-group-id="{{ group.Id }}" data-parent-id="{{ group.parent_id }}" style="--condition-depth:{{ group.depth|default(0) }}">
+  <header class="req-condition-group-head">
+    <div class="req-condition-group-title">
+      <span class="req-condition-bracket" aria-hidden="true"></span>
+      <div>{% if group.parent_id == 0 %}<strong>Все условия запроса</strong>{% else %}<input class="req-group-name" type="text" value="{{ group.group_title }}" placeholder="Название группы" maxlength="100" data-group-title{{ can_manage ? '' : ' disabled' }}>{% endif %}<span>{{ group.group_operator == 'AND' ? 'Должны выполняться все элементы внутри' : 'Достаточно любого элемента внутри' }}</span></div>
+    </div>
+    <div class="req-condition-group-tools">
+      <div class="segmented req-operator" aria-label="Логика группы">
+        <button type="button" data-group-operator="AND" class="{{ group.group_operator == 'AND' ? 'is-active' : '' }}">И</button>
+        <button type="button" data-group-operator="OR" class="{{ group.group_operator == 'OR' ? 'is-active' : '' }}">ИЛИ</button>
+      </div>
+      {% if can_manage %}<button class="btn btn-ghost btn-icon btn-sm" type="button" data-cond-add data-tooltip="Добавить условие"><i class="ti ti-plus"></i></button>{% if group.depth|default(0) < 3 %}<button class="btn btn-ghost btn-icon btn-sm" type="button" data-group-add data-tooltip="Добавить вложенную группу"><i class="ti ti-brackets"></i></button>{% endif %}{% if group.parent_id != 0 %}<button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-danger" type="button" data-group-delete data-tooltip="Удалить группу"><i class="ti ti-trash"></i></button>{% endif %}{% endif %}
+    </div>
+  </header>
+  <div class="table-scroll req-condition-table-wrap">
+    <table class="table req-condition-table{{ can_manage ? ' is-manageable' : '' }}">
+      <thead><tr>{% if can_manage %}<th class="cond-handle-col"></th>{% endif %}<th class="cond-field-col">Поле</th><th class="cond-compare-col">Сравнение</th><th>Значение</th><th class="cond-status-col">Вкл</th>{% if can_manage %}<th class="cond-actions-col"></th>{% endif %}</tr></thead>
+      <tbody data-cond-body data-group-id="{{ group.Id }}">
+        {% for c in group.conditions %}{{ _self.condition_row(c, compares, rubric_fields, modes, can_manage) }}{% else %}<tr data-cond-empty><td colspan="6" class="ax-empty">В этой группе пока нет условий</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="req-condition-children" data-group-children>{% for child in group.children %}{{ _self.condition_group(child, compares, rubric_fields, modes, can_manage) }}{% endfor %}</div>
+</section>
+{% endmacro %}
+{% block content %}
+
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i>
+  <a href="{{ ADMINX_BASE }}/requests">Запросы</a><i class="ti ti-chevron-right"></i>
+  <span>{{ request ? request.request_alias : 'новый' }}</span>
+</nav>
+
+<div class="page-header">
+  <div class="between">
+    <div>
+      <h1>{{ request ? request.request_title|default(request.request_alias) : 'Новый запрос' }}</h1>
+      <p class="text-secondary">{{ request ? 'Алиас: ' ~ request.request_alias : 'Создание нового листинга' }}</p>
+    </div>
+    <div class="cluster">
+      <a class="btn btn-ghost" href="{{ ADMINX_BASE }}/requests"><i class="ti ti-arrow-left"></i>К списку</a>
+      {% if can_manage %}<button class="btn btn-primary" type="submit" form="requestForm"><i class="ti ti-device-floppy"></i>Сохранить</button>{% endif %}
+    </div>
+  </div>
+</div>
+
+{% if saved %}<div class="alert alert-success" data-autohide><i class="ti ti-circle-check alert-ic"></i><div>Запрос сохранён.</div></div>{% endif %}
+
+<div class="request-editor-modebar" data-request-editor-mode>
+  <span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-700)"><i class="ti ti-adjustments-horizontal"></i></span>
+  <div class="request-editor-mode-copy"><b>Настройка запроса</b><span data-request-editor-mode-description>Основные параметры, условия и оформление результата.</span></div>
+  <div class="segmented request-editor-mode-switch" role="group" aria-label="Режим редактора">
+    <button type="button" data-request-editor-mode-value="basic" aria-pressed="true"><i class="ti ti-sparkles"></i>Обычный</button>
+    <button type="button" data-request-editor-mode-value="advanced" aria-pressed="false"><i class="ti ti-settings"></i>Расширенный</button>
+  </div>
+</div>
+
+<form id="requestForm" data-base="{{ ADMINX_BASE }}" data-id="{{ request ? request.Id : 0 }}">
+  <div class="requests-grid">
+	<div class="stack">
+
+      {# --------- Основное --------- #}
+      <div class="card">
+        <div class="card-body">
+          <h3 class="req-card-title">Основное</h3>
+          <div class="form-grid request-main-fields">
+            <label class="field">
+              <span class="field-label">Название</span>
+              <input class="input" type="text" name="request_title" value="{{ request.request_title|default('') }}" required>
+              <span class="field-error" data-error="request_title"></span>
+            </label>
+            <label class="field">
+              <span class="field-label">Системное имя (alias)</span>
+              <input class="input mono" type="text" name="request_alias" value="{{ request.request_alias|default('') }}" maxlength="20" autocomplete="off" required>
+              <small class="field-hint">Латиницей; используется в теге вставки запроса.</small>
+              <span class="field-error" data-error="request_alias"></span>
+            </label>
+            <label class="field">
+              <span class="field-label">Рубрика</span>
+              <select class="select" name="rubric_id"><option value="0">Не выбрана</option>{% for rubric in rubrics %}<option value="{{ rubric.Id }}"{{ request and request.rubric_id == rubric.Id ? ' selected' : '' }}>{{ rubric.rubric_title }}</option>{% endfor %}</select>
+            </label>
+            <label class="field">
+              <span class="field-label">Материалов на страницу</span>
+              <input class="input" type="number" name="request_items_per_page" value="{{ request.request_items_per_page|default(0) }}" min="0">
+            </label>
+            <section class="request-sort-builder" data-request-sort-builder>
+              <div class="request-sort-head">
+                <div><b>Порядок материалов</b><span>Верхнее правило применяется первым. Перетащите строки, чтобы изменить приоритет.</span></div>
+                <div class="cluster">
+                  <button class="btn btn-ghost btn-sm" type="button" data-request-sort-stable><i class="ti ti-lock-check"></i>Закрепить по ID</button>
+                  <button class="btn btn-secondary btn-sm" type="button" data-request-sort-add><i class="ti ti-plus"></i>Добавить уровень</button>
+                </div>
+              </div>
+              <div class="request-sort-list" data-request-sort-list>
+                {% for rule in sort_rules %}{{ _self.sort_rule(rule, order_options, rubric_fields) }}{% endfor %}
+              </div>
+              <div class="request-sort-empty" data-request-sort-empty{{ sort_rules ? ' hidden' : '' }}><i class="ti ti-arrows-sort"></i><span><b>Порядок не задан</b><small>Без правил порядок материалов может меняться при одинаковых значениях.</small></span></div>
+              <input type="hidden" name="request_sort_rules" value="{{ sort_rules|json_encode|e('html_attr') }}" data-request-sort-rules>
+              <span class="field-error" data-error="request_sort_rules"></span>
+              <template data-request-sort-template>{{ _self.sort_rule({source:'document',key:'document_published',direction:'DESC'}, order_options, rubric_fields) }}</template>
+            </section>
+            <label class="field">
+              <span class="field-label">Шаблон пагинации</span>
+			  {% set current_pagination = request.request_pagination|default(0) %}
+			  <select class="select" name="request_pagination"{{ pagination_options ? '' : ' disabled' }}>
+				{% if not pagination_options %}<option value="0">Шаблоны не созданы</option>{% endif %}
+				{% for pagination in pagination_options %}<option value="{{ pagination.id }}"{{ pagination.id == current_pagination or (not request and loop.first) ? ' selected' : '' }}>{{ pagination.pagination_name ?: 'Без названия' }}</option>{% endfor %}
+				{% if request and current_pagination and current_pagination not in pagination_ids %}<option value="{{ current_pagination }}" selected>Удалённый шаблон · #{{ current_pagination }}</option>{% endif %}
+			  </select>
+			  <span class="field-error" data-error="request_pagination"></span>
+            </label>
+            <label class="field" data-request-advanced hidden>
+              <span class="field-label">Время кеширования, секунд</span>
+              <input class="input" type="number" name="request_cache_lifetime" value="{{ request.request_cache_lifetime|default(0) }}" min="0">
+            </label>
+          </div>
+          <label class="field" style="margin-top:12px">
+            <span class="field-label">Описание</span>
+            <input class="input" type="text" name="request_description" value="{{ request.request_description|default('') }}">
+          </label>
+        </div>
+      </div>
+
+      {# --------- Оформление результата --------- #}
+      <section class="card request-presentation-card" data-request-presentation>
+        <div class="card-body">
+          <div class="request-presentation-head">
+            <span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-layout-cards"></i></span>
+            <div>
+              <h3 class="req-card-title">Как показать результат</h3>
+              <p>Выберите удобный вид для проверки запроса в админке.</p>
+            </div>
+          </div>
+
+          <div class="request-public-template-state">
+            <span class="request-public-template-icon"><i class="ti ti-world"></i></span>
+            <div><b>На сайте используется текущий шаблон</b><span>Сохранённые шаблоны списка и материала продолжат работать без изменений.</span></div>
+            <span class="badge badge-green"><i class="ti ti-shield-check"></i>Без изменений</span>
+          </div>
+
+          <div class="request-presentation-label"><b>Вид предпросмотра</b><span>Меняет только отображение проверки ниже.</span></div>
+          <div class="request-presentation-options" role="group" aria-label="Вид предпросмотра запроса">
+            {% for renderer in preview_renderers %}
+            <button class="request-presentation-option{{ renderer.code == preview_renderer ? ' is-active' : '' }}" type="button" data-request-presentation-value="{{ renderer.code }}" aria-pressed="{{ renderer.code == preview_renderer ? 'true' : 'false' }}">
+              <span class="request-presentation-option-icon"><i class="ti {{ renderer.icon }}"></i></span>
+              <span><b>{{ renderer.title }}</b><small>{{ renderer.description }}</small></span>
+              <i class="ti ti-circle-check request-presentation-check"></i>
+            </button>
+            {% endfor %}
+          </div>
+
+          <div class="request-presentation-footer">
+            <span><i class="ti ti-info-circle"></i>Выбранный вид применяется кнопкой «Обновить» в предпросмотре.</span>
+            <button class="btn btn-secondary" type="button" data-request-open-code><i class="ti ti-code"></i>Редактировать шаблон сайта</button>
+          </div>
+
+          <select name="request_preview_renderer" data-request-preview-renderer hidden aria-hidden="true" tabindex="-1">
+            {% for renderer in preview_renderers %}<option value="{{ renderer.code }}"{{ renderer.code == preview_renderer ? ' selected' : '' }}>{{ renderer.title }}</option>{% endfor %}
+          </select>
+        </div>
+      </section>
+
+      {# --------- Шаблоны --------- #}
+      <div class="card req-code-field" id="requestSiteTemplates" data-req-code-field data-request-advanced hidden>
+        <div class="card-body">
+          <div class="req-code-head">
+            <h3 class="req-card-title">Общий шаблон списка <span class="text-muted text-xs mono">main · [tag:content]</span></h3>
+            <div class="req-code-tools">
+              <button class="btn btn-ghost btn-icon btn-sm" type="button" data-req-tags-toggle data-tooltip="Теги" aria-label="Теги"><i class="ti ti-brackets-contain"></i></button>
+              <button class="btn btn-ghost btn-icon btn-sm" type="button" data-req-lint data-tooltip="Проверить PHP" aria-label="Проверить PHP"><i class="ti ti-bug"></i></button>
+              <button class="btn btn-ghost btn-icon btn-sm" type="button" data-req-fullscreen data-tooltip="Развернуть" aria-label="Развернуть"><i class="ti ti-arrows-maximize"></i></button>
+            </div>
+          </div>
+          <textarea class="textarea mono" name="request_template_main" rows="8" data-code-editor data-mode="php" data-height="220" data-req-editor>{{ request.request_template_main|default('') }}</textarea>
+          <span class="field-hint req-lint-result" data-req-lint-result></span>
+        </div>
+      </div>
+      <div class="card req-code-field" data-req-code-field data-request-advanced hidden>
+        <div class="card-body">
+          <div class="req-code-head">
+            <h3 class="req-card-title">Шаблон одного материала <span class="text-muted text-xs mono">item</span></h3>
+            <div class="req-code-tools">
+              <button class="btn btn-ghost btn-icon btn-sm" type="button" data-req-tags-toggle data-tooltip="Теги" aria-label="Теги"><i class="ti ti-brackets-contain"></i></button>
+              <button class="btn btn-ghost btn-icon btn-sm" type="button" data-req-lint data-tooltip="Проверить PHP" aria-label="Проверить PHP"><i class="ti ti-bug"></i></button>
+              <button class="btn btn-ghost btn-icon btn-sm" type="button" data-req-fullscreen data-tooltip="Развернуть" aria-label="Развернуть"><i class="ti ti-arrows-maximize"></i></button>
+            </div>
+          </div>
+          <textarea class="textarea mono" name="request_template_item" rows="12" data-code-editor data-mode="php" data-height="360" data-req-editor>{{ request.request_template_item|default('') }}</textarea>
+          <span class="field-hint req-lint-result" data-req-lint-result></span>
+        </div>
+      </div>
+    </div>
+
+    {# --------- Флаги (сайдбар) --------- #}
+    <div class="stack">
+      <div class="card">
+        <div class="card-body">
+          <h3 class="req-card-title">Вывод</h3>
+          <div class="stack-sm" style="gap:8px">
+            {% for code in basic_flags %}
+            {% set label = flag_labels[code] %}
+            <label class="check"><input type="checkbox" name="{{ code }}" value="1"{{ request and request[code] == '1' ? ' checked' : '' }}><span>{{ label }}</span></label>
+            {% endfor %}
+            <div class="request-advanced-flags" data-request-advanced hidden>
+              <div class="request-advanced-flags-head"><b>Служебные параметры</b><span>Нужны интеграциям и старым шаблонам</span></div>
+              {% for code, label in flag_labels %}{% if code not in basic_flags %}
+              <label class="check"><input type="checkbox" name="{{ code }}" value="1"{{ request and request[code] == '1' ? ' checked' : '' }}><span>{{ label }}</span></label>
+              {% endif %}{% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+	  </div>
+	</div>
+
+	<section class="request-contract" data-request-contract data-request-advanced hidden>
+	  <div class="request-contract-head">
+		<div class="request-contract-title">
+		  <span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-braces"></i></span>
+		  <div><h2>Контракт результата</h2><p>Какие данные получает API, предпросмотр и будущие renderer’ы. Текущие публичные шаблоны не меняются.</p></div>
+		</div>
+		<div class="request-renderer-control">
+		  <span class="badge {{ native_verified ? 'badge-green' : (native_plan.eligible ? 'badge-blue' : 'badge-amber') }}" data-native-plan-state data-tooltip="{{ native_verified ? 'Текущая версия плана совпала с Legacy' : (native_plan.eligible ? 'Запустите предпросмотр для теневого сравнения' : (native_plan.reasons|first)|default('Native пока недоступен')) }}">{{ native_verified ? 'Native подтверждён' : (native_plan.eligible ? 'Готов к сравнению' : 'Требуется Legacy') }}</span>
+		  <label><span>Executor</span><select class="select" name="request_executor_mode"><option value="legacy"{{ executor_mode == 'legacy' ? ' selected' : '' }}>Legacy</option><option value="shadow"{{ executor_mode == 'shadow' ? ' selected' : '' }}>Shadow</option><option value="native" data-native-executor-option{{ executor_mode == 'native' ? ' selected' : '' }}{{ not native_verified ? ' disabled' : '' }}>Native</option></select><small class="field-error" data-error="request_executor_mode"></small></label>
+		  <label><span>Предпросмотр</span><select class="select" data-request-preview-renderer-advanced>{% for renderer in preview_renderers %}<option value="{{ renderer.code }}"{{ renderer.code == preview_renderer ? ' selected' : '' }}>{{ renderer.title }}</option>{% endfor %}</select></label>
+		</div>
+	  </div>
+	  <div class="request-contract-grid">
+		<div class="request-contract-group">
+		  <div class="request-contract-group-head"><b>Системные данные</b><span>Документ</span></div>
+		  <div class="request-contract-options">
+			{% for code, label in result_system_options %}
+			<label class="request-contract-option"><input type="checkbox" name="result_system[]" value="{{ code }}"{{ code in result_contract.system ? ' checked' : '' }}><span><b>{{ label }}</b><small class="mono">{{ code }}</small></span></label>
+			{% endfor %}
+		  </div>
+		</div>
+		<div class="request-contract-group">
+		  <div class="request-contract-group-head"><b>Поля рубрики</b><span>{{ rubric_fields|length }}</span></div>
+		  {% if rubric_fields %}
+		  <div class="request-contract-options">
+			{% for field in rubric_fields %}
+			<label class="request-contract-option"><input type="checkbox" name="result_fields[]" value="{{ field.Id }}"{{ field.Id in result_contract.fields ? ' checked' : '' }}><span><b>{{ field.rubric_field_title }}</b><small><code>{{ field.rubric_field_alias ?: '#' ~ field.Id }}</code> · {{ field.rubric_field_type }}</small></span></label>
+			{% endfor %}
+		  </div>
+		  {% else %}
+		  <div class="request-contract-empty"><i class="ti ti-layout-list"></i><span>{{ request ? 'У выбранной рубрики нет полей.' : 'Сначала сохраните запрос и выбранную рубрику.' }}</span></div>
+		  {% endif %}
+		</div>
+	  </div>
+	</section>
+  </form>
+
+{% if can_manage and tag_groups %}
+<div class="req-tag-palette" data-req-tags-panel hidden>
+  <div class="req-tag-toolbar">
+    <div class="input-wrap"><i class="ti ti-search"></i><input class="input" type="search" placeholder="Поиск тегов" data-req-tags-search></div>
+    <button class="btn btn-ghost btn-icon btn-sm" type="button" data-req-tags-close aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="req-tag-browser">
+    <div class="req-tag-nav" role="tablist" aria-label="Группы тегов">
+      {% for group in tag_groups %}{% if group.items %}
+      <button type="button" data-req-tag-tab="{{ loop.index0 }}" data-req-tag-scope="{{ group.scope|default('all') }}" class="{{ loop.first ? 'is-active' : '' }}"><span>{{ group.title }}</span><b>{{ group.items|length }}</b></button>
+      {% endif %}{% endfor %}
+    </div>
+    <div class="req-tag-groups">
+      {% for group in tag_groups %}{% if group.items %}
+      <section class="req-tag-group{{ loop.first ? ' is-active' : '' }}" data-req-tag-group data-req-tag-panel="{{ loop.index0 }}" data-req-tag-scope="{{ group.scope|default('all') }}">
+        <div class="req-tag-list">
+          {% for tag in group.items %}
+          <button type="button" data-req-tag="{{ tag.value|e('html_attr') }}"{% if tag.select %} data-req-tag-select="{{ tag.select|e('html_attr') }}"{% endif %}><code>{{ tag.label }}</code><span>{{ tag.description }}</span></button>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}{% endfor %}
+      <div class="req-tag-empty" data-req-tags-empty hidden>Ничего не найдено</div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{# --------- Условия --------- #}
+<div class="section-header ax-panel-header requests-panel-header">
+  <div class="section-icon"><i class="ti ti-filter"></i></div>
+  <div>
+    <div class="section-eyebrow">Фильтр</div>
+    <h2>Условия</h2>
+    <p class="section-desc">Группа задаёт логику для всех элементов внутри. Вложенные группы превращаются в скобки SQL и позволяют собрать сочетания И/ИЛИ без неоднозначности.</p>
+  </div>
+</div>
+
+<details class="request-condition-guide">
+  <summary>
+    <span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-700)"><i class="ti ti-bulb"></i></span>
+    <span><b>Как собрать условие</b><small>Поле, сравнение, источник значения и логика групп на простых примерах</small></span>
+    <i class="ti ti-chevron-right request-condition-guide-chevron"></i>
+  </summary>
+  <div class="request-condition-guide-body">
+    <div class="request-condition-guide-steps">
+      <article><span>1</span><div><b>Выберите поле</b><p>Это данные документа, которые запрос будет проверять.</p></div></article>
+      <article><span>2</span><div><b>Выберите сравнение</b><p>Например: равно, содержит, больше или входит в список.</p></div></article>
+      <article><span>3</span><div><b>Укажите источник</b><p>Постоянное значение задаётся вручную, динамическое берётся из URL или формы.</p></div></article>
+      <article><span>4</span><div><b>Соберите группы</b><p><strong>И</strong> требует все элементы, <strong>ИЛИ</strong> — хотя бы один. Вложенная группа работает как скобки.</p></div></article>
+    </div>
+    <div class="request-condition-guide-examples">
+      <div><b>Постоянный фильтр</b><code>Тип материала = Новость</code><span>Источник: «Готовое значение».</span></div>
+      <div><b>Фильтр из адреса</b><code>Каталог содержит catalog</code><span>Источник: «Параметр URL или формы»; пустой параметр не применяется.</span></div>
+      <div><b>Условие со скобками</b><code>На главной = Да И (Новость ИЛИ Статья)</code><span>Создайте вложенную группу и переключите её на «ИЛИ».</span></div>
+    </div>
+    <p class="request-condition-guide-note"><i class="ti ti-info-circle"></i>Служебные теги и Legacy PHP нужны только для совместимости. Для новых условий выбирайте значения в форме: движок сам проверит входные данные и безопасно соберёт фильтр.</p>
+  </div>
+</details>
+
+<div id="condTable" class="req-condition-builder" data-req-id="{{ request ? request.Id : 0 }}">
+  {% if not request %}<div class="card"><div class="ax-empty">Сохраните запрос, чтобы добавить условия</div></div>{% else %}{{ _self.condition_group(condition_tree, compares, rubric_fields, condition_value_modes, can_manage) }}{% endif %}
+</div>
+
+{% if can_manage and request %}
+<template data-cond-tpl>
+  <tr data-cond-id="0" data-cond-new>
+    <td class="cond-drag-cell"><span class="cond-drag" data-cond-drag draggable="true"><i class="ti ti-grip-vertical"></i></span></td>
+    <td class="req-condition-field-cell"><span class="req-condition-cell-label">Поле</span><select class="select" data-cf="condition_field_id">{% for f in rubric_fields %}{{ _self.condition_field_option(f, loop.first) }}{% endfor %}</select></td>
+    <td class="req-condition-compare-cell"><span class="req-condition-cell-label">Сравнение</span>
+      <select class="select" data-cf="condition_compare">
+        {% for op, opl in compares %}<option value="{{ op }}">{{ opl }}</option>{% endfor %}
+      </select>
+    </td>
+    <td class="req-condition-value-cell">{{ _self.condition_value({
+      condition_value: '',
+      value_source_ui: 'literal',
+      value_key_ui: '',
+      value_mode_ui: 'string_scalar',
+      value_constant_ui: ''
+    }, condition_value_modes, true) }}</td>
+    <td class="req-condition-status-cell"><span class="req-condition-cell-label">Работает</span><label class="switch"><input type="checkbox" data-cf="condition_status" checked><span></span></label></td>
+    <td class="req-condition-actions-cell">
+      <div class="cluster" style="gap:4px;flex-wrap:nowrap">
+        <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-ok" type="button" data-cond-save data-tooltip="Сохранить" aria-label="Сохранить"><i class="ti ti-check"></i></button>
+        <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-danger" type="button" data-cond-delete data-tooltip="Удалить" aria-label="Удалить"><i class="ti ti-trash"></i></button>
+      </div>
+    </td>
+  </tr>
+</template>
+<template data-group-tpl>
+  <section class="req-condition-group" data-cond-group data-group-id="0" data-parent-id="0" style="--condition-depth:1">
+    <header class="req-condition-group-head"><div class="req-condition-group-title"><span class="req-condition-bracket"></span><div><input class="req-group-name" type="text" value="" placeholder="Название группы" maxlength="100" data-group-title><span>Должны выполняться все элементы внутри</span></div></div><div class="req-condition-group-tools"><div class="segmented req-operator"><button type="button" data-group-operator="AND" class="is-active">И</button><button type="button" data-group-operator="OR">ИЛИ</button></div><button class="btn btn-ghost btn-icon btn-sm" type="button" data-cond-add data-tooltip="Добавить условие"><i class="ti ti-plus"></i></button><button class="btn btn-ghost btn-icon btn-sm" type="button" data-group-add data-tooltip="Добавить вложенную группу"><i class="ti ti-brackets"></i></button><button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-danger" type="button" data-group-delete data-tooltip="Удалить группу"><i class="ti ti-trash"></i></button></div></header>
+    <div class="table-scroll req-condition-table-wrap"><table class="table req-condition-table is-manageable"><thead><tr><th class="cond-handle-col"></th><th class="cond-field-col">Поле</th><th class="cond-compare-col">Сравнение</th><th>Значение</th><th class="cond-status-col">Вкл</th><th class="cond-actions-col"></th></tr></thead><tbody data-cond-body data-group-id="0"><tr data-cond-empty><td colspan="6" class="ax-empty">В этой группе пока нет условий</td></tr></tbody></table></div><div class="req-condition-children" data-group-children></div>
+  </section>
+</template>
+{% endif %}
+
+<section class="request-preview-section" data-request-preview-section>
+  <div class="section-header ax-panel-header requests-panel-header request-preview-header">
+	<div class="section-icon"><i class="ti ti-player-play"></i></div>
+	<div>
+	  <div class="section-eyebrow">Проверка представления</div>
+	  <h2>Предпросмотр результата</h2>
+	  <p class="section-desc">Первые документы выбираются текущим публичным executor, а способ показа берётся из реестра renderer’ов. Шаблоны item/main не выполняются.</p>
+	</div>
+	<div class="request-preview-actions">
+	  <label><span>Строк</span><select class="select" data-request-preview-limit><option value="5">5</option><option value="10" selected>10</option><option value="20">20</option></select></label>
+	  <button class="btn btn-secondary" type="button" data-request-preview{{ request ? '' : ' disabled' }}><i class="ti ti-refresh"></i>Обновить</button>
+	</div>
+  </div>
+  <div class="card request-preview-card">
+	<div class="request-explain-bar" data-request-explain-bar>
+	  <div class="request-explain-copy"><span class="icon-tile" style="--tile-bg:var(--amber-100);--tile-fg:var(--amber-600)"><i class="ti ti-route-alt-left"></i></span><div><b>Почему документ попал или не попал?</b><span>Найдите материал этой рубрики и проверьте каждый этап выборки.</span></div></div>
+	  <div class="request-explain-search">
+		<div class="input-wrap"><i class="ti ti-file-search"></i><input class="input" type="search" autocomplete="off" placeholder="ID, название или alias" data-request-explain-search{{ request ? '' : ' disabled' }}></div>
+		<div class="request-explain-options" data-request-explain-options hidden></div>
+		<button class="btn btn-secondary" type="button" data-request-explain-run disabled><i class="ti ti-route"></i>Объяснить</button>
+	  </div>
+	</div>
+	<div class="request-preview-empty" data-request-preview-empty>
+	  <span class="icon-tile" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-table-search"></i></span>
+	  <div><b>{{ request ? 'Предпросмотр ещё не запускался' : 'Сначала сохраните запрос' }}</b><span>{{ request ? 'Нажмите «Обновить», чтобы проверить выборку и контракт.' : 'После сохранения появятся реальные данные выбранной рубрики.' }}</span></div>
+	</div>
+	<div class="request-preview-result" data-request-preview-result hidden>
+	  <div class="request-preview-stats">
+		<div><b data-preview-total>0</b><span>найдено</span></div>
+		<div><b data-preview-returned>0</b><span>показано</span></div>
+		<div><b data-preview-time>0 мс</b><span>SQL</span></div>
+	  </div>
+	  <div class="request-preview-plan" data-request-preview-plan></div>
+	  <div class="request-executor-comparison" data-request-executor-comparison hidden></div>
+	  <div class="request-preview-items" data-request-preview-items></div>
+	  {% if can_manage %}<details class="request-preview-sql"><summary><i class="ti ti-database-search"></i>SQL и диагностика</summary><pre data-request-preview-sql></pre></details>{% endif %}
+	</div>
+  </div>
+</section>
+
+<aside class="drawer drawer-right drawer-lg request-explain-drawer" id="requestExplainDrawer" role="dialog" aria-modal="true" aria-labelledby="requestExplainTitle" hidden>
+  <div class="drawer-header">
+	<div class="request-explain-drawer-title"><span class="dialog-icon info" data-request-explain-icon><i class="ti ti-route"></i></span><div><h3 id="requestExplainTitle" data-request-explain-title>Проверка документа</h3><p data-request-explain-subtitle>Условия запроса и фактический итог executor.</p></div></div>
+	<button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="drawer-body request-explain-body">
+	<div class="request-explain-loading" data-request-explain-loading><i class="ti ti-loader-2"></i><span>Проверяем запрос…</span></div>
+	<div data-request-explain-content hidden>
+	  <section class="request-explain-section"><div class="request-explain-section-head"><span class="icon-tile"><i class="ti ti-shield-check"></i></span><div><h4>Системные ограничения</h4><p>Проверяются до условий полей.</p></div></div><div class="request-explain-checks" data-request-explain-base></div></section>
+	  <section class="request-explain-section"><div class="request-explain-section-head"><span class="icon-tile"><i class="ti ti-binary-tree-2"></i></span><div><h4>Дерево условий</h4><p>Скобки и операторы показаны в порядке выполнения.</p></div></div><div class="request-explain-tree" data-request-explain-tree></div></section>
+	  <div class="request-explain-notes" data-request-explain-notes></div>
+	</div>
+  </div>
+  <div class="drawer-footer"><div class="df-left"><span class="badge badge-gray" data-request-explain-footer>Ожидание проверки</span></div><button class="btn btn-secondary" type="button" data-close-drawer>Закрыть</button></div>
+</aside>
+
+{% endblock %}

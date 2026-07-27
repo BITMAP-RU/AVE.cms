@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="auto_b24e628c4d87574f">ID, название или код</phrase>
+	<phrase data="auto_e3812f4d1433e699">· файловый кеш</phrase>
+	<phrase data="auto_13d02127fcff628c">в текущем фильтре,</phrase>
+	<phrase data="auto_e428ebc4373b0884">Всего шаблонов</phrase>
+	<phrase data="auto_a7bbea7ed2337936">всего.</phrase>
+	<phrase data="auto_3eb77d3c13c51f92">Выберите ревизию</phrase>
+	<phrase data="auto_dc8ad6500fde94aa">Группы тегов</phrase>
+	<phrase data="auto_e0d3118b5acbcb06">Используются рубриками</phrase>
+	<phrase data="auto_ce72654cbaf21d2f">История снимков шаблона.</phrase>
+	<phrase data="auto_24b409774e91bb85">Код и метаданные появятся после выбора снимка.</phrase>
+	<phrase data="auto_b5ba10cd1a441291">Код шаблона</phrase>
+	<phrase data="auto_8577e217085de8f8">не привязан</phrase>
+	<phrase data="auto_344503cd3dc29566">Новый шаблон</phrase>
+	<phrase data="auto_de00ebcf99b33a23">Основные шаблоны</phrase>
+	<phrase data="auto_2a812c1383643855">Поиск тегов</phrase>
+	<phrase data="auto_f8928f2875853e9e">При сохранении обновляется БД и кеш</phrase>
+	<phrase data="auto_219d6d3829d665f6">Просмотр ревизии</phrase>
+	<phrase data="auto_4d60d98f499d1580">Ревизии</phrase>
+	<phrase data="auto_4fb4bc1903211ac9">Ревизии шаблона</phrase>
+	<phrase data="auto_01a257f3821e2130">рубрик</phrase>
+	<phrase data="auto_76279435cd49bbfb">Символов кода</phrase>
+	<phrase data="auto_b0d827d33fc8eb3f">Снимки</phrase>
+	<phrase data="auto_259db92c32c1589b">Содержат PHP</phrase>
+	<phrase data="auto_338f158543b37d22">Создать шаблон</phrase>
+	<phrase data="auto_6f4643d41f602e95">сохраняет и оставляет форму открытой.</phrase>
+	<phrase data="auto_d4616a9a27352652">Список ревизий</phrase>
+	<phrase data="auto_0dfc0a2aaad76c6e">Список шаблонов</phrase>
+	<phrase data="auto_ccb7ed21c450e4da">Шаблон #1 и используемые рубриками шаблоны защищены от удаления.</phrase>
+	<phrase data="auto_20dd5ccd4e69e144">Шаблоны вывода документов сайта.</phrase>
+	<phrase data="auto_17b1fc977f2e58c3">Шаблоны не найдены.</phrase>
+	<phrase data="auto_68ee41202091a86a">(копия)</phrase>
+	<phrase data="auto_948147b161ebf02e">(строка</phrase>
+	<phrase data="auto_e54549d740123039">&gt;' +
+          '&lt;b&gt;Ревизия&#32;
+          '&lt;div class=</phrase>
+	<phrase data="auto_0101008a814aa67f">&gt;Ревизий пока нет. Первый снимок появится после сохранения шаблона.&lt;/div&gt;';
+        this.currentRevisionId = 0;
+        this.showRevisionEmpty();
+        return;
+      }
+      list.innerHTML = items.map(function (item) {
+        return '&lt;div class=</phrase>
+	<phrase data="auto_13af8d521963ac0c">CSS из реестра активной темы</phrase>
+	<phrase data="auto_18518260a9c83b8c">Footer рубрики</phrase>
+	<phrase data="auto_9c9d4f43c4af7121">Header рубрики</phrase>
+	<phrase data="auto_b1957bedb11f440d">JavaScript из реестра активной темы</phrase>
+	<phrase data="auto_283c6a17162c0329">PHP-код не найден, проверка не нужна.</phrase>
+	<phrase data="auto_f655a4d3b8647afe">PHP-синтаксис: ошибка в коде шаблона</phrase>
+	<phrase data="auto_e781f363b1784548">PHP-синтаксис: ошибка на строке</phrase>
+	<phrase data="auto_18add0e0abc9c55a">Абзац</phrase>
+	<phrase data="auto_00eb06d58a99fd20">Блок</phrase>
+	<phrase data="auto_9162d93d7a8b0db5">В PHP-коде есть синтаксическая ошибка.</phrase>
+	<phrase data="auto_e6250288f8507cc2">Версионированный URL файла темы</phrase>
+	<phrase data="auto_97c248cbe048d7a5">Версия</phrase>
+	<phrase data="auto_ad4cc9931b4f3b23">Восстановление</phrase>
+	<phrase data="auto_044ec7baa36578de">Восстановлено из ревизии&#32;
+
+			return $templateId;
+		}
+
+		public static function delete($revisionId)
+		{
+			$revision = self::one($revisionId);
+			if (!$revision) {
+				return false;
+			}
+
+			DB::Delete(self::table(),</phrase>
+	<phrase data="auto_ffddd31c128e5461">Главная</phrase>
+	<phrase data="auto_5935b71b47857370">Для печати</phrase>
+	<phrase data="auto_98bda38eab0f9423">Домен</phrase>
+	<phrase data="auto_a57e47448b50ad81">Жирный</phrase>
+	<phrase data="auto_a8504d513adfb6f5">Заголовок</phrase>
+	<phrase data="auto_56a1fd52891d1c0f">Изображение</phrase>
+	<phrase data="auto_3f8c55176b7891d9">Импорт</phrase>
+	<phrase data="auto_40c29a890e8e71fd">Информационный код СФР текущего товара</phrase>
+	<phrase data="auto_4ab8ef9d4bc138cf">Код СФР</phrase>
+	<phrase data="auto_e3acdac9532fc353">Композиция</phrase>
+	<phrase data="auto_edbe417e021a142f">Контент</phrase>
+	<phrase data="auto_065edae6bacea0cf">Копия</phrase>
+	<phrase data="auto_ace6b3bf4c06d407">Копия создана</phrase>
+	<phrase data="auto_e1d07cc7527d1fda">Копия шаблона&#32;
+			return $newId;
+		}
+
+		public static function delete($id, $authorId = 0)
+		{
+			$id = (int) $id;
+			if ($id === 1) {
+				throw new \RuntimeException(</phrase>
+	<phrase data="auto_16ff068c0d9b07be">Корень</phrase>
+	<phrase data="auto_d1b43352dd0b8d01">Краткое описание</phrase>
+	<phrase data="auto_846d2f3312966a9b">Курсив</phrase>
+	<phrase data="auto_eabc0288b58cc840">Медиа-путь</phrase>
+	<phrase data="auto_e77fb2fa732521da">Навигации</phrase>
+	<phrase data="auto_e37824987d64ee7d">Навигация</phrase>
+	<phrase data="auto_d8003257d294b3b2">Название сайта</phrase>
+	<phrase data="auto_f43134417a0a00a2">Не печать</phrase>
+	<phrase data="auto_98efa2629fd37ac1">Оплата через СФР</phrase>
+	<phrase data="auto_cd7074e92f3611b6">Основной контент</phrase>
+	<phrase data="auto_eee2285ba1d377c3">Основные</phrase>
+	<phrase data="auto_1aea939ee0ed674b">Папка темы</phrase>
+	<phrase data="auto_18e28e575197be83">Перед восстановлением</phrase>
+	<phrase data="auto_07ec2991ae00ec1b">Перенос</phrase>
+	<phrase data="auto_9f81a3701de7065d">Печать</phrase>
+	<phrase data="auto_ccf01732b01aa08a">Поле документа</phrase>
+	<phrase data="auto_42039dbdd60cceb2">Проверьте поля формы</phrase>
+	<phrase data="auto_66c34ba806a7ee5b">Просмотр шаблонов документов.</phrase>
+	<phrase data="auto_e13b4bdc24d987d2">Пункт</phrase>
+	<phrase data="auto_8cf723f08303caa2">Пути и файлы</phrase>
+	<phrase data="auto_defc150c8003aa92">Ревизии удалены</phrase>
+	<phrase data="auto_e355fb2f4ed33801">Ревизия не найдена</phrase>
+	<phrase data="auto_3e096d0063299173">Ревизия удалена</phrase>
+	<phrase data="auto_d392d857374ff3b7">Связанные данные</phrase>
+	<phrase data="auto_6c87c63db45290ba">Синтаксис PHP без ошибок.</phrase>
+	<phrase data="auto_21342e1739f1a9fd">Системные блоки</phrase>
+	<phrase data="auto_bcdbc27af750900e">Системный блок</phrase>
+	<phrase data="auto_162a11332db489d9">Системный блок&#32;
+				if ((string) $row[</phrase>
+	<phrase data="auto_d0265eeac930fcee">Снимок перед восстановлением</phrase>
+	<phrase data="auto_dcabf8a192f05329">Создание</phrase>
+	<phrase data="auto_fd621475662d6057">Создание шаблона</phrase>
+	<phrase data="auto_29c30deecd801566">Создание, изменение, копирование, удаление и восстановление шаблонов.</phrase>
+	<phrase data="auto_e0275b635c1c8e72">Сохранение</phrase>
+	<phrase data="auto_10589840ac54b3cd">Сохранение шаблона</phrase>
+	<phrase data="auto_a21729ad14630242">Список</phrase>
+	<phrase data="auto_046e475e5a9a0cd1">Ссылка</phrase>
+	<phrase data="auto_c0b04d97ff0d2b8a">Табуляция</phrase>
+	<phrase data="auto_e1225445977301dc">Тизер</phrase>
+	<phrase data="auto_04963db06a10a410">Удаление</phrase>
+	<phrase data="auto_26a0f0be4f37d18d">Удаление шаблона</phrase>
+	<phrase data="auto_d4bbf8b391b7f43d">Укажите код шаблона</phrase>
+	<phrase data="auto_0916c48921c3c502">Укажите название</phrase>
+	<phrase data="auto_d3d451b6d4e522f2">Условие доступности товара для программы СФР</phrase>
+	<phrase data="auto_5b1c65c008232b00">Условия</phrase>
+	<phrase data="auto_80db062a421fd439">Файловый кеш шаблона очищен</phrase>
+	<phrase data="auto_15cfde6277d26e5c">Хлебные крошки</phrase>
+	<phrase data="auto_3becd6903573b013">Шаблон восстановлен из ревизии</phrase>
+	<phrase data="auto_0829568bf57c43f6">Шаблон используется рубриками и не может быть удалён</phrase>
+	<phrase data="auto_0e16ccbd0a786087">Шаблон не найден</phrase>
+	<phrase data="auto_e8efb133ace038e8">Шаблон создан</phrase>
+	<phrase data="auto_482aa48be21e78ba">Шаблон сохранён</phrase>
+	<phrase data="auto_ef443549f583a29a">Шаблон удалён</phrase>
+	<phrase data="auto_67cad9b67b767b3d">Шаблоны</phrase>
+	<phrase data="auto_2669891cb87496a1">Шаблоны: просмотр</phrase>
+	<phrase data="auto_b78ecad955932e63">Шаблоны: управление</phrase>
+</language>

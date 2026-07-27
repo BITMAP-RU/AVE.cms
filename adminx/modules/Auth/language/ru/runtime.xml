@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="runtime_195c569611fa0a48">Введите логин или email и пароль.</phrase>
+	<phrase data="runtime_3074b5767c8a3f98">Вы вышли из системы</phrase>
+	<phrase data="runtime_a6a60f97b0163efe">Доступ</phrase>
+	<phrase data="runtime_04091e973b270ae8">Не удалось войти.</phrase>
+	<phrase data="runtime_5e2017784f367652">Неверный логин или пароль.</phrase>
+	<phrase data="runtime_2af151e0da3b0afb">Неверный пароль</phrase>
+	<phrase data="runtime_d57990d3d4dd9eca">Пароль подтверждён</phrase>
+	<phrase data="runtime_ddeb7135c5e4e739">Проверьте пароль</phrase>
+	<phrase data="runtime_e00f336fd0316431">Сессия входа завершена</phrase>
+	<phrase data="runtime_b7eb4739ac8cc301">Сессия устарела, обновите страницу и попробуйте снова.</phrase>
+	<phrase data="runtime_4ffa62424067c80f">Слишком много попыток. Повторите через</phrase>
+	<phrase data="runtime_7cc36c1848c1e707">Учётная запись отключена.</phrase>
+	<phrase data="runtime_46a81a92e59e6d10">сек.</phrase>
+</language>

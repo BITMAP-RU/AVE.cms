@@ -1,0 +1,8 @@
+UPDATE `{{prefix}}_sysblocks`
+SET `sysblock_text` = CONVERT(FROM_BASE64('PD9waHAKCSRkb2NJZCA9IHRyaW0oKHN0cmluZykgJ1tzeXM6cGFyYW06ZG9jaWRdJyk7CgkkY2xhc3MgPSBwcmVnX3JlcGxhY2UoJy9bXkEtWmEtejAtOSBfLV0vJywgJycsIChzdHJpbmcpICdbc3lzOnBhcmFtOmNsYXNzXScpOwoJJHZhbGlkSWQgPSBwcmVnX21hdGNoKCcvXlxkKyQvJywgJGRvY0lkKQoJCXx8IGluX2FycmF5KCRkb2NJZCwgYXJyYXkoJ1t0YWc6aXRlbWlkXScsICdbdGFnOmRvY2lkXScpLCB0cnVlKTsKCglpZiAoJHZhbGlkSWQpCgl7CgkJZWNobyAnPHNwYW4gZGF0YS1hZG1pbngtZWRpdC1wbGFjZWhvbGRlciBkYXRhLWRvY3VtZW50LWlkPSInIC4gaHRtbHNwZWNpYWxjaGFycygkZG9jSWQsIEVOVF9RVU9URVMsICdVVEYtOCcpIC4gJyIgZGF0YS1lZGl0LWNsYXNzPSInIC4gaHRtbHNwZWNpYWxjaGFycygkY2xhc3MsIEVOVF9RVU9URVMsICdVVEYtOCcpIC4gJyI+PC9zcGFuPic7Cgl9Cj8+') USING utf8mb4)
+WHERE `sysblock_alias` = 'edit_item';
+
+UPDATE `{{prefix}}_request`
+SET `request_changed_elements` = UNIX_TIMESTAMP()
+WHERE `request_template_item` LIKE '%sysblock:edit_item%'
+   OR `request_template_item` LIKE '%sysblock:item_list%';

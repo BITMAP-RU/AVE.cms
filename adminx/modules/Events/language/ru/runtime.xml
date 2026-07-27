@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="runtime_b15acc17ab501199">0 Б</phrase>
+	<phrase data="runtime_08399fa72dde4932">SQL ошибка</phrase>
+	<phrase data="runtime_4d8c009d39ecb681">SQL ошибки</phrase>
+	<phrase data="runtime_c3c9aca56820683c">Административные действия в панели управления.</phrase>
+	<phrase data="runtime_f02dd0fa22cd7540">Аудит</phrase>
+	<phrase data="runtime_c78364c5d0f27706">Б</phrase>
+	<phrase data="runtime_5d3dd123bc9b9757">БД</phrase>
+	<phrase data="runtime_ded3b3b94da2bc61">Внешние источники, рекламные метки и страницы входа.</phrase>
+	<phrase data="runtime_f17ceff0aa95a3fd">Внимание</phrase>
+	<phrase data="runtime_43bd202954d883bb">Гость</phrase>
+	<phrase data="runtime_d09f0ab57a94b1be">Доступ к журналу системных событий и логам.</phrase>
+	<phrase data="runtime_8024f6e05da90bc7">Журнал очищен</phrase>
+	<phrase data="runtime_520d2afb3d49d999">Журнал приложения</phrase>
+	<phrase data="runtime_ae16a4bc242b0f3b">Запросы к несуществующим страницам.</phrase>
+	<phrase data="runtime_9f0cda93578fcf5b">Изменение</phrase>
+	<phrase data="runtime_3319b9b01f2aead2">Инфо</phrase>
+	<phrase data="runtime_4a0e8a9bfadd9e01">КБ</phrase>
+	<phrase data="runtime_e6be02acc1335057">Кампания</phrase>
+	<phrase data="runtime_ce2d0c8689e40e31">МБ</phrase>
+	<phrase data="runtime_6a6dc189e9143145">Недостаточно прав</phrase>
+	<phrase data="runtime_d55a3ebe0bd4796b">Опасное</phrase>
+	<phrase data="runtime_bf22dfeeba8b8508">Ошибка</phrase>
+	<phrase data="runtime_78b4ad73cb637dc6">Ошибки 404</phrase>
+	<phrase data="runtime_544d2c63aad03781">Ошибки SQL-запросов сайта.</phrase>
+	<phrase data="runtime_c32a9b70353b2636">Переходы</phrase>
+	<phrase data="runtime_180f58ab975323f9">Поиск</phrase>
+	<phrase data="runtime_6da215b1bdac9524">Система</phrase>
+	<phrase data="runtime_ae6664bbf25ba600">Системные события</phrase>
+	<phrase data="runtime_210d9860bdff4211">События</phrase>
+	<phrase data="runtime_e735d56d8ddaaae3">События: просмотр</phrase>
+	<phrase data="runtime_68564ec41567df4f">События: управление</phrase>
+	<phrase data="runtime_db959df944f7b616">Сообщения runtime, которые код сайта записывает в системный журнал.</phrase>
+	<phrase data="runtime_abfb608ea13e0e3d">Соцсеть</phrase>
+	<phrase data="runtime_f4cb2c0e2410a7b7">Ссылка</phrase>
+	<phrase data="runtime_402a33d0ca1ce364">Успех</phrase>
+	<phrase data="runtime_eb1b3e2dc9fa65fd">Экспорт и очистка журналов событий.</phrase>
+	<phrase data="runtime_536b9a530351e6f6">Этот источник нельзя очистить</phrase>
+</language>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="auto_1afff5662e7decff">Подготовить</phrase>
+	<phrase data="auto_21ca5fcdf159a532">Патч будет загружен и проверен. Файлы сайта пока не изменятся.</phrase>
+	<phrase data="auto_29f3b29df0d0e54f">Восстановить</phrase>
+	<phrase data="auto_2abb4a7554844839">Операция не выполнена</phrase>
+	<phrase data="auto_344fcf507175b29d">Отменить подготовку?</phrase>
+	<phrase data="auto_404c2e6238fe9cad">Установить обновление ядра?</phrase>
+	<phrase data="auto_48362256f8e10aa2">Официальный источник восстановлен</phrase>
+	<phrase data="auto_555ad1c0c33d26b3">Отменить</phrase>
+	<phrase data="auto_58ce20a6847caff0">Загруженный ZIP и staging будут удалены. Файлы сайта ещё не изменялись.</phrase>
+	<phrase data="auto_6941e805ab49050b">Подготовить обновление</phrase>
+	<phrase data="auto_6c5ec600998dd461">Отменить патч</phrase>
+	<phrase data="auto_783f66035d97040b">Откатить</phrase>
+	<phrase data="auto_933d567aea6d6e00">Источник обновлений сохранён</phrase>
+	<phrase data="auto_9a0447cf822b517f">Файлы и резервная копия БД будут восстановлены из journal этого задания.</phrase>
+	<phrase data="auto_a272bdd981b267ad">Ошибка обновления</phrase>
+	<phrase data="auto_a3f8d64f888bc5ca">AVE.cms создаст резервную копию, временно закроет публичный сайт и заменит системные файлы.</phrase>
+	<phrase data="auto_ad8f7fc66dd077b8">Подготовить обновление?</phrase>
+	<phrase data="auto_bfa0110d97e0f1f4">Текущий URL и публичный ключ обновлений будут заменены данными из доверенного профиля сборки.</phrase>
+	<phrase data="auto_ce88d35b18763af7">Установить</phrase>
+	<phrase data="auto_cf805699f613dec2">Этап выполнен</phrase>
+	<phrase data="auto_e37e4654dc656742">Восстановить официальный источник?</phrase>
+	<phrase data="auto_f5e129827719e97c">Откатить обновление?</phrase>
+	<phrase data="runtime_0c5b8470b3d44ff9">Источник обновлений сохранён</phrase>
+</language>

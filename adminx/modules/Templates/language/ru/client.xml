@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="auto_0101008a814aa67f">&gt;Ревизий пока нет. Первый снимок появится после сохранения шаблона.&lt;/div&gt;&apos;;
+        this.currentRevisionId = 0;
+        this.showRevisionEmpty();
+        return;
+      }
+      list.innerHTML = items.map(function (item) {
+        return &apos;&lt;div class=</phrase>
+	<phrase data="auto_065edae6bacea0cf">Копия</phrase>
+	<phrase data="auto_24b409774e91bb85">Код и метаданные появятся после выбора снимка.</phrase>
+	<phrase data="auto_344503cd3dc29566">Новый шаблон</phrase>
+	<phrase data="auto_3eb77d3c13c51f92">Выберите ревизию</phrase>
+	<phrase data="auto_4d60d98f499d1580">Ревизии</phrase>
+	<phrase data="auto_68ee41202091a86a">(копия)</phrase>
+	<phrase data="auto_6c87c63db45290ba">Синтаксис PHP без ошибок.</phrase>
+	<phrase data="auto_ace6b3bf4c06d407">Копия создана</phrase>
+	<phrase data="auto_ef443549f583a29a">Шаблон удалён</phrase>
+	<phrase data="runtime_13fe98d42eb8e2b5">Синтаксис PHP без ошибок.</phrase>
+	<phrase data="runtime_287ef8ef854ce1aa">(копия)</phrase>
+	<phrase data="runtime_438d4444acd9bb02">Шаблон удалён</phrase>
+	<phrase data="runtime_6bdb0526f5aabeba">Копия</phrase>
+	<phrase data="runtime_918940a4450b8399">Копия создана</phrase>
+	<phrase data="runtime_c26e2f453c7062e5">Новый шаблон</phrase>
+</language>

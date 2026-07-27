@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="auto_9dd1c09afddb1e31">Вывод процесса</phrase>
+	<phrase data="auto_32b8b8aa7b647ecc">Выполнение отключено</phrase>
+	<phrase data="auto_224c8e93c8887d91">Выполнить</phrase>
+	<phrase data="auto_8bfdc92e04867d27">Готово к выполнению.</phrase>
+	<phrase data="auto_e24b348137e8df6d">Код выполняется с доступом к приложению и базе данных.</phrase>
+	<phrase data="auto_f76cf117c8a61988">Локальное выполнение</phrase>
+	<phrase data="auto_229bc02d2bce53c8">Название сниппета</phrase>
+	<phrase data="auto_f51e1d7a33501fc5">Не запускалось</phrase>
+	<phrase data="auto_0f9ccee053fe3b6b">Новый</phrase>
+	<phrase data="auto_7f18a1964134184c">Новый сниппет</phrase>
+	<phrase data="auto_98b2073ed1815f28">Очистить</phrase>
+	<phrase data="auto_9fa227c53f4fcbe8">Результат</phrase>
+	<phrase data="auto_70a21ea37936ffe4">Системный инструмент · изолированный PHP-процесс</phrase>
+	<phrase data="auto_03ace2e79a9fd7d8">Сохранённые сниппеты</phrase>
+	<phrase data="auto_d3a6ace92711a4e2">Старые фрагменты не импортируются автоматически.</phrase>
+	<phrase data="auto_52b45239d7147e27">(вывод пуст)</phrase>
+	<phrase data="auto_e863376e85048c1f">&lt;option value=&quot;&quot;&gt;Новый сниппет&lt;/option&gt;</phrase>
+	<phrase data="auto_2299eff1bc6701d8">\n[вывод сокращён]</phrase>
+	<phrase data="auto_51c4ebd76e4e67ae">PHP-консоль</phrase>
+	<phrase data="auto_4e6d593ee4121235">PHP-консоль выполнит введённый код на сервере.</phrase>
+	<phrase data="auto_6ca1a2bdaa4e2036">PHP-консоль: выполнение</phrase>
+	<phrase data="auto_12e1a1bf3d2f66b6">PHP-консоль: просмотр</phrase>
+	<phrase data="auto_3663ff68084a1e7b">PHP-консоль: сниппеты</phrase>
+	<phrase data="auto_4f524d19cfc47822">proc_open недоступен: изолированный запуск невозможен.</phrase>
+	<phrase data="auto_4c42a7f9c042600f">Введите PHP-код</phrase>
+	<phrase data="auto_608ec6863b8afc32">Выполнение PHP-кода в изолированном процессе.</phrase>
+	<phrase data="auto_29f916f3c907a74e">Выполнение PHP-консоли отключено окружением.</phrase>
+	<phrase data="auto_f0e3a58250ac1a27">Выполнение...</phrase>
+	<phrase data="auto_398c7d4f7b0d522a">Готово</phrase>
+	<phrase data="auto_2c4c95047906eb5c">Код выполнен</phrase>
+	<phrase data="auto_9ec27e348562ca10">мс · код</phrase>
+	<phrase data="auto_279cdab132998e88">Не удалось запустить PHP-процесс.</phrase>
+	<phrase data="auto_3f48d3d91a14d8a0">Недостаточно прав</phrase>
+	<phrase data="auto_c8f3fdbbe78128b6">Обязательное поле</phrase>
+	<phrase data="auto_72aecd9ad85642d8">Ошибка</phrase>
+	<phrase data="auto_c00aca49199296d7">Ошибка сети</phrase>
+	<phrase data="auto_1f28c9e28f424307">Ошибка синтаксиса</phrase>
+	<phrase data="auto_a1711d06ac243729">Превышен лимит времени</phrase>
+	<phrase data="auto_da97cf5fe3fc4c42">Проверка...</phrase>
+	<phrase data="auto_25a230e3f8c266a0">Просмотр системной консоли и сохранённых сниппетов.</phrase>
+	<phrase data="auto_d9df5b17838fbf39">Процесс завершился с ошибкой</phrase>
+	<phrase data="auto_acb90add1e105016">Синтаксис корректен</phrase>
+	<phrase data="auto_3ac98f278c8c9081">Система</phrase>
+	<phrase data="auto_2cbf82d05cf4132f">Сниппет будет удалён.</phrase>
+	<phrase data="auto_0dfc58864fa7ad34">Сниппет не найден</phrase>
+	<phrase data="auto_6be9ad0f4c477684">Сниппет сохранён</phrase>
+	<phrase data="auto_32acb5d6c04b1edf">Сниппет удалён</phrase>
+	<phrase data="auto_feaf91e4b3d559c9">Создание, изменение и удаление сниппетов.</phrase>
+	<phrase data="auto_f0dff5ab4a669f7a">Сохранено</phrase>
+	<phrase data="auto_9f0ad4c82c904c26">Строка</phrase>
+	<phrase data="auto_af87b40b9743683c">Удалено</phrase>
+	<phrase data="auto_86ea33aef5e95d4f">Удалить</phrase>
+	<phrase data="auto_be20f32ffd5d3a9e">Удалить сниппет?</phrase>
+	<phrase data="auto_c8151c16a9b5d265">Укажите название и код</phrase>
+</language>

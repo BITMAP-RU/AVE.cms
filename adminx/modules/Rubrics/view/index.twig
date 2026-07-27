@@ -1,0 +1,992 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}Рубрики и поля{% endblock %}
+
+{% macro code_field(label, name, height, extra, tags) %}
+<div class="field rubrics-code-field{{ extra ? ' ' ~ extra : '' }}">
+  <span class="field-label rubrics-code-label">
+    <span>{{ label }}</span>
+    <span class="rubrics-code-tools">
+      {% if tags %}<button class="btn btn-ghost btn-icon btn-sm rubrics-template-tags-button" type="button" data-rubric-template-tags-toggle data-tooltip="Теги" aria-label="Теги"><i class="ti ti-brackets-contain"></i></button>{% endif %}
+      <button class="btn btn-ghost btn-icon btn-sm rubrics-lint-button" type="button" data-rubric-code-lint data-tooltip="Проверить PHP" aria-label="Проверить PHP"><i class="ti ti-bug"></i></button>
+      <button class="btn btn-ghost btn-icon btn-sm rubrics-code-fullscreen-button" type="button" data-rubric-code-fullscreen data-tooltip="Развернуть редактор" aria-label="Развернуть редактор"><i class="ti ti-arrows-maximize"></i></button>
+    </span>
+  </span>
+  <textarea class="textarea mono" name="{{ name }}" data-code-editor data-mode="php" data-height="{{ height }}"></textarea>
+  <span class="field-hint rubrics-code-lint-result" data-rubric-code-lint-result></span>
+</div>
+{% endmacro %}
+
+{% block content %}
+{% import _self as ui %}
+
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i>
+  <span>Рубрики и поля</span>
+</nav>
+
+<div class="page-header">
+  <div class="between">
+    <div>
+      <h1>Рубрики и поля</h1>
+      <p class="text-secondary" style="margin-top:5px">Типы материалов, их поля и оформление.</p>
+    </div>
+    {% if can_manage %}
+    <div class="cluster">
+      <button class="btn btn-primary" type="button" data-rubric-new data-open-drawer="rubricDrawer"><i class="ti ti-plus"></i>Создать рубрику</button>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="rubrics-summary">
+  <div class="card rubrics-stat">
+    <span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-forms"></i></span>
+    <div><b>{{ stats.rubrics }}</b><span>Рубрик</span></div>
+  </div>
+  <div class="card rubrics-stat">
+    <span class="icon-tile" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-circle-check"></i></span>
+    <div><b>{{ stats.active }}</b><span>Активных</span></div>
+  </div>
+  <div class="card rubrics-stat">
+    <span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-input-search"></i></span>
+    <div><b>{{ stats.fields }}</b><span>Полей</span></div>
+  </div>
+  <div class="card rubrics-stat">
+    <span class="icon-tile" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-folders"></i></span>
+    <div><b>{{ stats.groups }}</b><span>Групп</span></div>
+  </div>
+</div>
+
+<div class="tabs rubrics-main-tabs" role="tablist" aria-label="Разделы рубрик">
+  <button class="tab" type="button" role="tab" aria-selected="true" data-rubrics-main-tab="rubrics"><i class="ti ti-forms"></i>Рубрики</button>
+  <button class="tab" type="button" role="tab" aria-selected="false" data-rubrics-main-tab="types"><i class="ti ti-plug-connected"></i>Типы полей<span class="tab-count">{{ field_type_summary.types }}</span></button>
+</div>
+
+<section class="rubrics-panel" data-rubrics-main-panel="rubrics">
+  <div class="section-header rubrics-panel-header">
+    <div class="section-icon"><i class="ti ti-forms"></i></div>
+    <div>
+      <div class="section-eyebrow">Контент</div>
+      <h2>Структура документов</h2>
+      <p class="section-desc">Настройте состав формы, затем сразу переходите к материалам выбранной рубрики.</p>
+    </div>
+  </div>
+
+  <div class="card rubrics-card rubrics-filter-card">
+    <div class="rubrics-section-head">
+      <div class="rubrics-section-title">
+        <span class="icon-tile rubrics-head-icon" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-table"></i></span>
+        <div>
+          <h2>Рубрики</h2>
+          <p class="text-secondary">{{ rubrics|length }} в текущем фильтре, {{ stats.rubrics }} всего.</p>
+        </div>
+      </div>
+      <span class="badge badge-blue">{{ filters.state ? filters.state : 'all' }}</span>
+    </div>
+    <div class="table-toolbar rubrics-toolbar">
+      <form class="rubrics-filter" method="get" action="{{ ADMINX_BASE }}/rubrics">
+        <div class="input-wrap">
+          <i class="ti ti-search"></i>
+          <input class="input" type="search" name="q" value="{{ filters.q }}" placeholder="ID, название, алиас или описание">
+        </div>
+        <select class="select" name="state">
+          <option value="">Все состояния</option>
+          <option value="active"{{ filters.state == 'active' ? ' selected' : '' }}>Активные</option>
+          <option value="inactive"{{ filters.state == 'inactive' ? ' selected' : '' }}>Отключённые</option>
+          <option value="meta"{{ filters.state == 'meta' ? ' selected' : '' }}>Авто meta</option>
+        </select>
+        <button class="btn btn-secondary" type="submit"><i class="ti ti-filter"></i>Показать</button>
+        {% if filters.q or filters.state %}
+        <button class="btn btn-ghost" type="button" data-rubrics-filter-reset><i class="ti ti-x"></i>Сбросить</button>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+
+  <div class="card rubrics-card">
+    <div class="rubrics-section-head">
+      <div class="rubrics-section-title">
+        <span class="icon-tile rubrics-head-icon" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-list-details"></i></span>
+        <div>
+          <h2>Список рубрик</h2>
+          <p class="text-secondary">{{ can_manage ? 'Перетащите строки за ручку, чтобы изменить порядок.' : 'Просмотр структуры рубрик.' }}</p>
+        </div>
+      </div>
+      <span class="badge badge-blue">{{ rubrics|length }}</span>
+    </div>
+    <div class="table-scroll">
+      <table class="table table-compact rubrics-table">
+        <colgroup>
+          {% if can_manage %}<col class="rubrics-col-handle">{% endif %}
+          <col class="rubrics-col-id">
+          <col class="rubrics-col-title">
+          <col class="rubrics-col-state">
+          <col class="rubrics-col-counts">
+          <col class="rubrics-col-documents">
+          <col class="rubrics-col-meta">
+          {% if can_manage %}<col class="rubrics-col-actions">{% endif %}
+        </colgroup>
+        <thead>
+          <tr>
+            {% if can_manage %}<th class="rubrics-cell-handle"></th>{% endif %}
+            <th class="rubrics-cell-id">ID</th>
+            <th class="rubrics-cell-title">Название</th>
+            <th class="rubrics-cell-state">Состояние</th>
+            <th class="rubrics-cell-counts">Состав</th>
+            <th class="rubrics-cell-documents">Материалы</th>
+            <th class="rubrics-cell-template">Шаблон</th>
+            {% if can_manage %}<th class="rubrics-cell-actions"></th>{% endif %}
+          </tr>
+        </thead>
+        <tbody{% if can_manage %} data-rubrics-sortable{% endif %}>
+          {% for rubric in rubrics %}
+          <tr data-rubric-row
+              data-id="{{ rubric.Id }}"
+              data-title="{{ rubric.rubric_title|e('html_attr') }}"
+              data-alias="{{ rubric.rubric_alias|e('html_attr') }}">
+            {% if can_manage %}
+            <td class="rubrics-cell-handle"><button class="btn btn-ghost btn-icon btn-sm rubrics-drag-handle" type="button" draggable="true" data-rubric-drag-handle data-tooltip-right="Перетащить" aria-label="Перетащить"><i class="ti ti-grip-vertical"></i></button></td>
+            {% endif %}
+            <td class="mono text-muted rubrics-cell-id">{{ rubric.Id }}</td>
+            <td class="rubrics-cell-title">
+              <div class="rubrics-name">
+                <b>{{ rubric.rubric_title }}</b>
+                <small>{{ rubric.rubric_alias ? rubric.rubric_alias : 'без алиаса' }}</small>
+              </div>
+            </td>
+            <td class="rubrics-cell-state">
+              <div class="rubrics-badges">
+                {% if rubric.rubric_docs_active == 1 %}<span class="badge badge-green">активна</span>{% else %}<span class="badge badge-gray">выкл</span>{% endif %}
+                {% if rubric.rubric_meta_gen == '1' %}<span class="badge badge-cyan">meta</span>{% endif %}
+                {% if rubric.rubric_alias_history == '1' %}<span class="badge badge-violet">history</span>{% endif %}
+                {% if rubric.Id == 1 %}<span class="badge badge-amber">system</span>{% endif %}
+              </div>
+            </td>
+            <td class="rubrics-cell-counts">
+              <div class="rubrics-meta">
+                <span>{{ rubric.fields_count }} полей</span>
+                <span>{{ rubric.templates_count }} доп. шаблонов</span>
+              </div>
+            </td>
+            <td class="rubrics-cell-documents">
+              <div class="rubrics-materials">
+                {% if can_view_documents %}
+                <a class="rubrics-materials-link" href="{{ ADMINX_BASE }}/documents?rubric_id={{ rubric.Id }}" data-tooltip="Открыть материалы рубрики">
+                  <span><b>{{ rubric.docs_count }}</b><small>{{ rubric.docs_count == 1 ? 'документ' : (rubric.docs_count in [2,3,4] ? 'документа' : 'документов') }}</small></span><i class="ti ti-arrow-right"></i>
+                </a>
+                {% else %}
+                <span class="rubrics-materials-count"><b>{{ rubric.docs_count }}</b><small>документов</small></span>
+                {% endif %}
+                {% if can_manage_documents %}<a class="btn btn-ghost btn-icon btn-sm rubrics-action-document-new" href="{{ ADMINX_BASE }}/documents/create?rubric_id={{ rubric.Id }}" data-tooltip="Создать материал" aria-label="Создать материал в рубрике {{ rubric.rubric_title|e('html_attr') }}"><i class="ti ti-file-plus"></i></a>{% endif %}
+              </div>
+            </td>
+            <td class="rubrics-cell-template">
+              <div class="rubrics-template-name{{ rubric.site_template_title ? '' : ' is-missing' }}">
+                <b>{{ rubric.site_template_title ?: 'Не выбран' }}</b>
+                {% if rubric.rubric_template_id %}<small class="mono">#{{ rubric.rubric_template_id }}</small>{% endif %}
+              </div>
+            </td>
+            {% if can_manage %}
+            <td class="rubrics-cell-actions">
+              <div class="cluster rubrics-actions">
+                <button class="btn btn-ghost btn-icon btn-sm rubrics-action-fields" type="button" data-rubric-fields data-open-drawer="rubricFieldsDrawer" data-tooltip="Поля" aria-label="Поля"><i class="ti ti-input-search"></i></button>
+                <button class="btn btn-ghost btn-icon btn-sm rubrics-action-templates" type="button" data-rubric-templates data-open-drawer="rubricTemplatesDrawer" data-tooltip="Шаблоны" aria-label="Шаблоны"><i class="ti ti-template"></i></button>
+                <button class="btn btn-ghost btn-icon btn-sm rubrics-action-admin-view" type="button" data-rubric-admin-view data-open-drawer="rubricAdminViewDrawer" data-tooltip="Вид документов" aria-label="Вид документов"><i class="ti ti-layout-cards"></i></button>
+                <button class="btn btn-ghost btn-icon btn-sm rubrics-action-revisions" type="button" data-rubric-schema-revisions data-tooltip="Ревизии схемы" aria-label="Ревизии схемы"><i class="ti ti-history"></i></button>
+                <button class="btn btn-ghost btn-icon btn-sm rubrics-action-edit" type="button" data-rubric-edit data-open-drawer="rubricDrawer" data-tooltip="Изменить" aria-label="Изменить"><i class="ti ti-pencil"></i></button>
+                {% if rubric.can_delete %}
+                <button class="btn btn-ghost btn-icon btn-sm rubrics-action-danger" type="button" data-rubric-delete data-tooltip="Удалить" aria-label="Удалить"><i class="ti ti-trash"></i></button>
+                {% else %}
+                <button class="btn btn-ghost btn-icon btn-sm rubrics-action-locked" type="button" disabled data-tooltip="Удаление недоступно" aria-label="Удаление недоступно"><i class="ti ti-lock"></i></button>
+                {% endif %}
+              </div>
+            </td>
+            {% endif %}
+          </tr>
+          {% else %}
+          <tr><td colspan="{{ can_manage ? 8 : 6 }}"><div class="empty-state">Рубрики не найдены.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="rubrics-panel rubrics-types-panel" data-rubrics-main-panel="types" hidden>
+  <div class="section-header rubrics-panel-header">
+    <div class="section-icon"><i class="ti ti-plug-connected"></i></div>
+    <div>
+      <div class="section-eyebrow">Field registry</div>
+      <h2>Типы полей</h2>
+      <p class="section-desc">Настройте рабочий набор для новых рубрик. Отключение не влияет на уже созданные поля.</p>
+    </div>
+  </div>
+
+  <div class="alert {{ field_installation_audit.safe_to_remove ? 'alert-success' : 'alert-warning' }}">
+    <i class="ti {{ field_installation_audit.safe_to_remove ? 'ti-circle-check' : 'ti-alert-triangle' }} alert-ic"></i>
+    <div>
+      <b class="alert-title">{{ field_installation_audit.safe_to_remove ? 'Нативный реестр покрывает рабочую базу' : 'Legacy fields пока нельзя удалять' }}</b>
+      <span>В БД используется {{ field_installation_audit.database_usage|length }} типов; зарегистрировано {{ field_installation_audit.registered_types|length }}. {% if field_installation_audit.legacy_exists %}Корневая папка содержит {{ field_installation_audit.legacy_file_count }} архивных файлов и не входит в чистую установку.{% else %}Корневая legacy-папка удалена; public и Adminx используют только нативные обработчики.{% endif %}</span>
+      {% if field_installation_audit.missing_handlers %}<span>Нет обработчиков: <code>{{ field_installation_audit.missing_handlers|join(', ') }}</code>.</span>{% endif %}
+      {% if field_installation_audit.runtime_references %}<span>Прямые подключения: <code>{{ field_installation_audit.runtime_references|join(', ') }}</code>.</span>{% endif %}
+    </div>
+  </div>
+
+  <div class="rubrics-type-summary">
+    <div class="card rubrics-stat">
+      <span class="icon-tile" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-toggle-right"></i></span>
+      <div><b data-field-types-enabled>{{ field_type_summary.enabled }}</b><span>Включено</span></div>
+    </div>
+    <div class="card rubrics-stat">
+      <span class="icon-tile" style="--tile-bg:var(--gray-100);--tile-fg:var(--gray-600)"><i class="ti ti-toggle-left"></i></span>
+      <div><b data-field-types-disabled>{{ field_type_summary.disabled }}</b><span>Отключено</span></div>
+    </div>
+    <div class="card rubrics-stat">
+      <span class="icon-tile" style="--tile-bg:var(--red-100);--tile-fg:var(--red-600)"><i class="ti ti-circle-x"></i></span>
+      <div><b>{{ field_type_summary.error }}</b><span>Ошибок реестра</span></div>
+    </div>
+    <div class="card rubrics-stat">
+      <span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-database"></i></span>
+      <div><b>{{ field_type_summary.used }}</b><span>Полей в БД</span></div>
+    </div>
+  </div>
+
+  <div class="card rubrics-card">
+    <div class="rubrics-section-head">
+      <div class="rubrics-section-title">
+        <span class="icon-tile rubrics-head-icon" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-list-check"></i></span>
+        <div>
+          <h2>Плагины полей</h2>
+          <p class="text-secondary">Описание, использование и доступность каждого типа при создании поля.</p>
+        </div>
+      </div>
+      <span class="badge badge-blue"><span data-field-types-enabled>{{ field_type_summary.enabled }}</span> / {{ field_types|length }}</span>
+    </div>
+    <div class="rubrics-type-tools">
+      <div class="input-wrap"><i class="ti ti-search"></i><input class="input" type="search" placeholder="Название, код или назначение" data-field-types-search></div>
+      <select class="select" data-field-types-state aria-label="Состояние типов полей">
+        <option value="">Все типы</option>
+        <option value="enabled">Включённые</option>
+        <option value="disabled">Отключённые</option>
+        <option value="used">Используемые</option>
+        <option value="new">Новые типы</option>
+      </select>
+    </div>
+    <div class="table-scroll">
+      <table class="table table-compact rubrics-type-table">
+        <colgroup>
+          <col class="rubrics-type-col-name">
+          <col class="rubrics-type-col-description">
+          <col class="rubrics-type-col-usage">
+          <col class="rubrics-type-col-status">
+          <col class="rubrics-type-col-enabled">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Тип</th>
+            <th>Описание</th>
+            <th>Использование</th>
+            <th>Состояние</th>
+            <th>Выбор</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for type in field_types %}
+          <tr class="{{ type.enabled ? '' : 'is-disabled' }}" data-field-type-row data-type="{{ type.id }}" data-state="{{ type.enabled ? 'enabled' : 'disabled' }}" data-new="{{ type.is_new ? '1' : '0' }}" data-usage="{{ field_type_usage[type.id]|default(0) }}" data-search="{{ (type.name ~ ' ' ~ type.id ~ ' ' ~ type.description)|lower|e }}">
+            <td>
+              <div class="rubrics-type-name">
+                <div class="rubrics-type-title"><b>{{ type.name }}</b>{% if type.is_new %}<span class="badge badge-cyan">Новый</span>{% endif %}</div>
+                <small class="mono">{{ type.id }}</small>
+              </div>
+            </td>
+            <td><p class="rubrics-type-description">{{ type.description }}</p></td>
+            <td><span class="badge badge-blue">{{ field_type_usage[type.id]|default(0) }} полей</span></td>
+            <td>
+              {% if type.status == 'ok' %}
+                <span class="badge badge-green">готов</span>
+              {% elseif type.status == 'error' %}
+                <span class="badge badge-red">ошибка</span>
+              {% else %}
+                <span class="badge badge-amber">проверить</span>
+              {% endif %}
+              {% if type.issues %}
+              <div class="rubrics-type-issues">
+                {% for issue in type.issues|slice(0, 2) %}<span>{{ issue }}</span>{% endfor %}
+              </div>
+              {% endif %}
+            </td>
+            <td>
+              {% if can_manage %}
+              <label class="switch rubrics-type-switch" data-tooltip="{{ type.enabled ? 'Убрать из выбора новых полей' : 'Добавить в выбор новых полей' }}">
+                <input type="checkbox" data-field-type-toggle="{{ type.id }}"{{ type.enabled ? ' checked' : '' }} aria-label="{{ type.enabled ? 'Отключить' : 'Включить' }} тип {{ type.name }}"><span></span>
+              </label>
+              {% else %}
+              <span class="badge {{ type.enabled ? 'badge-green' : 'badge-gray' }}" data-field-type-state-label>{{ type.enabled ? 'Включён' : 'Отключён' }}</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5"><div class="empty-state">Типы полей не найдены.</div></td></tr>
+          {% endfor %}
+          <tr data-field-types-empty hidden><td colspan="5"><div class="empty-state">По выбранным условиям типы не найдены.</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+{% if can_manage %}
+<aside class="drawer drawer-right drawer-lg rubrics-drawer-panel" id="rubricDrawer" role="dialog" aria-modal="true" aria-labelledby="rubricDrawerTitle" hidden>
+  <div class="drawer-header">
+    <div>
+      <h3 id="rubricDrawerTitle">Новая рубрика</h3>
+      <p class="text-secondary text-sm">Базовые параметры рубрики.</p>
+    </div>
+    <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <form id="rubricForm" class="rubrics-drawer" data-base="{{ ADMINX_BASE }}">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <input type="hidden" name="id" value="">
+    <div class="drawer-body rubrics-field-form">
+      <section class="rubrics-field-section" style="--sec:var(--blue-600);--sec-soft:var(--blue-100)">
+        <div class="rubrics-field-section-head">
+          <span class="icon-tile" style="--tile-bg:var(--sec-soft);--tile-fg:var(--sec)"><i class="ti ti-folder"></i></span>
+          <div><h4>Основное</h4><p>Название, URL-алиас и описание рубрики.</p></div>
+        </div>
+        <div class="rubrics-field-section-body">
+          <div class="form-grid">
+            <label class="field col-6"><span class="field-label">Название</span><input class="input" type="text" name="rubric_title" required><span class="field-error" data-error="rubric_title"></span></label>
+            <label class="field col-6"><span class="field-label">Шаблон URL документов</span><input class="input mono" type="text" name="rubric_alias" autocomplete="off" placeholder="news/%d-%m-%Y"><span class="field-hint" data-rubric-alias-state></span><span class="field-error" data-error="rubric_alias"></span></label>
+            <div class="col-12 rubrics-alias-help-grid">
+              <div class="alert alert-info rubrics-alias-help">
+                <i class="ti ti-calendar-code alert-ic"></i>
+                <div><b class="alert-title">Как составить шаблон</b><span>Обычные части пути пишутся напрямую. Маркеры даты берутся из даты публикации документа.</span><div class="rubrics-alias-token-list">{% for token, description in rubric_alias_tokens %}<code>{{ token }}</code><span>{{ description }}</span>{% endfor %}</div></div>
+              </div>
+              <div class="alert alert-info rubrics-alias-help">
+                <i class="ti ti-route alert-ic"></i>
+                <div><b class="alert-title">Как формируется адрес</b><span>К развёрнутому шаблону добавляется alias документа. Пустой шаблон оставляет документ в корне.</span><code class="rubrics-alias-preview" data-rubric-alias-preview>/document-alias</code><small>Изменение шаблона не переписывает URL уже созданных документов.</small></div>
+              </div>
+            </div>
+            <label class="field col-12"><span class="field-label">Описание</span><textarea class="textarea" name="rubric_description" rows="5"></textarea></label>
+            <label class="field col-12" data-rubric-preset-wrap>
+              <span class="field-label">Стартовый набор полей</span>
+              <select class="select" name="rubric_preset" data-rubric-preset>
+                <option value="" data-description="Рубрика будет создана без дополнительных полей.">Пустая рубрика</option>
+                {% for preset in field_presets %}
+                <option value="{{ preset.code }}" data-description="{{ preset.description|e('html_attr') }}"{{ preset.available ? '' : ' disabled' }}>{{ preset.title }} · {{ preset.field_count }} полей{% if not preset.available %} · включите {{ preset.missing_types|join(', ') }}{% endif %}</option>
+                {% endfor %}
+              </select>
+              <span class="field-hint" data-rubric-preset-hint>Рубрика будет создана без дополнительных полей.</span>
+              <span class="field-error" data-error="rubric_preset"></span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <section class="rubrics-field-section" style="--sec:var(--amber-600);--sec-soft:var(--amber-100)">
+        <div class="rubrics-field-section-head">
+          <span class="icon-tile" style="--tile-bg:var(--sec-soft);--tile-fg:var(--sec)"><i class="ti ti-adjustments-alt"></i></span>
+          <div><h4>Публикация и вывод</h4><p>Шаблон сайта, видимость документов и генерация meta.</p></div>
+        </div>
+        <div class="rubrics-field-section-body">
+          <div class="form-grid">
+            <label class="field col-6"><span class="field-label">Шаблон сайта</span><select class="select" name="rubric_template_id">{% for t in templates %}<option value="{{ t.Id }}">{{ t.template_title }}</option>{% else %}<option value="1">Основной шаблон</option>{% endfor %}</select></label>
+            <label class="field col-6"><span class="field-label">Документы</span><select class="select" name="rubric_docs_active"><option value="1">Активны</option><option value="0">Скрыты</option></select></label>
+            <label class="field col-6"><span class="field-label">Meta</span><select class="select" name="rubric_meta_gen"><option value="0">Вручную</option><option value="1">Автоматически</option></select></label>
+            <label class="field col-6"><span class="field-label">История алиасов</span><select class="select" name="rubric_alias_history"><option value="0">Выключена</option><option value="1">Включена</option></select></label>
+          </div>
+        </div>
+      </section>
+
+      <section class="rubrics-field-section" style="--sec:var(--violet-600);--sec-soft:var(--violet-100)">
+        <div class="rubrics-field-section-head">
+          <span class="icon-tile" style="--tile-bg:var(--sec-soft);--tile-fg:var(--sec)"><i class="ti ti-code-dots"></i></span>
+          <div><h4>Код рубрики</h4><p>Обработчики сохранения документа и код публичного вывода.</p></div>
+        </div>
+        <div class="rubrics-field-section-body">
+          <div class="rubrics-rubric-code-layout">
+            <div class="rubrics-code-access-grid">
+              <div class="alert alert-info rubrics-code-access-card">
+                <i class="ti ti-braces alert-ic"></i>
+                <div>
+                  <div class="alert-title">Документ и поля через <code>$hook</code></div>
+                  <div class="rubrics-code-access-list">
+                    <span><code>$hook->document()</code> — весь payload документа</span>
+                    <span><code>$hook->value('document_title')</code> / <code>setValue(...)</code></span>
+                    <span><code>$hook->fields()</code> — все переданные значения полей</span>
+                    <span><code>$hook->field(217)</code> или <code>$hook->field('alias')</code></span>
+                    <span><code>$hook->setField('alias', $value)</code> — изменить поле</span>
+                  </div>
+                </div>
+              </div>
+              <div class="alert alert-info rubrics-code-access-card">
+                <i class="ti ti-tool alert-ic"></i>
+                <div>
+                  <div class="alert-title">Контекст и системные API</div>
+                  <div class="rubrics-code-access-list">
+                    <span><code>$hook->documentId()</code>, <code>$hook->rubricId()</code>, <code>$hook->actorId()</code>, <code>$hook->isNew()</code></span>
+                    <span><code>$hook->setting('key', $default)</code> — настройка</span>
+                    <span><code>$hook->log('Текст')</code>, <code>$hook->audit('action', $meta)</code></span>
+                    <span><code>$hook->fail('Причина')</code> — остановить сохранение</span>
+                    <span>Доступны <code>DB</code>, <code>\App\Common\Registry</code> и <code>\App\Helpers\Hooks</code></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="rubrics-code-compat">
+              <i class="ti ti-history"></i>
+              <div><b>Совместимость со старым кодом</b><span><code>$data</code>, <code>$fields</code>, <code>$document_id</code>, <code>$rubric_id</code>, <code>$document_logs</code> и <code>$this->documentSave(...)</code> продолжают работать.</span></div>
+            </div>
+            {{ ui.code_field('До сохранения документа', 'rubric_code_start', 220, 'col-12') }}
+            <p class="field-hint rubrics-code-phase-hint"><i class="ti ti-arrow-bar-to-down"></i>Изменения попадут в первую запись. Для нового документа <code>$hook->documentId()</code> равен <code>0</code>, используйте <code>$hook->isNew()</code>.</p>
+            {{ ui.code_field('После сохранения документа', 'rubric_code_end', 220, 'col-12') }}
+            <p class="field-hint rubrics-code-phase-hint"><i class="ti ti-database-check"></i>ID уже доступен. Изменённые свойства документа автоматически записываются ещё раз без повторного запуска хуков; значения полей сохраняются после обработчика.</p>
+            <div class="alert alert-info rubrics-public-code-info">
+              <i class="ti ti-world-code alert-ic"></i>
+              <div><div class="alert-title">Контекст публичного вывода</div><span>Текущий документ: <code>\App\Frontend\PublicPageContext::document()</code>; ID: <code>\App\Frontend\PublicDocumentApi::currentId()</code>; сырое поле: <code>\App\Frontend\PublicFieldApi::raw('alias')</code>; готовый вывод поля: <code>\App\Frontend\PublicFieldApi::render('alias')</code>.</span></div>
+            </div>
+            {{ ui.code_field('При публичном выводе документа', 'rubric_start_code', 220, 'col-12') }}
+            <p class="field-hint">Выполняется при формировании страницы документа. Не относится к сохранению.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+    <div class="drawer-footer">
+      <button class="btn btn-ghost" type="button" data-close-drawer><i class="ti ti-x"></i>Закрыть</button>
+      <button class="btn btn-primary" type="submit"><i class="ti ti-device-floppy"></i>Сохранить</button>
+    </div>
+  </form>
+</aside>
+
+<aside class="drawer drawer-right drawer-lg rubrics-fields-panel" id="rubricFieldsDrawer" role="dialog" aria-modal="true" aria-labelledby="rubricFieldsTitle" hidden>
+  <div class="drawer-header">
+    <div>
+      <h3 id="rubricFieldsTitle">Поля рубрики</h3>
+      <p class="text-secondary text-sm" data-rubric-fields-subtitle>Конструктор формы документа.</p>
+    </div>
+    <div class="cluster rubrics-builder-header-actions">
+      <button class="btn btn-secondary btn-sm" type="button" data-group-new><i class="ti ti-folder-plus"></i>Группа</button>
+      <button class="btn btn-primary btn-sm" type="button" data-field-new><i class="ti ti-plus"></i>Поле</button>
+      <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+    </div>
+  </div>
+  <div class="drawer-body rubrics-fields-body" data-rubric-fields-root data-base="{{ ADMINX_BASE }}">
+    <section class="rubrics-builder-runtime" data-builder-runtime>
+      <span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-git-branch"></i></span>
+      <div class="rubrics-builder-runtime-copy">
+        <b>Условия формы документа</b>
+        <p>Показывают, скрывают, блокируют и делают поля обязательными в зависимости от введённых значений.</p>
+      </div>
+      <span class="badge badge-gray" data-builder-runtime-state>Выключены</span>
+      <label class="switch" data-tooltip-left="Включить условия для этой рубрики"><input type="checkbox" data-builder-conditions-enabled aria-label="Включить условия формы для рубрики"></label>
+    </section>
+    <div class="rubrics-builder" data-rubric-builder>
+      <aside class="rubrics-builder-panel rubrics-builder-library">
+        <div class="rubrics-builder-panel-head">
+          <span class="icon-tile rubrics-head-icon" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-library"></i></span>
+          <div><h2>Доступные поля</h2><p>Ещё не размещены на форме.</p></div>
+          <span class="badge badge-cyan" data-builder-field-count>0</span>
+        </div>
+        <div class="rubrics-builder-field-set">
+          <select class="select" data-builder-field-set aria-label="Набор полей">
+            <option value="">Добавить набор</option>
+            {% for preset in field_presets %}{% if preset.available %}<option value="{{ preset.code }}" data-description="{{ preset.description|e('html_attr') }}" data-count="{{ preset.field_count }}">{{ preset.title }} · {{ preset.field_count }}</option>{% endif %}{% endfor %}
+          </select>
+          <button class="btn btn-secondary btn-icon" type="button" data-builder-field-set-apply data-tooltip="Добавить выбранный набор" aria-label="Добавить выбранный набор" disabled><i class="ti ti-library-plus"></i></button>
+          <div class="rubrics-builder-field-set-transfer">
+            <button class="btn btn-ghost btn-sm" type="button" data-builder-field-set-export><i class="ti ti-download"></i>Экспорт</button>
+            <button class="btn btn-ghost btn-sm" type="button" data-builder-field-set-import><i class="ti ti-upload"></i>Импорт</button>
+          </div>
+          <div class="rubrics-builder-field-set-mode">
+            <span>Способ добавления</span>
+            <div class="segmented" role="group" aria-label="Способ добавления набора">
+              <button type="button" data-field-set-mode="copy" aria-pressed="true">Копия</button>
+              <button type="button" data-field-set-mode="linked" aria-pressed="false">Связанный</button>
+            </div>
+          </div>
+          <p data-builder-field-set-hint>Готовая группа полей без изменения существующих данных.</p>
+          <div class="rubrics-builder-field-set-links" data-builder-field-set-links hidden></div>
+        </div>
+        <div class="rubrics-builder-search input-wrap">
+          <i class="ti ti-search"></i>
+          <input class="input" type="search" placeholder="Найти поле" autocomplete="off" data-builder-search>
+        </div>
+        <div class="rubrics-builder-palette" data-builder-palette></div>
+        <p class="rubrics-builder-help"><i class="ti ti-drag-drop"></i>После добавления поле исчезает из этого списка.</p>
+      </aside>
+
+      <section class="rubrics-builder-panel rubrics-builder-workspace">
+        <div class="rubrics-builder-panel-head">
+          <span class="icon-tile rubrics-head-icon" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-layout-grid"></i></span>
+          <div><h2>Форма документа</h2><p>Реальный порядок, группы и ширина полей.</p></div>
+          <span class="badge badge-blue">12 колонок</span>
+        </div>
+        <div class="rubrics-builder-canvas" data-builder-canvas></div>
+      </section>
+
+      <aside class="rubrics-builder-panel rubrics-builder-inspector">
+        <div class="rubrics-builder-panel-head">
+          <span class="icon-tile rubrics-head-icon" style="--tile-bg:var(--amber-100);--tile-fg:var(--amber-600)"><i class="ti ti-adjustments-horizontal"></i></span>
+          <div><h2>Настройки</h2><p>Свойства выбранного поля.</p></div>
+        </div>
+        <div class="rubrics-builder-empty" data-builder-inspector-empty>
+          <span class="icon-tile" style="--tile-bg:var(--gray-100);--tile-fg:var(--gray-600)"><i class="ti ti-cursor-text"></i></span>
+          <b>Выберите поле на холсте</b>
+          <p>Настройки появятся здесь и сохранятся вместе с раскладкой.</p>
+        </div>
+        <form class="rubrics-builder-form" data-builder-inspector hidden>
+          <div class="rubrics-builder-type-meta">
+            <span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-components"></i></span>
+            <span><small>Тип поля</small><b data-builder-type-label>—</b><code data-builder-type-code>—</code></span>
+          </div>
+          <label class="field"><span class="field-label">Наименование</span><input class="input" type="text" name="title" maxlength="255" required></label>
+
+          <label class="field"><span class="field-label">Группа</span><select class="select" name="group_id" data-builder-group></select></label>
+
+          <fieldset class="rubrics-builder-fieldset">
+            <legend>Ширина в строке</legend>
+            <div class="rubrics-builder-widths" data-builder-widths>
+              <label><input type="radio" name="width" value="full"><span><i class="ti ti-layout-navbar"></i>12/12</span></label>
+              <label><input type="radio" name="width" value="half"><span><i class="ti ti-columns-2"></i>6/12</span></label>
+              <label><input type="radio" name="width" value="third"><span><i class="ti ti-columns-3"></i>4/12</span></label>
+              <label><input type="radio" name="width" value="quarter"><span><i class="ti ti-columns"></i>3/12</span></label>
+            </div>
+          </fieldset>
+
+          <div class="form-grid rubrics-builder-affixes">
+            <label class="field col-6"><span class="field-label">Префикс</span><input class="input" type="text" name="prefix" maxlength="12" placeholder="№"></label>
+            <label class="field col-6"><span class="field-label">Суффикс</span><input class="input" type="text" name="suffix" maxlength="12" placeholder="кг"></label>
+          </div>
+
+          <label class="field" data-builder-default-field><span class="field-label">Значение по умолчанию</span><textarea class="textarea" name="default" rows="3"></textarea></label>
+
+          <div class="rubrics-builder-switches">
+            <label><span><b>Поиск</b><small>Индексировать значение</small></span><input type="checkbox" name="search" value="1"><span class="switch-track"></span></label>
+            <label><span><b>Числовое</b><small>Хранить числовой индекс</small></span><input type="checkbox" name="numeric" value="1"><span class="switch-track"></span></label>
+          </div>
+
+          <div class="rubrics-builder-type-settings" data-builder-type-settings></div>
+
+          <section class="rubrics-builder-condition" data-builder-condition>
+            <div class="rubrics-builder-condition-head">
+              <span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-git-branch"></i></span>
+              <span><b>Условия формы</b><small>Видимость, доступность и обязательность</small></span>
+              <label class="switch"><input type="checkbox" data-builder-condition-enabled aria-label="Включить условия формы"></label>
+            </div>
+            <div class="rubrics-builder-condition-body" data-builder-condition-body hidden>
+              <div class="form-grid">
+                <label class="field col-12"><span class="field-label">Действие при совпадении</span><select class="select" data-builder-condition-mode><option value="show">Показывать поле</option><option value="hide">Скрывать поле</option><option value="lock">Запретить изменение</option></select></label>
+              </div>
+              <label class="rubrics-builder-condition-required"><span><b>Обязательно при показе</b><small>Проверяется также на сервере</small></span><input type="checkbox" data-builder-condition-required><span class="switch-track"></span></label>
+			  <div class="rubrics-builder-condition-values" data-builder-condition-values hidden>
+				<label class="rubrics-builder-condition-values-head"><span><b>Ограничить варианты</b><small>При совпадении оставить только отмеченные значения</small></span><input type="checkbox" data-builder-condition-options-enabled><span class="switch-track"></span></label>
+				<div class="rubrics-builder-condition-options" data-builder-condition-options hidden></div>
+			  </div>
+			  <div class="rubrics-builder-condition-action" data-builder-condition-action hidden>
+				<label class="field"><span class="field-label">Изменить значение при совпадении</span><select class="select" data-builder-condition-value-action><option value="">Не изменять</option><option value="set">Установить значение</option><option value="clear">Очистить поле</option></select></label>
+				<label class="field rubrics-builder-condition-action-value" data-builder-condition-action-value hidden><span class="field-label">Новое значение</span><select class="select" data-builder-condition-action-select hidden></select><input class="input" type="text" maxlength="2000" data-builder-condition-action-input hidden><small>Сработает один раз, когда условие станет выполненным. Значение можно отменить до сохранения документа.</small></label>
+			  </div>
+              <div class="rubrics-builder-condition-rows" data-builder-condition-rows></div>
+            </div>
+          </section>
+
+          <label class="field"><span class="field-label">Описание</span><textarea class="textarea" name="description" rows="3"></textarea></label>
+
+          <button class="btn btn-secondary" type="button" data-builder-advanced><i class="ti ti-settings"></i>Расширенные настройки</button>
+        </form>
+      </aside>
+    </div>
+  </div>
+  <div class="drawer-footer">
+    <button class="btn btn-ghost" type="button" data-close-drawer><i class="ti ti-x"></i>Закрыть</button>
+    <div class="rubrics-builder-save-actions">
+      <span class="badge badge-amber badge-dot rubrics-builder-save-state" data-builder-save-state aria-live="polite" hidden><span class="rubrics-builder-save-label">Есть несохранённые изменения</span><span class="rubrics-builder-save-label-short">Не сохранено</span></span>
+      <button class="btn btn-primary" type="button" data-builder-save disabled><i class="ti ti-device-floppy"></i>Сохранить раскладку</button>
+    </div>
+  </div>
+</aside>
+
+<aside class="drawer drawer-right rubrics-admin-view-panel" id="rubricAdminViewDrawer" role="dialog" aria-modal="true" aria-labelledby="rubricAdminViewTitle" hidden>
+  <form id="rubricAdminViewForm" data-base="{{ ADMINX_BASE }}">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <input type="hidden" name="rubric_id" value="">
+    <div class="drawer-header">
+      <div>
+        <h3 id="rubricAdminViewTitle">Вид документов рубрики</h3>
+        <p class="text-secondary text-sm" data-admin-view-subtitle>Настройка списка в разделе документов.</p>
+      </div>
+      <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+    </div>
+
+    <div class="drawer-body rubrics-admin-view-body">
+      <div class="rubrics-admin-view-modes" role="radiogroup" aria-label="Режим представления">
+        <button class="rubrics-admin-view-mode" type="button" data-admin-view-mode="standard" aria-pressed="true"><i class="ti ti-list-details"></i><span><b>Стандартный</b><small>Системная таблица документов</small></span></button>
+        <button class="rubrics-admin-view-mode" type="button" data-admin-view-mode="table" aria-pressed="false"><i class="ti ti-table-column"></i><span><b>Таблица</b><small>Выбранные поля как колонки</small></span></button>
+        <button class="rubrics-admin-view-mode" type="button" data-admin-view-mode="cards" aria-pressed="false"><i class="ti ti-layout-grid"></i><span><b>Карточки</b><small>Поля в компактной сетке</small></span></button>
+        <button class="rubrics-admin-view-mode" type="button" data-admin-view-mode="custom" aria-pressed="false"><i class="ti ti-code-dots"></i><span><b>Свой шаблон</b><small>Безопасная HTML-разметка</small></span></button>
+      </div>
+
+      <div class="rubrics-admin-view-builder" data-admin-view-builder>
+        <aside class="rubrics-admin-view-column rubrics-admin-view-library">
+          <div class="rubrics-admin-view-head">
+            <span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-library"></i></span>
+            <div><h2>Поля рубрики</h2><p>Добавьте нужные данные в представление.</p></div>
+            <span class="badge badge-cyan" data-admin-view-field-count>0</span>
+          </div>
+          <div class="input-wrap rubrics-admin-view-search"><i class="ti ti-search"></i><input class="input" type="search" placeholder="Найти поле" autocomplete="off" data-admin-view-search></div>
+          <div class="rubrics-admin-view-field-list" data-admin-view-fields></div>
+        </aside>
+
+        <section class="rubrics-admin-view-column rubrics-admin-view-workspace">
+          <div class="rubrics-admin-view-head">
+            <span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-layout-list"></i></span>
+            <div><h2>Состав и порядок</h2><p>Перетаскивайте поля за маркер.</p></div>
+            <span class="badge badge-blue" data-admin-view-item-count>0 / 10</span>
+          </div>
+          <div class="rubrics-admin-view-items" data-admin-view-items></div>
+          <div class="rubrics-admin-view-custom" data-admin-view-custom hidden>
+            <div class="rubrics-admin-view-custom-head"><div><b>HTML-шаблон элемента</b><small>PHP и JavaScript запрещены. Доступны теги документа и добавленных полей.</small></div><button class="btn btn-secondary btn-sm" type="button" data-admin-view-template-default><i class="ti ti-wand"></i>Пример</button></div>
+            <textarea class="textarea mono" name="template" rows="8" spellcheck="false" placeholder="<strong>[document:title]</strong>"></textarea>
+            <div class="rubrics-admin-view-tokens" data-admin-view-tokens></div>
+          </div>
+          <div class="rubrics-admin-view-preview-wrap">
+            <div class="rubrics-admin-view-preview-head"><div><b>Предпросмотр</b><small>Первые документы рубрики, без сохранения настроек.</small></div><span class="badge badge-gray" data-admin-view-preview-count>0</span></div>
+            <div class="rubrics-admin-view-preview" data-admin-view-preview></div>
+          </div>
+        </section>
+
+        <aside class="rubrics-admin-view-column rubrics-admin-view-inspector">
+          <div class="rubrics-admin-view-head">
+            <span class="icon-tile" style="--tile-bg:var(--amber-100);--tile-fg:var(--amber-600)"><i class="ti ti-adjustments-horizontal"></i></span>
+            <div><h2>Настройки</h2><p>Оформление выбранного поля.</p></div>
+          </div>
+          <div class="rubrics-admin-view-inspector-empty" data-admin-view-inspector-empty><i class="ti ti-cursor-text"></i><b>Выберите добавленное поле</b><p>Здесь можно изменить подпись, формат и ширину.</p></div>
+          <div class="rubrics-admin-view-inspector-form" data-admin-view-inspector hidden>
+            <label class="field"><span class="field-label">Подпись</span><input class="input" type="text" maxlength="80" data-admin-view-label></label>
+            <label class="field"><span class="field-label">Формат</span><select class="select" data-admin-view-format><option value="text">Текст</option><option value="badge">Метка</option><option value="number">Число</option><option value="date">Дата</option><option value="image">Изображение</option></select></label>
+            <fieldset class="rubrics-admin-view-widths"><legend>Ширина</legend><label><input type="radio" name="admin_view_width" value="small"><span>Узкая</span></label><label><input type="radio" name="admin_view_width" value="medium"><span>Средняя</span></label><label><input type="radio" name="admin_view_width" value="wide"><span>Широкая</span></label></fieldset>
+            <div class="rubrics-admin-view-field-meta" data-admin-view-field-meta></div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <div class="drawer-footer">
+      <button class="btn btn-ghost" type="button" data-close-drawer><i class="ti ti-x"></i>Закрыть</button>
+      <a class="btn btn-secondary" href="{{ ADMINX_BASE }}/documents" data-admin-view-documents><i class="ti ti-external-link"></i>Открыть документы</a>
+      <button class="btn btn-primary" type="submit"><i class="ti ti-device-floppy"></i>Сохранить представление</button>
+    </div>
+  </form>
+</aside>
+
+<aside class="drawer drawer-right drawer-lg rubrics-templates-panel" id="rubricTemplatesDrawer" role="dialog" aria-modal="true" aria-labelledby="rubricTemplatesTitle" hidden>
+  <div class="drawer-header">
+    <div>
+      <h3 id="rubricTemplatesTitle">Шаблоны рубрики</h3>
+      <p class="text-secondary text-sm" data-rubric-templates-subtitle>Основной шаблон и дополнительные варианты.</p>
+    </div>
+    <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="drawer-body rubrics-templates-body" data-rubric-templates-root>
+    <div class="rubrics-template-layout">
+      <section class="rubrics-template-main">
+        <div class="tabs rubrics-template-tabs" role="tablist" aria-label="Шаблоны рубрики">
+          <button class="tab" type="button" role="tab" aria-selected="true" data-rubric-template-tab="main"><i class="ti ti-template"></i>Основной</button>
+          <button class="tab" type="button" role="tab" aria-selected="false" data-rubric-template-tab="teasers"><i class="ti ti-layout-list"></i>Анонсы</button>
+          <button class="tab" type="button" role="tab" aria-selected="false" data-rubric-template-tab="og"><i class="ti ti-share-3"></i>Open Graph</button>
+          <button class="tab" type="button" role="tab" aria-selected="false" data-rubric-template-tab="extra"><i class="ti ti-copy-plus"></i>Дополнительные<span class="tab-count" data-extra-template-count>0</span></button>
+        </div>
+
+        <form id="rubricTemplateForm" class="rubrics-template-form">
+          <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+          <input type="hidden" name="rubric_id" value="">
+          <section class="tab-panel active" data-rubric-template-panel="main">
+            <div class="rubrics-section-head rubrics-inner-head">
+              <div class="rubrics-section-title">
+                <span class="icon-tile rubrics-head-icon" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-code"></i></span>
+                <div><h2>Основной вывод</h2><p class="text-secondary">Header, основной шаблон и footer рубрики.</p></div>
+              </div>
+            </div>
+            <div class="rubrics-template-fields">
+              {{ ui.code_field('Header', 'rubric_header_template', 180, '', true) }}
+              {{ ui.code_field('Шаблон рубрики', 'rubric_template', 360, '', true) }}
+              {{ ui.code_field('Footer', 'rubric_footer_template', 180, '', true) }}
+            </div>
+          </section>
+          <section class="tab-panel" data-rubric-template-panel="teasers">
+            <div class="rubrics-section-head rubrics-inner-head">
+              <div class="rubrics-section-title">
+                <span class="icon-tile rubrics-head-icon" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-news"></i></span>
+                <div><h2>Анонс</h2><p class="text-secondary">Публичный teaser-шаблон для списков и запросов сайта.</p></div>
+              </div>
+            </div>
+            <div class="rubrics-template-fields">
+              {{ ui.code_field('Teaser', 'rubric_teaser_template', 300, '', true) }}
+            </div>
+          </section>
+          <section class="tab-panel" data-rubric-template-panel="og">
+            <div class="rubrics-section-head rubrics-inner-head">
+              <div class="rubrics-section-title">
+                <span class="icon-tile rubrics-head-icon" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-share-3"></i></span>
+                <div><h2>Open Graph</h2><p class="text-secondary">Метатеги для соцсетей и мессенджеров на страницах этой рубрики.</p></div>
+              </div>
+              <button class="btn btn-secondary btn-sm" type="button" data-rubric-og-default><i class="ti ti-wand"></i>Базовая разметка</button>
+            </div>
+            <div class="rubrics-template-fields">
+              <div class="alert alert-info rubrics-og-help"><span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-photo-share"></i></span><div><b>Изображение задаётся полем рубрики</b><p>Откройте палитру тегов, вставьте медиаполе и добавьте формат <code>[img]</code>: <code>&lt;meta property="og:image" content="[tag:rfld:photo][img]"&gt;</code>.</p></div></div>
+              {{ ui.code_field('OG-разметка', 'rubric_og_template', 420, '', true) }}
+              <div class="rubrics-og-tags"><span><code>[tag:og:title]</code><small>Заголовок</small></span><span><code>[tag:og:description]</code><small>Meta description</small></span><span><code>[tag:og:url]</code><small>Канонический URL</small></span><span><code>[tag:og:sitename]</code><small>Название сайта</small></span></div>
+            </div>
+          </section>
+        </form>
+
+        <section class="tab-panel" data-rubric-template-panel="extra">
+          <div class="rubrics-section-head rubrics-inner-head">
+            <div class="rubrics-section-title">
+              <span class="icon-tile rubrics-head-icon" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-copy-plus"></i></span>
+              <div><h2>Дополнительные шаблоны</h2><p class="text-secondary">Используются документами через поле `rubric_tmpl_id`.</p></div>
+            </div>
+            <button class="btn btn-primary btn-sm" type="button" data-extra-template-new><i class="ti ti-plus"></i>Шаблон</button>
+          </div>
+          <div class="rubrics-extra-list" data-extra-template-list></div>
+        </section>
+      </section>
+
+      <div class="rubrics-template-tag-palette" data-rubric-template-tags-panel hidden>
+        <div class="rubrics-template-tag-toolbar">
+          <div class="input-wrap"><i class="ti ti-search"></i><input class="input" type="search" placeholder="Поиск тегов" data-rubric-template-tags-search></div>
+          <button class="btn btn-ghost btn-icon btn-sm" type="button" data-rubric-template-tags-close aria-label="Закрыть"><i class="ti ti-x"></i></button>
+        </div>
+		<div class="rubrics-template-tag-nav" role="tablist" aria-label="Группы тегов" data-rubric-template-tag-nav>
+		  <button type="button" class="is-active" data-rubric-template-tag-tab="fields"><span>Поля рубрики</span><b data-rubric-template-tags-count>0</b></button>
+		</div>
+		<div class="rubrics-template-tag-groups" data-rubric-template-tag-groups>
+		  <section class="rubrics-template-tag-group is-active" data-rubric-template-tag-group data-rubric-template-tag-panel="fields">
+			<div class="rubrics-template-tag-list" data-rubric-template-tags></div>
+		  </section>
+		  <div class="rubrics-template-tag-empty" data-rubric-template-tags-empty hidden>Ничего не найдено</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="drawer-footer">
+    <button class="btn btn-ghost" type="button" data-close-drawer><i class="ti ti-x"></i>Закрыть</button>
+    <button class="btn btn-secondary" type="button" data-rubric-template-refresh><i class="ti ti-refresh"></i>Обновить</button>
+    <button class="btn btn-primary" type="submit" form="rubricTemplateForm" data-code-save-stay><i class="ti ti-device-floppy"></i>Сохранить</button>
+  </div>
+</aside>
+
+<aside class="drawer drawer-right drawer-lg rubrics-extra-template-panel" id="rubricExtraTemplateDrawer" role="dialog" aria-modal="true" aria-labelledby="rubricExtraTemplateTitle" hidden>
+  <div class="drawer-header">
+    <div>
+      <h3 id="rubricExtraTemplateTitle">Дополнительный шаблон</h3>
+      <p class="text-secondary text-sm">Вариант шаблона для документов рубрики.</p>
+    </div>
+    <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <form id="rubricExtraTemplateForm" class="rubrics-drawer">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <input type="hidden" name="id" value="">
+    <input type="hidden" name="rubric_id" value="">
+    <div class="drawer-body">
+      <div class="form-grid">
+        <label class="field col-12"><span class="field-label">Название</span><input class="input" type="text" name="title" required><span class="field-error" data-error="title"></span></label>
+        {{ ui.code_field('Код шаблона', 'template', 560, 'col-12', true) }}
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <button class="btn btn-ghost" type="button" data-close-drawer><i class="ti ti-x"></i>Закрыть</button>
+      <button class="btn btn-primary" type="submit" data-code-save-stay><i class="ti ti-device-floppy"></i>Сохранить</button>
+    </div>
+  </form>
+</aside>
+
+<aside class="drawer drawer-right drawer-lg rubrics-edit-panel" id="rubricFieldDrawer" role="dialog" aria-modal="true" aria-labelledby="rubricFieldTitle" hidden>
+  <div class="drawer-header">
+    <div>
+      <h3 id="rubricFieldTitle">Новое поле</h3>
+      <p class="text-secondary text-sm">Тип поля хранится в формате рубрик, админский редактор строит adminx.</p>
+    </div>
+    <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <form id="rubricFieldForm" class="rubrics-drawer">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <input type="hidden" name="id" value="">
+    <input type="hidden" name="rubric_id" value="">
+    <div class="drawer-body rubrics-field-form">
+      <section class="rubrics-field-section" style="--sec:var(--blue-600);--sec-soft:var(--blue-100)">
+        <div class="rubrics-field-section-head">
+          <span class="icon-tile" style="--tile-bg:var(--sec-soft);--tile-fg:var(--sec)"><i class="ti ti-forms"></i></span>
+          <div><h4>Основное</h4><p>Название, алиас, тип и группа поля.</p></div>
+        </div>
+        <div class="rubrics-field-section-body">
+          <div class="form-grid">
+            <label class="field col-6"><span class="field-label">Название</span><input class="input" type="text" name="rubric_field_title" required><span class="field-error" data-error="rubric_field_title"></span></label>
+            <label class="field col-6"><span class="field-label">Алиас</span><input class="input" type="text" name="rubric_field_alias" maxlength="20" autocomplete="off"><span class="field-hint" data-field-alias-state></span><span class="field-error" data-error="rubric_field_alias"></span></label>
+            <label class="field col-6"><span class="field-label">Тип</span><select class="select" name="rubric_field_type">{% for type in field_types %}<option value="{{ type.id }}" data-field-type-option data-field-type-label="{{ type.name|e }}" data-enabled="{{ type.enabled ? '1' : '0' }}"{{ type.enabled ? '' : ' disabled' }}>{{ type.name }}{{ type.enabled ? '' : ' (отключён)' }}</option>{% endfor %}</select><span class="field-error" data-error="rubric_field_type"></span></label>
+            <label class="field col-6"><span class="field-label">Группа</span><select class="select" name="rubric_field_group" data-field-groups-select><option value="0">Без группы</option></select></label>
+          </div>
+        </div>
+      </section>
+
+      <section class="rubrics-field-section rubrics-field-section-plugin" style="--sec:var(--cyan-600);--sec-soft:var(--cyan-100)" data-field-plugin-panel>
+        <div class="rubrics-field-section-head">
+          <span class="icon-tile" style="--tile-bg:var(--sec-soft);--tile-fg:var(--sec)"><i class="ti ti-plug-connected"></i></span>
+          <div><h4>Редактор типа</h4><p>Настройки, зависящие от выбранного типа поля.</p></div>
+        </div>
+        <div class="rubrics-field-section-body">
+          <div class="rubrics-plugin-body" data-field-plugin-body>
+            <div class="empty-state">Выберите тип поля.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="rubrics-field-section" style="--sec:var(--amber-600);--sec-soft:var(--amber-100)">
+        <div class="rubrics-field-section-head">
+          <span class="icon-tile" style="--tile-bg:var(--sec-soft);--tile-fg:var(--sec)"><i class="ti ti-adjustments-alt"></i></span>
+          <div><h4>Поведение</h4><p>Поиск, тип значения и значение по умолчанию.</p></div>
+        </div>
+        <div class="rubrics-field-section-body">
+          <div class="form-grid">
+            <label class="field col-6"><span class="field-label">Поиск</span><select class="select" name="rubric_field_search"><option value="1">Участвует в поиске</option><option value="0">Не индексировать</option></select></label>
+            <label class="field col-6"><span class="field-label">Числовое</span><select class="select" name="rubric_field_numeric"><option value="0">Обычное значение</option><option value="1">Числовое значение</option></select></label>
+            <label class="field col-12 rubrics-default-field">
+              <span class="field-label" data-field-control-label="rubric_field_default">Значение по умолчанию</span>
+              <textarea class="textarea" name="rubric_field_default" rows="4" data-field-default-storage></textarea>
+              <div class="rubrics-default-editor" data-field-default-editor hidden></div>
+              <span class="field-hint" data-field-control-hint="rubric_field_default"></span>
+            </label>
+            <label class="field col-12"><span class="field-label">Описание</span><textarea class="textarea" name="rubric_field_description" rows="4"></textarea></label>
+          </div>
+        </div>
+      </section>
+
+      <section class="rubrics-field-section" style="--sec:var(--teal-600);--sec-soft:var(--teal-100)">
+        <div class="rubrics-field-section-head">
+          <span class="icon-tile" style="--tile-bg:var(--sec-soft);--tile-fg:var(--sec)"><i class="ti ti-layout-columns"></i></span>
+          <div><h4>Оформление в документе</h4><p>Ширина в сетке и приставка/суффикс поля.</p></div>
+        </div>
+        <div class="rubrics-field-section-body">
+          <div class="form-grid">
+            <label class="field col-4"><span class="field-label">Ширина поля</span><select class="select" name="rubric_field_layout[width]"><option value="">Авто</option><option value="full">Полная</option><option value="half">Половина</option><option value="third">Треть</option><option value="quarter">Четверть</option></select><span class="field-hint">Узкие поля встают в колонки.</span></label>
+            <label class="field col-4"><span class="field-label">Приставка</span><input class="input" type="text" name="rubric_field_layout[prefix]" maxlength="12" autocomplete="off"><span class="field-hint">Слева, напр. №, $.</span></label>
+            <label class="field col-4"><span class="field-label">Суффикс</span><input class="input" type="text" name="rubric_field_layout[suffix]" maxlength="12" autocomplete="off"><span class="field-hint">Справа, напр. ₽, кг, %.</span></label>
+          </div>
+          <p class="field-hint" style="margin-top:2px">Обязательность настраивается в «Редакторе типа» → Валидация.</p>
+        </div>
+      </section>
+
+      <section class="rubrics-field-section" style="--sec:var(--violet-600);--sec-soft:var(--violet-100)">
+        <div class="rubrics-field-section-head">
+          <span class="icon-tile" style="--tile-bg:var(--sec-soft);--tile-fg:var(--sec)"><i class="ti ti-code"></i></span>
+          <div><h4>Шаблоны вывода</h4><p>HTML-шаблоны отображения поля и request.</p></div>
+        </div>
+        <div class="rubrics-field-section-body">
+          <div class="rubrics-tag-legend" data-tag-legend>
+            <div class="rubrics-tag-legend-head"><i class="ti ti-brackets-contain"></i><b>Доступные теги</b><small>клик — вставить в активный редактор</small></div>
+            <div class="rubrics-tag-legend-list">
+              <button type="button" class="rubrics-tag-chip" data-field-tpl-tag="[tag:value]"><code>[tag:value]</code><span>значение поля целиком</span></button>
+              <button type="button" class="rubrics-tag-chip" data-field-tpl-tag="[tag:parametr:0]"><code>[tag:parametr:N]</code><span>часть значения №N (по «|»)</span></button>
+              <button type="button" class="rubrics-tag-chip" data-field-tpl-tag="[tag:label]"><code>[tag:label]</code><span>название поля</span></button>
+              <button type="button" class="rubrics-tag-chip" data-field-tpl-tag="[tag:default]"><code>[tag:default]</code><span>значение по умолчанию</span></button>
+              <button type="button" class="rubrics-tag-chip" data-field-tpl-tag="[tag:alias]"><code>[tag:alias]</code><span>алиас поля</span></button>
+              <button type="button" class="rubrics-tag-chip" data-field-tpl-tag="[tag:img:[tag:value]]"><code>[tag:img:/путь]</code><span>&lt;img&gt; из пути (можно [tag:value])</span></button>
+              <button type="button" class="rubrics-tag-chip" data-field-tpl-tag="[tag:if_notempty][tag:value][tag:else]—[/tag:if_notempty]"><code>[tag:if_notempty]…[tag:else]…[/tag:if_notempty]</code><span>если поле заполнено</span></button>
+              <button type="button" class="rubrics-tag-chip" data-field-tpl-tag="[tag:if_empty]—[/tag:if_empty]"><code>[tag:if_empty]…[/tag:if_empty]</code><span>если поле пустое</span></button>
+              <button type="button" class="rubrics-tag-chip" data-field-tpl-tag="[tag:c200x100:[tag:value]]"><code>[tag:c200x100:/путь]</code><span>миниатюра: c-обрезка/r-ресайз/f-вписать</span></button>
+            </div>
+          </div>
+          <div class="form-grid">
+            {{ ui.code_field('Шаблон вывода', 'rubric_field_template', 180, 'col-12') }}
+            {{ ui.code_field('Шаблон request', 'rubric_field_template_request', 180, 'col-12') }}
+          </div>
+        </div>
+      </section>
+    </div>
+    <div class="drawer-footer">
+      <button class="btn btn-ghost" type="button" data-close-drawer><i class="ti ti-x"></i>Закрыть</button>
+      <button class="btn btn-primary" type="submit"><i class="ti ti-device-floppy"></i>Сохранить</button>
+    </div>
+  </form>
+</aside>
+
+<aside class="drawer drawer-right rubrics-revisions-panel" id="rubricSchemaRevisionsDrawer" role="dialog" aria-modal="true" aria-labelledby="rubricSchemaRevisionsTitle" hidden>
+  <div class="drawer-header">
+    <div>
+      <h3 id="rubricSchemaRevisionsTitle">Ревизии схемы рубрики</h3>
+      <p class="text-secondary text-sm" data-schema-revisions-subtitle>История полей, групп, раскладки и условий формы.</p>
+    </div>
+    <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="drawer-body rubrics-revisions-body">
+    <section class="rubrics-revisions-section" aria-label="Снимки схемы">
+      <div class="rubrics-revisions-head">
+        <span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-history"></i></span>
+        <div><h4>Снимки схемы</h4><p class="text-secondary" data-schema-revisions-count>Загрузка...</p></div>
+      </div>
+      <div class="rubrics-revisions-list" data-schema-revisions-list>
+        <div class="empty-state">Загрузка...</div>
+      </div>
+    </section>
+
+    <section class="rubrics-revisions-section rubrics-revision-preview" aria-label="Последствия восстановления">
+      <div class="rubrics-revisions-head">
+        <span class="icon-tile" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-restore"></i></span>
+        <div><h4 data-schema-revision-title>Выберите ревизию</h4><p class="text-secondary" data-schema-revision-meta>Здесь появится точный список изменений до восстановления.</p></div>
+      </div>
+      <div class="rubrics-revision-preview-body" data-schema-revision-preview>
+        <div class="rubrics-revision-empty"><i class="ti ti-history"></i><b>Снимок не выбран</b><span>Выберите запись в истории выше.</span></div>
+      </div>
+    </section>
+  </div>
+  <div class="drawer-footer">
+    <button class="btn btn-ghost" type="button" data-close-drawer><i class="ti ti-x"></i>Закрыть</button>
+    <button class="btn btn-danger-soft" type="button" data-schema-revisions-clear disabled><i class="ti ti-trash"></i>Удалить все</button>
+    <button class="btn btn-secondary" type="button" data-schema-revision-delete disabled style="margin-left:auto"><i class="ti ti-trash"></i>Удалить снимок</button>
+    <button class="btn btn-primary" type="button" data-schema-revision-restore disabled><i class="ti ti-restore"></i>Восстановить</button>
+  </div>
+</aside>
+
+<aside class="drawer drawer-right drawer-lg rubrics-group-panel" id="rubricGroupDrawer" role="dialog" aria-modal="true" aria-labelledby="rubricGroupTitle" hidden>
+  <div class="drawer-header">
+    <div>
+      <h3 id="rubricGroupTitle">Новая группа</h3>
+      <p class="text-secondary text-sm">Группа полей внутри рубрики.</p>
+    </div>
+    <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <form id="rubricGroupForm" class="rubrics-drawer">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <input type="hidden" name="id" value="">
+    <input type="hidden" name="rubric_id" value="">
+    <input type="hidden" name="group_condition" value="{}">
+    <div class="drawer-body">
+      <div class="form-grid">
+        <label class="field col-12"><span class="field-label">Название</span><input class="input" type="text" name="group_title" required><span class="field-error" data-error="group_title"></span></label>
+        <label class="field col-12"><span class="field-label">Описание</span><textarea class="textarea" name="group_description" rows="5"></textarea></label>
+        <div class="col-12">
+          <section class="rubrics-builder-condition rubrics-group-condition" data-builder-condition data-condition-scope="group">
+            <div class="rubrics-builder-condition-head">
+              <span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-700)"><i class="ti ti-adjustments-horizontal"></i></span>
+              <span><b>Условие для всей группы</b><small>Можно скрыть группу или запретить изменение всех её полей.</small></span>
+              <label class="switch"><input type="checkbox" data-builder-condition-enabled aria-label="Включить условие группы"></label>
+            </div>
+            <div class="rubrics-builder-condition-body" data-builder-condition-body hidden>
+              <div class="form-grid">
+                <label class="field col-12"><span class="field-label">Что делать при совпадении</span><select class="select" data-builder-condition-mode><option value="show">Показывать группу</option><option value="hide">Скрывать группу</option><option value="lock">Запретить изменение</option></select></label>
+              </div>
+              <div class="rubrics-builder-condition-rows" data-builder-condition-rows></div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <button class="btn btn-ghost" type="button" data-close-drawer><i class="ti ti-x"></i>Закрыть</button>
+      <button class="btn btn-primary" type="submit"><i class="ti ti-device-floppy"></i>Сохранить</button>
+    </div>
+  </form>
+</aside>
+{% endif %}
+
+{% endblock %}

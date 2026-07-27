@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="runtime_e704077285159bcd">Select a role.</phrase>
+	<phrase data="runtime_89f33468d76dfe10">Access to the section and list of users.</phrase>
+	<phrase data="runtime_f436b337a904a80b">Changes saved</phrase>
+	<phrase data="runtime_07a6f7be3bde6671">Invalid email.</phrase>
+	<phrase data="runtime_c577fa233186edcc">You cannot disable your own account</phrase>
+	<phrase data="runtime_73eabb6dfa0fc532">You can&apos;t delete yourself</phrase>
+	<phrase data="runtime_9eebac9257e9663a">The password must be at least 6 characters long.</phrase>
+	<phrase data="runtime_845595d6e899ecb0">Users</phrase>
+	<phrase data="runtime_e6bd6e61f32b2884">User enabled</phrase>
+	<phrase data="runtime_8ef54e373b981f07">User not found</phrase>
+	<phrase data="runtime_3a357bed8d79e749">User disabled</phrase>
+	<phrase data="runtime_57225885a4608cab">User created</phrase>
+	<phrase data="runtime_4bf44dca589bef0f">User deleted</phrase>
+	<phrase data="runtime_fc64875af5270c8c">Check the form fields</phrase>
+	<phrase data="runtime_5c093ae1d0c7b04a">View users</phrase>
+	<phrase data="runtime_6da215b1bdac9524">System</phrase>
+	<phrase data="runtime_057882f055eaa505">Creating, changing, deleting, turning on/off accounts.</phrase>
+	<phrase data="runtime_3b0daf9b9290282a">Enter your email.</phrase>
+	<phrase data="runtime_4d0f88b6e6fbd3c9">Please provide a name.</phrase>
+	<phrase data="runtime_d40e0bdeb83cdf61">User management</phrase>
+	<phrase data="runtime_9dbd7e3b1a2b8fa8">This email is already taken.</phrase>
+	<phrase data="runtime_41859888161442dc">This login is already taken.</phrase>
+</language>

@@ -1,0 +1,19 @@
+{% set stats = module_data.stats %}
+<section class="dashboard-kpis dashboard-core-kpis" aria-label="{{ lang.dashboard_system_health|default('Состояние системы') }}">
+  <a class="dashboard-kpi" href="{{ ADMINX_BASE }}/documents">
+    <span class="icon-tile" style="--tile-bg:#e8f1ff;--tile-fg:#2563eb"><i class="ti ti-file-text"></i></span>
+    <span class="dashboard-kpi-body"><small>{{ lang.dashboard_active_documents|default('Активных документов') }}</small><strong data-count>{{ stats.documents is null ? '—' : stats.documents }}</strong></span>
+  </a>
+  <a class="dashboard-kpi" href="{{ ADMINX_BASE }}/users">
+    <span class="icon-tile" style="--tile-bg:#f1eafe;--tile-fg:#7c3aed"><i class="ti ti-users"></i></span>
+    <span class="dashboard-kpi-body"><small>{{ lang.dashboard_active_users|default('Активных пользователей') }}</small><strong data-count>{{ stats.users is null ? '—' : stats.users }}</strong></span>
+  </a>
+  <a class="dashboard-kpi" href="{{ ADMINX_BASE }}{{ stats.not_found_url }}">
+    <span class="icon-tile" style="--tile-bg:#fff4dc;--tile-fg:#b45309"><i class="ti ti-file-alert"></i></span>
+    <span class="dashboard-kpi-body"><small>{{ lang.dashboard_unresolved_404|default('Нерешенных 404') }}</small><strong data-count>{{ stats.not_found }}</strong></span>
+  </a>
+  <a class="dashboard-kpi{{ stats.sql_errors > 0 ? ' is-danger' : '' }}" href="{{ ADMINX_BASE }}/events?source=sql">
+    <span class="icon-tile" style="--tile-bg:#feecec;--tile-fg:#dc2626"><i class="ti ti-database-exclamation"></i></span>
+    <span class="dashboard-kpi-body"><small>{{ lang.dashboard_database_errors|default('Ошибок базы данных') }}</small><strong data-count>{{ stats.sql_errors }}</strong></span>
+  </a>
+</section>

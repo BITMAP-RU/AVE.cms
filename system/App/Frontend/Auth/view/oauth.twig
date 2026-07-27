@@ -1,0 +1,12 @@
+{% if oauth_providers %}
+<div class="system-public-auth-oauth" data-auth-oauth>
+  <div class="system-public-auth-oauth-divider"><span>или войдите через</span></div>
+  <div class="system-public-auth-oauth-list">
+    {% for provider in oauth_providers %}
+      <a class="system-public-auth-oauth-button is-{{ provider.code }}" href="{{ base }}{{ provider.url }}?_return={{ return_url|default('/')|url_encode }}">
+        <span aria-hidden="true">{{ provider.icon }}</span><b>{{ provider.label }}</b>
+      </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}

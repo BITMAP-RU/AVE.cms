@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="auto_1cc70f8e0fc03e82">Delete view</phrase>
+	<phrase data="auto_86433d57abc272e9">Saved Views</phrase>
+	<phrase data="btn_apply">Apply</phrase>
+	<phrase data="btn_cancel">Cancel</phrase>
+	<phrase data="btn_close">Close</phrase>
+	<phrase data="btn_confirm">Confirm</phrase>
+	<phrase data="btn_delete">Delete</phrase>
+	<phrase data="btn_save">Save</phrase>
+	<phrase data="btn_show">Show</phrase>
+	<phrase data="cache_documents">Documents</phrase>
+	<phrase data="confirm_action">Confirm</phrase>
+	<phrase data="confirm_title">Confirm action</phrase>
+	<phrase data="field_current_password">Current user password</phrase>
+	<phrase data="field_password">Password</phrase>
+	<phrase data="help_dc9694fc6c531900">Documents</phrase>
+	<phrase data="nav_documents">Documents</phrase>
+	<phrase data="nav_group_content">Content</phrase>
+	<phrase data="nav_media">Media</phrase>
+	<phrase data="reauth_error">Could not confirm the password</phrase>
+	<phrase data="reauth_hint">The action continues automatically after confirmation. Your password may be requested again in a few minutes.</phrase>
+	<phrase data="reauth_reason">This action changes executable system code.</phrase>
+	<phrase data="reauth_subtitle">Protection for sensitive actions</phrase>
+	<phrase data="reauth_title">Confirm your password</phrase>
+	<phrase data="runtime_0bb52004950628f0">Content</phrase>
+	<phrase data="runtime_1beebc019e83d1a3">Specify the name of the view</phrase>
+	<phrase data="runtime_87fc5157a761fc74">code</phrase>
+	<phrase data="runtime_988bca9318fd438b">This action changes executable system code.</phrase>
+	<phrase data="runtime_c1897ad2902c75b7">Confirm your password</phrase>
+	<phrase data="runtime_dc9694fc6c531900">Documents</phrase>
+	<phrase data="server_unavailable">The server is unavailable. Try again.</phrase>
+	<phrase data="topbar_theme">Theme</phrase>
+	<phrase data="ui_loading">Loading...</phrase>
+	<phrase data="ui_main">General</phrase>
+	<phrase data="ui_nothing_found">Nothing found</phrase>
+	<phrase data="ui_remove">Remove</phrase>
+	<phrase data="ui_search">Search</phrase>
+	<phrase data="ui_select">Select</phrase>
+	<phrase data="ui_size">Size</phrase>
+	<phrase data="ui_source">Source</phrase>
+	<phrase data="ui_title">Title</phrase>
+</language>

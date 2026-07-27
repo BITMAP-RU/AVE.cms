@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="auto_b713cf8f89ebb098">Enter your login or email and password.</phrase>
+	<phrase data="auto_3b30bc2df18cb4e1">You are logged out</phrase>
+	<phrase data="auto_fefc535f60863e46">Access</phrase>
+	<phrase data="auto_d8458a7f3f2dea9b">Failed to login.</phrase>
+	<phrase data="auto_adb257b0892d8082">Invalid login or password.</phrase>
+	<phrase data="auto_e97cb793b90efe81">Invalid password</phrase>
+	<phrase data="auto_ccab3aaa76af0adf">Password confirmed</phrase>
+	<phrase data="auto_fb98dc3c74d4c2c8">Check your password</phrase>
+	<phrase data="auto_d9ea483e4967be19">sec.</phrase>
+	<phrase data="auto_36ab129a67413da5">Login session ended</phrase>
+	<phrase data="auto_94d6ba09fac4d9d6">The session is out of date, please refresh the page and try again.</phrase>
+	<phrase data="auto_941abeff84af0919">Too many tries. Repeat after</phrase>
+	<phrase data="auto_5a6373e98b6ebb55">The account has been disabled.</phrase>
+</language>

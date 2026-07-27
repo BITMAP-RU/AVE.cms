@@ -1,0 +1,40 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}Каталог{% endblock %}
+{% block content %}
+<nav class="breadcrumbs" aria-label="Хлебные крошки"><a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i><span>Каталог</span></nav>
+<div class="page-header catalog-page-header">
+  <div class="between">
+    <div class="catalog-page-heading">
+      <h1>Каталог</h1>
+      <p class="text-secondary">Системная структура разделов, полей документов и фильтров.</p>
+    </div>
+    <div class="catalog-page-actions">
+      {% if products_available %}
+      <a class="btn btn-secondary" href="{{ ADMINX_BASE }}/catalog/card-templates"><i class="ti ti-layout-cards"></i>Карточки</a>
+	      {% if filter_templates_available %}<a class="btn btn-secondary" href="{{ ADMINX_BASE }}/catalog/filter-templates"><i class="ti ti-adjustments-horizontal"></i>Фильтры</a>{% endif %}
+      <a class="btn btn-secondary" href="{{ ADMINX_BASE }}/catalog/attributes"><i class="ti ti-list-details"></i>Характеристики</a>
+      {% endif %}
+      {% if can_manage %}<button class="btn btn-primary" type="button" data-open-drawer="catalogCreateDrawer"><i class="ti ti-plus"></i>Создать каталог</button>{% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="catalog-summary">
+  <div class="card catalog-stat"><span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-category-2"></i></span><div><b>{{ stats.catalogs }}</b><span>Каталогов</span></div></div>
+  <div class="card catalog-stat"><span class="icon-tile" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-list-tree"></i></span><div><b>{{ stats.items }}</b><span>Разделов</span></div></div>
+  <div class="card catalog-stat"><span class="icon-tile" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-eye"></i></span><div><b>{{ stats.active }}</b><span>Активных</span></div></div>
+  <div class="card catalog-stat"><span class="icon-tile" style="--tile-bg:var(--amber-100);--tile-fg:var(--amber-600)"><i class="ti ti-adjustments-horizontal"></i></span><div><b>{{ stats.filters }}</b><span>С фильтрами</span></div></div>
+</div>
+
+<section class="catalog-panel">
+  <div class="section-header catalog-panel-header"><div class="section-icon"><i class="ti ti-category-2"></i></div><div><div class="section-eyebrow">Контент</div><h2>Каталоги рубрик</h2><p class="section-desc">Каждый каталог привязан к полю типа <span class="mono">catalog</span>.</p></div></div>
+  <div class="card catalog-card">
+    <div class="catalog-section-head"><div class="catalog-section-title"><span class="icon-tile catalog-head-icon" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-table"></i></span><div><h2>Доступные каталоги</h2><p class="text-secondary">{{ catalogs|length }} системных привязок.</p></div></div></div>
+    <div class="table-scroll"><table class="table catalog-table"><thead><tr><th>Рубрика и поле</th><th>Структура</th><th>Возможности</th><th class="catalog-actions-col">Действия</th></tr></thead><tbody>
+    {% for catalog in catalogs %}<tr><td><b>{{ catalog.rubric_title }}</b><small class="catalog-meta">{{ catalog.field_title }} · #{{ catalog.field_id }} · {{ catalog.field_alias }}</small></td><td><b>{{ catalog.items_count }}</b><small class="catalog-meta">{{ catalog.active_count }} активных</small></td><td><div class="cluster"><span class="badge {{ catalog.purpose == 'commerce' ? 'badge-green' : 'badge-blue' }}">{{ catalog.purpose == 'commerce' ? 'товарный' : 'обычный' }}</span><span class="badge {{ catalog.doc_fileds ? 'badge-blue' : 'badge-gray' }}">поля</span><span class="badge {{ catalog.filters_use ? 'badge-amber' : 'badge-gray' }}">фильтры</span></div></td><td><a class="btn btn-secondary btn-sm" href="{{ ADMINX_BASE }}/catalog/{{ catalog.rubric_id }}/{{ catalog.field_id }}"><i class="ti ti-edit"></i>Открыть</a></td></tr>
+    {% else %}<tr><td colspan="4"><div class="empty-state">В рубриках нет полей типа catalog.</div></td></tr>{% endfor %}
+    </tbody></table></div>
+  </div>
+</section>
+{% if can_manage %}<aside class="drawer drawer-right" id="catalogCreateDrawer" role="dialog" aria-modal="true" aria-labelledby="catalogCreateTitle" hidden><form data-catalog-create data-base="{{ ADMINX_BASE }}"><div class="drawer-header"><div><h3 id="catalogCreateTitle">Новый каталог</h3><p class="text-secondary text-sm">Структура разделов для документов выбранной рубрики.</p></div><button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button></div><div class="drawer-body"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><div class="form-grid"><label class="field col-12"><span class="field-label">Рубрика документов</span><select class="select" name="rubric_id" required><option value="">Выберите рубрику</option>{% for rubric in rubric_options %}<option value="{{ rubric.id }}">{{ rubric.title }}{% if rubric.alias %} · {{ rubric.alias }}{% endif %}</option>{% endfor %}</select></label><label class="field col-12"><span class="field-label">Название</span><input class="input" name="title" required maxlength="255" placeholder="Например, Разделы новостей"></label><label class="field col-12"><span class="field-label">Alias поля</span><input class="input mono" name="alias" required pattern="[a-z][a-z0-9_]*" placeholder="news_sections"><span class="field-hint">Уникальный код внутри выбранной рубрики.</span></label><label class="field col-12"><span class="field-label">Назначение</span><select class="select" name="purpose"><option value="content">Обычный каталог</option>{% if products_available %}<option value="commerce">Товарный каталог</option>{% endif %}</select><span class="field-hint">{% if products_available %}Товарный режим включает цены, остатки, варианты и фиды.{% else %}Товарный режим появится после установки модуля «Товары».{% endif %}</span></label></div></div><div class="drawer-footer"><div class="df-left"><button class="btn btn-secondary" type="button" data-close-drawer>Закрыть</button></div><button class="btn btn-primary" type="submit"><i class="ti ti-plus"></i>Создать</button></div></form></aside>{% endif %}
+{% endblock %}

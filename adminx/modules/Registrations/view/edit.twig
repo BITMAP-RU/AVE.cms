@@ -1,0 +1,60 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}{{ item ? 'РУ ' ~ item.number : 'Новое удостоверение' }}{% endblock %}
+{% block content %}
+{% set can_edit = item is null or can_manage %}
+<nav class="breadcrumbs" aria-label="Хлебные крошки"><a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i><a href="{{ ADMINX_BASE }}/registrations">Рег. удостоверения</a><i class="ti ti-chevron-right"></i><span>{{ item ? item.number : 'Новое' }}</span></nav>
+
+<div class="page-header"><div class="between">
+	<div><h1>{{ item ? 'РУ ' ~ item.number : 'Новое удостоверение' }}</h1><p class="text-secondary">Регистрационное удостоверение Росздравнадзора на медицинское изделие.</p></div>
+	<a class="btn btn-ghost" href="{{ ADMINX_BASE }}/registrations"><i class="ti ti-arrow-left"></i>К реестру</a>
+</div></div>
+
+<form class="card registrations-form"
+	data-reg-form
+	data-action="{{ item ? ADMINX_BASE ~ '/registrations/' ~ item.id : ADMINX_BASE ~ '/registrations' }}"
+	data-redirect="{{ item ? '' : ADMINX_BASE ~ '/registrations' }}">
+	<input type="hidden" name="_csrf" value="{{ csrf_token }}">
+
+	<div class="section-header ax-panel-header"><div class="section-icon"><i class="ti ti-file-certificate"></i></div><div><div class="section-eyebrow">Удостоверение</div><h2>Основные данные</h2></div></div>
+	<div class="form-grid">
+		<div class="field"><label>Номер РУ *</label><input class="input" name="number" value="{{ item.number }}" placeholder="РЗН 2020/12345" required maxlength="120" {{ can_edit ? '' : 'disabled' }}></div>
+		<div class="field"><label>Статус</label>
+			<select class="select" name="status" {{ can_edit ? '' : 'disabled' }}>
+				{% for code, s in statuses %}<option value="{{ code }}" {{ (item.status ?: 'active') == code ? 'selected' : '' }}>{{ s.label }}</option>{% endfor %}
+			</select>
+		</div>
+		<div class="field field-wide"><label>Наименование медизделия *</label><input class="input" name="product_name" value="{{ item.product_name }}" required maxlength="255" {{ can_edit ? '' : 'disabled' }}></div>
+		<div class="field"><label>Владелец РУ / производитель</label><input class="input" name="holder" value="{{ item.holder }}" maxlength="255" {{ can_edit ? '' : 'disabled' }}></div>
+		<div class="field"><label>Класс риска</label>
+			<select class="select" name="risk_class" {{ can_edit ? '' : 'disabled' }}>
+				<option value="">— не указан —</option>
+				{% for r in risk_classes %}<option value="{{ r }}" {{ item.risk_class == r ? 'selected' : '' }}>Класс {{ r }}</option>{% endfor %}
+			</select>
+		</div>
+	</div>
+
+	<div class="section-header ax-panel-header"><div class="section-icon"><i class="ti ti-calendar-event"></i></div><div><div class="section-eyebrow">Сроки</div><h2>Действие</h2></div></div>
+	<div class="form-grid">
+		<div class="field"><label>Дата регистрации</label><input class="input" name="issued_at" type="date" value="{{ item.issued_input }}" {{ can_edit ? '' : 'disabled' }}></div>
+		<div class="field"><label>Действует до</label><input class="input" name="valid_until" type="date" value="{{ item.valid_input }}" data-reg-valid {{ can_edit ? '' : 'disabled' }}></div>
+		<div class="field field-check">
+			<label class="switch"><input type="checkbox" name="perpetual" value="1" data-reg-perpetual {{ item.perpetual ? 'checked' : '' }} {{ can_edit ? '' : 'disabled' }}><span></span></label>
+			<span>Бессрочно</span>
+		</div>
+	</div>
+
+	<div class="section-header ax-panel-header"><div class="section-icon"><i class="ti ti-link"></i></div><div><div class="section-eyebrow">Связь и документ</div><h2>Товар и скан</h2></div></div>
+	<div class="form-grid">
+		<div class="field"><label>ID товара (документа)</label><input class="input" name="document_id" type="number" min="0" value="{{ item.document_id }}" {{ can_edit ? '' : 'disabled' }}></div>
+		<div class="field"><label>Ссылка на скан РУ</label><input class="input" name="scan_url" value="{{ item.scan_url }}" placeholder="https://… или /media/…" maxlength="500" {{ can_edit ? '' : 'disabled' }}></div>
+		<div class="field field-wide"><label>Комментарий</label><textarea class="input" name="note" rows="3" maxlength="2000" {{ can_edit ? '' : 'disabled' }}>{{ item.note }}</textarea></div>
+	</div>
+
+	{% if can_edit %}
+	<div class="registrations-form-actions">
+		<button class="btn btn-primary" type="submit"><i class="ti ti-device-floppy"></i>{{ item ? 'Сохранить' : 'Создать' }}</button>
+		<a class="btn btn-ghost" href="{{ ADMINX_BASE }}/registrations">Отмена</a>
+	</div>
+	{% endif %}
+</form>
+{% endblock %}

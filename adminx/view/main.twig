@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="{{ current_lang|default('ru') }}" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}{{ lang.app_admin_panel|default('Админпанель') }}{% endblock %} · AVE.cms</title>
+<meta name="csrf-token" content="{{ csrf_token }}">
+<meta name="adminx-base" content="{{ ADMINX_BASE }}">
+<script>window.AdminxI18n={{ adminx_i18n|json_encode|raw }};window.AdminxPhrases={{ adminx_phrases|json_encode|raw }};</script>
+<link rel="stylesheet" href="{{ asset_ver(ADMINX_BASE ~ '/assets/vendor/tabler/tabler-icons.min.css') }}">
+{% for style in admin_assets.styles %}
+<link rel="stylesheet" href="{{ asset_ver(style.url) }}">
+{% endfor %}
+</head>
+<body{% if popup_mode %} class="adminx-popup-mode"{% endif %}>
+{% if not popup_mode %}
+<script>try{if(localStorage.getItem('adminx-sidebar')==='collapsed'&&!window.matchMedia('(max-width:900px)').matches){document.body.classList.add('sidebar-collapsed');}}catch(e){}</script>
+
+<!-- ================= TOPBAR ================= -->
+<style>.topbar-help .ti{color:var(--primary,#206bc4)}.topbar-help:hover .ti{color:var(--primary,#206bc4)}</style>
+<header class="topbar">
+  <button class="btn btn-ghost btn-icon" id="sidebarToggle" aria-label="{{ lang.topbar_collapse_menu|default('Свернуть меню') }}" data-tooltip="{{ lang.topbar_menu|default('Меню') }}"><i class="ti ti-layout-sidebar-left-collapse"></i></button>
+  <a href="{{ ADMINX_BASE }}/" class="topbar-logo" style="color:var(--text-primary)"><img class="logo-img" src="{{ asset_ver(ADMINX_BASE ~ '/assets/img/logo.svg') }}" alt="AVE" width="66" height="24"><span class="logo-text logo-suffix">.cms</span></a>
+  {% if site_development_mode %}<a class="env-badge" href="{{ ADMINX_BASE }}/settings/main" data-tooltip="{{ lang.development_mode_hint|default('Сайт закрыт для посетителей') }}"><i class="ti ti-lock"></i>{{ lang.development_mode|default('Режим разработки') }}</a>{% endif %}
+  <div class="topbar-right">
+    <a class="btn btn-ghost btn-icon topbar-site-link" href="{{ public_url }}" target="_blank" rel="noopener" aria-label="{{ lang.topbar_visit_site|default('Перейти на сайт') }}" data-tooltip="{{ lang.topbar_visit_site|default('Перейти на сайт') }}"><i class="ti ti-external-link"></i></a>
+    {% if module_header_actions %}
+    <div class="topbar-module-actions">
+      {% for module_header in module_header_actions %}
+        {% if module_header.template %}{% include module_header.template with {module_data: module_header.data, module_header: module_header} %}{% endif %}
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% if can_clear_cache %}
+    <style>#cacheMenu .dropdown-menu{min-width:260px}.dd-item.cache-item{display:flex;align-items:center;gap:8px;white-space:nowrap}.dd-item.cache-item .dd-size{margin-left:auto;padding-left:14px;font-size:11px;color:var(--text-muted);font-variant-numeric:tabular-nums}</style>
+    <div class="dropdown topbar-cache" id="cacheMenu">
+      <button class="btn btn-ghost btn-icon" data-dropdown aria-haspopup="true" aria-expanded="false" aria-label="{{ lang.cache_clear|default('Очистить кеш') }}" data-tooltip="{{ lang.cache_clear|default('Очистить кеш') }}"><i class="ti ti-trash"></i></button>
+      <div class="dropdown-menu right" role="menu">
+        <div class="notif-head"><b>{{ lang.cache_clear|default('Очистить кеш') }}</b></div>
+        <button class="dd-item cache-item" type="button" data-cache-clear="twig"><i class="ti ti-code"></i>{{ lang.cache_twig|default('Twig-шаблоны') }}<span class="dd-size" data-cache-size="twig">{{ cache_sizes.twig|default('') }}</span></button>
+        <button class="dd-item cache-item" type="button" data-cache-clear="database"><i class="ti ti-database"></i>{{ lang.cache_data|default('Данные и SQL') }}<span class="dd-size" data-cache-size="database">{{ cache_sizes.database|default('') }}</span></button>
+        <button class="dd-item cache-item" type="button" data-cache-clear="snapshots"><i class="ti ti-file-text"></i>{{ lang.cache_documents|default('Документы') }}<span class="dd-size" data-cache-size="snapshots">{{ cache_sizes.snapshots|default('') }}</span></button>
+        <div class="dd-divider"></div>
+        <button class="dd-item" type="button" data-cache-clear="all"><i class="ti ti-trash"></i>{{ lang.btn_clear_all|default('Очистить всё') }}</button>
+      </div>
+    </div>
+    {% endif %}
+    {% if section_help and section_help.doc and not popup_mode %}<button class="btn btn-ghost btn-icon topbar-help" type="button" data-ax-help="{{ section_help.doc }}" aria-label="{{ lang.help_section|default('Справка по разделу') }}" data-tooltip="{{ lang.help_section|default('Справка по разделу') }}"><i class="ti ti-help-circle"></i></button>{% endif %}
+    <div class="dropdown topbar-bell" id="notifMenu">
+      <button class="btn btn-ghost btn-icon" data-dropdown aria-haspopup="true" aria-expanded="false" aria-label="{{ lang.topbar_notifications|default('Уведомления') }}" data-tooltip="{{ lang.topbar_notifications|default('Уведомления') }}">
+        <i class="ti ti-bell"></i>
+        {% if notifications.total > 0 %}<span class="topbar-badge">{{ notifications.total > 99 ? '99+' : notifications.total }}</span>{% endif %}
+      </button>
+      <div class="dropdown-menu right notif-menu" role="menu">
+        <div class="notif-head"><b>{{ lang.topbar_notifications|default('Уведомления') }}</b>{% if notifications.total > 0 %}<span class="text-muted text-xs">{{ notifications.total > 99 ? '99+' : notifications.total }}</span>{% endif %}</div>
+        <div class="notif-list">
+          {% for item in notifications.items %}
+          <a class="notif-item" href="{{ item.url }}"><span class="icon-tile" style="--tile-bg:{{ item.bg }};--tile-fg:{{ item.fg }}"><i class="{{ item.icon }}"></i></span><span class="notif-body"><b>{{ item.title }}</b><small>{{ item.text }}</small></span><span class="notif-count">{{ item.count > 99 ? '99+' : item.count }}</span></a>
+          {% else %}
+          <div class="notif-empty"><i class="ti ti-checks"></i>{{ lang.topbar_no_notifications|default('Нет новых уведомлений') }}</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    <div class="dropdown" id="userMenu">
+      <button class="btn btn-ghost" style="padding:0 6px;gap:8px" data-dropdown aria-haspopup="true" aria-expanded="false" aria-label="{{ lang.topbar_profile|default('Профиль') }}" data-tooltip="{{ lang.topbar_profile|default('Профиль') }}">
+        <span class="avatar">{{ user_name|slice(0,2)|upper }}</span><i class="ti ti-chevron-down" style="font-size:13px"></i>
+      </button>
+      <div class="dropdown-menu right" role="menu">
+        <div class="dd-user">
+          <span class="avatar">{{ user_name|slice(0,2)|upper }}</span>
+          <div style="min-width:0">
+            <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ user_name }}</div>
+            {% if user_email %}<div class="text-muted text-xs mono" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ user_email }}</div>{% endif %}
+          </div>
+        </div>
+        <div class="dd-divider"></div>
+        <a class="dd-item" href="{{ ADMINX_BASE }}/"><i class="ti ti-layout-dashboard"></i>{{ lang.nav_dashboard|default('Дашборд') }}</a>
+        <a class="dd-item" href="{{ public_url }}" target="_blank" rel="noopener"><i class="ti ti-external-link"></i>{{ lang.btn_open_site|default('Открыть сайт') }}</a>
+        <a class="dd-item" href="{{ ADMINX_BASE }}/settings/main"><i class="ti ti-settings"></i>{{ lang.nav_settings|default('Настройки') }}</a>
+        <a class="dd-item" href="{{ ADMINX_BASE }}/roles"><i class="ti ti-shield-lock"></i>{{ lang.nav_roles|default('Роли и права') }}</a>
+        <div class="dd-divider"></div>
+        <button class="dd-item" id="themeToggle" type="button" data-theme-light-label="{{ lang.theme_to_light|default('Включить светлую тему') }}" data-theme-dark-label="{{ lang.theme_to_dark|default('Включить тёмную тему') }}"><i class="ti ti-moon" data-theme-icon></i><span data-theme-label>{{ lang.theme_to_dark|default('Включить тёмную тему') }}</span></button>
+        <div class="dd-label">{{ lang.topbar_language|default('Язык интерфейса') }}</div>
+        {% for locale_code, locale_label in admin_locales %}
+        <form class="locale-form" method="post" action="{{ ADMINX_BASE }}/locale">
+          <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+          <input type="hidden" name="locale" value="{{ locale_code }}">
+          <input type="hidden" name="_return" value="{{ ADMINX_BASE ~ current_path }}">
+          <button class="dd-item{{ current_lang == locale_code ? ' active' : '' }}" type="submit"><span class="locale-code">{{ locale_code|upper }}</span><span>{{ locale_label }}</span>{% if current_lang == locale_code %}<i class="ti ti-check"></i>{% endif %}</button>
+        </form>
+        {% endfor %}
+        <div class="dd-divider"></div>
+        <button class="dd-item danger" data-confirm-logout><i class="ti ti-logout"></i>{{ lang.btn_logout|default('Выйти') }}</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+{% endif %}
+
+<div class="app-shell">
+{% if not popup_mode %}
+<!-- ================= SIDEBAR ================= -->
+<nav class="sidebar" id="sidebar" aria-label="Основная навигация">
+  <div class="sidebar-scroll">
+    {% set current_group = null %}
+    {% for item in nav_items %}
+      {% if item.group != current_group %}
+        {% if not loop.first %}</div></div></div>{% endif %}
+        <div class="nav-group" data-nav-group data-nav-group-key="{{ (item.group ?: '__ungrouped')|e('html_attr') }}">
+        {% if item.group %}
+        <button class="nav-group-toggle" type="button" data-nav-group-toggle aria-expanded="true" aria-controls="navGroupPanel{{ loop.index }}">
+          <span>{{ item.group }}</span><i class="ti ti-chevron-down" aria-hidden="true"></i>
+        </button>
+        {% endif %}
+        <div class="nav-group-panel" id="navGroupPanel{{ loop.index }}"><div class="nav-group-content">
+        {% set current_group = item.group %}
+      {% endif %}
+      {% if item.children %}
+      <button class="nav-item{{ item.active ? ' active' : '' }}" type="button" data-nav-sub="navSub{{ item.code }}" aria-expanded="{{ item.active ? 'true' : 'false' }}">
+        {% if item.icon %}<i class="{{ item.icon }}"></i>{% endif %}<span>{{ item.label }}</span><i class="ti ti-chevron-right nav-chev"></i>
+      </button>
+      <div class="nav-sub{{ item.active ? ' open' : '' }}" id="navSub{{ item.code }}" data-flyout-title="{{ item.label }}">
+        {% for child in item.children %}<a class="nav-item{{ child.active ? ' active' : '' }}" href="{{ child.href }}"><span>{{ child.label }}</span>{% if child.badge %}<span class="nav-count">{{ child.badge }}</span>{% endif %}</a>{% endfor %}
+      </div>
+      {% else %}
+      <a class="nav-item{{ item.active ? ' active' : '' }}" href="{{ item.href }}" data-tooltip-right="{{ item.label }}">{% if item.icon %}<i class="{{ item.icon }}"></i>{% endif %}<span>{{ item.label }}</span>{% if item.badge %}<span class="nav-count">{{ item.badge }}</span>{% endif %}</a>
+      {% endif %}
+      {% if loop.last %}</div></div></div>{% endif %}
+    {% endfor %}
+  </div>
+  {% set role_titles = {'admin': lang.role_admin|default('Администратор'), 'editor': lang.role_editor|default('Редактор'), 'manager': lang.role_manager|default('Менеджер'), 'author': lang.role_author|default('Автор')} %}
+  <div class="sidebar-footer dropdown" id="sidebarUserMenu">
+    <button class="sidebar-user" type="button" data-dropdown aria-haspopup="true" aria-expanded="false" data-tooltip-right="{{ user_name ?: lang.topbar_profile|default('Профиль') }}">
+      <span class="avatar" style="background:var(--teal-500)">{{ (user_name ?: 'A')|slice(0,2)|upper }}</span>
+      <span class="sf-text">
+        <span class="sf-name">{{ user_name ?: lang.role_admin|default('Администратор') }}</span>
+        <span class="sf-role">{{ role_titles[user_role]|default(user_role ?: lang.role_admin|default('Администратор')) }}</span>
+      </span>
+      <i class="ti ti-selector sf-chev"></i>
+    </button>
+    <div class="dropdown-menu up" role="menu">
+      <div class="dd-user">
+        <span class="avatar" style="background:var(--teal-500)">{{ (user_name ?: 'A')|slice(0,2)|upper }}</span>
+        <div style="min-width:0">
+          <div style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ user_name ?: lang.role_admin|default('Администратор') }}</div>
+          {% if user_email %}<div class="text-muted text-xs mono" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ user_email }}</div>{% endif %}
+        </div>
+      </div>
+      <div class="dd-divider"></div>
+      <a class="dd-item" href="{{ ADMINX_BASE }}/settings/main"><i class="ti ti-settings"></i>{{ lang.nav_settings|default('Настройки') }}</a>
+      <a class="dd-item" href="{{ ADMINX_BASE }}/roles"><i class="ti ti-shield-lock"></i>{{ lang.nav_roles|default('Роли и права') }}</a>
+      <a class="dd-item" href="{{ public_url }}" target="_blank" rel="noopener"><i class="ti ti-external-link"></i>{{ lang.btn_open_site|default('Открыть сайт') }}</a>
+      <div class="dd-divider"></div>
+      <button class="dd-item danger" data-confirm-logout><i class="ti ti-logout"></i>{{ lang.btn_logout|default('Выйти') }}</button>
+    </div>
+  </div>
+</nav>
+{% endif %}
+
+<!-- ================= MAIN ================= -->
+<main class="main"><div class="main-inner">
+{% if section_help and not popup_mode %}
+<section class="admin-section-help" data-section-help data-help-key="{{ current_path|e('html_attr') }}" hidden>
+  <details>
+    <summary><span class="icon-tile"><i class="ti ti-info-circle"></i></span><span><b>{{ section_help.title }}</b><small>{{ section_help.description }}</small></span><i class="ti ti-chevron-down section-help-chevron"></i></summary>
+    <div class="section-help-body">
+      <ul>{% for item in section_help.items %}<li>{{ item }}</li>{% endfor %}</ul>
+      {% if section_help.note %}<p><i class="ti ti-bulb"></i><span>{{ section_help.note }}</span></p>{% endif %}
+    </div>
+  </details>
+</section>
+{% endif %}
+{% block content %}{% endblock %}
+</div></main>
+</div>
+
+<div class="drawer-overlay" id="drawerOverlay"></div>
+
+{% if not popup_mode %}
+<style>
+#helpDrawer .drawer-body{padding:0}
+.help-drawer-body{padding:22px 24px;line-height:1.62;font-size:14px}
+.help-drawer-body h1{font-size:20px;margin:0 0 12px}
+.help-drawer-body h2{font-size:17px;margin:26px 0 10px;padding-top:16px;border-top:1px solid var(--border)}
+.help-drawer-body h3{font-size:15px;margin:20px 0 8px}
+.help-drawer-body h1:first-child,.help-drawer-body h2:first-child{margin-top:0;padding-top:0;border-top:0}
+.help-drawer-body p,.help-drawer-body ul,.help-drawer-body ol{margin:0 0 12px}
+.help-drawer-body ul,.help-drawer-body ol{padding-left:20px}
+.help-drawer-body li{margin:4px 0}
+.help-drawer-body code{font-family:var(--font-mono,monospace);font-size:12.5px;padding:1px 6px;background:var(--surface-2,rgba(127,127,127,.12));border:1px solid var(--border);border-radius:4px}
+.help-drawer-body pre{margin:0 0 14px;padding:14px 16px;overflow-x:auto;background:var(--surface-2,rgba(127,127,127,.1));border:1px solid var(--border);border-radius:6px}
+.help-drawer-body pre code{padding:0;background:none;border:0}
+.help-drawer-body table{width:100%;border-collapse:collapse;margin:0 0 14px;font-size:13px}
+.help-drawer-body th,.help-drawer-body td{padding:7px 10px;border:1px solid var(--border);text-align:left;vertical-align:top}
+.help-drawer-body a{color:var(--primary,#206bc4)}
+.help-drawer-state{padding:40px 24px;text-align:center;color:var(--text-secondary)}
+.help-drawer-state .ti{font-size:26px;display:block;margin-bottom:8px}
+</style>
+<aside class="drawer drawer-right drawer-lg help-drawer" id="helpDrawer" role="dialog" aria-modal="true" aria-labelledby="helpDrawerTitle" hidden>
+  <div class="drawer-header">
+    <div><h3 id="helpDrawerTitle">{{ lang.help_title|default('Справка') }}</h3><p class="text-secondary text-sm">{{ lang.help_context|default('Контекстная документация раздела') }}</p></div>
+    <a class="btn btn-ghost btn-icon" data-help-full href="{{ ADMINX_BASE }}/help" target="_blank" rel="noopener" aria-label="{{ lang.help_full|default('Полная справка') }}" data-tooltip="{{ lang.help_full|default('Полная справка') }}"><i class="ti ti-external-link"></i></a>
+    <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="{{ lang.btn_close|default('Закрыть') }}"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="drawer-body"><div class="help-drawer-body" data-help-body></div></div>
+</aside>
+{% endif %}
+
+{% for module_header in module_header_actions %}
+  {% if module_header.modal_template %}{% include module_header.modal_template with {module_data: module_header.data, module_header: module_header} %}{% endif %}
+{% endfor %}
+
+<form id="logoutForm" method="post" action="{{ ADMINX_BASE }}/logout" style="display:none">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+</form>
+
+{% for script in admin_assets.scripts %}
+<script src="{{ asset_ver(script.url) }}"></script>
+{% endfor %}
+{% if can_clear_cache %}
+<script>
+(function () {
+  var base = '{{ ADMINX_BASE }}';
+  var ALL = ['twig', 'templates', 'database', 'snapshots', 'modules', 'feeds'];
+  function doClear(sources, el) {
+    el.disabled = true;
+    Promise.all(sources.map(function (s) {
+      return window.Adminx.Ajax.post(base + '/settings/cache/' + s + '/clear', new FormData()).then(function (r) { return { s: s, r: r }; });
+    })).then(function (results) {
+      var ok = results.every(function (x) { return x.r.ok && (!x.r.data || x.r.data.success !== false); });
+      results.forEach(function (x) {
+        var span = document.querySelector('[data-cache-size="' + x.s + '"]');
+        if (span) { var d = x.r.data && x.r.data.data; span.textContent = d && d.size ? d.size : '0 B'; }
+      });
+      window.Adminx.Toast.show(ok ? window.Adminx.t('cache_cleared', 'Кеш очищен') : window.Adminx.t('cache_partial_error', 'Часть кеша не очистилась'), ok ? 'success' : 'error');
+    }).catch(function () {
+      window.Adminx.Toast.show(window.Adminx.t('cache_clear_error', 'Не удалось очистить кеш'), 'error');
+    }).then(function () { el.disabled = false; });
+  }
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-cache-clear]');
+    if (!el) { return; }
+    e.preventDefault();
+    var pick = el.getAttribute('data-cache-clear');
+    if (pick === 'all') {
+      window.Adminx.Confirm.open({
+        kind: 'warning',
+        title: window.Adminx.t('cache_clear_confirm', 'Очистить весь кеш?'),
+        message: window.Adminx.t('cache_clear_description', 'Будут очищены все кеши: Twig, шаблоны страниц, данные/SQL, снимки документов, публичные модули и фиды.'),
+        confirmLabel: window.Adminx.t('btn_clear_all', 'Очистить всё'),
+        confirmClass: 'btn-danger',
+        onConfirm: function () { doClear(ALL, el); }
+      });
+    } else {
+      doClear([pick], el);
+    }
+  });
+}());
+</script>
+{% endif %}
+{% block scripts %}{% endblock %}
+</body>
+</html>

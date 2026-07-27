@@ -1,0 +1,64 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}Обновления{% endblock %}
+{% block content %}
+<div data-updates-page data-tabs{% if job %} data-job-id="{{ job.id }}" data-job-status="{{ job.status }}"{% if job.recovery_token %} data-recovery-token="{{ job.recovery_token }}"{% endif %}{% endif %}>
+  <nav class="breadcrumbs" aria-label="Хлебные крошки"><a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i><span>Обновления</span></nav>
+
+  <div class="page-header">
+    <div class="between">
+      <div><h1>Обновления</h1><p class="text-secondary">Подписанные патчи ядра с проверкой файлов, резервной копией и откатом.</p></div>
+      {% if can_install %}<button class="btn btn-primary" type="button" data-update-upload-open><i class="ti ti-upload"></i>Загрузить патч</button>{% endif %}
+    </div>
+  </div>
+
+  <div class="ax-summary updates-summary">
+    <div class="card stat-tile"><div class="stat-ico"><i class="ti ti-code"></i></div><div><div class="stat-val">{{ current.version }}</div><div class="stat-label">Версия</div></div></div>
+    <div class="card stat-tile"><div class="stat-ico" style="background:var(--color-violet-soft);color:var(--color-violet)"><i class="ti ti-git-branch"></i></div><div><div class="stat-val">{{ current.build }}</div><div class="stat-label">Build</div></div></div>
+    <div class="card stat-tile"><div class="stat-ico" style="background:var(--color-success-soft);color:var(--color-success)"><i class="ti ti-shield-check"></i></div><div><div class="stat-val">{{ repository.verified ? 'Да' : 'Нет' }}</div><div class="stat-label">Каталог проверен</div></div></div>
+    <div class="card stat-tile"><div class="stat-ico" style="background:var(--color-warning-soft);color:var(--color-warning)"><i class="ti ti-download"></i></div><div><div class="stat-val">{{ repository.available|default(0) }}</div><div class="stat-label">Доступно</div></div></div>
+  </div>
+
+  {% if source.version != current.version or source.build != current.build %}
+  <div class="alert alert-warning"><i class="ti ti-alert-triangle alert-ic"></i><div><b>Код и реестр установленной версии расходятся</b><p>В файлах находится {{ source.version }} build {{ source.build }}, а завершённый релиз — {{ current.version }} build {{ current.build }}. Проверьте незавершённое задание или выполните откат.</p></div></div>
+  {% endif %}
+
+  <div class="tabs updates-tabs" role="tablist">
+    <button class="tab active" type="button" role="tab" aria-selected="true" data-tab-target="updates"><i class="ti ti-refresh"></i>Обновления</button>
+    <button class="tab" type="button" role="tab" aria-selected="false" data-tab-target="job"><i class="ti ti-progress"></i>Текущее задание{% if job %}<span class="tab-count">1</span>{% endif %}</button>
+    {% if can_manage %}<button class="tab" type="button" role="tab" aria-selected="false" data-tab-target="settings"><i class="ti ti-settings"></i>Источник</button>{% endif %}
+  </div>
+
+  <section data-tab-panel="updates">
+    <div class="section-header ax-panel-header"><div class="section-icon"><i class="ti ti-package"></i></div><div><div class="section-eyebrow">Stable channel</div><h2>Доступные патчи</h2><p class="section-desc">Кумулятивный патч сразу устанавливает все исправления после вашей сборки.</p></div>{% if repository.enabled %}<div class="section-header-right"><button class="btn btn-secondary" type="button" data-update-refresh><i class="ti ti-refresh"></i>Проверить</button></div>{% endif %}</div>
+    <div class="card ax-list-card">
+      <div class="ax-list-head"><div class="ax-list-title"><span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-packages"></i></span><div><h2>{{ repository.name|default('Каталог обновлений') }}</h2><p class="text-secondary">{{ repository.error ?: ('Канал ' ~ repository.channel ~ ' · обновлён ' ~ repository.generated_at) }}</p></div></div><span class="badge badge-blue">{{ repository.items|length }}</span></div>
+      <div class="table-scroll"><table class="table"><thead><tr><th>Переход</th><th>Описание</th><th style="width:120px">Размер</th><th class="table-actions" style="width:64px"><span class="sr-only">Действия</span></th></tr></thead><tbody>
+		{% for item in repository.items %}<tr><td><b>{{ item.to.version }} build {{ item.to.build }}</b><div class="text-muted text-sm">{% if item.cumulative %}с build {{ item.from.build }} или новее{% else %}с {{ item.from.version }} build {{ item.from.build }}{% endif %}</div></td><td>{{ item.notes ?: 'Техническое обновление AVE.cms' }}{% if item.cumulative %}<div><span class="badge badge-blue">Все исправления</span></div>{% endif %}</td><td class="text-secondary">{{ (item.size / 1024)|number_format(0, '.', ' ') }} КБ</td><td class="table-actions">{% if item.installed %}<span class="badge badge-green" data-tooltip="Исправления этого патча уже входят в установленную версию"><i class="ti ti-check"></i>Установлено</span>{% elseif can_install and item.applicable %}<button class="btn btn-ghost btn-icon ax-act ax-act-ok" type="button" data-update-download="{{ item.id }}" data-tooltip="Подготовить обновление" aria-label="Подготовить обновление"><i class="ti ti-download"></i></button>{% elseif not can_install %}<span class="badge" data-tooltip="Нет права на установку обновлений">Нет права</span>{% else %}<span class="badge" data-tooltip="{{ item.compatibility.reason|default('Патч не подходит к установленной версии') }}">Не подходит</span>{% endif %}</td></tr>{% else %}<tr><td colspan="4" class="ax-empty">{{ repository.error ?: 'Для текущей версии новых патчей нет' }}</td></tr>{% endfor %}
+      </tbody></table></div>
+    </div>
+  </section>
+
+  <section data-tab-panel="job" hidden>
+    <div class="section-header ax-panel-header"><div class="section-icon"><i class="ti ti-progress"></i></div><div><div class="section-eyebrow">Пошаговая установка</div><h2>Текущее задание</h2><p class="section-desc">Каждый этап сохраняется на диске и может быть продолжен после обрыва запроса.</p></div></div>
+    {% if job %}
+    <div class="card updates-job" data-update-job>
+      <div class="updates-job-head"><div><span class="badge badge-blue" data-update-job-status>{{ job.status }}</span><h2>{{ job.manifest.from.version }} build {{ job.manifest.from.build }} <i class="ti ti-arrow-right"></i> {{ job.manifest.to.version }} build {{ job.manifest.to.build }}</h2><p class="text-secondary" data-update-job-message>{{ job.message }}</p></div><span class="mono text-muted">{{ job.id }}</span></div>
+      <div class="progress updates-progress"><div class="progress-bar" data-update-progress style="width:{{ job.progress }}%;--progress-color:var(--blue-500)"></div></div>
+      <div class="updates-job-meta"><span><b>{{ job.manifest.files|length }}</b> файлов</span><span><b>{{ job.manifest.deletions|length }}</b> удалений</span><span><b>{{ job.manifest.migrations|length }}</b> миграций</span></div>
+      {% if job.preflight is defined and (job.preflight.errors or job.preflight.conflicts) %}<div class="alert alert-error"><i class="ti ti-alert-circle alert-ic"></i><div><b>Обновление пока нельзя применить</b>{% for error in job.preflight.errors %}<p>{{ error }}</p>{% endfor %}{% for conflict in job.preflight.conflicts %}<p><span class="mono">{{ conflict.path }}</span> — {{ conflict.reason }}</p>{% endfor %}</div></div>{% endif %}
+      <div class="updates-job-actions">{% if can_install and job.status in ['prepared','backing_up','backed_up','applying','applied'] and (job.preflight is not defined or job.preflight.ready) %}<button class="btn btn-primary" type="button" data-update-continue><i class="ti ti-player-play"></i>{{ job.status == 'prepared' ? 'Начать обновление' : 'Продолжить' }}</button>{% endif %}{% if can_install and job.status == 'prepared' %}<button class="btn btn-secondary" type="button" data-update-discard><i class="ti ti-x"></i>Отменить</button>{% endif %}{% if can_install and job.status in ['backing_up','backed_up','applying','applied','failed','verification_failed'] %}<button class="btn btn-danger" type="button" data-update-rollback><i class="ti ti-restore"></i>Откатить</button>{% endif %}</div>
+    </div>
+    {% else %}<div class="card updates-job-empty"><span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-progress"></i></span><div><h3>Активного задания нет</h3><p>Выберите патч из каталога или загрузите подписанный ZIP.</p></div></div>{% endif %}
+  </section>
+
+  {% if can_manage %}<section data-tab-panel="settings" hidden>
+    <div class="section-header ax-panel-header"><div class="section-icon"><i class="ti ti-certificate"></i></div><div><div class="section-eyebrow">Цепочка доверия</div><h2>Подписанный источник</h2><p class="section-desc">Ключ обновлений ядра хранится отдельно от ключа репозитория модулей.</p></div></div>
+    <form class="card updates-settings" data-update-settings>
+      {% if official_repository.available %}<div class="updates-official-source"><span class="icon-tile" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-rosette-discount-check"></i></span><div class="updates-official-copy"><b>{{ official_repository.name }}</b><small>Открытый ключ: <span class="mono">{{ official_repository.fingerprint }}</span></small></div><button class="btn btn-secondary btn-sm" type="button" data-update-official><i class="ti ti-restore"></i>Восстановить</button></div>{% endif %}
+      <label class="updates-catalog-toggle"><span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-refresh-dot"></i></span><span class="updates-catalog-toggle-copy"><b>Проверять удалённый каталог</b><small>Только искать доступные обновления. Автоматическая установка не выполняется.</small></span><span class="switch"><input type="checkbox" name="enabled" value="1"{% if repository_settings.enabled %} checked{% endif %}><span></span></span></label><label class="form-field"><span>URL index.json</span><div class="input-wrap"><i class="ti ti-link"></i><input class="input" type="url" name="url" value="{{ repository_settings.url }}" placeholder="https://updates.example.ru/index.json"></div></label><label class="form-field"><span>Публичный RSA-ключ</span><textarea class="textarea mono" name="public_key" rows="9" spellcheck="false">{{ repository_settings.public_key }}</textarea></label><div class="sticky-actions"><button class="btn btn-primary" type="submit"><i class="ti ti-device-floppy"></i>Сохранить</button></div>
+    </form>
+  </section>{% endif %}
+
+  {% if can_install %}<form class="sr-only" data-update-upload-form><input type="file" name="patch" accept=".zip,application/zip" data-update-file></form>{% endif %}
+</div>
+{% endblock %}

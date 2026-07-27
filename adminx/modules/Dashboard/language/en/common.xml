@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="dashboard_title">Overview</phrase>
+	<phrase data="dashboard_breadcrumbs">Breadcrumbs</phrase>
+	<phrase data="dashboard_home">Home</phrase>
+	<phrase data="dashboard_summary">System summary and recent changes</phrase>
+	<phrase data="dashboard_greeting_night">Good night</phrase>
+	<phrase data="dashboard_greeting_morning">Good morning</phrase>
+	<phrase data="dashboard_greeting_day">Good afternoon</phrase>
+	<phrase data="dashboard_greeting_evening">Good evening</phrase>
+	<phrase data="dashboard_system_health">System health</phrase>
+	<phrase data="dashboard_active_documents">Active documents</phrase>
+	<phrase data="dashboard_active_users">Active users</phrase>
+	<phrase data="dashboard_unresolved_404">Unresolved 404s</phrase>
+	<phrase data="dashboard_database_errors">Database errors</phrase>
+	<phrase data="dashboard_recent_documents">Recent documents</phrase>
+	<phrase data="dashboard_recent_documents_desc">Recently changed entries from all rubrics</phrase>
+	<phrase data="dashboard_all_documents">All documents</phrase>
+	<phrase data="dashboard_document">Document</phrase>
+	<phrase data="dashboard_rubric">Rubric</phrase>
+	<phrase data="dashboard_state">State</phrase>
+	<phrase data="dashboard_changed">Changed</phrase>
+	<phrase data="dashboard_no_rubric">No rubric</phrase>
+	<phrase data="dashboard_published">Published</phrase>
+	<phrase data="dashboard_disabled">Disabled</phrase>
+	<phrase data="dashboard_edit">Edit</phrase>
+	<phrase data="dashboard_no_documents">No documents yet</phrase>
+	<phrase data="dashboard_work">Workspace</phrase>
+	<phrase data="dashboard_shortcuts">Quick access</phrase>
+	<phrase data="dashboard_new_document">New document</phrase>
+	<phrase data="dashboard_new_document_desc">Create a document and fill its fields</phrase>
+	<phrase data="dashboard_media_desc">Files and images</phrase>
+	<phrase data="dashboard_catalog_desc">Sections and filters</phrase>
+	<phrase data="dashboard_system_events">System events</phrase>
+	<phrase data="dashboard_events_desc">Audit and errors</phrase>
+</language>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="auto_1cc70f8e0fc03e82">Удалить представление</phrase>
+	<phrase data="auto_86433d57abc272e9">Сохранённые представления</phrase>
+	<phrase data="btn_apply">Применить</phrase>
+	<phrase data="btn_cancel">Отмена</phrase>
+	<phrase data="btn_close">Закрыть</phrase>
+	<phrase data="btn_confirm">Подтвердить</phrase>
+	<phrase data="btn_delete">Удалить</phrase>
+	<phrase data="btn_save">Сохранить</phrase>
+	<phrase data="btn_show">Показать</phrase>
+	<phrase data="cache_documents">Документы</phrase>
+	<phrase data="confirm_action">Подтвердить</phrase>
+	<phrase data="confirm_title">Подтвердите действие</phrase>
+	<phrase data="field_current_password">Пароль текущего пользователя</phrase>
+	<phrase data="field_password">Пароль</phrase>
+	<phrase data="help_dc9694fc6c531900">Документы</phrase>
+	<phrase data="nav_documents">Документы</phrase>
+	<phrase data="nav_group_content">Контент</phrase>
+	<phrase data="nav_media">Медиа</phrase>
+	<phrase data="reauth_error">Не удалось подтвердить пароль</phrase>
+	<phrase data="reauth_hint">После подтверждения действие продолжится автоматически. Повторный запрос пароля появится через несколько минут.</phrase>
+	<phrase data="reauth_reason">Это действие изменяет исполняемый код системы.</phrase>
+	<phrase data="reauth_subtitle">Защита чувствительной операции</phrase>
+	<phrase data="reauth_title">Подтвердите пароль</phrase>
+	<phrase data="runtime_0bb52004950628f0">Контент</phrase>
+	<phrase data="runtime_1beebc019e83d1a3">Укажите название представления</phrase>
+	<phrase data="runtime_87fc5157a761fc74">код</phrase>
+	<phrase data="runtime_988bca9318fd438b">Это действие изменяет исполняемый код системы.</phrase>
+	<phrase data="runtime_c1897ad2902c75b7">Подтвердите пароль</phrase>
+	<phrase data="runtime_dc9694fc6c531900">Документы</phrase>
+	<phrase data="server_unavailable">Сервер недоступен. Повторите попытку.</phrase>
+	<phrase data="topbar_theme">Тема</phrase>
+	<phrase data="ui_loading">Загрузка...</phrase>
+	<phrase data="ui_main">Основное</phrase>
+	<phrase data="ui_nothing_found">Ничего не найдено</phrase>
+	<phrase data="ui_remove">Убрать</phrase>
+	<phrase data="ui_search">Поиск</phrase>
+	<phrase data="ui_select">Выбрать</phrase>
+	<phrase data="ui_size">Размер</phrase>
+	<phrase data="ui_source">Источник</phrase>
+	<phrase data="ui_title">Заголовок</phrase>
+</language>

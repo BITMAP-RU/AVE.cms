@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="auto_039ccfe5ffc360de">Delete topic?</phrase>
+	<phrase data="auto_0a1d18826741e77d">Catalog «</phrase>
+	<phrase data="auto_12e31b816075c6ec">Extensions: css, js, json, svg, xml, txt.</phrase>
+	<phrase data="auto_1ca6beeb6bb0b2fc">&quot;, its assets and revisions will be permanently deleted.</phrase>
+	<phrase data="auto_26e47597abc4b498">Server unavailable</phrase>
+	<phrase data="auto_29f3b29df0d0e54f">Restore</phrase>
+	<phrase data="auto_30c43ec13cededdc">The public site will start using the theme &quot;</phrase>
+	<phrase data="auto_388b738c5c2db623">File not found</phrase>
+	<phrase data="auto_3ac98f278c8c9081">System</phrase>
+	<phrase data="auto_4aff3a3d7af0683b">Activate</phrase>
+	<phrase data="auto_5963e9975982a831">Restore the revision?</phrase>
+	<phrase data="auto_5ccd43e336951571">Delete the file?</phrase>
+	<phrase data="auto_735d8993396a84ff">The history of text files will be cleared without the possibility of recovery.</phrase>
+	<phrase data="auto_83fd45619005464a">Delete all revisions of a topic?</phrase>
+	<phrase data="auto_86ea33aef5e95d4f">Delete</phrase>
+	<phrase data="auto_88d9445e61d23a8c">Delete folder?</phrase>
+	<phrase data="auto_8a4509bcfc42dd6f">Activate theme?</phrase>
+	<phrase data="auto_9439866c937fee21">Delete topic</phrase>
+	<phrase data="auto_944b559c7663a5ec">Create a folder</phrase>
+	<phrase data="auto_94b8df93b6ecdec9">File</phrase>
+	<phrase data="auto_a59e2c2429fe7a88">and</phrase>
+	<phrase data="auto_a60f629132fddf03">Audit</phrase>
+	<phrase data="auto_a992ab4c9be30ed5">The current contents of the file will first be saved as a separate revision.</phrase>
+	<phrase data="auto_aa370155ac5f16ea">&quot; Connections will only be applied where new theme tags are installed.</phrase>
+	<phrase data="auto_aee78fe86022edaa">Name</phrase>
+	<phrase data="auto_bbd4ac5417cf093d">A name without a dot or service characters.</phrase>
+	<phrase data="auto_c188eb08a13604ec">Connections</phrase>
+	<phrase data="auto_c3df07c7b5b795cf">Delete everything</phrase>
+	<phrase data="auto_c4eb5a7aea60dafd">&quot; will be removed from the topic. The text version will remain in revisions.</phrase>
+	<phrase data="auto_d9d203ca7ff277c6">Create file</phrase>
+	<phrase data="auto_de7fb9566c3ab6f8">Action failed</phrase>
+	<phrase data="auto_e355fb2f4ed33801">Revision not found</phrase>
+	<phrase data="auto_ee1819dfbfb0e1b6">Delete revision?</phrase>
+	<phrase data="auto_f79f3d992355453b">The file version cannot be restored.</phrase>
+	<phrase data="auto_fc1e88e76bb5b116">File editor</phrase>
+	<phrase data="runtime_08a121190d03e8d4">Revision not found</phrase>
+</language>

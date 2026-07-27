@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="auto_177fb6ce2a5706e3">A-Z, 0-9, - and _</phrase>
+	<phrase data="auto_0e9f733c2bb70f23">AJAX mode</phrase>
+	<phrase data="auto_1dea620237d5dc01">CodeMirror for PHP; the code is executed on the site</phrase>
+	<phrase data="auto_d822d504037753b2">HTML and tags CodeMirror</phrase>
+	<phrase data="auto_0845c26276045df2">HTML fragments and executable blocks for site templates.</phrase>
+	<phrase data="auto_2df17f3b28fcd5f7">PHP block code</phrase>
+	<phrase data="auto_84ce6866f3d9dfe3">active</phrase>
+	<phrase data="auto_d0609055863c5138">Active</phrase>
+	<phrase data="auto_73dfa7ea85e8eb75">Alias</phrase>
+	<phrase data="auto_94921ebedb12dd57">Without a group</phrase>
+	<phrase data="auto_42ea5701f3602da0">Block enabled</phrase>
+	<phrase data="auto_8ec88ae892129e19">No blocks found.</phrase>
+	<phrase data="auto_9369edc217229b94">Blocks of this group.</phrase>
+	<phrase data="auto_6796fe69c126f47b">Blocks</phrase>
+	<phrase data="auto_13d02127fcff628c">in the current filter,</phrase>
+	<phrase data="auto_41bd79aa20bf69f8">Visual</phrase>
+	<phrase data="auto_c7f492b9925a54aa">Visual editor</phrase>
+	<phrase data="auto_c8daa9ccfcc48451">Visual block editor</phrase>
+	<phrase data="auto_775b2edc29f83f5b">External call</phrase>
+	<phrase data="auto_c8506f34a43f70a6">Total blocks</phrase>
+	<phrase data="auto_a7bbea7ed2337936">everything.</phrase>
+	<phrase data="auto_3eb77d3c13c51f92">Select revision</phrase>
+	<phrase data="auto_a846b3ee0fe9ebe6">off</phrase>
+	<phrase data="auto_2b10d0e51c3ed6e4">Group</phrase>
+	<phrase data="auto_cc6712f7910ea472">The group only affects the organization of the list.</phrase>
+	<phrase data="auto_703618ff7323d8be">Block groups</phrase>
+	<phrase data="auto_950c73570fad3701">No groups found.</phrase>
+	<phrase data="auto_5df2c5b3d95fafa7">Groups make navigation easier; deleting a group moves the blocks to &quot;No Group&quot;.</phrase>
+	<phrase data="auto_29226a897d9c8659">Availability of the block and how its contents are processed.</phrase>
+	<phrase data="auto_64430b793861caae">Unified block registry</phrase>
+	<phrase data="auto_edaad906668b2c34">Use block in AJAX requests</phrase>
+	<phrase data="auto_fc9d66d03fdfb057">History of system unit snapshots.</phrase>
+	<phrase data="auto_52d1dab0d3ab1d9b">Block code</phrase>
+	<phrase data="auto_81d0605d067a4fa3">The code and metadata will appear on the right after you select a photo.</phrase>
+	<phrase data="auto_99733ba5e3de4971">Content and logic</phrase>
+	<phrase data="auto_c7c3305aa8d12099">Title, alias, description or code</phrase>
+	<phrase data="auto_1f9444d9c40c8ebc">Execution Settings</phrase>
+	<phrase data="auto_55c6879c603672d7">New group</phrase>
+	<phrase data="auto_e933b370aa73add9">New block</phrase>
+	<phrase data="auto_a964309a2fe057d3">Drag the rows by the handle to change the order of the groups.</phrase>
+	<phrase data="auto_dfa5a7e39d92c031">The order of groups is set in control mode.</phrase>
+	<phrase data="auto_634e216ab970ae9a">Once a block is saved, its cache is cleared automatically.</phrase>
+	<phrase data="auto_219d6d3829d665f6">View revision</phrase>
+	<phrase data="auto_1f8b15a0941f77b6">Allow calling outside site templates</phrase>
+	<phrase data="auto_1532d65f80f8570f">Allow use on the site</phrase>
+	<phrase data="auto_4d60d98f499d1580">Audits</phrase>
+	<phrase data="auto_181eee3a771ad222">Block revisions</phrase>
+	<phrase data="auto_68dd8a563f5f233d">Content Mode</phrase>
+	<phrase data="auto_b0d827d33fc8eb3f">Pictures</phrase>
+	<phrase data="auto_bf5eba41a04dc157">Create block</phrase>
+	<phrase data="auto_c248a6163b25c2d1">States</phrase>
+	<phrase data="auto_6f4643d41f602e95">retains and leaves the shape open.</phrase>
+	<phrase data="auto_d4616a9a27352652">List of revisions</phrase>
+	<phrase data="auto_2ba3ece80a6de563">Text without highlighting</phrase>
+	<phrase data="auto_88ea9b52f642c498">Block text without highlighting</phrase>
+	<phrase data="auto_68ee41202091a86a">(copy)</phrase>
+	<phrase data="auto_e54549d740123039">&gt;' +
+          '&lt;b&gt;Revision&#32;
+          '&lt;div class=</phrase>
+	<phrase data="auto_2907f68ba8f902e1">&gt;There are no revisions yet. The first snapshot will appear after saving the block.&lt;/div&gt;';
+        this.currentRevisionId = 0;
+        this.showRevisionEmpty();
+        return;
+      }
+      list.innerHTML = items.map(function (item) {
+        return '&lt;div class=</phrase>
+	<phrase data="auto_2cce609f7181887a">PHP CLI is not available for syntax checking.</phrase>
+	<phrase data="auto_b345d259c813447f">PHP syntax: error in block code</phrase>
+	<phrase data="auto_e781f363b1784548">PHP syntax: error on line</phrase>
+	<phrase data="auto_b7cb5fb992168c7a">Alias is free</phrase>
+	<phrase data="auto_8f8949b3ed219bd2">Block restored from revision</phrase>
+	<phrase data="auto_4f2dfacaa34bdcb2">Blocks</phrase>
+	<phrase data="auto_edcf2801abcec2e2">Blocks without reference to a group.</phrase>
+	<phrase data="auto_0b4ab766551cc52a">Blocks: PHP executable</phrase>
+	<phrase data="auto_1bbb04b4bc3519a4">Blocks: view</phrase>
+	<phrase data="auto_d40ea5f0b05d742d">Blocks: control</phrase>
+	<phrase data="auto_9162d93d7a8b0db5">There is a syntax error in the PHP code.</phrase>
+	<phrase data="auto_ad4cc9931b4f3b23">Recovery</phrase>
+	<phrase data="auto_5b24a7b723d9d4ff">Restored from revision&#32;
+
+			return $blockId;
+		}
+
+		public static function delete($revisionId)
+		{
+			$revision = self::one($revisionId);
+			if (!$revision) {
+				return false;
+			}
+
+			DB::Delete(self::table(),</phrase>
+	<phrase data="auto_c72070f69382be67">Group not found</phrase>
+	<phrase data="auto_d94a13b5e865c1d1">Group created</phrase>
+	<phrase data="auto_2f728e4825cc8252">Group saved</phrase>
+	<phrase data="auto_9916f21cea447ddc">Group deleted</phrase>
+	<phrase data="auto_3f8c55176b7891d9">Import</phrase>
+	<phrase data="auto_4bccb65142932157">System unit cache cleared</phrase>
+	<phrase data="auto_3905a7dd34453a76">block code</phrase>
+	<phrase data="auto_edbe417e021a142f">Content</phrase>
+	<phrase data="auto_065edae6bacea0cf">Copy</phrase>
+	<phrase data="auto_502222c97aaeffa4">Block copy&#32;
+			return $newId;
+		}
+
+		public static function saveGroup($id, array $input)
+		{
+			$title = trim(isset($input[</phrase>
+	<phrase data="auto_ace6b3bf4c06d407">Copy created</phrase>
+	<phrase data="auto_eceaf776415a6c11">Failed to write temporary file for verification.</phrase>
+	<phrase data="auto_1f66da3a24545012">Failed to create temporary file for verification.</phrase>
+	<phrase data="auto_3f48d3d91a14d8a0">Insufficient rights</phrase>
+	<phrase data="auto_49c210d118ff8497">Insufficient rights to change the PHP executable block</phrase>
+	<phrase data="auto_18e28e575197be83">Before recovery</phrase>
+	<phrase data="auto_3eba1c2bc0c2275a">The order of the groups is preserved</phrase>
+	<phrase data="auto_00abb1c2aa07af8e">PHP validation is not needed: Eval is disabled.</phrase>
+	<phrase data="auto_42039dbdd60cceb2">Check the form fields</phrase>
+	<phrase data="auto_b495e56a478f6d6c">View HTML and system blocks, as well as their groups.</phrase>
+	<phrase data="auto_defc150c8003aa92">Revisions deleted</phrase>
+	<phrase data="auto_e355fb2f4ed33801">Revision not found</phrase>
+	<phrase data="auto_3e096d0063299173">Revision deleted</phrase>
+	<phrase data="auto_6c87c63db45290ba">PHP syntax without errors.</phrase>
+	<phrase data="auto_cf2619665fd641d3">System unit not found</phrase>
+	<phrase data="auto_651947f2187dee9b">The system unit has been created</phrase>
+	<phrase data="auto_075002aa6773f864">System unit saved</phrase>
+	<phrase data="auto_8d653907f60c322f">System unit removed</phrase>
+	<phrase data="auto_d0265eeac930fcee">Snapshot before recovery</phrase>
+	<phrase data="auto_dcabf8a192f05329">Creation</phrase>
+	<phrase data="auto_bc2fcea7cdfd895b">Creating a block</phrase>
+	<phrase data="auto_70455d1722ed7d84">Creating, modifying, copying and restoring blocks with PHP code.</phrase>
+	<phrase data="auto_038ebd0c158fba0a">Create, modify, copy and delete blocks.</phrase>
+	<phrase data="auto_e0275b635c1c8e72">Saving</phrase>
+	<phrase data="auto_be6a6b188aef8d12">Saving a block</phrase>
+	<phrase data="auto_a9ee2e2619804624">This alias is already in use</phrase>
+	<phrase data="auto_0e3ea3a6b1f56530">A-Z only, 0-9, hyphen and underscore, up to 20 characters; not a number</phrase>
+	<phrase data="auto_04963db06a10a410">Removal</phrase>
+	<phrase data="auto_f85a8cbb24dd1d4f">Delete a block</phrase>
+	<phrase data="auto_5ca79a23d7935521">Specify an alias</phrase>
+	<phrase data="auto_0916c48921c3c502">Please enter a name</phrase>
+</language>

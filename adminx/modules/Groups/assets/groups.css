@@ -1,0 +1,6 @@
+/* Стили раздела «Роли и права» (то, чего нет в общем UI-ките). */
+/* Размеры/отступы — общие (.ax-panel-header/.ax-summary). Здесь только акцент. */
+.groups-panel-header {
+  --section-accent: var(--violet-500);
+  --section-accent-soft: var(--violet-100);
+}

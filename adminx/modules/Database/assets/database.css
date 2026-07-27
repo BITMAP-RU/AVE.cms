@@ -1,0 +1,319 @@
+/* Стили раздела «База данных». */
+.db-tabs {
+  margin-bottom: 18px;
+}
+/* Длинный список таблиц — прокрутка внутри карточки с залипающей шапкой,
+   чтобы колонки не терялись и страница не растягивалась на тысячи пикселей. */
+.db-tablewrap {
+  max-height: 68vh;
+  overflow: auto;
+}
+.db-tablewrap thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--background-surface);
+}
+/* Тулбар фильтра по имени таблицы */
+.db-tables-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border-default);
+}
+.db-tables-toolbar .input-wrap {
+  flex: 1 1 320px;
+  max-width: 440px;
+}
+.db-tables-count {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+}
+/* Размеры/отступы заголовка/сводки — общие (.ax-panel-header/.ax-summary). Здесь только акцент. */
+.database-panel-header {
+  --section-accent: var(--teal-500);
+  --section-accent-soft: var(--teal-100);
+}
+.database-engine-note {
+  align-items: center;
+  margin-bottom: 16px;
+}
+.database-engine-note > div {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.database-engine-note p {
+  margin: 3px 0 0;
+}
+.database-engine-note .btn {
+  flex: 0 0 auto;
+}
+.database-backup-note {
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+.database-backup-note p {
+  margin: 3px 0 0;
+}
+.database-backup-head-actions {
+  flex: 0 0 auto;
+  justify-content: flex-end;
+}
+.database-restore-active {
+  overflow: hidden;
+}
+.database-restore-overlay[hidden],
+.database-restore-error[hidden],
+[data-db-restore-close][hidden] {
+  display: none;
+}
+.database-restore-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 260;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.58);
+  backdrop-filter: blur(3px);
+}
+.database-restore-dialog {
+  width: min(680px, 100%);
+  overflow: hidden;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.24);
+}
+.database-restore-head {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 13px;
+  padding: 20px 22px 16px;
+}
+.database-restore-head h2 {
+  margin: 2px 0 0;
+  font-size: 19px;
+  text-wrap: balance;
+}
+.database-restore-head strong {
+  color: var(--blue-600);
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+}
+.database-restore-track {
+  height: 6px;
+  overflow: hidden;
+  background: var(--background-inset);
+}
+.database-restore-track span {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--blue-500);
+  transition-property: width, background-color;
+  transition-duration: 180ms;
+}
+.database-restore-current {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 22px 16px;
+  padding: 13px 14px;
+  border-radius: var(--radius-md);
+  background: var(--blue-50);
+}
+.database-restore-current b,
+.database-restore-current small {
+  display: block;
+}
+.database-restore-current b {
+  overflow-wrap: anywhere;
+}
+.database-restore-current small {
+  margin-top: 3px;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.database-restore-pulse {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--blue-500);
+  box-shadow: 0 0 0 5px var(--blue-100);
+  animation: database-restore-pulse 1.4s ease-in-out infinite;
+}
+.database-restore-steps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 7px;
+  padding: 0 22px 20px;
+}
+.database-restore-steps > div {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  min-width: 0;
+  padding: 10px 5px;
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
+  font-size: 11px;
+  text-align: center;
+}
+.database-restore-steps i {
+  font-size: 19px;
+}
+.database-restore-steps .is-active {
+  background: var(--blue-50);
+  color: var(--blue-700);
+}
+.database-restore-steps .is-complete {
+  color: var(--green-600);
+}
+.database-restore-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 0 22px 18px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--red-50);
+  color: var(--red-700);
+  line-height: 1.45;
+}
+.database-restore-error i {
+  margin-top: 2px;
+  flex: 0 0 auto;
+}
+.database-restore-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 22px;
+  background: var(--background-subtle);
+}
+.database-restore-footer p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.database-restore-footer .btn {
+  flex: 0 0 auto;
+}
+.database-restore-overlay.is-complete .database-restore-track span {
+  background: var(--green-500);
+}
+.database-restore-overlay.is-complete .database-restore-pulse {
+  animation: none;
+  background: var(--green-500);
+  box-shadow: 0 0 0 5px var(--green-100);
+}
+.database-restore-overlay.is-error .database-restore-track span {
+  background: var(--red-500);
+}
+.database-restore-overlay.is-error .database-restore-pulse {
+  animation: none;
+  background: var(--red-500);
+  box-shadow: 0 0 0 5px var(--red-100);
+}
+@keyframes database-restore-pulse {
+  50% {
+    opacity: 0.45;
+    transform: scale(0.82);
+  }
+}
+@media (max-width: 720px) {
+  .database-backups-card .ax-list-head {
+    flex-wrap: wrap;
+  }
+  .database-backup-head-actions {
+    width: 100%;
+    justify-content: flex-end;
+    padding-left: 46px;
+  }
+  .database-backups-table,
+  .database-backups-table tbody,
+  .database-backups-table tr,
+  .database-backups-table td {
+    display: block;
+    width: 100%;
+  }
+  .db-tablewrap .database-backups-table {
+    min-width: 0;
+  }
+  .database-backups-table thead {
+    display: none;
+  }
+  .database-backups-table tr {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border-default);
+  }
+  .database-backups-table tr:last-child {
+    border-bottom: 0;
+  }
+  .database-backups-table td {
+    padding: 3px 14px;
+    border: 0;
+  }
+  .database-backups-table td:first-child {
+    padding-top: 4px;
+  }
+  .database-backups-table td:first-child .cluster {
+    align-items: flex-start;
+  }
+  .database-backups-table td:first-child .mono {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .database-backups-table td:nth-child(2)::before {
+    content: 'Размер: ';
+    color: var(--text-muted);
+  }
+  .database-backups-table td:nth-child(3)::before {
+    content: 'Создан: ';
+    color: var(--text-muted);
+  }
+  .database-backups-table td.table-actions {
+    width: 100% !important;
+    padding-top: 8px;
+  }
+  .database-backups-table td.table-actions .cluster {
+    justify-content: flex-end;
+  }
+  .database-engine-note {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .database-engine-note .btn {
+    margin-left: 30px;
+  }
+  .database-restore-overlay {
+    align-items: end;
+    padding: 12px;
+  }
+  .database-restore-head {
+    padding: 17px 16px 14px;
+  }
+  .database-restore-current {
+    margin: 16px;
+  }
+  .database-restore-steps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding: 0 16px 16px;
+  }
+  .database-restore-footer {
+    align-items: flex-start;
+    padding: 13px 16px;
+  }
+}
+.database-schema-current {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 0 10px;
+  color: var(--color-success);
+  font-size: 13px;
+  font-weight: 600;
+}

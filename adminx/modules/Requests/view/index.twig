@@ -1,0 +1,94 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}Запросы{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i>
+  <span>Запросы</span>
+</nav>
+
+<div class="page-header">
+  <div class="between">
+    <div>
+      <h1>Запросы</h1>
+      <p class="text-secondary">{{ requests|length }} листингов · шаблоны и условия выборки документов</p>
+    </div>
+	{% if can_manage %}
+	<div class="cluster"><a class="btn btn-secondary" href="{{ ADMINX_BASE }}/requests/native-audit"><i class="ti ti-shield-search"></i>Проверка Native</a><a class="btn btn-primary" href="{{ ADMINX_BASE }}/requests/new"><i class="ti ti-plus"></i>Создать</a></div>
+	{% endif %}
+  </div>
+</div>
+
+<div class="ax-summary">
+  <div class="card stat-tile"><div class="stat-ico" style="background:var(--color-cyan-soft);color:var(--color-cyan)"><i class="ti ti-list-search"></i></div><div><div class="stat-val">{{ stats.requests }}</div><div class="stat-label">Запросов</div></div></div>
+  <div class="card stat-tile"><div class="stat-ico"><i class="ti ti-filter"></i></div><div><div class="stat-val">{{ stats.conditions }}</div><div class="stat-label">Условий</div></div></div>
+  <div class="card stat-tile"><div class="stat-ico is-amber"><i class="ti ti-brackets"></i></div><div><div class="stat-val">{{ stats.groups }}</div><div class="stat-label">Групп условий</div></div></div>
+  <div class="card stat-tile"><div class="stat-ico" style="background:var(--color-violet-soft);color:var(--color-violet)"><i class="ti ti-folders"></i></div><div><div class="stat-val">{{ stats.rubrics }}</div><div class="stat-label">Рубрик</div></div></div>
+</div>
+
+<section class="requests-panel" data-requests-page>
+  <div class="card ax-list-card requests-filter-card">
+    <div class="ax-list-head">
+      <div class="ax-list-title"><span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-filter"></i></span><div><h2>Фильтры</h2><p class="text-secondary" data-requests-summary>{{ requests|length }} запросов в списке.</p></div></div>
+    </div>
+    <div class="table-toolbar requests-toolbar">
+      <label class="input-wrap requests-search"><i class="ti ti-search"></i><input class="input" type="search" placeholder="ID, название, тег или рубрика" data-requests-search></label>
+      <button class="btn btn-ghost" type="button" data-requests-reset hidden><i class="ti ti-x"></i>Сбросить</button>
+    </div>
+  </div>
+
+  <div class="card ax-list-card">
+    <div class="ax-list-head"><div class="ax-list-title"><span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-list-search"></i></span><div><h2>Список запросов</h2><p class="text-secondary">Сохранённые выборки документов и теги для их вставки.</p></div></div><span class="badge badge-blue" data-requests-count>{{ requests|length }}</span></div>
+    <div class="table-scroll">
+      <table class="table table-compact requests-table">
+        <colgroup>
+          <col class="requests-col-id">
+          <col class="requests-col-name">
+          <col class="requests-col-tag">
+          <col class="requests-col-rubric">
+          <col class="requests-col-conditions">
+          <col class="requests-col-date">
+          {% if can_manage %}<col class="requests-col-actions">{% endif %}
+        </colgroup>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th class="table-name-column">Название</th>
+            <th>Тег</th>
+            <th>Рубрика</th>
+            <th>Условий</th>
+            <th>Изменён</th>
+            {% if can_manage %}<th class="table-actions"><span class="sr-only">Действия</span></th>{% endif %}
+          </tr>
+        </thead>
+        <tbody data-requests-list>
+          {% for r in requests %}
+          {% set req_tag = '[tag:request:' ~ (r.request_alias ?: r.Id) ~ ']' %}
+          <tr data-request-row data-id="{{ r.Id }}" data-alias="{{ r.request_alias }}" data-search="{{ (r.Id ~ ' ' ~ r.request_title ~ ' ' ~ req_tag ~ ' ' ~ r.request_alias ~ ' ' ~ r.rubric_id)|lower|e('html_attr') }}">
+            <td class="mono text-muted">{{ r.Id }}</td>
+            <td><b>{{ r.request_title }}</b></td>
+            <td><button class="ax-tag" type="button" data-ax-copy="{{ req_tag|e('html_attr') }}" data-tooltip="Скопировать тег" aria-label="Скопировать тег {{ req_tag }}"><span>{{ req_tag }}</span><i class="ti ti-copy"></i></button></td>
+            <td class="text-muted">{{ r.rubric_id }}</td>
+            <td>{% if r.cond_count %}<span class="badge badge-blue">{{ r.cond_count }}</span>{% else %}<span class="text-muted">—</span>{% endif %}</td>
+            <td class="text-muted text-sm">{{ r.request_changed ? r.request_changed|date('d.m.Y H:i') : '—' }}</td>
+            {% if can_manage %}
+            <td class="table-actions">
+              <div class="cluster requests-actions">
+                <a class="btn btn-ghost btn-icon btn-sm ax-act ax-act-edit" href="{{ ADMINX_BASE }}/requests/{{ r.Id }}" data-tooltip="Изменить" aria-label="Изменить"><i class="ti ti-pencil"></i></a>
+                <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-copy" data-request-copy data-tooltip="Копировать" aria-label="Копировать"><i class="ti ti-copy"></i></button>
+                <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-danger" data-request-delete data-tooltip="Удалить" aria-label="Удалить"><i class="ti ti-trash"></i></button>
+              </div>
+            </td>
+            {% endif %}
+          </tr>
+          {% else %}
+          <tr><td colspan="{{ can_manage ? 7 : 6 }}"><div class="empty-state"><i class="ti ti-list-search"></i><b>Запросов пока нет</b><span>Создайте первую выборку документов.</span></div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="ax-empty requests-empty" data-requests-empty hidden>Ничего не найдено по запросу.</div>
+  </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="auto_72aecd9ad85642d8">Ошибка</phrase>
+	<phrase data="auto_7c839c52bcdfbc1e">Очистить журнал?</phrase>
+	<phrase data="auto_98b2073ed1815f28">Очистить</phrase>
+	<phrase data="auto_a75cb7ce578a8ded">Все записи выбранного журнала будут удалены. В аудите останется только запись о самой очистке.</phrase>
+	<phrase data="auto_c00aca49199296d7">Ошибка сети</phrase>
+	<phrase data="runtime_bf22dfeeba8b8508">Ошибка</phrase>
+</language>

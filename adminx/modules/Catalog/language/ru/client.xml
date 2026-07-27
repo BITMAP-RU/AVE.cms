@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="auto_108136dae8d104e1">Разделов</phrase>
+	<phrase data="auto_16b41fbfb253cac7">&quot;&gt;&lt;button class=&quot;catalog-filter-order-handle&quot; type=&quot;button&quot; draggable=&quot;true&quot; aria-label=&quot;Перетащить&quot;&gt;&lt;i class=&quot;ti ti-grip-vertical&quot;&gt;&lt;/i&gt;&lt;/button&gt;&lt;span&gt;&lt;b&gt;</phrase>
+	<phrase data="auto_1d10d9c55d5caf4c">Условие</phrase>
+	<phrase data="auto_20d7df7e314905bb">Включить раздел</phrase>
+	<phrase data="auto_2fdbc96b24b1fdd2">Будут удалены также все вложенные разделы. Документы останутся.</phrase>
+	<phrase data="auto_35725653df245fa1">Удалить раздел?</phrase>
+	<phrase data="auto_36030c67ae103b5e">Начните вводить название или ID</phrase>
+	<phrase data="auto_42ba924b3732dc07">поля</phrase>
+	<phrase data="auto_46e27e2f0a19926d">Каталог</phrase>
+	<phrase data="auto_4ae50d30739d5840">Закрыть</phrase>
+	<phrase data="auto_589c4d0abc583610">Удалить раздел и все вложенные?</phrase>
+	<phrase data="auto_6d0162562724fb84">Текущее выражение отличается от автоматически сгенерированного. Оно будет заменено, затем запрос будет пересобран.</phrase>
+	<phrase data="auto_82389aea242899d9">Остановлено:</phrase>
+	<phrase data="auto_84ce6866f3d9dfe3">активен</phrase>
+	<phrase data="auto_86ea33aef5e95d4f">Удалить</phrase>
+	<phrase data="auto_8baeb2f575c9e185">Запрос фильтра не выбран</phrase>
+	<phrase data="auto_90196f9dfcf97888">В каталоге нет настроенных фильтров</phrase>
+	<phrase data="auto_944019ea5d01e63a">скрыт</phrase>
+	<phrase data="auto_9729bca62f6c558e">Ошибка запроса</phrase>
+	<phrase data="auto_99d406eeba4f9acb">Раздел</phrase>
+	<phrase data="auto_9f8bfc6bf2339426">&lt;div class=&quot;alert alert-error&quot;&gt;&lt;i class=&quot;ti ti-alert-triangle&quot;&gt;&lt;/i&gt;&lt;div&gt;Ошибки:</phrase>
+	<phrase data="auto_a456fd20d54a422c">&lt;/p&gt;&lt;/div&gt;&lt;button class=&quot;modal-close&quot; type=&quot;button&quot; data-catalog-recompile-close aria-label=&quot;Закрыть&quot; disabled&gt;&lt;i class=&quot;ti ti-x&quot;&gt;&lt;/i&gt;&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;modal-body&quot;&gt;&lt;div class=&quot;catalog-recompile-status&quot; data-catalog-recompile-status&gt;Подготовка...&lt;/div&gt;&lt;div class=&quot;progress&quot;&gt;&lt;div class=&quot;progress-bar&quot; data-catalog-recompile-progress style=&quot;width:0%;--progress-color:var(--blue-500)&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;catalog-recompile-errors&quot; data-catalog-recompile-errors&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;modal-footer&quot;&gt;&lt;button class=&quot;btn btn-ghost&quot; type=&quot;button&quot; data-catalog-recompile-stop&gt;Остановить&lt;/button&gt;&lt;button class=&quot;btn btn-primary&quot; type=&quot;button&quot; data-catalog-recompile-close disabled&gt;Закрыть&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_a4c0ae2fa076f2fd">Скрыть раздел</phrase>
+	<phrase data="auto_aa3647fd8ac876c5">&lt;div class=&quot;modal catalog-recompile-modal&quot; role=&quot;dialog&quot; aria-modal=&quot;true&quot;&gt;&lt;div class=&quot;modal-header&quot;&gt;&lt;span class=&quot;dialog-icon info&quot;&gt;&lt;i class=&quot;ti ti-refresh&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;div&gt;&lt;h3&gt;Пересборка фильтров&lt;/h3&gt;&lt;p class=&quot;text-secondary&quot;&gt;Разделов:</phrase>
+	<phrase data="auto_ad533224cf86b018">отличается</phrase>
+	<phrase data="auto_afb8bd281ddcda4e">Каталог создан</phrase>
+	<phrase data="auto_b8fb5150f9797590">Включено:</phrase>
+	<phrase data="auto_beed168817322eeb">из</phrase>
+	<phrase data="auto_c6072ad85d08ad4c">Готово:</phrase>
+	<phrase data="auto_ca87a65f1379e5f7">Новый раздел</phrase>
+	<phrase data="auto_cec6ae436e2936bb">Раздел каталога</phrase>
+	<phrase data="auto_d772cc53bede6e44">Заменить</phrase>
+	<phrase data="auto_e8355714ca7d3a6b">Запрос фильтра</phrase>
+	<phrase data="auto_f61de80bf0ca15a4">Документ не выбран</phrase>
+	<phrase data="auto_f6bde2876efe2658">Не включён</phrase>
+	<phrase data="auto_fda18205701b609b">Заменить условие?</phrase>
+	<phrase data="runtime_6291ecb1784ea2de">Каталог создан</phrase>
+	<phrase data="runtime_6b3607219bc8c7f0">отличается</phrase>
+	<phrase data="runtime_d0ef3540b088bbf6">Каталог</phrase>
+</language>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="runtime_b15acc17ab501199">0 B</phrase>
+	<phrase data="runtime_08399fa72dde4932">SQL error</phrase>
+	<phrase data="runtime_4d8c009d39ecb681">SQL errors</phrase>
+	<phrase data="runtime_c3c9aca56820683c">Administrative actions in the control panel.</phrase>
+	<phrase data="runtime_f02dd0fa22cd7540">Audit</phrase>
+	<phrase data="runtime_c78364c5d0f27706">B</phrase>
+	<phrase data="runtime_5d3dd123bc9b9757">DB</phrase>
+	<phrase data="runtime_ded3b3b94da2bc61">External sources, advertising tags and login pages.</phrase>
+	<phrase data="runtime_f17ceff0aa95a3fd">Attention</phrase>
+	<phrase data="runtime_43bd202954d883bb">Guest</phrase>
+	<phrase data="runtime_d09f0ab57a94b1be">Access to the system event log and logs.</phrase>
+	<phrase data="runtime_8024f6e05da90bc7">Log cleared</phrase>
+	<phrase data="runtime_520d2afb3d49d999">Application log</phrase>
+	<phrase data="runtime_ae16a4bc242b0f3b">Requests to non-existent pages.</phrase>
+	<phrase data="runtime_9f0cda93578fcf5b">Change</phrase>
+	<phrase data="runtime_3319b9b01f2aead2">Info</phrase>
+	<phrase data="runtime_4a0e8a9bfadd9e01">KB</phrase>
+	<phrase data="runtime_e6be02acc1335057">Campaign</phrase>
+	<phrase data="runtime_ce2d0c8689e40e31">MB</phrase>
+	<phrase data="runtime_6a6dc189e9143145">Insufficient rights</phrase>
+	<phrase data="runtime_d55a3ebe0bd4796b">Dangerous</phrase>
+	<phrase data="runtime_bf22dfeeba8b8508">Error</phrase>
+	<phrase data="runtime_78b4ad73cb637dc6">404 errors</phrase>
+	<phrase data="runtime_544d2c63aad03781">Errors in website SQL queries.</phrase>
+	<phrase data="runtime_c32a9b70353b2636">Transitions</phrase>
+	<phrase data="runtime_180f58ab975323f9">Search</phrase>
+	<phrase data="runtime_6da215b1bdac9524">System</phrase>
+	<phrase data="runtime_ae6664bbf25ba600">System events</phrase>
+	<phrase data="runtime_210d9860bdff4211">Events</phrase>
+	<phrase data="runtime_e735d56d8ddaaae3">Events: viewing</phrase>
+	<phrase data="runtime_68564ec41567df4f">Events: management</phrase>
+	<phrase data="runtime_db959df944f7b616">Runtime messages that the site code writes to the system log.</phrase>
+	<phrase data="runtime_abfb608ea13e0e3d">Social network</phrase>
+	<phrase data="runtime_f4cb2c0e2410a7b7">Link</phrase>
+	<phrase data="runtime_402a33d0ca1ce364">Success</phrase>
+	<phrase data="runtime_eb1b3e2dc9fa65fd">Export and clear event logs.</phrase>
+	<phrase data="runtime_536b9a530351e6f6">This source cannot be purified</phrase>
+</language>

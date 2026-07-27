@@ -1,0 +1,39 @@
+{% if phone_providers %}
+{% set phone_provider = phone_providers|first %}
+<div class="system-public-auth-phone" data-phone-auth data-provider="{{ phone_provider.code }}">
+  <div class="system-public-auth-oauth-divider"><span>или войдите по телефону</span></div>
+  <form action="{{ base }}/auth/phone/request" method="post" data-phone-auth-request>
+    <input type="hidden" name="_csrf" value="{{ csrf|e }}">
+    <input type="hidden" name="provider" value="{{ phone_provider.code|e }}">
+    <input type="hidden" name="_return" value="{{ return_url|default('/')|e }}">
+    <div class="system-public-auth-phone-row">
+      <label class="sr-only" for="phone-auth-number">Номер телефона</label>
+      <input class="form-control" id="phone-auth-number" type="tel" name="phone" autocomplete="tel" inputmode="tel" placeholder="+7 900 000-00-00" required>
+      <button class="btn btn-secondary" type="submit">Получить код</button>
+    </div>
+    {% if phone_provider.allow_registration and config.registration_enabled %}
+      <label class="system-public-auth-phone-consent">
+        <input type="checkbox" name="consent" value="1" required>
+        <span>Согласен с <a href="{{ base }}{{ config.checkout_policy_url|default('/privacy-policy') }}">политикой конфиденциальности</a>. Если аккаунта нет, он будет создан.</span>
+      </label>
+    {% endif %}
+    <div class="system-public-auth-phone-message" data-phone-auth-message hidden role="status"></div>
+  </form>
+  <form action="{{ base }}/auth/phone/verify" method="post" data-phone-auth-verify hidden>
+    <input type="hidden" name="_csrf" value="{{ csrf|e }}">
+    <input type="hidden" name="provider" value="{{ phone_provider.code|e }}">
+    <input type="hidden" name="challenge" value="">
+    <div class="system-public-auth-phone-row">
+      <label class="sr-only" for="phone-auth-code">Код из SMS</label>
+      <input class="form-control" id="phone-auth-code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{4,8}" maxlength="8" placeholder="Код из SMS" required>
+      <button class="btn btn-primary" type="submit">Войти</button>
+    </div>
+    <label class="system-public-auth-phone-remember"><input type="checkbox" name="keep_in" value="1"><span>Запомнить меня</span></label>
+    <div class="system-public-auth-phone-message" data-phone-auth-message role="status"></div>
+    <div class="system-public-auth-phone-links">
+      <button class="system-public-auth-phone-back" type="button" data-phone-auth-back>Изменить номер</button>
+      <button class="system-public-auth-phone-resend" type="button" data-phone-auth-resend disabled>Отправить код ещё раз</button>
+    </div>
+  </form>
+</div>
+{% endif %}

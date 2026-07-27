@@ -1,0 +1,43 @@
+CREATE TABLE IF NOT EXISTS `{{system_prefix}}_audit_log` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `actor_id` INT UNSIGNED NULL,
+  `actor_name` VARCHAR(190) NOT NULL DEFAULT '',
+  `action` VARCHAR(100) NOT NULL,
+  `target_type` VARCHAR(50) NOT NULL DEFAULT '',
+  `target_id` INT UNSIGNED NULL,
+  `meta` MEDIUMTEXT NULL,
+  `ip` VARCHAR(45) NOT NULL DEFAULT '',
+  `user_agent` VARCHAR(255) NOT NULL DEFAULT '',
+  `created_at` DATETIME NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_created` (`created_at`),
+  KEY `idx_action` (`action`),
+  KEY `idx_actor` (`actor_id`)
+) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `{{system_prefix}}_referrer_log` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `log_date` DATE NOT NULL,
+  `visitor_hash` CHAR(32) NOT NULL,
+  `source_type` VARCHAR(24) NOT NULL,
+  `source_name` VARCHAR(190) NOT NULL,
+  `referer_host` VARCHAR(190) NOT NULL DEFAULT '',
+  `referer_url` VARCHAR(1000) NOT NULL DEFAULT '',
+  `landing_path` VARCHAR(1000) NOT NULL,
+  `utm_source` VARCHAR(255) NOT NULL DEFAULT '',
+  `utm_medium` VARCHAR(255) NOT NULL DEFAULT '',
+  `utm_campaign` VARCHAR(255) NOT NULL DEFAULT '',
+  `utm_term` VARCHAR(255) NOT NULL DEFAULT '',
+  `utm_content` VARCHAR(255) NOT NULL DEFAULT '',
+  `tracking_json` TEXT NULL,
+  `user_agent` VARCHAR(500) NOT NULL DEFAULT '',
+  `first_seen_at` INT UNSIGNED NOT NULL,
+  `last_seen_at` INT UNSIGNED NOT NULL,
+  `hits` INT UNSIGNED NOT NULL DEFAULT 1,
+  `dedupe_hash` CHAR(64) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_dedupe` (`dedupe_hash`),
+  KEY `idx_last_seen` (`last_seen_at`),
+  KEY `idx_log_date` (`log_date`),
+  KEY `idx_source` (`source_type`, `source_name`(167))
+) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8mb4;

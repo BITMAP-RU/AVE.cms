@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="auto_e5f1687baa5c645a">1 hour</phrase>
+	<phrase data="auto_e14e414b7183efa7">24 hours</phrase>
+	<phrase data="auto_fb925c5d7971b5fb">30 days</phrase>
+	<phrase data="auto_e65da6ce30bc8c4a">7 days</phrase>
+	<phrase data="auto_e491219526ad01cc">IP or reason</phrase>
+	<phrase data="auto_42788e5f121223eb">IP address</phrase>
+	<phrase data="auto_362aa71bc62edd92">Addresses for which access to the site is restricted.</phrase>
+	<phrase data="auto_850a4d6e73002861">Active locks</phrase>
+	<phrase data="auto_fcb0e075f34dbcbd">No comment</phrase>
+	<phrase data="auto_7618b01975cefe66">up to</phrase>
+	<phrase data="auto_6b142f7483e01768">Blocked IPs</phrase>
+	<phrase data="auto_5435bb1bcdbbfd58">There are no blocked addresses</phrase>
+	<phrase data="auto_0d57053c516f1c97">Block</phrase>
+	<phrase data="auto_edf832a58d3c72ae">Block address</phrase>
+	<phrase data="auto_ed6e1d0308c46470">Find</phrase>
+	<phrase data="auto_61a42318d58ac7ee">Permanent and time-limited blocking.</phrase>
+	<phrase data="auto_4a9ea52cdacbafe0">Reason</phrase>
+	<phrase data="auto_4acda3c9e520358d">Reason for blocking</phrase>
+	<phrase data="auto_d4ab263ae425a030">Unblock</phrase>
+	<phrase data="auto_f240d803de32c945">Manual access locks and automatic request rate protection</phrase>
+	<phrase data="auto_aebeb613737ca428">Created</phrase>
+	<phrase data="auto_71e1ea68bbc8f18d">Deadline</phrase>
+	<phrase data="auto_8e478455317cddae">Current address:</phrase>
+	<phrase data="auto_24bb61929ffa4591">IP address blocked</phrase>
+	<phrase data="auto_62f2d3c17d53bac0">IP address unblocked</phrase>
+	<phrase data="auto_ae7bee0a4c4c5bb9">IP blocking</phrase>
+	<phrase data="auto_5eb55bdc4c3a4356">IP blocking: view</phrase>
+	<phrase data="auto_2b5754b0e3a674c4">IP blocking: management</phrase>
+	<phrase data="auto_d4fab139643b248f">Security</phrase>
+	<phrase data="auto_8073ecdeaca91404">Blocking and unblocking IP addresses.</phrase>
+	<phrase data="auto_e5599f37c0609107">Access from this address will be restored immediately.</phrase>
+	<phrase data="auto_c00aca49199296d7">Network error</phrase>
+	<phrase data="auto_a33332085adf689d">View blocked IP addresses.</phrase>
+	<phrase data="auto_ec00504a76e2a497">Unblock IP?</phrase>
+	<phrase data="auto_3ac98f278c8c9081">System</phrase>
+</language>

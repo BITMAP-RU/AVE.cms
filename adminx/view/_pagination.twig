@@ -1,0 +1,17 @@
+{# Усечённая пагинация. url — строка с плейсхолдером __P__ вместо номера страницы. #}
+{% macro render(current, pages, url) %}
+{%- set current = current|default(1) -%}
+{%- if pages > 1 -%}
+<nav class="pagination" aria-label="Постраничная навигация">
+{%- for p in 1..pages -%}
+{%- if p == current -%}
+<span class="page current" aria-current="page">{{ p }}</span>
+{%- elseif p <= 2 or p > pages - 2 or (p >= current - 2 and p <= current + 2) -%}
+<a class="page" href="{{ url|replace({'__P__': p}) }}">{{ p }}</a>
+{%- elseif p == 3 or p == pages - 2 -%}
+<span class="page gap">…</span>
+{%- endif -%}
+{%- endfor -%}
+</nav>
+{%- endif -%}
+{% endmacro %}

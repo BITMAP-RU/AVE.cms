@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="runtime_0df66fbd72d2f8c8">Canceled</phrase>
+	<phrase data="runtime_527028c7a1b1e64a">Valid</phrase>
+	<phrase data="runtime_d5cd524fe2d22c7a">Expired</phrase>
+	<phrase data="runtime_d0ef3540b088bbf6">Catalog</phrase>
+	<phrase data="runtime_6a6dc189e9143145">Insufficient rights</phrase>
+	<phrase data="runtime_5ad2d83792c603e8">Incorrect registration certificate table</phrase>
+	<phrase data="runtime_6fb053a9e613ee53">Suspended</phrase>
+	<phrase data="runtime_d0fea1a6815440c4">View the register of registration certificates.</phrase>
+	<phrase data="runtime_7e2983d247dc7fe5">Reg. certificates</phrase>
+	<phrase data="runtime_272cf29e38ce742d">Reg. credentials: view</phrase>
+	<phrase data="runtime_41cc01c7926738b8">Reg. credentials: management</phrase>
+	<phrase data="runtime_df881f763a628f03">Registration certificates</phrase>
+	<phrase data="runtime_b591800fd64f41f0">Register of Roszdravnadzor for medical devices: risk class, validity period, connection with the product.</phrase>
+	<phrase data="runtime_b3e9cf0ac69af3ca">Register of registration certificates of Roszdravnadzor</phrase>
+	<phrase data="runtime_1703ed384d7352b7">Creating, changing and deleting registration certificates.</phrase>
+	<phrase data="runtime_2fe8f2fd72439d26">Saved</phrase>
+	<phrase data="runtime_d30d175c7782a589">Identity added</phrase>
+	<phrase data="runtime_0a6312f88cc3ffd5">Identity not found</phrase>
+	<phrase data="runtime_e49a4d777d4e0a7d">Identity deleted</phrase>
+	<phrase data="runtime_19a5d22c38d7e651">Please indicate the name of the medical product</phrase>
+	<phrase data="runtime_044340388a0ad597">Specify RU number</phrase>
+	<phrase data="runtime_a25d9d8ab647ad41">indefinitely</phrase>
+</language>

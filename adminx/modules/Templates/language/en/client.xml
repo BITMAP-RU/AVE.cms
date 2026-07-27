@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="auto_0101008a814aa67f">&gt;There are no revisions yet. The first snapshot will appear after saving the template.&lt;/div&gt;&apos;;
+        this.currentRevisionId = 0;
+        this.showRevisionEmpty();
+        return;
+      }
+      list.innerHTML = items.map(function (item) {
+        return &apos;&lt;div class=</phrase>
+	<phrase data="auto_065edae6bacea0cf">Copy</phrase>
+	<phrase data="auto_24b409774e91bb85">The code and metadata will appear after selecting a photo.</phrase>
+	<phrase data="auto_344503cd3dc29566">New template</phrase>
+	<phrase data="auto_3eb77d3c13c51f92">Select revision</phrase>
+	<phrase data="auto_4d60d98f499d1580">Audits</phrase>
+	<phrase data="auto_68ee41202091a86a">(copy)</phrase>
+	<phrase data="auto_6c87c63db45290ba">PHP syntax without errors.</phrase>
+	<phrase data="auto_ace6b3bf4c06d407">Copy created</phrase>
+	<phrase data="auto_ef443549f583a29a">Template deleted</phrase>
+	<phrase data="runtime_13fe98d42eb8e2b5">PHP syntax without errors.</phrase>
+	<phrase data="runtime_287ef8ef854ce1aa">(copy)</phrase>
+	<phrase data="runtime_438d4444acd9bb02">Template deleted</phrase>
+	<phrase data="runtime_6bdb0526f5aabeba">Copy</phrase>
+	<phrase data="runtime_918940a4450b8399">Copy created</phrase>
+	<phrase data="runtime_c26e2f453c7062e5">New template</phrase>
+</language>

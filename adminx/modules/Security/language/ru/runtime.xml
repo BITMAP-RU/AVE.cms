@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="runtime_b0e4a4ba0f35f67f">IP-адрес заблокирован</phrase>
+	<phrase data="runtime_132018db5d38ba1e">IP-адрес разблокирован</phrase>
+	<phrase data="runtime_de417a7fe0cb9ba0">IP-блокировки</phrase>
+	<phrase data="runtime_7ddeb002ba7925a2">IP-блокировки: просмотр</phrase>
+	<phrase data="runtime_645a0d7c31200ec1">IP-блокировки: управление</phrase>
+	<phrase data="runtime_d90121745924a07f">Безопасность</phrase>
+	<phrase data="runtime_6d285f1f49050c7c">Блокировка и разблокировка IP-адресов.</phrase>
+	<phrase data="runtime_e770b9cc7b5f5286">Просмотр заблокированных IP-адресов.</phrase>
+	<phrase data="runtime_6da215b1bdac9524">Система</phrase>
+</language>

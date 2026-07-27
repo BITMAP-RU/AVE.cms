@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="runtime_0df66fbd72d2f8c8">Аннулировано</phrase>
+	<phrase data="runtime_527028c7a1b1e64a">Действует</phrase>
+	<phrase data="runtime_d5cd524fe2d22c7a">Истекло</phrase>
+	<phrase data="runtime_d0ef3540b088bbf6">Каталог</phrase>
+	<phrase data="runtime_6a6dc189e9143145">Недостаточно прав</phrase>
+	<phrase data="runtime_5ad2d83792c603e8">Некорректная таблица регистрационных удостоверений</phrase>
+	<phrase data="runtime_6fb053a9e613ee53">Приостановлено</phrase>
+	<phrase data="runtime_d0fea1a6815440c4">Просмотр реестра регистрационных удостоверений.</phrase>
+	<phrase data="runtime_7e2983d247dc7fe5">Рег. удостоверения</phrase>
+	<phrase data="runtime_272cf29e38ce742d">Рег. удостоверения: просмотр</phrase>
+	<phrase data="runtime_41cc01c7926738b8">Рег. удостоверения: управление</phrase>
+	<phrase data="runtime_df881f763a628f03">Регистрационные удостоверения</phrase>
+	<phrase data="runtime_b591800fd64f41f0">Реестр РУ Росздравнадзора на медизделия: класс риска, срок действия, связь с товаром.</phrase>
+	<phrase data="runtime_b3e9cf0ac69af3ca">Реестр регистрационных удостоверений Росздравнадзора</phrase>
+	<phrase data="runtime_1703ed384d7352b7">Создание, изменение и удаление регистрационных удостоверений.</phrase>
+	<phrase data="runtime_2fe8f2fd72439d26">Сохранено</phrase>
+	<phrase data="runtime_d30d175c7782a589">Удостоверение добавлено</phrase>
+	<phrase data="runtime_0a6312f88cc3ffd5">Удостоверение не найдено</phrase>
+	<phrase data="runtime_e49a4d777d4e0a7d">Удостоверение удалено</phrase>
+	<phrase data="runtime_19a5d22c38d7e651">Укажите наименование медизделия</phrase>
+	<phrase data="runtime_044340388a0ad597">Укажите номер РУ</phrase>
+	<phrase data="runtime_a25d9d8ab647ad41">бессрочно</phrase>
+</language>

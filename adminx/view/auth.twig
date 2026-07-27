@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="{{ current_lang|default('ru') }}" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}{{ lang.btn_login|default('Вход') }}{% endblock %} · AVE.cms</title>
+<meta name="csrf-token" content="{{ csrf_token }}">
+<script>window.AdminxI18n={{ adminx_i18n|json_encode|raw }};window.AdminxPhrases={{ adminx_phrases|json_encode|raw }};</script>
+<link rel="stylesheet" href="{{ asset_ver(ADMINX_BASE ~ '/assets/vendor/tabler/tabler-icons.min.css') }}">
+{% for style in admin_assets.styles %}
+<link rel="stylesheet" href="{{ asset_ver(style.url) }}">
+{% endfor %}
+</head>
+<body class="auth-body">
+{% block content %}{% endblock %}
+</body>
+</html>

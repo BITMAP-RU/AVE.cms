@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="auto_e5f1687baa5c645a">1 час</phrase>
+	<phrase data="auto_e14e414b7183efa7">24 часа</phrase>
+	<phrase data="auto_fb925c5d7971b5fb">30 дней</phrase>
+	<phrase data="auto_e65da6ce30bc8c4a">7 дней</phrase>
+	<phrase data="auto_e491219526ad01cc">IP или причина</phrase>
+	<phrase data="auto_42788e5f121223eb">IP-адрес</phrase>
+	<phrase data="auto_362aa71bc62edd92">Адреса, для которых ограничен доступ к сайту.</phrase>
+	<phrase data="auto_850a4d6e73002861">Активные блокировки</phrase>
+	<phrase data="auto_fcb0e075f34dbcbd">Без комментария</phrase>
+	<phrase data="auto_7618b01975cefe66">до</phrase>
+	<phrase data="auto_6b142f7483e01768">Заблокированные IP</phrase>
+	<phrase data="auto_5435bb1bcdbbfd58">Заблокированных адресов нет</phrase>
+	<phrase data="auto_0d57053c516f1c97">Заблокировать</phrase>
+	<phrase data="auto_edf832a58d3c72ae">Заблокировать адрес</phrase>
+	<phrase data="auto_ed6e1d0308c46470">Найти</phrase>
+	<phrase data="auto_61a42318d58ac7ee">Постоянные и ограниченные по времени блокировки.</phrase>
+	<phrase data="auto_4a9ea52cdacbafe0">Причина</phrase>
+	<phrase data="auto_4acda3c9e520358d">Причина блокировки</phrase>
+	<phrase data="auto_d4ab263ae425a030">Разблокировать</phrase>
+	<phrase data="auto_f240d803de32c945">Ручные блокировки доступа и автоматическая защита частоты запросов</phrase>
+	<phrase data="auto_aebeb613737ca428">Создано</phrase>
+	<phrase data="auto_71e1ea68bbc8f18d">Срок</phrase>
+	<phrase data="auto_8e478455317cddae">Текущий адрес:</phrase>
+	<phrase data="auto_24bb61929ffa4591">IP-адрес заблокирован</phrase>
+	<phrase data="auto_62f2d3c17d53bac0">IP-адрес разблокирован</phrase>
+	<phrase data="auto_ae7bee0a4c4c5bb9">IP-блокировки</phrase>
+	<phrase data="auto_5eb55bdc4c3a4356">IP-блокировки: просмотр</phrase>
+	<phrase data="auto_2b5754b0e3a674c4">IP-блокировки: управление</phrase>
+	<phrase data="auto_d4fab139643b248f">Безопасность</phrase>
+	<phrase data="auto_8073ecdeaca91404">Блокировка и разблокировка IP-адресов.</phrase>
+	<phrase data="auto_e5599f37c0609107">Доступ с этого адреса будет восстановлен сразу.</phrase>
+	<phrase data="auto_c00aca49199296d7">Ошибка сети</phrase>
+	<phrase data="auto_a33332085adf689d">Просмотр заблокированных IP-адресов.</phrase>
+	<phrase data="auto_ec00504a76e2a497">Разблокировать IP?</phrase>
+	<phrase data="auto_3ac98f278c8c9081">Система</phrase>
+</language>

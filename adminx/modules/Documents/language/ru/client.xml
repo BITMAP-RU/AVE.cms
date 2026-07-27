@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="auto_0156bf1b8aac8565">Добавить ещё…</phrase>
+	<phrase data="auto_0f9ccee053fe3b6b">Новый</phrase>
+	<phrase data="auto_12bfabff3d7dc01c">Добавить ключевое слово</phrase>
+	<phrase data="auto_1af72c14888c4574">Пресет создания</phrase>
+	<phrase data="auto_25a9845975119103">Пресет создания сохранён</phrase>
+	<phrase data="auto_25dc101484dbd55c">Не удалось загрузить список</phrase>
+	<phrase data="auto_3812a04b189ec1fd">новое</phrase>
+	<phrase data="auto_4044fbc87708b9ad">Очистить подневную статистику?</phrase>
+	<phrase data="auto_46551a5e6e43e854">Статистика очищена</phrase>
+	<phrase data="auto_5c019fa5d03ca5cf">в рубрике</phrase>
+	<phrase data="auto_5e6d6b07b27b7a7c">Все строки view_count будут удалены. Общие счётчики документов останутся без изменений.</phrase>
+	<phrase data="auto_619742ac4a834c45">док.</phrase>
+	<phrase data="auto_66d207b9ebe9e4e3">&lt;div class=&quot;documents-term-status is-error&quot;&gt;&lt;i class=&quot;ti ti-alert-circle&quot;&gt;&lt;/i&gt;&lt;span&gt;Не удалось загрузить варианты&lt;/span&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_6e408d3c9c3156bf">Удалить «</phrase>
+	<phrase data="auto_707a724dce1fa0d4">URL скопирован</phrase>
+	<phrase data="auto_72c618d46424c93a">Сохранённых значений пока нет</phrase>
+	<phrase data="auto_7c3bb087be98e4e9">Не удалось загрузить статистику</phrase>
+	<phrase data="auto_7f09659cde925652">Найти или добавить тег</phrase>
+	<phrase data="auto_86ea33aef5e95d4f">Удалить</phrase>
+	<phrase data="auto_8ff9429d66687894">Совпадений нет</phrase>
+	<phrase data="auto_9729bca62f6c558e">Ошибка запроса</phrase>
+	<phrase data="auto_98b2073ed1815f28">Очистить</phrase>
+	<phrase data="auto_a90ed3357338f605">Загрузка...</phrase>
+	<phrase data="auto_b0a419827426861b">Пресет удалён</phrase>
+	<phrase data="auto_beed168817322eeb">из</phrase>
+	<phrase data="auto_c2b70c3bb20678a7">Не удалось применить фильтры</phrase>
+	<phrase data="auto_c5eb26618a7ede98">Только чтение</phrase>
+	<phrase data="auto_c7fca87d8dd9b0e6">Нажмите, чтобы найти документ</phrase>
+	<phrase data="auto_c9d8ea6476aa730d">Добавить «</phrase>
+	<phrase data="auto_cccd51a8c6aa88c1">&lt;div class=&quot;documents-term-status&quot;&gt;&lt;i class=&quot;ti ti-loader-2&quot;&gt;&lt;/i&gt;&lt;span&gt;Ищем совпадения…&lt;/span&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_ccfe048a5551ed0f">пресет</phrase>
+	<phrase data="auto_cdd3b42f2a48df2f">Удалить пресет</phrase>
+	<phrase data="auto_dcedec8acc4af7ca">Документ назначения</phrase>
+	<phrase data="auto_eeb60e75b96656e7">Некорректный ответ</phrase>
+	<phrase data="auto_f26e5c0c72082089">Найти или добавить ключевое слово</phrase>
+	<phrase data="auto_f3d123e46297531d">в</phrase>
+	<phrase data="auto_f61de80bf0ca15a4">Документ не выбран</phrase>
+	<phrase data="auto_f7286439b109e428">Новый редирект</phrase>
+	<phrase data="auto_fa9f0524f3a0531e">Добавить тег</phrase>
+	<phrase data="runtime_b8012cb642c887a0">в</phrase>
+	<phrase data="runtime_c5412ba2cc2fc45a">Пресет создания сохранён</phrase>
+	<phrase data="runtime_dd48804aa38b03e1">Пресет удалён</phrase>
+	<phrase data="runtime_e1c88af54b9fced2">Документ #</phrase>
+	<phrase data="runtime_f9a506077fa0d961">Новый</phrase>
+</language>

@@ -1,0 +1,62 @@
+.console-warning {
+  margin-bottom: 20px;
+}
+.console-toolbar {
+  display: grid;
+  grid-template-columns: minmax(190px, 280px) minmax(220px, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 14px;
+  border-bottom: 1px solid var(--border-default);
+}
+.console-toolbar-actions {
+  flex-wrap: nowrap;
+}
+.console-editor-card {
+  overflow: hidden;
+}
+.console-editor-card .CodeMirror {
+  border: 0;
+  border-radius: 0;
+}
+.console-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border-top: 1px solid var(--border-default);
+  background: var(--background-inset);
+}
+.console-output-header {
+  margin-top: 24px;
+}
+.console-output-card {
+  overflow: hidden;
+}
+.console-output-card pre {
+  min-height: 180px;
+  max-height: 440px;
+  margin: 0;
+  padding: 18px;
+  overflow: auto;
+  background: #10151c;
+  color: #d8e2ee;
+  font: 13px/1.55 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 760px) {
+  .console-toolbar {
+    grid-template-columns: 1fr;
+  }
+  .console-toolbar-actions,
+  .console-actions,
+  .console-actions .cluster {
+    width: 100%;
+  }
+  .console-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

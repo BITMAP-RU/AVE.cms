@@ -1,0 +1,61 @@
+<ul class="nav navbar-nav navbar-menu header-menu-profiler" id="header-profiler" data-auth-panel>
+  <li class="dropdown login-dropdown last-item">
+    <!--googleoff: all--><!--noindex-->
+    <a class="pre_header_user_link js-auth" href="javascript:void(0);" rel="nofollow" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+      <svg class="pre_header_user_icon" width="14" height="17" viewBox="0 0 15.59 18.5" aria-hidden="true">
+        <use href="/templates/public/images/svg/main.svg#icon-user"></use>
+      </svg>
+      <span class="pre_header_user_text">{{ logged_in ? user_name|e : 'Войти' }}</span>
+    </a>
+
+    {% if logged_in %}
+      <ul class="dropdown-menu login-in">
+		{% if can_admin %}<li><a href="{{ admin_url }}" target="_blank" rel="noopener">Панель управления</a></li>{% endif %}
+        {% if not system_identity %}
+          <li><a href="{{ base }}{{ auth_urls.overview }}">Личный кабинет</a></li>
+          <li><a href="{{ base }}{{ auth_urls.profile }}">Изменить данные</a></li>
+          <li><a href="{{ base }}{{ auth_urls.password }}">Смена пароля</a></li>
+          <li><a href="{{ base }}/personal/orders">История заказов</a></li>
+          <li><a href="{{ base }}/personal/favorites">Избранное</a></li>
+          {% for link in account_extension_links %}<li><a href="{{ base }}{{ link.url }}">{{ link.label }}</a></li>{% endfor %}
+          <li>
+            <form action="{{ base }}{{ auth_urls.logout }}" method="post" data-auth-logout>
+              <input type="hidden" name="_csrf" value="{{ csrf|e }}">
+              <input type="hidden" name="_return" value="{{ return_url|e }}">
+              <button type="submit" class="system-auth-link">Выйти</button>
+            </form>
+          </li>
+        {% endif %}
+      </ul>
+    {% else %}
+      <ul class="dropdown-menu">
+        <li>
+          <div class="panel m-b-none">
+            <div class="panel-body">
+              <form class="form" method="post" action="{{ base }}{{ auth_urls.login }}" accept-charset="UTF-8" id="form-login-top" data-auth-login>
+                <input type="hidden" name="_csrf" value="{{ csrf|e }}">
+                <input type="hidden" name="_return" value="{{ return_url|e }}">
+                {% if error %}<div class="alert alert-danger" role="alert" data-auth-error tabindex="-1">{{ error|e }}</div>{% endif %}
+                <div class="form-group">
+                  <label class="sr-only" for="login">Логин</label>
+                  <input type="text" name="user_login" class="form-control input-sm" id="login" placeholder="Логин" autocomplete="username" required>
+                </div>
+                <div class="form-group">
+                  <label class="sr-only" for="password">Пароль</label>
+                  <input type="password" name="user_pass" class="form-control input-sm" id="password" placeholder="Пароль" autocomplete="current-password" required>
+                  {% if password_reset_enabled %}<div class="help-block text-right"><a href="{{ base }}{{ auth_urls.remember }}">Забыли пароль?</a></div>{% endif %}
+                </div>
+                <div class="form-group"><button type="submit" class="btn btn-purple btn-sm btn-block">{{ login_page.submit_label }}</button></div>
+                <div class="checkbox"><label><input type="checkbox" name="keep_in" value="1"> Запомнить меня</label></div>
+              </form>
+            </div>
+            {% if registration_enabled %}
+              <div class="panel-footer bottom text-center">Нет аккаунта? <a href="{{ base }}{{ auth_urls.register }}"><b>Зарегистрироваться</b></a></div>
+            {% endif %}
+          </div>
+        </li>
+      </ul>
+    {% endif %}
+    <!--/noindex--><!--googleon: all-->
+  </li>
+</ul>

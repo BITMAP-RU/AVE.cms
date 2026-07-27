@@ -1,0 +1,13 @@
+<div class="static_page system-public-auth">
+  <div class="page_title"><div class="page_title_inner"><h1 class="page_title_heading">{{ page.title }}</h1></div></div>
+  <div class="static_page_inner">
+    {% if page.description %}<p class="text-muted">{{ page.description }}</p>{% endif %}
+    {% if errors._form %}<div class="alert alert-danger" role="alert">{{ errors._form }}</div>{% endif %}
+    <form method="post" action="{{ base }}{{ auth_urls.reset }}" class="system-public-auth-form system-public-auth-form--compact">
+      <input type="hidden" name="_csrf" value="{{ csrf|e }}"><input type="hidden" name="token" value="{{ token|e }}">
+      <div class="form-group"><label for="public-auth-new-password">Новый пароль</label><input class="form-control" id="public-auth-new-password" type="password" name="password" minlength="{{ config.password_min_length }}" autocomplete="new-password" required>{% if errors.password %}<small class="text-danger">{{ errors.password }}</small>{% endif %}</div>
+      <div class="form-group"><label for="public-auth-password-confirm">Повторите пароль</label><input class="form-control" id="public-auth-password-confirm" type="password" name="password_confirm" autocomplete="new-password" required>{% if errors.password_confirm %}<small class="text-danger">{{ errors.password_confirm }}</small>{% endif %}</div>
+      <div class="system-public-auth-actions"><button class="btn btn-primary" type="submit">{{ page.submit_label }}</button></div>
+    </form>
+  </div>
+</div>

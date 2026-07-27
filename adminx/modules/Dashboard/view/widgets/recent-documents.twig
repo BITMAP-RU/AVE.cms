@@ -1,0 +1,24 @@
+{% set documents = module_data.documents %}
+<section class="dashboard-section dashboard-documents dashboard-core-wide">
+  <header class="section-header"><div class="section-icon"><i class="ti ti-file-pencil"></i></div><div><div class="section-eyebrow">{{ lang.nav_group_content|default('Контент') }}</div><h2>{{ lang.dashboard_recent_documents|default('Недавние документы') }}</h2><p class="section-desc">{{ lang.dashboard_recent_documents_desc|default('Последние измененные записи всех рубрик') }}</p></div><div class="section-header-right"><a class="btn btn-icon btn-secondary" href="{{ ADMINX_BASE }}/documents" data-tooltip="{{ lang.dashboard_all_documents|default('Все документы') }}" aria-label="{{ lang.dashboard_all_documents|default('Все документы') }}"><i class="ti ti-arrow-right"></i></a></div></header>
+  <div class="dashboard-table-wrap">
+    <table class="table table-compact dashboard-documents-table">
+      <colgroup><col class="dashboard-doc-id"><col><col class="dashboard-doc-rubric"><col class="dashboard-doc-state"><col class="dashboard-doc-date"><col class="dashboard-doc-action"></colgroup>
+      <thead><tr><th>ID</th><th>{{ lang.dashboard_document|default('Документ') }}</th><th>{{ lang.dashboard_rubric|default('Рубрика') }}</th><th>{{ lang.dashboard_state|default('Состояние') }}</th><th>{{ lang.dashboard_changed|default('Изменен') }}</th><th></th></tr></thead>
+      <tbody>
+      {% for document in documents %}
+        <tr class="{{ document.document_status == '1' ? '' : 'is-muted' }}">
+          <td class="mono text-muted">#{{ document.Id }}</td>
+          <td><a class="dashboard-document-title" href="{{ ADMINX_BASE }}/documents/{{ document.Id }}/edit"><b>{{ document.document_title }}</b><small>/{{ document.document_alias|trim('/') }}</small></a></td>
+          <td>{{ document.rubric_title ?: lang.dashboard_no_rubric|default('Без рубрики') }}</td>
+          <td><span class="badge {{ document.document_status == '1' ? 'badge-green' : 'badge-gray' }}">{{ document.document_status == '1' ? lang.dashboard_published|default('Опубликован') : lang.dashboard_disabled|default('Выключен') }}</span></td>
+          <td class="mono text-muted">{{ document.document_changed|date('d.m.Y H:i') }}</td>
+          <td><a class="btn btn-ghost btn-icon btn-sm ax-act ax-act-edit" href="{{ ADMINX_BASE }}/documents/{{ document.Id }}/edit" data-tooltip="{{ lang.dashboard_edit|default('Редактировать') }}" aria-label="{{ lang.dashboard_edit|default('Редактировать') }}"><i class="ti ti-pencil"></i></a></td>
+        </tr>
+      {% else %}
+        <tr><td colspan="6"><div class="empty-state">{{ lang.dashboard_no_documents|default('Документов пока нет') }}</div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>

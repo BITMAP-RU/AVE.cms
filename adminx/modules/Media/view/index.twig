@@ -1,0 +1,240 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}Медиа{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i>
+  <span>Медиа</span>
+</nav>
+
+<div class="page-header">
+  <div class="between">
+    <div>
+      <h1>Медиа</h1>
+      <p class="text-secondary" style="margin-top:5px">Файловый браузер каталога uploads</p>
+    </div>
+    {% if can_manage %}
+    <div class="cluster">
+      <button class="btn btn-secondary" type="button" data-media-folder><i class="ti ti-folder-plus"></i>Папка</button>
+      <button class="btn btn-danger-soft" type="button" data-media-clear-thumbs data-path="{{ dir }}" data-name="{{ dir }}" data-tooltip="Удалить все превью в текущей папке"><i class="ti ti-photo-off"></i>Очистить превью</button>
+      <button class="btn btn-primary" type="button" data-media-upload-trigger><i class="ti ti-upload"></i>Загрузить</button>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="media-summary">
+  <div class="card media-stat">
+    <span class="icon-tile" style="--tile-bg:#e8f3ff;--tile-fg:#2563eb"><i class="ti ti-files"></i></span>
+    <div><b>{{ stats.files }}</b><span>Файлов</span></div>
+  </div>
+  <div class="card media-stat">
+    <span class="icon-tile" style="--tile-bg:#ecfdf3;--tile-fg:#16a34a"><i class="ti ti-photo"></i></span>
+    <div><b>{{ stats.images }}</b><span>Изображений</span></div>
+  </div>
+  <div class="card media-stat">
+    <span class="icon-tile" style="--tile-bg:#fff7ed;--tile-fg:#ea580c"><i class="ti ti-folders"></i></span>
+    <div><b>{{ stats.folders }}</b><span>Папок</span></div>
+  </div>
+  <div class="card media-stat">
+    <span class="icon-tile" style="--tile-bg:#f3e8ff;--tile-fg:#7e22ce"><i class="ti ti-database"></i></span>
+    <div><b>{{ stats.size_label }}</b><span>Объём</span></div>
+  </div>
+</div>
+
+<section class="tab-panel active media-browser">
+  <div class="section-header media-panel-header">
+    <div class="section-icon"><i class="ti ti-folder-open"></i></div>
+    <div>
+      <div class="section-eyebrow">Файлы</div>
+      <h2>{{ dir }}</h2>
+      <p class="section-desc">Папки и файлы физически читаются из каталога uploads.</p>
+    </div>
+    <div class="section-header-right">
+      <div class="media-crumbs" aria-label="Путь">
+        {% for crumb in breadcrumbs %}
+          {% if loop.last %}
+            <span>{{ crumb.title }}</span>
+          {% else %}
+            <a href="{{ ADMINX_BASE }}/media?dir={{ crumb.path|url_encode }}&view={{ filters.view }}">{{ crumb.title }}</a><i class="ti ti-chevron-right"></i>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="card media-card">
+    <div class="media-section-head">
+      <div class="media-section-title">
+        <span class="icon-tile media-head-icon" style="--tile-bg:#e0f2fe;--tile-fg:#0284c7"><i class="ti ti-layout-grid"></i></span>
+        <div>
+          <h2>Содержимое папки</h2>
+          <p class="text-secondary">{{ folders|length }} папок, {{ total }} файлов в текущем фильтре.</p>
+        </div>
+      </div>
+      <span class="badge badge-blue">{{ filters.view == 'grid' ? 'Сетка' : 'Список' }}</span>
+    </div>
+
+    <div class="table-toolbar media-toolbar">
+      <form class="media-filter" method="get" action="{{ ADMINX_BASE }}/media">
+        <input type="hidden" name="dir" value="{{ dir }}">
+        <input type="hidden" name="view" value="{{ filters.view }}">
+        <div class="input-wrap">
+          <i class="ti ti-search"></i>
+          <input class="input" type="search" name="q" value="{{ filters.q }}" placeholder="Поиск по имени">
+        </div>
+        <select class="select" name="type">
+          <option value="">Все типы</option>
+          <option value="image"{{ filters.type == 'image' ? ' selected' : '' }}>Изображения</option>
+          <option value="file"{{ filters.type == 'file' ? ' selected' : '' }}>Файлы</option>
+        </select>
+        <button class="btn btn-secondary" type="submit"><i class="ti ti-filter"></i>Показать</button>
+        {% if filters.q or filters.type %}
+        <a class="btn btn-ghost" href="{{ ADMINX_BASE }}/media?dir={{ dir|url_encode }}&view={{ filters.view }}"><i class="ti ti-x"></i>Сбросить</a>
+        {% endif %}
+      </form>
+
+      <div class="segmented media-view" role="group" aria-label="Вид">
+        <a href="{{ ADMINX_BASE }}/media?dir={{ dir|url_encode }}&view=grid&q={{ filters.q|url_encode }}&type={{ filters.type }}" aria-pressed="{{ filters.view == 'grid' ? 'true' : 'false' }}" data-tooltip="Сетка" aria-label="Сетка"><i class="ti ti-layout-grid"></i></a>
+        <a href="{{ ADMINX_BASE }}/media?dir={{ dir|url_encode }}&view=table&q={{ filters.q|url_encode }}&type={{ filters.type }}" aria-pressed="{{ filters.view == 'table' ? 'true' : 'false' }}" data-tooltip="Список" aria-label="Список"><i class="ti ti-list"></i></a>
+      </div>
+    </div>
+
+    {% if can_manage %}
+    <form id="mediaUploadForm" class="media-upload" method="post" action="{{ ADMINX_BASE }}/media/upload" enctype="multipart/form-data" data-dir="{{ dir }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <input type="hidden" name="dir" value="{{ dir }}">
+      <input type="file" name="files[]" multiple hidden>
+      <button class="dropzone media-dropzone" type="button" data-media-drop>
+        <i class="ti ti-cloud-upload"></i>
+        <span><b>Перетащите файлы сюда</b><small>или нажмите для выбора на компьютере</small></span>
+        <small data-media-upload-status></small>
+      </button>
+    </form>
+    {% endif %}
+
+    {% if folders is empty and files is empty and not parent_dir %}
+      <div class="error-screen media-empty">
+        <div class="error-ic"><i class="ti ti-folder-open"></i></div>
+        <h4>В uploads пусто</h4>
+        <p class="text-sm text-secondary">Создайте папку или загрузите файлы.</p>
+      </div>
+    {% elseif filters.view == 'grid' %}
+      <div class="media-grid">
+        {% if parent_dir %}
+        <a class="media-tile is-folder is-parent" href="{{ ADMINX_BASE }}/media?dir={{ parent_dir|url_encode }}&view=grid&q={{ filters.q|url_encode }}&type={{ filters.type }}">
+          <span class="media-thumb"><i class="ti ti-arrow-up"></i></span>
+          <b>..</b><small>Вверх</small>
+        </a>
+        {% endif %}
+        {% for folder in folders %}
+        <article class="media-tile is-folder">
+          <a class="media-thumb" href="{{ ADMINX_BASE }}/media?dir={{ folder.path|url_encode }}&view=grid&q={{ filters.q|url_encode }}&type={{ filters.type }}"><i class="ti ti-folder"></i></a>
+          <a class="media-name" href="{{ ADMINX_BASE }}/media?dir={{ folder.path|url_encode }}&view=grid&q={{ filters.q|url_encode }}&type={{ filters.type }}">{{ folder.name }}</a>
+          <small>{{ folder.count }} объектов</small>
+          {% if can_manage %}
+          <div class="media-actions">
+            <button class="btn btn-ghost btn-icon btn-sm media-action media-action-thumbs" type="button" data-media-clear-thumbs data-path="{{ folder.path }}" data-name="{{ folder.name }}" data-tooltip="Очистить превью" aria-label="Очистить превью"><i class="ti ti-photo-off"></i></button>
+            <button class="btn btn-ghost btn-icon btn-sm media-action media-action-edit" type="button" data-media-rename data-path="{{ folder.path }}" data-name="{{ folder.name }}" data-kind="folder" data-tooltip="Переименовать" aria-label="Переименовать"><i class="ti ti-pencil"></i></button>
+            <button class="btn btn-ghost btn-icon btn-sm media-action media-action-danger" type="button" data-media-delete data-path="{{ folder.path }}" data-name="{{ folder.name }}" data-kind="folder" data-tooltip="Удалить" aria-label="Удалить"><i class="ti ti-trash"></i></button>
+          </div>
+          {% endif %}
+        </article>
+        {% endfor %}
+        {% for f in files %}
+        <article class="media-tile is-file">
+          {% if f.is_image %}
+          <button class="media-thumb" type="button" data-media-preview="{{ f.url }}" data-media-preview-name="{{ f.name }}" data-media-preview-meta="{{ f.meta ?: f.extension }}" aria-label="Предпросмотр {{ f.name }}">
+            <img src="{{ f.thumb_url ?: f.url }}" alt="">
+          </button>
+          {% else %}
+          <a class="media-thumb" href="{{ ADMINX_BASE }}/media/file?path={{ f.path|url_encode }}">
+            <i class="ti ti-file"></i>
+          </a>
+          {% endif %}
+          <a class="media-name" href="{{ ADMINX_BASE }}/media/file?path={{ f.path|url_encode }}">{{ f.name }}</a>
+          <small>{{ f.meta ?: f.extension }}</small>
+          <div class="media-actions">
+            <a class="btn btn-ghost btn-icon btn-sm media-action media-action-info" href="{{ ADMINX_BASE }}/media/file?path={{ f.path|url_encode }}" data-tooltip="Детали" aria-label="Детали"><i class="ti ti-info-circle"></i></a>
+            <button class="btn btn-ghost btn-icon btn-sm media-action media-action-copy" type="button" data-copy="{{ f.path }}" data-tooltip="Копировать путь" aria-label="Копировать путь"><i class="ti ti-copy"></i></button>
+            {% if can_manage %}
+            <button class="btn btn-ghost btn-icon btn-sm media-action media-action-danger" type="button" data-media-delete data-path="{{ f.path }}" data-name="{{ f.name }}" data-kind="file" data-tooltip="Удалить" aria-label="Удалить"><i class="ti ti-trash"></i></button>
+            {% endif %}
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="table-scroll">
+        <table class="table table-compact media-table">
+          <colgroup><col class="media-col-name"><col class="media-col-type"><col class="media-col-size"><col class="media-col-date"><col class="media-col-actions"></colgroup>
+          <thead><tr><th>Название</th><th>Тип</th><th>Размер</th><th>Изменён</th><th></th></tr></thead>
+          <tbody>
+            {% if parent_dir %}
+            <tr>
+              <td><a class="media-row-name" href="{{ ADMINX_BASE }}/media?dir={{ parent_dir|url_encode }}&view=table&q={{ filters.q|url_encode }}&type={{ filters.type }}"><span class="media-row-icon"><i class="ti ti-arrow-up"></i></span><b>..</b></a></td>
+              <td>Папка</td><td>-</td><td>-</td><td></td>
+            </tr>
+            {% endif %}
+            {% for folder in folders %}
+            <tr>
+              <td><a class="media-row-name" href="{{ ADMINX_BASE }}/media?dir={{ folder.path|url_encode }}&view=table&q={{ filters.q|url_encode }}&type={{ filters.type }}"><span class="media-row-icon is-folder"><i class="ti ti-folder"></i></span><b>{{ folder.name }}</b></a></td>
+              <td>Папка</td><td>{{ folder.count }} объектов</td><td>-</td>
+              <td>{% if can_manage %}<div class="cluster media-row-actions"><button class="btn btn-ghost btn-icon btn-sm media-action media-action-thumbs" type="button" data-media-clear-thumbs data-path="{{ folder.path }}" data-name="{{ folder.name }}" data-tooltip="Очистить превью" aria-label="Очистить превью"><i class="ti ti-photo-off"></i></button><button class="btn btn-ghost btn-icon btn-sm media-action media-action-edit" type="button" data-media-rename data-path="{{ folder.path }}" data-name="{{ folder.name }}" data-kind="folder" data-tooltip="Переименовать" aria-label="Переименовать"><i class="ti ti-pencil"></i></button><button class="btn btn-ghost btn-icon btn-sm media-action media-action-danger" type="button" data-media-delete data-path="{{ folder.path }}" data-name="{{ folder.name }}" data-kind="folder" data-tooltip="Удалить" aria-label="Удалить"><i class="ti ti-trash"></i></button></div>{% endif %}</td>
+            </tr>
+            {% endfor %}
+            {% for f in files %}
+            <tr>
+              <td><a class="media-row-name" href="{{ ADMINX_BASE }}/media/file?path={{ f.path|url_encode }}"><span class="media-row-preview">{% if f.is_image %}<img src="{{ f.thumb_url ?: f.url }}" alt="" data-media-preview="{{ f.url }}" data-media-preview-name="{{ f.name }}" data-media-preview-meta="{{ f.meta ?: f.extension }}">{% else %}<i class="ti ti-file"></i>{% endif %}</span><b>{{ f.name }}</b></a></td>
+              <td>{{ f.is_image ? 'Изображение' : 'Файл' }}{% if f.extension %} / {{ f.extension }}{% endif %}</td>
+              <td class="mono">{{ f.size_label }}</td>
+              <td class="mono text-muted">{{ f.mtime_label }}</td>
+              <td><div class="cluster media-row-actions"><a class="btn btn-ghost btn-icon btn-sm media-action media-action-info" href="{{ ADMINX_BASE }}/media/file?path={{ f.path|url_encode }}" data-tooltip="Детали" aria-label="Детали"><i class="ti ti-info-circle"></i></a><button class="btn btn-ghost btn-icon btn-sm media-action media-action-copy" type="button" data-copy="{{ f.path }}" data-tooltip="Копировать путь" aria-label="Копировать путь"><i class="ti ti-copy"></i></button>{% if can_manage %}<button class="btn btn-ghost btn-icon btn-sm media-action media-action-danger" type="button" data-media-delete data-path="{{ f.path }}" data-name="{{ f.name }}" data-kind="file" data-tooltip="Удалить" aria-label="Удалить"><i class="ti ti-trash"></i></button>{% endif %}</div></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+
+    {% if pages > 1 %}
+    <div class="pagination media-pagination">
+      {% for p in 1..pages %}
+        {% if p == page %}
+          <span class="page current">{{ p }}</span>
+        {% elseif p <= 2 or p > pages - 2 or (p >= page - 2 and p <= page + 2) %}
+          <a class="page" href="{{ ADMINX_BASE }}/media?page={{ p }}&dir={{ dir|url_encode }}&view={{ filters.view }}&q={{ filters.q|url_encode }}&type={{ filters.type }}">{{ p }}</a>
+        {% elseif p == 3 or p == pages - 2 %}
+          <span class="page gap">...</span>
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+{% if can_manage %}
+<form id="mediaActionForm" method="post">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <input type="hidden" name="path" value="">
+  <input type="hidden" name="name" value="">
+  <input type="hidden" name="dir" value="{{ dir }}">
+</form>
+{% endif %}
+
+<div class="media-lightbox" data-media-lightbox hidden>
+  <div class="media-lightbox-panel" role="dialog" aria-modal="true" aria-label="Предпросмотр изображения">
+    <div class="media-lightbox-head">
+      <div>
+        <h2 data-media-lightbox-title>Предпросмотр</h2>
+        <p class="text-secondary" data-media-lightbox-meta></p>
+      </div>
+      <button class="btn btn-ghost btn-icon" type="button" data-media-lightbox-close aria-label="Закрыть"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="media-lightbox-stage">
+      <img src="" alt="" data-media-lightbox-image>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

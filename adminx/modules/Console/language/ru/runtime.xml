@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="runtime_e8638d5b524a48b5">PHP-консоль</phrase>
+	<phrase data="runtime_cd3220b5e2ad5c7d">PHP-консоль выполнит введённый код на сервере.</phrase>
+	<phrase data="runtime_90caa3bd799742bf">PHP-консоль: выполнение</phrase>
+	<phrase data="runtime_ba77cdce5ee5b017">PHP-консоль: просмотр</phrase>
+	<phrase data="runtime_dd7c1ceea76f67ab">PHP-консоль: сниппеты</phrase>
+	<phrase data="runtime_e32af07679bae002">[вывод сокращён]</phrase>
+	<phrase data="runtime_3b967ae3f3290a54">proc_open недоступен: изолированный запуск невозможен.</phrase>
+	<phrase data="runtime_4f80d20d2e09df16">Введите PHP-код</phrase>
+	<phrase data="runtime_d43f89b5f69d1047">Выполнение PHP-кода в изолированном процессе.</phrase>
+	<phrase data="runtime_0460914807b2e198">Выполнение PHP-консоли отключено окружением.</phrase>
+	<phrase data="runtime_5486237c4d807d41">Для PHP-консоли нужен CLI-интерпретатор PHP 7.3 или новее.</phrase>
+	<phrase data="runtime_bcdab6b295970ee9">Код выполнен</phrase>
+	<phrase data="runtime_adaabc865c6181fd">Найдены несовместимые:</phrase>
+	<phrase data="runtime_b255c34a8f39e299">Не удалось запустить PHP-процесс.</phrase>
+	<phrase data="runtime_6a6dc189e9143145">Недостаточно прав</phrase>
+	<phrase data="runtime_a12dc7af521ed10e">Обязательное поле</phrase>
+	<phrase data="runtime_8e27bdf1f8bab250">Превышен лимит времени</phrase>
+	<phrase data="runtime_5a2fe880e2a829d1">Просмотр системной консоли и сохранённых сниппетов.</phrase>
+	<phrase data="runtime_ac1d1259d545d766">Процесс завершился с ошибкой</phrase>
+	<phrase data="runtime_6da215b1bdac9524">Система</phrase>
+	<phrase data="runtime_180104999a6e37e0">Сниппет не найден</phrase>
+	<phrase data="runtime_dcbaf99e9ed340ce">Сниппет сохранён</phrase>
+	<phrase data="runtime_4689bb06f4b44051">Сниппет удалён</phrase>
+	<phrase data="runtime_95f3b7dca538b515">Создание, изменение и удаление сниппетов.</phrase>
+	<phrase data="runtime_d06d15a8bb3233ac">Строка</phrase>
+	<phrase data="runtime_12a6b51bfaa52b1c">Укажите название и код</phrase>
+	<phrase data="runtime_9982085b13219dda">Укажите путь в ADMINX_PHP_BINARY.</phrase>
+</language>

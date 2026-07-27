@@ -1,0 +1,539 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}{{ catalog_mode ? 'Товар #' ~ document.Id : (is_new ? 'Новый документ' : 'Документ #' ~ document.Id) }}{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i>
+  {% if catalog_mode %}<a href="{{ ADMINX_BASE }}/catalog">Каталог</a><i class="ti ti-chevron-right"></i><a href="{{ return_url }}">Товары</a>{% else %}<a href="{{ ADMINX_BASE }}/documents">Документы</a>{% endif %}<i class="ti ti-chevron-right"></i>
+  <span>{{ is_new ? 'новый' : '#' ~ document.Id }}</span>
+</nav>
+
+<div class="page-header documents-edit-header">
+  <div class="between">
+    <div>
+      <h1 data-document-edit-heading>{{ is_new ? 'Новый документ' : document.document_title }}</h1>
+      <p class="text-secondary" style="margin-top:5px" data-document-edit-meta>{{ is_new ? 'Создание базовой карточки документа.' : 'ID ' ~ document.Id ~ ', ' ~ document.state_label ~ ', изменён: ' ~ document.changed_label }}</p>
+    </div>
+    <div class="cluster">
+	  <div class="segmented documents-editor-modes" role="group" aria-label="Режим редактора">
+		<button class="segmented-item" type="button" data-document-editor-mode="quick" data-tooltip="Только основное и поля"><i class="ti ti-bolt"></i><span>Быстро</span></button>
+		<button class="segmented-item" type="button" data-document-editor-mode="normal" data-tooltip="Основное, поля и публикация"><i class="ti ti-layout-columns"></i><span>Обычно</span></button>
+		<button class="segmented-item" type="button" data-document-editor-mode="advanced" data-tooltip="Все настройки документа"><i class="ti ti-adjustments-horizontal"></i><span>Расширенно</span></button>
+	  </div>
+      <a class="btn btn-ghost" href="{{ return_url|default(ADMINX_BASE ~ '/documents') }}"><i class="ti ti-arrow-left"></i>К списку</a>
+    </div>
+  </div>
+</div>
+
+{% if catalog_mode and not is_new %}<section class="card documents-card catalog-product-variant-bridge"><div class="documents-section-head"><h2>Варианты товара</h2>{% if variant_group %}<span class="badge badge-blue">Группа #{{ variant_group.id }}</span>{% endif %}</div><div class="documents-card-body between">{% if variant_group %}<div><b>{{ variant_group.title }}</b><p class="text-secondary">{{ variant_group.is_primary ? 'Основной вариант группы' : 'Вариант группы' }}</p></div><a class="btn btn-secondary" href="{{ ADMINX_BASE }}/catalog/variant-groups/{{ variant_group.id }}"><i class="ti ti-box-multiple"></i>Управление вариантами</a>{% else %}<div><b>Товар пока не объединён с вариантами</b><p class="text-secondary">Создайте группу на основе текущего товара.</p></div><form method="post" action="{{ ADMINX_BASE }}/catalog/products/{{ document.Id }}/variant-group" data-variant-action><input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="title" value="{{ document.document_title|e('html_attr') }}"><button class="btn btn-secondary" type="submit"><i class="ti ti-plus"></i>Создать группу вариантов</button></form>{% endif %}</div></section>{% endif %}
+
+{% if catalog_mode and not is_new and native_attributes.attributes_count %}
+<section class="card documents-card product-native-attributes"><form method="post" action="{{ ADMINX_BASE }}/catalog/products/{{ document.Id }}/attributes" data-attribute-ajax><input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <div class="documents-section-head"><div class="documents-head-left"><span class="icon-tile documents-head-icon" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-list-details"></i></span><div><h2>Нативные характеристики</h2><p class="text-secondary">Новый контур проверки. Публичная карточка пока использует старые поля.</p></div></div><span class="badge badge-violet">{{ native_attributes.attributes_count }}</span></div>
+  <div class="documents-card-body native-attribute-groups">{% for group in native_attributes.groups %}<section class="native-attribute-group"><div class="native-attribute-group-head"><div><b>{{ group.name }}</b><small>{{ group.set_name }}</small></div><span>{{ group.items|length }}</span></div><div class="native-attribute-grid">{% for item in group.items %}<label class="field native-attribute-field"><span class="field-label">{{ item.label_override ?: item.name }}{% if item.required %}<span class="ax-required">*</span>{% endif %}{% if item.unit %}<small>{{ item.unit }}</small>{% endif %}</span>
+    {% if item.value_type == 'boolean' %}<select class="select" name="attribute[{{ item.id }}]"><option value="">Не задано</option><option value="1" {{ item.value is same as(true) or item.value == '1' ? 'selected' : '' }}>Да</option><option value="0" {{ item.value is same as(false) and item.value_json != '' or item.value == '0' ? 'selected' : '' }}>Нет</option></select>
+    {% elseif item.value_type == 'choice' and item.option_items %}<span class="native-attribute-choice" data-native-attribute-choice><select class="select" name="attribute[{{ item.id }}]"><option value="" data-swatch="">Не задано</option>{% for option in item.option_items %}<option value="{{ option.value_key|e('html_attr') }}" data-swatch="{{ option.swatch|e('html_attr') }}" {{ item.value == option.value_key ? 'selected' : '' }}>{{ option.label }}{% if option.legacy %} · прежнее значение{% endif %}</option>{% endfor %}</select><span class="native-attribute-choice-swatch" data-native-attribute-choice-swatch hidden></span></span>
+    {% elseif item.value_type == 'number' %}<input class="input" type="number" step="any" name="attribute[{{ item.id }}]" value="{{ item.value }}">
+    {% elseif item.value_type == 'date' %}<input class="input" type="date" name="attribute[{{ item.id }}]" value="{{ item.value }}">
+    {% elseif item.value_type == 'multi_choice' and item.option_items %}<select class="select native-attribute-multi" name="attribute[{{ item.id }}][]" multiple size="{{ item.option_items|length > 6 ? 6 : item.option_items|length }}">{% for option in item.option_items %}<option value="{{ option.value_key|e('html_attr') }}" {{ item.value is iterable and option.value_key in item.value ? 'selected' : '' }}>{{ option.label }}{% if option.swatch %} · {{ option.swatch }}{% endif %}{% if option.legacy %} · прежнее значение{% endif %}</option>{% endfor %}</select>
+    {% elseif item.value_type == 'multi_choice' %}<textarea class="textarea" rows="3" name="attribute[{{ item.id }}]">{{ item.value is iterable ? item.value|join('\n') : item.value }}</textarea>
+    {% else %}<input class="input" type="text" name="attribute[{{ item.id }}]" value="{{ item.value is iterable ? item.value|join(', ') : item.value }}">{% endif %}
+    <span class="native-attribute-meta"><span class="mono">{{ item.code }}</span>{% if item.value_state %}<span class="badge {{ item.value_state == 'verified' ? 'badge-green' : 'badge-amber' }}">{{ item.value_state == 'verified' ? 'проверено' : 'черновик' }}</span>{% endif %}</span></label>{% endfor %}</div></section>{% endfor %}<div class="native-attribute-footer"><a class="btn btn-ghost" href="{{ ADMINX_BASE }}/catalog/attributes?view=sections"><i class="ti ti-settings"></i>Настроить наборы</a><button class="btn btn-primary" type="submit"><i class="ti ti-device-floppy"></i>Сохранить характеристики</button></div></div>
+</form></section>
+{% endif %}
+
+{% if catalog_mode and not is_new %}
+<section class="card documents-card product-shipping-card" data-product-shipping>
+  <form data-product-shipping-form action="{{ ADMINX_BASE }}/catalog/products/{{ document.Id }}/shipping" method="post">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <input type="hidden" name="packages" value="">
+    <div class="documents-section-head product-shipping-head">
+      <div class="documents-head-left"><span class="icon-tile documents-head-icon" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-package-export"></i></span><div><h2>Доставка и упаковка</h2><p class="text-secondary">Физические грузовые места для расчёта перевозчиками.</p></div></div>
+      <label class="switch"><input type="checkbox" name="shipping_enabled" value="1"{{ shipping_profile.shipping_enabled ? ' checked' : '' }}><span></span><b>Рассчитывать доставку</b></label>
+    </div>
+    <div class="documents-card-body product-shipping-body">
+      {% if shipping_profile.legacy %}<div class="product-shipping-legacy"><i class="ti ti-info-circle"></i><span>Найдены старые данные: {% for alias,value in shipping_profile.legacy %}<b>{{ alias }}</b> {{ value }}{% if not loop.last %}, {% endif %}{% endfor %}. Добавьте грузовое место, чтобы перейти на точный расчёт.</span></div>{% endif %}
+      <div class="product-package-template-picker"><select class="select" data-package-template-select><option value="">Добавить готовую упаковку</option>{% for template in package_templates %}<option value="{{ template.id }}" data-package="{{ template|json_encode|e('html_attr') }}">{{ template.title }} · {{ template.dimensions }} · {{ template.weight_label }}</option>{% endfor %}</select><button class="btn btn-secondary" type="button" data-package-template-apply disabled><i class="ti ti-plus"></i>Добавить</button><a class="btn btn-ghost btn-icon" href="{{ ADMINX_BASE }}/catalog/products/shipping" data-tooltip="Управление шаблонами" aria-label="Управление шаблонами упаковки"><i class="ti ti-settings"></i></a></div>
+      <div class="product-package-head" aria-hidden="true"><span>Грузовое место</span><span>Кол-во</span><span>Вес, кг</span><span>Длина, см</span><span>Ширина, см</span><span>Высота, см</span><span></span></div>
+      <div class="product-package-list" data-package-list>
+        {% for package in shipping_profile.packages %}
+        <div class="product-package-row" data-package-row>
+          <input class="input" name="title" value="{{ package.title|e('html_attr') }}" aria-label="Название грузового места">
+          <input class="input" type="number" name="quantity" min="1" max="999" step="1" value="{{ package.quantity }}" aria-label="Количество">
+          <input class="input" type="number" name="weight_kg" min="0" step="0.001" value="{{ package.weight_kg }}" aria-label="Вес в килограммах">
+          <input class="input" type="number" name="length_cm" min="0" step="0.1" value="{{ package.length_cm }}" aria-label="Длина в сантиметрах">
+          <input class="input" type="number" name="width_cm" min="0" step="0.1" value="{{ package.width_cm }}" aria-label="Ширина в сантиметрах">
+          <input class="input" type="number" name="height_cm" min="0" step="0.1" value="{{ package.height_cm }}" aria-label="Высота в сантиметрах">
+          <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-danger" type="button" data-package-remove data-tooltip="Удалить грузовое место" aria-label="Удалить грузовое место"><i class="ti ti-trash"></i></button>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="product-shipping-empty" data-package-empty{{ shipping_profile.packages ? ' hidden' : '' }}><i class="ti ti-package-off"></i><span>Грузовые места ещё не добавлены</span></div>
+      <div class="product-shipping-footer"><div class="product-shipping-summary"><span><b data-package-places>{{ shipping_profile.summary.places }}</b> мест</span><span><b data-package-weight>{{ shipping_profile.summary.weight_kg|number_format(3, '.', ' ') }}</b> кг</span><span><b data-package-volume>{{ shipping_profile.summary.volume_m3|number_format(4, '.', ' ') }}</b> м³</span><span class="badge {{ shipping_profile.complete ? 'badge-green' : 'badge-amber' }}" data-package-state>{{ shipping_profile.complete ? 'данные заполнены' : 'нужны габариты' }}</span></div><div class="cluster">{% if variant_group %}<button class="btn btn-secondary" type="button" data-shipping-copy-variants data-url="{{ ADMINX_BASE }}/catalog/products/{{ document.Id }}/shipping/copy-to-variants" data-csrf="{{ csrf_token }}" data-tooltip="Заменить упаковку у всех вариантов"><i class="ti ti-copy"></i>Вариантам</button>{% endif %}<button class="btn btn-secondary" type="button" data-package-add><i class="ti ti-plus"></i>Добавить место</button><button class="btn btn-primary" type="submit"><i class="ti ti-device-floppy"></i>Сохранить упаковку</button></div></div>
+    </div>
+  </form>
+  <template data-package-template><div class="product-package-row" data-package-row><input class="input" name="title" value="" placeholder="Коробка 1" aria-label="Название грузового места"><input class="input" type="number" name="quantity" min="1" max="999" step="1" value="1" aria-label="Количество"><input class="input" type="number" name="weight_kg" min="0" step="0.001" value="" placeholder="0" aria-label="Вес в килограммах"><input class="input" type="number" name="length_cm" min="0" step="0.1" value="" placeholder="0" aria-label="Длина в сантиметрах"><input class="input" type="number" name="width_cm" min="0" step="0.1" value="" placeholder="0" aria-label="Ширина в сантиметрах"><input class="input" type="number" name="height_cm" min="0" step="0.1" value="" placeholder="0" aria-label="Высота в сантиметрах"><button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-danger" type="button" data-package-remove data-tooltip="Удалить грузовое место" aria-label="Удалить грузовое место"><i class="ti ti-trash"></i></button></div></template>
+</section>
+{% endif %}
+
+<form id="documentForm" class="documents-edit-form" data-base="{{ ADMINX_BASE }}" data-id="{{ document.Id }}" data-rubric-id="{{ document.rubric_id }}" data-actor-id="{{ actor_id|default(0) }}" data-submit-url="{{ submit_url|default('') }}" data-return-url="{{ return_url|default('') }}" data-stay-url-template="{{ stay_url_template|default('') }}" data-quick-edit="{{ quick_edit ? '1' : '0' }}" data-editor-mode="normal">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+  <input type="hidden" name="id" value="{{ document.Id }}">
+  <input type="hidden" name="document_version" value="{{ document.document_version|default(1) }}">
+  <input type="hidden" name="media_draft_token" value="{{ media_draft_token|default('')|e('html_attr') }}">
+
+  <section class="documents-draft-recovery" data-document-draft-recovery hidden>
+	<span class="icon-tile" style="--tile-bg:var(--amber-100);--tile-fg:var(--amber-700)"><i class="ti ti-device-floppy"></i></span>
+	<div class="documents-draft-recovery-copy"><b>Найден локальный черновик</b><span data-document-draft-recovery-text>Можно вернуть изменения, которые не были отправлены на сервер.</span></div>
+	<div class="cluster"><button class="btn btn-ghost btn-sm" type="button" data-document-draft-discard>Удалить</button><button class="btn btn-secondary btn-sm" type="button" data-document-draft-restore><i class="ti ti-history"></i>Восстановить</button></div>
+  </section>
+
+	  <section class="documents-error-summary" data-document-error-summary hidden aria-live="assertive">
+	<span class="icon-tile" style="--tile-bg:var(--red-100);--tile-fg:var(--red-700)"><i class="ti ti-alert-triangle"></i></span>
+	<div class="documents-error-summary-copy"><b data-document-error-title>Проверьте поля документа</b><div data-document-error-list></div></div>
+	  </section>
+
+	  {% if creation_preset %}
+	  <section class="documents-preset-notice">
+		<span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-700)"><i class="ti ti-copy-check"></i></span>
+		<div><b>Применён пресет «{{ creation_preset.title }}»</b><span>{{ creation_preset.description ?: 'Форма заполнена сохранёнными значениями. Проверьте их перед сохранением.' }}</span></div>
+		<a class="btn btn-ghost btn-sm" href="{{ ADMINX_BASE }}/documents/create?rubric_id={{ document.rubric_id }}">Сбросить</a>
+	  </section>
+	  {% endif %}
+
+  <div class="documents-edit-top" data-editor-level="advanced">
+    <section class="card documents-card documents-edit-card" style="--sec:var(--amber-600);--sec-soft:var(--amber-100)">
+      <div class="documents-section-head">
+        <div class="documents-head-left">
+          <span class="icon-tile documents-head-icon" style="--tile-bg:var(--sec-soft);--tile-fg:var(--sec)"><i class="ti ti-tools"></i></span>
+          <h2>Инструменты</h2>
+        </div>
+      </div>
+      <div class="documents-card-body documents-tools">
+        <button class="documents-tool" type="button" data-document-remarks{{ is_new ? ' disabled' : '' }}>
+          <span class="icon-tile" style="--tile-bg:var(--amber-100);--tile-fg:var(--amber-600)"><i class="ti ti-message-2"></i></span>
+          <span class="documents-tool-body"><b>Заметки</b><small>Комментарии к документу</small></span>
+          <span class="badge badge-amber" data-document-remarks-badge>{{ document.remarks_count|default(0) }}</span>
+          <i class="ti ti-chevron-right documents-tool-arrow"></i>
+        </button>
+        <button class="documents-tool" type="button" data-document-aliases{{ is_new ? ' disabled' : '' }}>
+          <span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-route"></i></span>
+          <span class="documents-tool-body"><b>Редиректы</b><small>История адресов URL</small></span>
+          <span class="badge badge-cyan" data-document-aliases-count>{{ document.aliases_count|default(0) }}</span>
+          <i class="ti ti-chevron-right documents-tool-arrow"></i>
+        </button>
+        <button class="documents-tool" type="button" data-document-revisions{{ is_new ? ' disabled' : '' }}>
+          <span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-history"></i></span>
+          <span class="documents-tool-body"><b>Ревизии</b><small>Снимки значений полей</small></span>
+          <span class="badge badge-blue" data-document-revisions-badge>{{ document.revisions_count|default(0) }}</span>
+          <i class="ti ti-chevron-right documents-tool-arrow"></i>
+        </button>
+		<button class="documents-tool" type="button" data-document-snapshot{{ is_new ? ' disabled' : '' }}>
+          <span class="icon-tile" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-database-export"></i></span>
+          <span class="documents-tool-body"><b>JSON-снимок</b><small>Публичная модель документа</small></span>
+          <i class="ti ti-chevron-right documents-tool-arrow"></i>
+		</button>
+		<button class="documents-tool" type="button" data-open-drawer="documentPresetDrawer"{{ is_new ? ' disabled' : '' }}>
+		  <span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-template"></i></span>
+		  <span class="documents-tool-body"><b>Пресет создания</b><small>Сохранить заполнение как заготовку</small></span>
+		  <i class="ti ti-chevron-right documents-tool-arrow"></i>
+		</button>
+        {% if is_new %}<p class="text-secondary text-sm documents-side-note" data-document-new-note>Инструменты доступны после первого сохранения.</p>{% endif %}
+      </div>
+    </section>
+
+    <section class="card documents-card documents-edit-card" style="--sec:var(--gray-500);--sec-soft:var(--gray-100)">
+      <div class="documents-section-head">
+        <div class="documents-head-left">
+          <span class="icon-tile documents-head-icon" style="--tile-bg:var(--sec-soft);--tile-fg:var(--sec)"><i class="ti ti-info-circle"></i></span>
+          <h2>Сводка</h2>
+        </div>
+      </div>
+      <div class="documents-card-body">
+        <dl class="documents-facts">
+          <div><dt>ID</dt><dd class="mono" data-document-fact-id>{{ document.Id ?: 'новый' }}</dd></div>
+          <div><dt>Рубрика</dt><dd>{{ document.rubric_title ?: 'будет выбрана при сохранении' }}</dd></div>
+          <div><dt>Изменён</dt><dd>{{ document.changed_label }}</dd></div>
+          <div><dt>Опубликован</dt><dd>{{ document.published_label }}</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="card documents-card documents-edit-card" style="--sec:var(--cyan-600);--sec-soft:var(--cyan-100)">
+      <div class="documents-section-head">
+        <div class="documents-head-left">
+          <span class="icon-tile documents-head-icon" style="--tile-bg:var(--sec-soft);--tile-fg:var(--sec)"><i class="ti ti-plug-connected"></i></span>
+          <h2>Интеграция</h2>
+        </div>
+      </div>
+      <div class="documents-card-body"><div class="form-grid"><label class="field col-12"><span class="field-label">Артикул / свойство</span><input class="input" type="text" name="document_property" value="{{ document.document_property|e('html_attr') }}"></label><label class="field col-12"><span class="field-label">GUID</span><input class="input mono" type="text" name="guid" maxlength="100" value="{{ document.guid|e('html_attr') }}"></label></div></div>
+    </section>
+  </div>
+
+  <div class="documents-edit-layout">
+    <div class="stack documents-edit-main">
+      <section class="card documents-card documents-edit-card documents-section-main" style="--sec:var(--blue-600);--sec-soft:var(--blue-100)">
+        <div class="documents-section-head">
+          <div class="documents-head-left">
+            <span class="icon-tile documents-head-icon" style="--tile-bg:var(--sec-soft);--tile-fg:var(--sec)"><i class="ti ti-file-text"></i></span>
+            <h2>Основное</h2>
+          </div>
+          <span class="badge badge-{{ document.state_badge }}">{{ document.state_label }}</span>
+        </div>
+        <div class="documents-card-body">
+          <div class="form-grid">
+            <label class="field col-12">
+              <span class="field-label between-label">Название<span class="field-count" data-seo-count="title" data-seo-max="60">0/60</span></span>
+              <input class="input" type="text" name="document_title" value="{{ document.document_title|e('html_attr') }}" data-slug-source required>
+              <span class="field-error" data-error="document_title"></span>
+            </label>
+            <label class="field col-6">
+              <span class="field-label">Рубрика</span>
+              {% if is_new %}
+              <select class="select" name="rubric_id" required data-document-rubric-select>{% for rubric in rubrics %}<option value="{{ rubric.Id }}" data-alias-template="{{ rubric.rubric_alias|e('html_attr') }}"{{ document.rubric_id == rubric.Id ? ' selected' : '' }}>{{ rubric.rubric_title }}</option>{% endfor %}</select>
+              {% else %}
+              <input type="hidden" name="rubric_id" value="{{ document.rubric_id }}">
+              <select class="select" disabled>{% for rubric in rubrics %}<option value="{{ rubric.Id }}"{{ document.rubric_id == rubric.Id ? ' selected' : '' }}>{{ rubric.rubric_title }}</option>{% endfor %}</select>
+              <span class="field-hint">Смена рубрики существующего документа будет отдельной операцией с миграцией значений полей.</span>
+              {% endif %}
+              <span class="field-error" data-error="rubric_id"></span>
+            </label>
+            <label class="field col-6">
+              <span class="field-label">Короткий alias</span>
+              <div class="input-group documents-alias-group">
+                <span class="input-addon mono">/</span>
+                <input class="input mono" type="text" name="document_short_alias" value="{{ document.document_short_alias|e('html_attr') }}" maxlength="10" autocomplete="off"{{ is_homepage ? ' disabled' : '' }}>
+                <button class="input-addon documents-alias-gen" type="button" data-short-generate="{{ ADMINX_BASE }}/documents/short-alias" data-document-id="{{ document.Id }}" data-tooltip="Сгенерировать короткий алиас" aria-label="Сгенерировать короткий алиас"{{ is_homepage ? ' disabled' : '' }}><i class="ti ti-refresh"></i></button>
+              </div>
+			  <span class="field-hint" data-document-short-alias-state>До 10 символов, необязательно.</span>
+			  <span class="field-error" data-error="document_short_alias"></span>
+            </label>
+            <div class="field col-12">
+              <span class="field-label">Alias (URL)</span>
+              <div class="input-group documents-alias-group">
+                <span class="input-addon mono">/</span>
+                <input class="input mono" type="text" name="document_alias" value="{{ document.document_alias|e('html_attr') }}" autocomplete="off" data-slug-target{{ is_homepage ? ' disabled' : '' }}>
+                <button class="input-addon documents-alias-gen" type="button" data-slug-generate="{{ ADMINX_BASE }}/documents/slug" data-document-id="{{ document.Id }}" data-tooltip="Сгенерировать из названия" aria-label="Сгенерировать alias"{{ is_homepage ? ' disabled' : '' }}><i class="ti ti-refresh"></i></button>
+              </div>
+              <span class="field-hint" data-document-alias-state>{{ is_homepage ? 'Адрес главной страницы закреплён за / и не изменяется.' : '' }}</span>
+              {% if is_new %}<span class="field-hint" data-document-alias-template-hint></span>{% endif %}
+              <span class="field-error" data-error="document_alias"></span>
+            </div>
+            <label class="field col-6"><span class="field-label">История URL</span><select class="select" name="document_alias_history"{{ is_homepage ? ' disabled' : '' }}><option value="0"{{ document.document_alias_history == 0 ? ' selected' : '' }}>Как в рубрике</option><option value="1"{{ document.document_alias_history == 1 ? ' selected' : '' }}>Сохранять старые URL</option><option value="2"{{ document.document_alias_history == 2 ? ' selected' : '' }}>Не сохранять</option></select></label>
+            <label class="field col-6"><span class="field-label">Код редиректа</span><select class="select" name="document_alias_header"{{ is_homepage ? ' disabled' : '' }}>{% for code in [301,302,307,308] %}<option value="{{ code }}"{{ document.document_alias_header == code ? ' selected' : '' }}>{{ code }}</option>{% endfor %}</select></label>
+            <label class="field col-12"><span class="field-label">Хлебная крошка</span><input class="input" type="text" name="document_breadcrumb_title" value="{{ document.document_breadcrumb_title|e('html_attr') }}"><span class="field-hint">Если пусто, используется название документа.</span></label>
+            <label class="field col-12">
+              <span class="field-label">Краткое описание</span>
+              <textarea class="textarea" name="document_excerpt" rows="3" maxlength="1000">{{ document.document_excerpt }}</textarea>
+              <span class="field-hint">Самостоятельный анонс для списков, RSS и интеграций. Если Meta description пуст, используется как его резерв.</span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <section class="card documents-card documents-edit-card documents-section-seo" data-editor-level="advanced" style="--sec:var(--green-600);--sec-soft:var(--green-100)">
+        <div class="documents-section-head">
+          <div class="documents-head-left">
+            <span class="icon-tile documents-head-icon" style="--tile-bg:var(--sec-soft);--tile-fg:var(--sec)"><i class="ti ti-search"></i></span>
+            <h2>SEO и поиск</h2>
+          </div>
+        </div>
+        <div class="documents-card-body">
+          <div class="form-grid">
+            <div class="field col-12 documents-term-field" data-document-term-input data-term-kind="keywords" data-term-rubric-id="{{ document.rubric_id }}" data-term-url="{{ ADMINX_BASE }}/documents/terms">
+              <span class="field-label">Meta keywords</span>
+              <div class="documents-term-combobox combobox">
+                <div class="tag-input documents-term-input" data-document-term-box>
+                  <input type="hidden" name="document_meta_keywords" value="{{ document.document_meta_keywords|e('html_attr') }}" data-document-term-value>
+                  <input type="text" placeholder="Найти или добавить ключевое слово" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="documentKeywordSuggestions" data-document-term-query>
+                </div>
+                <div class="combo-list documents-term-options" id="documentKeywordSuggestions" role="listbox" hidden data-document-term-options></div>
+              </div>
+            </div>
+            <label class="field col-12">
+              <span class="field-label between-label">Meta description<span class="field-count" data-seo-count="description" data-seo-max="160">0/160</span></span>
+              <textarea class="textarea" name="document_meta_description" rows="4">{{ document.document_meta_description }}</textarea>
+            </label>
+            <label class="field col-6"><span class="field-label">Meta robots</span><select class="select" name="document_meta_robots"><option value="index,follow"{{ document.document_meta_robots == 'index,follow' ? ' selected' : '' }}>index, follow</option><option value="index,nofollow"{{ document.document_meta_robots == 'index,nofollow' ? ' selected' : '' }}>index, nofollow</option><option value="noindex,nofollow"{{ document.document_meta_robots == 'noindex,nofollow' ? ' selected' : '' }}>noindex, nofollow</option></select></label>
+            <div class="field col-6 documents-term-field" data-document-term-input data-term-kind="tags" data-term-rubric-id="{{ document.rubric_id }}" data-term-url="{{ ADMINX_BASE }}/documents/terms">
+              <span class="field-label">Теги</span>
+              <div class="documents-term-combobox combobox">
+                <div class="tag-input documents-term-input" data-document-term-box>
+                  <input type="hidden" name="document_tags" value="{{ document.document_tags|e('html_attr') }}" data-document-term-value>
+                  <input type="text" placeholder="Найти или добавить тег" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="documentTagSuggestions" data-document-term-query>
+                </div>
+                <div class="combo-list documents-term-options" id="documentTagSuggestions" role="listbox" hidden data-document-term-options></div>
+              </div>
+            </div>
+            <label class="field col-6"><span class="field-label">Sitemap: частота</span><select class="select" name="document_sitemap_freq">
+              <option value="0"{{ document.document_sitemap_freq == 0 ? ' selected' : '' }}>always</option>
+              <option value="1"{{ document.document_sitemap_freq == 1 ? ' selected' : '' }}>hourly</option>
+              <option value="2"{{ document.document_sitemap_freq == 2 ? ' selected' : '' }}>daily</option>
+              <option value="3"{{ document.document_sitemap_freq == 3 ? ' selected' : '' }}>weekly</option>
+              <option value="4"{{ document.document_sitemap_freq == 4 ? ' selected' : '' }}>monthly</option>
+              <option value="5"{{ document.document_sitemap_freq == 5 ? ' selected' : '' }}>yearly</option>
+              <option value="6"{{ document.document_sitemap_freq == 6 ? ' selected' : '' }}>never</option>
+            </select></label>
+            <label class="field col-6"><span class="field-label">Sitemap: приоритет</span><select class="select" name="document_sitemap_pr">
+              {% for pr in ['0','0.1','0.2','0.3','0.4','0.5','0.6','0.7','0.8','0.9','1'] %}
+              <option value="{{ pr }}"{{ document.document_sitemap_pr == pr ? ' selected' : '' }}>{{ pr }}</option>
+              {% endfor %}
+            </select></label>
+            <div class="field col-12">
+              <span class="field-label">Сниппет в выдаче</span>
+              <div class="documents-seo-snippet">
+                <div class="documents-seo-url" data-seo-snippet-url>/{{ document.document_alias }}</div>
+                <div class="documents-seo-title" data-seo-snippet-title>{{ document.document_title ?: 'Заголовок документа' }}</div>
+                <div class="documents-seo-desc" data-seo-snippet-desc>{{ document.document_meta_description ?: 'Описание появится после заполнения meta description.' }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <aside class="stack documents-edit-side">
+      <section class="card documents-card documents-edit-card documents-section-publish" data-editor-level="normal" style="--sec:var(--green-600);--sec-soft:var(--green-100)">
+        <div class="documents-section-head">
+          <div class="documents-head-left">
+            <span class="icon-tile documents-head-icon" style="--tile-bg:var(--sec-soft);--tile-fg:var(--sec)"><i class="ti ti-rocket"></i></span>
+            <h2>Публикация</h2>
+          </div>
+        </div>
+        <div class="documents-card-body">
+          <div class="form-grid">
+            <label class="field col-6"><span class="field-label">Статус</span><select class="select" name="document_status"><option value="1"{{ document.document_status == 1 ? ' selected' : '' }}>Опубликован</option><option value="0"{{ document.document_status == 0 ? ' selected' : '' }}>Черновик</option></select></label>
+            <label class="field col-6"><span class="field-label">Поиск</span><select class="select" name="document_in_search"><option value="1"{{ document.document_in_search == 1 ? ' selected' : '' }}>В поиске</option><option value="0"{{ document.document_in_search == 0 ? ' selected' : '' }}>Скрыт</option></select></label>
+            <label class="field col-12"><span class="field-label">Автор</span><select class="select" name="document_author_id">{% for author in authors %}<option value="{{ author.id }}"{{ document.document_author_id == author.id ? ' selected' : '' }}>{{ author.name }}{% if not author.active %} · отключён{% endif %}</option>{% endfor %}</select></label>
+            <div class="field col-12">
+              <span class="field-label">Родительский документ</span>
+              <div class="documents-picker-input">
+                <input class="input" type="number" name="document_parent" value="{{ document.document_parent }}" placeholder="ID документа" min="0" data-document-parent-id>
+                <button class="btn btn-secondary btn-icon btn-sm" type="button" data-document-parent-pick data-tooltip="Выбрать документ" aria-label="Выбрать документ"><i class="ti ti-file-search"></i></button>
+              </div>
+              {% if document.parent_info %}<span class="field-hint">#{{ document.parent_info.id }} · {{ document.parent_info.title }}</span>{% else %}<span class="field-hint">Пусто — верхний уровень.</span>{% endif %}
+            </div>
+            <label class="field col-12"><span class="field-label">Шаблон документа</span><select class="select" name="rubric_tmpl_id"><option value="0">Шаблон рубрики по умолчанию</option>{% for tpl in templates %}<option value="{{ tpl.id }}"{{ document.rubric_tmpl_id == tpl.id ? ' selected' : '' }}>{{ tpl.title }}</option>{% endfor %}</select></label>
+            <label class="field col-12"><span class="field-label">Пункт навигации</span><select class="select" name="document_linked_navi_id"><option value="0">Не связан</option>{% for nav in navigation_items %}<option value="{{ nav.id }}"{{ document.document_linked_navi_id == nav.id ? ' selected' : '' }}>{{ nav.title }} (#{{ nav.id }})</option>{% endfor %}</select></label>
+            <label class="field col-12"><span class="field-label">Позиция</span><input class="input" type="number" name="document_position" value="{{ document.document_position }}"></label>
+          </div>
+        </div>
+      </section>
+
+      <section class="card documents-card documents-edit-card documents-section-dates" data-editor-level="advanced" style="--sec:var(--teal-600);--sec-soft:var(--teal-100)">
+        <div class="documents-section-head">
+          <div class="documents-head-left">
+            <span class="icon-tile documents-head-icon" style="--tile-bg:var(--sec-soft);--tile-fg:var(--sec)"><i class="ti ti-calendar-event"></i></span>
+            <h2>Даты</h2>
+          </div>
+        </div>
+        <div class="documents-card-body">
+          <div class="form-grid">
+            <label class="field col-12"><span class="field-label">Дата публикации</span><input class="input" type="datetime-local" name="document_published" value="{{ document.published_input }}"></label>
+            <label class="field col-12"><span class="field-label">Дата окончания</span><input class="input" type="datetime-local" name="document_expire" value="{{ document.expire_input }}"></label>
+          </div>
+        </div>
+      </section>
+
+    </aside>
+  </div>
+
+  <section class="documents-fields-section documents-section-fields" style="--sec:var(--violet-600);--sec-soft:var(--violet-100)">
+    <div class="documents-fields-heading">
+      <div class="documents-head-left">
+        <span class="icon-tile documents-head-icon" style="--tile-bg:var(--sec-soft);--tile-fg:var(--sec)"><i class="ti ti-forms"></i></span>
+        <h2>Поля документа</h2>
+      </div>
+      <span class="badge badge-blue">{{ document.fields_count|default(0) }}</span>
+    </div>
+    {% if field_groups %}
+    <div class="tabs documents-field-tabs ax-attr-tabs" role="tablist" aria-label="Группы полей документа">
+      {% for group in field_groups %}
+      <button class="tab{{ loop.first ? ' is-active' : '' }}" type="button" role="tab" aria-selected="{{ loop.first ? 'true' : 'false' }}" data-document-field-tab="{{ loop.index0 }}"{% if group.description %} data-tooltip="{{ group.description|e('html_attr') }}"{% endif %}>
+        <i class="ti ti-folder"></i>{{ group.title }}<span class="tab-count">{{ group.items|length }}</span>{% if group.description %}<i class="ti ti-info-circle tab-hint" aria-hidden="true"></i>{% endif %}
+      </button>
+      {% endfor %}
+    </div>
+    {% endif %}
+    <div class="documents-fields-groups">
+      {% for group in field_groups %}
+      <section class="documents-field-group ax-attr-pane" role="tabpanel" data-document-field-panel="{{ loop.index0 }}"{% if group.condition %} data-group-condition="{{ group.condition|json_encode|e('html_attr') }}"{% endif %}{{ not loop.first ? ' hidden' : '' }}>
+        {% if group.items %}
+        <div class="documents-fields ax-document-fields">
+          {% for field in group.items %}
+          <div class="ax-document-field {{ field.width_class }}{{ field.required ? ' is-required' : '' }}{{ field.catalog_hidden ? ' is-catalog-hidden' : '' }}" data-rubric-field-id="{{ field.Id }}" data-field-alias="{{ field.rubric_field_alias|e('html_attr') }}" data-field-type="{{ field.rubric_field_type }}" data-editor-kind="{{ field.editor_kind }}" data-base-required="{{ field.required ? '1' : '0' }}"{% if field.condition %} data-field-condition="{{ field.condition|json_encode|e('html_attr') }}"{% endif %}>
+            <div class="ax-attr-label">
+              <label class="ax-label">{{ field.rubric_field_title ?: field.rubric_field_alias }}{% if field.required %}<span class="ax-required" title="Обязательное поле" aria-hidden="true">*</span>{% endif %}</label>
+              <span class="ax-attr-id">#{{ field.Id }}</span>
+              <span class="ax-attr-type">{{ field.rubric_field_type }}</span>
+              {% if not field.has_plugin %}<span class="ax-attr-noplugin" data-tooltip="Для этого типа используется универсальный редактор">нет плагина</span>{% endif %}
+            </div>
+            {% if field.prefix or field.suffix %}
+            <div class="ax-document-field-body documents-field-control input-group ax-field-affix">{% if field.prefix %}<span class="input-addon">{{ field.prefix }}</span>{% endif %}{{ field.html|raw }}{% if field.suffix %}<span class="input-addon">{{ field.suffix }}</span>{% endif %}</div>
+            {% else %}
+            <div class="ax-document-field-body documents-field-control">{{ field.html|raw }}</div>
+            {% endif %}
+            {% if field.rubric_field_description %}<p class="documents-field-description">{{ field.rubric_field_description }}</p>{% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="documents-placeholder">
+          <span class="icon-tile" style="--tile-bg:var(--gray-100);--tile-fg:var(--gray-600)"><i class="ti ti-input-search"></i></span>
+          <div><b>В этой группе нет полей</b><p class="text-secondary">Добавьте поля в разделе «Рубрики и поля».</p></div>
+        </div>
+        {% endif %}
+      </section>
+      {% else %}
+      <div class="documents-placeholder">
+        <span class="icon-tile" style="--tile-bg:var(--gray-100);--tile-fg:var(--gray-600)"><i class="ti ti-input-search"></i></span>
+        <div><b>У выбранной рубрики нет полей</b><p class="text-secondary">После выбора рубрики и сохранения здесь появятся её поля.</p></div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <div class="sticky-actions documents-sticky-actions">
+    <div class="documents-save-state" data-document-save-state data-state="saved" role="status" aria-live="polite">
+      <span class="documents-save-state-icon"><i class="ti ti-circle-check" data-document-save-state-icon></i></span>
+      <span data-document-save-state-text>Изменения сохранены</span>
+    </div>
+    <div class="cluster">
+      <button class="btn btn-secondary documents-json-button" type="button" data-document-payload-preview data-tooltip="Данные JSON"><i class="ti ti-braces"></i><span>Данные JSON</span></button>
+      <button class="btn btn-secondary" type="button" data-document-submit-stay data-code-save-stay><i class="ti ti-device-floppy"></i><span class="documents-label-desktop">Сохранить и остаться</span><span class="documents-label-mobile">Остаться</span></button>
+      <button class="btn btn-primary" type="submit"><i class="ti ti-check"></i>Сохранить</button>
+    </div>
+  </div>
+</form>
+
+{% if can_manage %}
+<aside class="drawer drawer-right drawer-lg documents-preset-panel" id="documentPresetDrawer" role="dialog" aria-modal="true" aria-labelledby="documentPresetDrawerTitle" hidden>
+  <form data-document-preset-form action="{{ ADMINX_BASE }}/documents/{{ document.Id }}/presets" method="post">
+	<input type="hidden" name="_csrf" value="{{ csrf_token }}">
+	<div class="drawer-header">
+	  <div class="documents-drawer-title"><h3 id="documentPresetDrawerTitle">Новый пресет создания</h3><p class="text-secondary text-sm">Заготовка будет доступна только для рубрики «{{ document.rubric_title }}».</p></div>
+	  <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+	</div>
+	<div class="drawer-body documents-preset-body">
+	  <div class="alert alert-info"><i class="ti ti-info-circle alert-ic"></i><div><b class="alert-title">URL и служебные данные не копируются</b><span>Название документа, alias, даты, автор, GUID и связи с навигацией всегда останутся пустыми или стандартными.</span></div></div>
+	  <div class="form-grid">
+		<label class="field col-12"><span class="field-label">Название пресета</span><input class="input" type="text" name="title" maxlength="191" placeholder="Например: Новость с источником" required><span class="field-error" data-error="title"></span></label>
+		<label class="field col-12"><span class="field-label">Описание</span><textarea class="textarea" name="description" rows="3" maxlength="1000" placeholder="Когда использовать эту заготовку"></textarea></label>
+	  </div>
+	  <div class="documents-preset-options">
+		<label class="switch"><input type="checkbox" name="include_excerpt" value="1" checked><span></span><b>Краткое описание</b></label>
+		<label class="switch"><input type="checkbox" name="include_seo" value="1"><span></span><b>SEO и теги</b></label>
+		<label class="switch"><input type="checkbox" name="include_fields" value="1" checked><span></span><b>Значения полей</b></label>
+		<label class="switch"><input type="checkbox" name="include_assets" value="1"><span></span><b>Медиа, связи и каталог</b></label>
+		<label class="switch"><input type="checkbox" name="include_search" value="1"><span></span><b>Настройка поиска</b></label>
+		<label class="switch"><input type="checkbox" name="create_published" value="1"><span></span><b>Создавать опубликованным</b></label>
+	  </div>
+	  <p class="documents-preset-warning"><i class="ti ti-alert-triangle"></i>Медиа и связи по умолчанию исключены, чтобы новые документы случайно не использовали файлы и отношения исходного материала.</p>
+	</div>
+	<div class="drawer-footer"><button class="btn btn-ghost" type="button" data-close-drawer>Закрыть</button><button class="btn btn-primary" type="submit"><i class="ti ti-device-floppy"></i>Сохранить пресет</button></div>
+  </form>
+</aside>
+
+<aside class="drawer drawer-right drawer-lg documents-payload-panel" id="documentSnapshotDrawer" role="dialog" aria-modal="true" aria-labelledby="documentSnapshotDrawerTitle" hidden>
+  <div class="drawer-header">
+    <div class="documents-drawer-title"><h3 id="documentSnapshotDrawerTitle">JSON-снимок документа</h3><p class="text-secondary text-sm">Read-through модель публичной части.</p></div>
+    <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="drawer-body documents-payload-body">
+    <div class="alert alert-info"><i class="ti ti-info-circle alert-ic"></i><div><b class="alert-title">База данных остаётся источником истины</b><span>Повреждённый или устаревший снимок публичная часть пересоберёт автоматически.</span></div></div>
+    <dl class="documents-facts documents-snapshot-facts" data-document-snapshot-status><div><dt>Состояние</dt><dd>Загрузка...</dd></div></dl>
+  </div>
+  <div class="drawer-footer"><div class="df-left"><button class="btn btn-ghost" type="button" data-close-drawer>Закрыть</button></div><button class="btn btn-primary" type="button" data-document-snapshot-rebuild><i class="ti ti-refresh"></i>Пересобрать</button></div>
+</aside>
+
+<aside class="drawer drawer-right documents-payload-panel" id="documentPayloadDrawer" role="dialog" aria-modal="true" aria-labelledby="documentPayloadDrawerTitle" hidden>
+  <div class="drawer-header">
+    <div class="documents-drawer-title"><h3 id="documentPayloadDrawerTitle">Данные для сохранения</h3><p class="text-secondary text-sm" data-document-payload-summary>Живой JSON текущей формы.</p></div>
+    <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="drawer-body documents-payload-body">
+    <div class="alert alert-info"><i class="ti ti-info-circle alert-ic"></i><div><b class="alert-title">Без записи в БД</b><span>Код рубрики до/после сохранения не запускается, чтобы preview не имел побочных эффектов.</span></div></div>
+    <div class="documents-payload-validation" data-document-payload-validation hidden></div>
+    <pre class="documents-payload-code" data-document-payload-code aria-live="polite">Нажмите «Данные JSON», чтобы сформировать preview.</pre>
+  </div>
+  <div class="drawer-footer"><div class="df-left"><button class="btn btn-ghost" type="button" data-close-drawer>Закрыть</button></div><button class="btn btn-secondary" type="button" data-document-payload-copy><i class="ti ti-copy"></i>Скопировать JSON</button></div>
+</aside>
+
+<aside class="drawer drawer-right drawer-lg documents-revisions-panel" id="documentRevisionsDrawer" role="dialog" aria-modal="true" aria-labelledby="documentRevisionsDrawerTitle" hidden>
+  <div class="drawer-header">
+    <div class="documents-drawer-title">
+      <h3 id="documentRevisionsDrawerTitle">Ревизии документа</h3>
+      <p class="text-secondary text-sm" id="documentRevisionsDrawerSubtitle">История основных настроек и значений полей.</p>
+    </div>
+    <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="drawer-body documents-revisions-drawer">
+    <div class="documents-revisions-layout">
+      <section class="documents-revisions-list" aria-label="Список ревизий">
+        <div class="documents-revisions-head">
+          <div>
+            <h4>Снимки</h4>
+            <p class="text-secondary" data-document-revisions-count>Загрузка...</p>
+          </div>
+        </div>
+        <div class="documents-revisions-list-rows" data-document-revisions-list>
+          <div class="empty-state">Загрузка...</div>
+        </div>
+      </section>
+      <section class="documents-revision-preview" aria-label="Просмотр ревизии">
+        <div class="documents-revisions-head">
+          <div>
+            <h4 data-document-revision-title>Выберите ревизию</h4>
+            <p class="text-secondary" data-document-revision-meta>Содержимое снимка появится после выбора ревизии.</p>
+          </div>
+        </div>
+        <div class="documents-revision-fields" data-document-revision-fields></div>
+      </section>
+    </div>
+  </div>
+  <div class="drawer-footer">
+    <div class="df-left"><button class="btn btn-ghost" type="button" data-close-drawer>Закрыть</button><button class="btn btn-danger-soft" type="button" data-document-revisions-clear disabled><i class="ti ti-trash"></i>Удалить все</button></div>
+    <div class="cluster"><a class="btn btn-secondary" href="#" target="_blank" rel="noopener" data-document-revision-preview hidden><i class="ti ti-external-link"></i>На сайте</a><button class="btn btn-secondary" type="button" data-document-revision-delete disabled><i class="ti ti-trash"></i>Удалить</button><button class="btn btn-primary" type="button" data-document-revision-restore disabled><i class="ti ti-restore"></i><span data-document-revision-restore-label>Восстановить</span></button></div>
+  </div>
+</aside>
+
+<aside class="drawer drawer-right drawer-lg documents-remarks-panel" id="documentRemarksDrawer" role="dialog" aria-modal="true" aria-labelledby="documentRemarksDrawerTitle" hidden>
+  <div class="drawer-header"><div class="documents-drawer-title"><h3 id="documentRemarksDrawerTitle">Заметки документа</h3><p class="text-secondary text-sm" data-document-remarks-subtitle></p></div><button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button></div>
+  <div class="drawer-body documents-remarks-drawer">
+    <form class="card documents-remark-form documents-drawer-form" data-document-remark-form>
+      <div class="documents-section-head"><div class="documents-head-left"><span class="icon-tile documents-head-icon" style="--tile-bg:var(--amber-100);--tile-fg:var(--amber-600)"><i class="ti ti-message-2"></i></span><h4>Новая заметка</h4></div></div>
+      <div class="documents-card-body form-grid"><label class="field col-12"><span class="field-label">Заголовок</span><input class="input" type="text" name="title" maxlength="255"></label><label class="field col-12"><span class="field-label">Текст</span><textarea class="textarea" name="text" rows="5" maxlength="500" required></textarea></label></div>
+      <div class="documents-alias-form-actions"><button class="btn btn-primary" type="submit"><i class="ti ti-send"></i>Добавить заметку</button></div>
+    </form>
+    <div class="documents-remark-list" data-document-remark-list><div class="empty-state">Загрузка...</div></div>
+  </div>
+  <div class="drawer-footer"><button class="btn btn-ghost" type="button" data-close-drawer>Закрыть</button></div>
+</aside>
+
+<aside class="drawer drawer-right drawer-lg documents-aliases-panel" id="documentAliasesDrawer" role="dialog" aria-modal="true" aria-labelledby="documentAliasesDrawerTitle" hidden>
+  <div class="drawer-header">
+    <div class="documents-drawer-title">
+      <h3 id="documentAliasesDrawerTitle">История URL</h3>
+      <p class="text-secondary text-sm" data-document-aliases-subtitle>Старые адреса документа.</p>
+    </div>
+    <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="drawer-body documents-aliases-drawer">
+    <div class="documents-alias-target"><span class="icon-tile" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-arrow-forward-up"></i></span><div><small>Текущий адрес назначения</small><a class="mono" href="#" target="_blank" rel="noopener" data-document-alias-target>/</a></div></div>
+    <form class="card documents-alias-form documents-drawer-form" data-document-alias-form>
+      <input type="hidden" name="id" value="0" data-document-alias-id>
+      <div class="documents-section-head"><div class="documents-head-left"><span class="icon-tile documents-head-icon" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-route"></i></span><h4 data-document-alias-form-title>Новый редирект</h4></div></div>
+      <div class="documents-card-body form-grid">
+        <label class="field col-8"><span class="field-label">Старый URL</span><div class="input-group documents-alias-group"><span class="input-addon mono">/</span><input class="input mono" type="text" name="alias" required></div></label>
+        <label class="field col-4"><span class="field-label">Код</span><select class="select" name="header">{% for code in [301,302,307,308] %}<option value="{{ code }}">{{ code }}</option>{% endfor %}</select></label>
+      </div>
+      <div class="documents-alias-form-actions"><button class="btn btn-ghost" type="button" data-document-alias-reset>Очистить</button><button class="btn btn-primary" type="submit"><i class="ti ti-device-floppy"></i>Сохранить</button></div>
+    </form>
+    <div class="documents-alias-list" data-document-alias-list><div class="empty-state">Загрузка...</div></div>
+  </div>
+  <div class="drawer-footer"><button class="btn btn-ghost" type="button" data-close-drawer>Закрыть</button></div>
+</aside>
+{% endif %}
+
+{% endblock %}

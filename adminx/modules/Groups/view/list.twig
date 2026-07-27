@@ -1,0 +1,153 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}Роли и права{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i>
+  <span>Роли и права</span>
+</nav>
+
+<div class="page-header">
+  <div class="between">
+    <div>
+      <h1>Роли и права</h1>
+      <p class="text-secondary">{{ roles|length }} ролей · назначение прав доступа по разделам</p>
+    </div>
+    {% if can_manage %}
+    <button class="btn btn-primary" data-role-new data-open-drawer="roleDrawer"><i class="ti ti-plus"></i>Создать роль</button>
+    {% endif %}
+  </div>
+</div>
+
+<div class="ax-summary">
+  <div class="card stat-tile"><div class="stat-ico" style="background:var(--color-violet-soft);color:var(--color-violet)"><i class="ti ti-shield-lock"></i></div><div><div class="stat-val">{{ stats.roles }}</div><div class="stat-label">Ролей</div></div></div>
+  <div class="card stat-tile"><div class="stat-ico" style="background:var(--background-inset);color:var(--text-muted)"><i class="ti ti-lock"></i></div><div><div class="stat-val">{{ stats.system }}</div><div class="stat-label">Системных</div></div></div>
+  <div class="card stat-tile"><div class="stat-ico"><i class="ti ti-key"></i></div><div><div class="stat-val">{{ stats.permissions }}</div><div class="stat-label">Прав всего</div></div></div>
+</div>
+
+<div class="section-header ax-panel-header groups-panel-header">
+  <div class="section-icon"><i class="ti ti-shield-lock"></i></div>
+  <div>
+    <div class="section-eyebrow">Список</div>
+    <h2>Роли</h2>
+    <p class="section-desc">Роли и число назначенных прав; редактирование набора прав по разделам.</p>
+  </div>
+</div>
+
+<div class="card ax-list-card">
+  <div class="ax-list-head">
+    <div class="ax-list-title">
+      <span class="icon-tile" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-shield-lock"></i></span>
+      <div><h2>Роли доступа</h2><p class="text-secondary">Системные и пользовательские роли, сотрудники и назначенные права.</p></div>
+    </div>
+    <span class="badge badge-blue">{{ roles|length }}</span>
+  </div>
+  <div class="table-scroll">
+    <table class="table">
+      <thead>
+        <tr>
+          <th style="width:60px">ID</th>
+          <th>Роль</th>
+          <th style="width:120px">Код</th>
+          <th style="width:130px">Пользователей</th>
+          <th style="width:110px">Прав</th>
+          {% if can_manage %}<th style="width:96px"></th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in roles %}
+        <tr data-id="{{ r.id }}" data-code="{{ r.code }}" data-name="{{ r.name }}" data-system="{{ r.is_system }}">
+          <td class="mono text-muted">{{ r.id }}</td>
+          <td>
+            <span class="cluster" style="gap:8px">
+              <span class="icon-tile" style="--tile-bg:var(--color-primary-soft);--tile-fg:var(--color-primary);width:28px;height:28px;font-size:14px"><i class="ti ti-shield-lock"></i></span>
+              <b>{{ r.name }}</b>
+              {% if r.is_system %}<span class="badge badge-gray">системная</span>{% endif %}
+            </span>
+          </td>
+          <td class="mono text-sm">{{ r.code }}</td>
+          <td>{{ r.user_count }}</td>
+          <td>{{ r.code == 'admin' ? 'все' : r.perm_count }}</td>
+          {% if can_manage %}
+          <td>
+            <div class="cluster" style="gap:4px">
+              <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-edit" data-role-edit data-open-drawer="roleDrawer" data-tooltip="Изменить" aria-label="Изменить"><i class="ti ti-pencil"></i></button>
+              {% if not r.is_system %}
+              <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-danger" data-role-delete data-tooltip="Удалить" aria-label="Удалить"><i class="ti ti-trash"></i></button>
+              {% endif %}
+            </div>
+          </td>
+          {% endif %}
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="ax-empty">Ролей нет — запустите setup-rbac</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if can_manage %}
+<aside class="drawer drawer-right drawer-lg" id="roleDrawer" role="dialog" aria-modal="true" aria-labelledby="roleDrawerTitle" hidden>
+  <div class="drawer-header">
+    <h3 id="roleDrawerTitle">Новая роль</h3>
+    <button class="btn btn-ghost btn-icon" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <form id="roleForm" data-base="{{ ADMINX_BASE }}">
+    <div class="drawer-body">
+      <div class="stack">
+        <input type="hidden" name="id" value="">
+        <div class="form-grid" style="grid-template-columns:1fr 1fr;gap:12px">
+          <label class="field">
+            <span class="field-label">Название</span>
+            <input class="input" type="text" name="name" placeholder="Например, Контент-менеджер" required>
+            <span class="field-error" data-error="name"></span>
+          </label>
+          <label class="field">
+            <span class="field-label">Код <span class="text-muted">(латиницей)</span></span>
+            <input class="input mono" type="text" name="code" placeholder="content_manager" autocomplete="off">
+            <span class="field-error" data-error="code"></span>
+          </label>
+        </div>
+
+        <div class="alert alert-info" data-role-admin-note style="display:none"><i class="ti ti-shield-check alert-ic"></i><div>Роль <b>admin</b> всегда имеет полный доступ — набор прав не редактируется.</div></div>
+
+        <div data-perms-wrap>
+          <div class="between" style="margin-bottom:6px">
+            <span class="field-label" style="margin:0">Права</span>
+            <span class="cluster" style="gap:8px">
+              <button type="button" class="btn btn-ghost btn-xs" data-perms-all>Выбрать все</button>
+              <button type="button" class="btn btn-ghost btn-xs" data-perms-none>Снять все</button>
+            </span>
+          </div>
+          {% for module, perms in permissions %}
+          <div class="card card-tint" style="padding:12px;margin-bottom:10px">
+            <div class="text-muted text-xs" style="text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:8px">{{ permission_module_labels[module]|default(module|replace({'_': ' '})) }}</div>
+            <div class="stack-sm" style="gap:6px">
+              {% for p in perms %}
+              <label class="check perm-row">
+                <input type="checkbox" name="perms[]" value="{{ p.code }}">
+                <span>
+                  <span class="perm-name">{{ p.name }}</span>
+                  <span class="text-muted mono text-xs perm-code">{{ p.code }}</span>
+                  {% if p.description %}<span class="perm-desc text-muted text-xs">{{ p.description }}</span>{% endif %}
+                </span>
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+          {% else %}
+          <div class="text-muted text-sm">Права не синхронизированы. Запустите <code>php adminx/tools/setup-rbac.php</code>.</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <button class="btn btn-ghost" type="button" data-close-drawer>Отмена</button>
+      <button class="btn btn-primary" type="submit" style="margin-left:auto"><i class="ti ti-check"></i>Сохранить</button>
+    </div>
+  </form>
+</aside>
+{% endif %}
+
+{% endblock %}

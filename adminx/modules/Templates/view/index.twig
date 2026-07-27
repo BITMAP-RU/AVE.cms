@@ -1,0 +1,277 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}Шаблоны{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i>
+  <span>Шаблоны</span>
+</nav>
+
+<div class="page-header">
+  <div class="between">
+    <div>
+      <h1>Шаблоны</h1>
+      <p class="text-secondary" style="margin-top:5px">Шаблоны вывода документов сайта.</p>
+    </div>
+    {% if can_manage %}
+    <div class="cluster">
+      <button class="btn btn-primary" type="button" data-template-new data-open-drawer="templateDrawer"><i class="ti ti-plus"></i>Создать шаблон</button>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="templates-summary">
+  <div class="card templates-stat">
+    <span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-template"></i></span>
+    <div><b>{{ stats.total }}</b><span>Всего шаблонов</span></div>
+  </div>
+  <div class="card templates-stat">
+    <span class="icon-tile" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-link"></i></span>
+    <div><b>{{ stats.used }}</b><span>Используются рубриками</span></div>
+  </div>
+  <div class="card templates-stat">
+    <span class="icon-tile" style="--tile-bg:var(--amber-100);--tile-fg:var(--amber-600)"><i class="ti ti-code"></i></span>
+    <div><b>{{ stats.php }}</b><span>Содержат PHP</span></div>
+  </div>
+  <div class="card templates-stat">
+    <span class="icon-tile" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-file-text"></i></span>
+    <div><b>{{ stats.bytes }}</b><span>Символов кода</span></div>
+  </div>
+</div>
+
+<section class="templates-panel">
+  <div class="section-header templates-panel-header">
+    <div class="section-icon"><i class="ti ti-template"></i></div>
+    <div>
+      <div class="section-eyebrow">Контент</div>
+      <h2>Список шаблонов</h2>
+      <p class="section-desc">При сохранении обновляется БД и кеш <span class="mono">templates/&lt;theme&gt;/templates/&lt;id&gt;.inc</span>.</p>
+    </div>
+  </div>
+
+  <div class="card templates-card templates-filter-card">
+    <div class="templates-section-head">
+      <div class="templates-section-title">
+        <span class="icon-tile templates-head-icon" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-table"></i></span>
+        <div>
+          <h2>Шаблоны</h2>
+          <p class="text-secondary">{{ templates|length }} в текущем фильтре, {{ stats.total }} всего.</p>
+        </div>
+      </div>
+      <span class="badge badge-blue">{{ filters.q ? 'filter' : 'all' }}</span>
+    </div>
+    <div class="table-toolbar templates-toolbar">
+      <form class="templates-filter" method="get" action="{{ ADMINX_BASE }}/templates">
+        <div class="input-wrap">
+          <i class="ti ti-search"></i>
+          <input class="input" type="search" name="q" value="{{ filters.q }}" placeholder="ID, название или код">
+        </div>
+        <button class="btn btn-secondary" type="submit"><i class="ti ti-filter"></i>Показать</button>
+        {% if filters.q %}
+        <button class="btn btn-ghost" type="button" data-templates-filter-reset><i class="ti ti-x"></i>Сбросить</button>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+
+  <div class="card templates-card">
+    <div class="templates-section-head">
+      <div class="templates-section-title">
+        <span class="icon-tile templates-head-icon" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-versions"></i></span>
+        <div>
+          <h2>Основные шаблоны</h2>
+          <p class="text-secondary">Шаблон #1 и используемые рубриками шаблоны защищены от удаления.</p>
+        </div>
+      </div>
+      <span class="badge badge-blue">{{ templates|length }}</span>
+    </div>
+    <div class="table-scroll">
+      <table class="table table-compact templates-table">
+        <colgroup>
+          <col class="templates-col-id">
+          <col class="templates-col-title">
+          <col class="templates-col-state">
+          <col class="templates-col-meta">
+          {% if can_manage %}<col class="templates-col-actions">{% endif %}
+        </colgroup>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Название</th>
+            <th>Состояние</th>
+            <th>Метаданные</th>
+            {% if can_manage %}<th></th>{% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in templates %}
+          <tr data-template-row
+              data-id="{{ item.Id }}"
+              data-title="{{ item.template_title|e('html_attr') }}">
+            <td class="mono text-muted">{{ item.Id }}</td>
+            <td>
+              <div class="templates-name">
+                <b>{{ item.template_title }}</b>
+                <small>{{ item.text_size_label }}{% if item.cache_exists %} · файловый кеш{% endif %}</small>
+              </div>
+            </td>
+            <td>
+              <div class="templates-badges">
+                {% if item.used_count > 0 %}<span class="badge badge-green">{{ item.used_count }} рубрик</span>{% else %}<span class="badge badge-gray">не привязан</span>{% endif %}
+                {% if item.has_php %}<span class="badge badge-amber">PHP</span>{% endif %}
+                {% if item.Id == 1 %}<span class="badge badge-blue">system</span>{% endif %}
+              </div>
+            </td>
+            <td>
+              <div class="templates-meta">
+                <span>{{ item.author }}</span>
+                <span class="mono">{{ item.created_label }}</span>
+              </div>
+            </td>
+            {% if can_manage %}
+            <td>
+              <div class="cluster templates-actions">
+                <button class="btn btn-ghost btn-icon btn-sm templates-action-edit" type="button" data-template-edit data-open-drawer="templateDrawer" data-tooltip="Изменить" aria-label="Изменить"><i class="ti ti-pencil"></i></button>
+                <button class="btn btn-ghost btn-icon btn-sm templates-action-revisions" type="button" data-template-revisions data-tooltip="Ревизии" aria-label="Ревизии"><i class="ti ti-history"></i></button>
+                <button class="btn btn-ghost btn-icon btn-sm templates-action-copy" type="button" data-template-copy data-tooltip="Копировать" aria-label="Копировать"><i class="ti ti-copy"></i></button>
+                <button class="btn btn-ghost btn-icon btn-sm templates-action-cache" type="button" data-template-cache data-tooltip="Очистить кеш" aria-label="Очистить кеш"><i class="ti ti-refresh"></i></button>
+                {% if item.can_delete %}
+                <button class="btn btn-ghost btn-icon btn-sm templates-action-danger" type="button" data-template-delete data-tooltip="Удалить" aria-label="Удалить"><i class="ti ti-trash"></i></button>
+                {% else %}
+                <button class="btn btn-ghost btn-icon btn-sm templates-action-locked" type="button" disabled data-tooltip="Удаление недоступно" aria-label="Удаление недоступно"><i class="ti ti-lock"></i></button>
+                {% endif %}
+              </div>
+            </td>
+            {% endif %}
+          </tr>
+          {% else %}
+          <tr><td colspan="{{ can_manage ? 5 : 4 }}"><div class="empty-state">Шаблоны не найдены.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+{% if can_manage %}
+<aside class="drawer drawer-right drawer-lg" id="templateDrawer" role="dialog" aria-modal="true" aria-labelledby="templateDrawerTitle" hidden>
+  <div class="drawer-header">
+    <div class="templates-drawer-title">
+      <h3 id="templateDrawerTitle">Новый шаблон</h3>
+      <p class="text-secondary text-sm"><kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>S</kbd> сохраняет и оставляет форму открытой.</p>
+    </div>
+    <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <form id="templateForm" class="templates-drawer" data-base="{{ ADMINX_BASE }}">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <input type="hidden" name="id" value="">
+    <div class="drawer-body">
+      <div class="form-grid">
+        <label class="field col-12"><span class="field-label">Название</span><input class="input" type="text" name="template_title" required><span class="field-error" data-error="template_title"></span></label>
+      </div>
+      <div class="field templates-code-field">
+        <span class="field-label templates-code-label">
+          <span>Код шаблона</span>
+          <span class="templates-code-tools">
+            <button class="btn btn-ghost btn-icon btn-sm templates-tags-button" type="button" data-template-tags-toggle data-tooltip="Теги" aria-label="Теги"><i class="ti ti-brackets-contain"></i></button>
+            <button class="btn btn-ghost btn-icon btn-sm templates-lint-button" type="button" data-template-lint data-tooltip="Проверить PHP" aria-label="Проверить PHP"><i class="ti ti-bug"></i></button>
+            <button class="btn btn-ghost btn-icon btn-sm templates-code-fullscreen-button" type="button" data-template-code-fullscreen data-tooltip="Развернуть редактор" aria-label="Развернуть редактор"><i class="ti ti-arrows-maximize"></i></button>
+          </span>
+        </span>
+        <div class="templates-tag-palette" data-template-tags-panel hidden>
+          <div class="templates-tag-toolbar">
+            <div class="input-wrap">
+              <i class="ti ti-search"></i>
+              <input class="input" type="search" placeholder="Поиск тегов" data-template-tags-search>
+            </div>
+            <button class="btn btn-ghost btn-icon btn-sm" type="button" data-template-tags-close aria-label="Закрыть"><i class="ti ti-x"></i></button>
+          </div>
+          <div class="templates-tag-browser">
+            <div class="templates-tag-nav" role="tablist" aria-label="Группы тегов">
+              {% for group in tag_groups %}
+              {% if group.items %}
+              <button type="button" data-template-tag-tab="{{ loop.index0 }}" class="{{ loop.first ? 'is-active' : '' }}" aria-selected="{{ loop.first ? 'true' : 'false' }}">
+                <span>{{ group.title }}</span>
+                <b>{{ group.items|length }}</b>
+              </button>
+              {% endif %}
+              {% endfor %}
+            </div>
+            <div class="templates-tag-groups">
+            {% for group in tag_groups %}
+            {% if group.items %}
+            <section class="templates-tag-group{{ loop.first ? ' is-active' : '' }}" data-template-tag-group data-template-tag-panel="{{ loop.index0 }}">
+              <div class="templates-tag-list">
+                {% for tag in group.items %}
+                <button type="button" data-template-tag="{{ tag.value|e('html_attr') }}"{% if tag.select %} data-template-tag-select="{{ tag.select|e('html_attr') }}"{% endif %}><code>{{ tag.label }}</code><span>{{ tag.description }}</span></button>
+                {% endfor %}
+              </div>
+            </section>
+            {% endif %}
+            {% endfor %}
+            <div class="templates-tag-empty" data-template-tags-empty hidden>Ничего не найдено</div>
+            </div>
+          </div>
+        </div>
+        <textarea class="textarea mono" name="template_text" rows="18" data-code-editor data-mode="php" data-height="560"></textarea>
+        <span class="field-hint" data-template-lint-result></span>
+        <span class="field-error" data-error="template_text"></span>
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <button class="btn btn-ghost" type="button" data-close-drawer>Отмена</button>
+      <button class="btn btn-secondary" type="button" data-template-submit-stay data-code-save-stay style="margin-left:auto"><i class="ti ti-device-floppy"></i>Сохранить и остаться</button>
+      <button class="btn btn-primary" type="submit"><i class="ti ti-check"></i>Сохранить</button>
+    </div>
+  </form>
+</aside>
+
+<aside class="drawer drawer-right drawer-lg" id="templateRevisionsDrawer" role="dialog" aria-modal="true" aria-labelledby="templateRevisionsDrawerTitle" hidden>
+  <div class="drawer-header">
+    <div class="templates-drawer-title">
+      <h3 id="templateRevisionsDrawerTitle">Ревизии шаблона</h3>
+      <p class="text-secondary text-sm" id="templateRevisionsDrawerSubtitle">История снимков шаблона.</p>
+    </div>
+    <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="drawer-body templates-revisions-drawer">
+    <div class="templates-revisions-layout">
+      <section class="templates-revisions-list" aria-label="Список ревизий">
+        <div class="templates-revisions-head">
+          <span class="icon-tile templates-head-icon" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-history"></i></span>
+          <div>
+            <h4>Снимки</h4>
+            <p class="text-secondary" data-template-revisions-count>Загрузка...</p>
+          </div>
+        </div>
+        <div class="templates-revisions-list-rows" data-template-revisions-list>
+          <div class="empty-state">Загрузка...</div>
+        </div>
+      </section>
+      <section class="templates-revision-preview" aria-label="Просмотр ревизии">
+        <div class="templates-revisions-head">
+          <span class="icon-tile templates-head-icon" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-code"></i></span>
+          <div>
+            <h4 data-template-revision-title>Выберите ревизию</h4>
+            <p class="text-secondary" data-template-revision-meta>Код и метаданные появятся после выбора снимка.</p>
+          </div>
+        </div>
+        <div class="templates-revision-fields" data-template-revision-fields></div>
+        <label class="field templates-revision-code">
+          <span class="field-label">Код шаблона</span>
+          <textarea class="textarea mono" data-template-revision-code data-code-editor data-mode="php" data-readonly="true" data-height="420" rows="14" readonly></textarea>
+        </label>
+      </section>
+    </div>
+  </div>
+  <div class="drawer-footer">
+    <button class="btn btn-ghost" type="button" data-close-drawer>Закрыть</button>
+    <button class="btn btn-danger-soft" type="button" data-template-revisions-clear disabled><i class="ti ti-trash"></i>Удалить все</button>
+    <button class="btn btn-secondary" type="button" data-template-revision-delete disabled style="margin-left:auto"><i class="ti ti-trash"></i>Удалить</button>
+    <button class="btn btn-primary" type="button" data-template-revision-restore disabled><i class="ti ti-restore"></i>Восстановить</button>
+  </div>
+</aside>
+{% endif %}
+
+{% endblock %}

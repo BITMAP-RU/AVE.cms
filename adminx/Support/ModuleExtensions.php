@@ -1,0 +1,293 @@
+<?php
+
+	/*
+	|--------------------------------------------------------------------------------------
+	| AVE.cms
+	|--------------------------------------------------------------------------------------
+	| @package      AVE.cms
+	| @file         adminx/Support/ModuleExtensions.php
+	| @author       AVE.cms <support@ave-cms.ru>
+	| @copyright    2007-2026 (c) AVE.cms
+	| @link         https://ave-cms.ru
+	| @version      3.3
+	*/
+
+	namespace App\Adminx\Support;
+
+	defined('BASEPATH') || die('Direct access to this location is not allowed.');
+
+	use App\Common\ModuleManager;
+	use App\Common\ModuleSettings;
+	use App\Common\Navigation;
+	use App\Common\Permission;
+
+	/**
+	 * UI-реестр adminx-модулей.
+	 *
+	 * Ядро хранит neutral descriptor, а этот слой подключает только adminx-вклады:
+	 * меню, действия шапки, dashboard-виджеты и уведомления.
+	 */
+	class ModuleExtensions
+	{
+		protected static $booted = false;
+		protected static $extensions = array();
+
+		public static function boot()
+		{
+			if (self::$booted) {
+				return;
+			}
+
+			self::$booted = true;
+
+			foreach (ModuleManager::all() as $module) {
+				if (empty($module['admin_extension']) || !is_array($module['admin_extension'])) {
+					continue;
+				}
+
+				self::$extensions[$module['code']] = array(
+					'module' => $module,
+					'config' => $module['admin_extension'],
+				);
+				if (!empty($module['installed']) && !empty($module['enabled'])) {
+					self::registerMenu($module['admin_extension']);
+				}
+			}
+
+		}
+
+		public static function headerActions()
+		{
+			return self::contributions('header');
+		}
+
+		public static function dashboardWidgets(array $visibleCodes = null)
+		{
+			return self::contributions('dashboard', $visibleCodes);
+		}
+
+		/** Dashboard descriptors without running providers; used by interface settings. */
+		public static function dashboardDefinitions()
+		{
+			self::boot();
+			$out = array();
+			foreach (self::$extensions as $code => $extension) {
+				$module = self::currentModule($code, $extension['module']);
+				if (empty($module['installed']) || empty($module['enabled'])) {
+					continue;
+				}
+
+				$config = $extension['config'];
+				if (empty($config['dashboard'])) {
+					continue;
+				}
+
+				foreach (self::normalizeItems($config['dashboard']) as $index => $item) {
+					if (!is_array($item)) {
+						continue;
+					}
+
+					$out[] = array(
+						'layout_code' => self::contributionCode($code, 'dashboard', $item, $index),
+						'module_code' => $code,
+						'label' => AdminLocale::translateMarkup(isset($item['label']) ? (string) $item['label'] : (isset($module['name']) ? (string) $module['name'] : $code)),
+						'description' => AdminLocale::translateMarkup(isset($item['description']) ? (string) $item['description'] : (isset($module['description']) ? (string) $module['description'] : '')),
+						'icon' => isset($item['icon']) ? (string) $item['icon'] : (isset($config['icon']) ? (string) $config['icon'] : 'ti ti-layout-dashboard'),
+						'sort_order' => 100 + (isset($item['sort_order']) ? (int) $item['sort_order'] : 100),
+						'default_visible' => self::presentationEnabled($code, 'dashboard'),
+					);
+				}
+			}
+
+			return $out;
+		}
+
+		public static function notifications($base, array $summary)
+		{
+			foreach (self::contributions('notifications') as $contribution) {
+				$data = isset($contribution['data']) ? $contribution['data'] : array();
+				$items = isset($data['items']) && is_array($data['items']) ? $data['items'] : (self::isList($data) ? $data : array());
+				foreach ($items as $item) {
+					if (!is_array($item) || empty($item['title'])) {
+						continue;
+					}
+
+					$count = isset($item['count']) ? max(0, (int) $item['count']) : 1;
+					if ($count < 1) {
+						continue;
+					}
+
+					$url = isset($item['url']) ? (string) $item['url'] : '';
+					if ($url !== '' && $url[0] === '/') {
+						$url = rtrim((string) $base, '/') . $url;
+					}
+
+					$summary['items'][] = array_merge(array(
+						'icon' => 'ti ti-bell',
+						'bg' => '#e8f1ff',
+						'fg' => '#2563eb',
+						'text' => '',
+						'url' => $url,
+						'count' => $count,
+					), $item, array(
+						'url' => $url,
+						'count' => $count,
+						'text' => AdminLocale::translateMarkup(isset($item['text']) ? (string) $item['text'] : ''),
+						'title' => AdminLocale::translateMarkup(isset($item['title']) ? (string) $item['title'] : ''),
+					));
+					$summary['total'] += $count;
+					if (!empty($item['key'])) {
+						$key = (string) $item['key'];
+						$summary[$key] = isset($summary[$key]) ? (int) $summary[$key] + $count : $count;
+					}
+				}
+			}
+
+			return $summary;
+		}
+
+		public static function catalog()
+		{
+			self::boot();
+			$items = array();
+			foreach (self::$extensions as $code => $extension) {
+				$module = self::currentModule($code, $extension['module']);
+				$config = $extension['config'];
+				$items[] = array(
+					'code' => $code,
+					'name' => AdminLocale::translateMarkup(isset($module['name']) ? $module['name'] : $code),
+					'description' => AdminLocale::translateMarkup(isset($module['description']) ? $module['description'] : ''),
+					'author' => isset($module['author']) ? $module['author'] : '',
+					'admin_url' => isset($config['url']) ? (string) $config['url'] : '',
+					'feature' => isset($config['feature']) ? (string) $config['feature'] : '',
+					'icon' => isset($config['icon']) ? (string) $config['icon'] : 'ti ti-puzzle',
+					'module' => $module,
+				);
+			}
+
+			return $items;
+		}
+
+		protected static function contributions($type, array $visibleCodes = null)
+		{
+			self::boot();
+			$out = array();
+			$visible = $visibleCodes === null ? null : array_fill_keys($visibleCodes, true);
+			foreach (self::$extensions as $code => $extension) {
+				$module = self::currentModule($code, $extension['module']);
+				if (empty($module['installed']) || empty($module['enabled'])) {
+					continue;
+				}
+
+				$config = $extension['config'];
+				if (empty($config[$type])) {
+					continue;
+				}
+
+				if (($type === 'header' || $type === 'dashboard') && !self::presentationEnabled($code, $type)) {
+					continue;
+				}
+
+				foreach (self::normalizeItems($config[$type]) as $index => $item) {
+					if (!is_array($item) || !self::allowed($item)) {
+						continue;
+					}
+
+					$layoutCode = self::contributionCode($code, $type, $item, $index);
+					if ($visible !== null && !isset($visible[$layoutCode])) {
+						continue;
+					}
+
+					try {
+						$data = isset($item['provider']) && is_callable($item['provider'])
+							? call_user_func($item['provider'])
+							: (isset($item['data']) ? $item['data'] : array());
+					} catch (\Throwable $e) {
+						$data = array();
+					}
+
+					$item['module_code'] = $code;
+					$item['layout_code'] = $layoutCode;
+					$item['label'] = AdminLocale::translateMarkup(isset($item['label']) ? (string) $item['label'] : (isset($module['name']) ? (string) $module['name'] : $code));
+					if (isset($item['description'])) {
+						$item['description'] = AdminLocale::translateMarkup((string) $item['description']);
+					}
+
+					$item['icon'] = isset($item['icon']) ? (string) $item['icon'] : (isset($config['icon']) ? (string) $config['icon'] : 'ti ti-layout-dashboard');
+					$item['data'] = is_array($data) ? $data : array();
+					$item['sort_order'] = isset($item['sort_order']) ? (int) $item['sort_order'] : 100;
+					$out[] = $item;
+				}
+			}
+
+			usort($out, function ($a, $b) {
+				return $a['sort_order'] <=> $b['sort_order'];
+			});
+			return $out;
+		}
+
+		protected static function contributionCode($moduleCode, $type, array $item, $index)
+		{
+			$suffix = isset($item['code']) && trim((string) $item['code']) !== ''
+				? trim((string) $item['code'])
+				: (string) ((int) $index + 1);
+			return 'module.' . (string) $moduleCode . '.' . (string) $type . '.' . $suffix;
+		}
+
+		protected static function registerMenu(array $config)
+		{
+			if (empty($config['menu'])) {
+				return;
+			}
+
+			$items = is_callable($config['menu']) ? call_user_func($config['menu']) : $config['menu'];
+			if (is_array($items) && !self::isList($items)) {
+				$items = array($items);
+			}
+
+			if (is_array($items)) {
+				Navigation::addMany($items);
+			}
+		}
+
+		protected static function normalizeItems($items)
+		{
+			if (!is_array($items)) {
+				return array();
+			}
+
+			return self::isList($items) ? $items : array($items);
+		}
+
+		protected static function isList(array $items)
+		{
+			return empty($items) || array_keys($items) === range(0, count($items) - 1);
+		}
+
+		protected static function allowed(array $item)
+		{
+			$permission = isset($item['permission']) ? (string) $item['permission'] : '';
+			if ($permission !== '' && !Permission::check($permission)) {
+				return false;
+			}
+
+			return empty($item['visible']) || !is_callable($item['visible']) || (bool) call_user_func($item['visible']);
+		}
+
+		protected static function currentModule($code, array $fallback)
+		{
+			foreach (ModuleManager::all() as $module) {
+				if ($module['code'] === (string) $code) {
+					return $module;
+				}
+			}
+
+			return $fallback;
+		}
+
+		/** Управляемая администратором видимость UI-вклада модуля. */
+		protected static function presentationEnabled($code, $type)
+		{
+			return (bool) ModuleSettings::get('adminx_' . $type . '_enabled', true, $code);
+		}
+	}

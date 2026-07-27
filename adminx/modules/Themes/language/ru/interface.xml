@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="auto_ebfc7688580909c4">CSS, JavaScript, изображения, шрифты и служебные JSON/XML-файлы.</phrase>
+	<phrase data="auto_2bc54d4a3c101b0a">media, например print</phrase>
+	<phrase data="auto_550ce7ffd2f34194">Twig-оболочка темы</phrase>
+	<phrase data="auto_e2fb17b3c49a990b">ZIP до 50 МБ с обязательным theme.json.</phrase>
+	<phrase data="auto_878d0abf729898d5">ZIP-пакет темы</phrase>
+	<phrase data="auto_6bd2ffd6e4454b1d">· активна</phrase>
+	<phrase data="auto_1a6e2eca824086de">· версия</phrase>
+	<phrase data="auto_4aff3a3d7af0683b">Активировать</phrase>
+	<phrase data="auto_be2f932e34f46d0c">активна</phrase>
+	<phrase data="auto_0d1cd34965dca83a">Ассеты и переопределения темы работают в обоих режимах.</phrase>
+	<phrase data="auto_3b347f4d489178ac">Будет создан безопасный каркас с CSS, JS и theme.json.</phrase>
+	<phrase data="auto_b25cd718340a88fe">В</phrase>
+	<phrase data="auto_63834180a834f7b3">В каталоге</phrase>
+	<phrase data="auto_4ed96723a906268b">Значения, объявленные этой темой.</phrase>
+	<phrase data="auto_a59e2c2429fe7a88">и</phrase>
+	<phrase data="auto_1672e43bda20dbcc">Изменения применятся после сохранения реестра.</phrase>
+	<phrase data="auto_440e2b5d8061862a">Изменён</phrase>
+	<phrase data="auto_8f8a4222dbca0498">Импорт темы</phrase>
+	<phrase data="auto_55fd5f8a6afcc1c0">Импортировать</phrase>
+	<phrase data="auto_aee78fe86022edaa">Имя</phrase>
+	<phrase data="auto_f4d81cd32dabebc7">Каталог пуст</phrase>
+	<phrase data="auto_78a5a7348cdccde3">Код каталога</phrase>
+	<phrase data="auto_90cb6aa8dffc27f5">Код темы</phrase>
+	<phrase data="auto_03d3d9dec218deb7">Нажмите, чтобы выбрать архив</phrase>
+	<phrase data="auto_4dc3bf5bff6516ab">Название темы</phrase>
+	<phrase data="auto_e9bf293c735f771c">Нативные шаблоны AVE</phrase>
+	<phrase data="auto_1c0670bdf14a8143">не указан файл</phrase>
+	<phrase data="auto_6d317322ebb21ad5">Новая тема</phrase>
+	<phrase data="auto_e7a6f2f732d650a7">Они появятся после первого изменения текстового файла.</phrase>
+	<phrase data="auto_cd4c03b72a738548">Определяет порядок CSS и JS для тегов</phrase>
+	<phrase data="auto_79670c9ac1836b9d">Параметры темы</phrase>
+	<phrase data="auto_54dacb06e8664c75">Переместить</phrase>
+	<phrase data="auto_93a8788e870cc0c7">Подключений</phrase>
+	<phrase data="auto_c188eb08a13604ec">Подключения</phrase>
+	<phrase data="auto_e21d183232b5b7f7">Показывать</phrase>
+	<phrase data="auto_f1d45fe771bb0f5f">Порядок подключения сверху вниз.</phrase>
+	<phrase data="auto_0bdce653048ac5ad">После сохранения публичный кеш будет очищен автоматически.</phrase>
+	<phrase data="auto_41f4446817d315d1">Посмотреть</phrase>
+	<phrase data="auto_51b3c780fc270e8f">Применится после сохранения.</phrase>
+	<phrase data="auto_c35b36f403600f61">Публичное оформление</phrase>
+	<phrase data="auto_f20bed02a1f94097">Размер ассетов</phrase>
+	<phrase data="auto_12e31b816075c6ec">Расширения: css, js, json, svg, xml, txt.</phrase>
+	<phrase data="auto_4d60d98f499d1580">Ревизии</phrase>
+	<phrase data="auto_603875eb4c6c3035">Ревизии файлов</phrase>
+	<phrase data="auto_71d33e248ef8f5ae">Ревизий пока нет</phrase>
+	<phrase data="auto_a60f629132fddf03">Ревизия</phrase>
+	<phrase data="auto_fc1e88e76bb5b116">Редактор файла</phrase>
+	<phrase data="auto_de16113354981fd4">Реестр подключений</phrase>
+	<phrase data="auto_9f10d17e829058e3">Режим загрузки задаётся для каждого файла.</phrase>
+	<phrase data="auto_da375e816c476cb8">Скачать ZIP темы</phrase>
+	<phrase data="auto_0234459e1abe1a1f">Скрипты</phrase>
+	<phrase data="auto_833227b622b538ec">Создайте папку или загрузите файлы темы.</phrase>
+	<phrase data="auto_a7f1edf82e7bd561">Создайте пустую тему или импортируйте ZIP-пакет.</phrase>
+	<phrase data="auto_944b559c7663a5ec">Создать папку</phrase>
+	<phrase data="auto_d9d203ca7ff277c6">Создать файл</phrase>
+	<phrase data="auto_6d629a0a60fe77ef">Сохранить подключения</phrase>
+	<phrase data="auto_91d7fbc0ce1f5dc4">Способ сборки публичной страницы</phrase>
+	<phrase data="auto_f8038ce213d6e495">Способ сборки сайта</phrase>
+	<phrase data="auto_6c6d955d152a74d0">Стили</phrase>
+	<phrase data="auto_ac366962de745a32">Страница собирается из шаблона сайта, рубрик, запросов, блоков и навигации.</phrase>
+	<phrase data="auto_e46eaa637b74d8e0">Текстовые версии сохраняются перед изменением, загрузкой и удалением.</phrase>
+	<phrase data="auto_9b18f50f55e2594d">Тем</phrase>
+	<phrase data="auto_915f00b4c2f9ee08">Тем пока нет</phrase>
+	<phrase data="auto_1520dea47aef8f49">Только сборку общей страницы. CSS, JavaScript, изображения темы и её оформления модулей останутся подключёнными.</phrase>
+	<phrase data="auto_9439866c937fee21">Удалить тему</phrase>
+	<phrase data="auto_eaadead18b1f51d2">управляет общей композицией страницы.</phrase>
+	<phrase data="auto_94b8df93b6ecdec9">Файл</phrase>
+	<phrase data="auto_91cda3fc62191ee0">Файлов темы</phrase>
+	<phrase data="auto_453413a5dbb9a500">Файлы темы</phrase>
+	<phrase data="auto_b560b7d0ff5b89de">Файлы, подключения CSS/JS и версии публичного оформления.</phrase>
+	<phrase data="auto_70ed40aa4ce15198">Что изменит переключатель</phrase>
+	<phrase data="auto_9e34e26f093877cb">) !== false) { throw new \InvalidArgumentException('Текстовый ассет содержит бинарные данные'); }
+		}
+
+		protected static function editorMode($extension)
+		{
+			if ($extension === 'css') { return 'text/css'; }
+			if (in_array($extension, array('js', 'mjs'), true)) { return 'text/javascript'; }
+			if (in_array($extension, array('json', 'map', 'webmanifest'), true)) { return 'application/json'; }
+			if (in_array($extension, array('svg', 'xml'), true)) { return 'xml'; }
+			return 'text/plain';
+		}
+
+		protected static function imageExtension($extension)
+		{
+			return in_array((string) $extension, array('png', 'jpg', 'jpeg', 'gif', 'webp', 'avif', 'bmp', 'ico', 'svg'), true);
+		}
+
+		protected static function initialContent($path)
+		{
+			$extension = strtolower((string) pathinfo((string) $path, PATHINFO_EXTENSION));
+			if ($extension === 'css') { return</phrase>
+	<phrase data="auto_3569ed34cd124745">. Ошибки:</phrase>
+	<phrase data="auto_63b1fa390e91f75c">0 Б</phrase>
+	<phrase data="auto_c4eb5a7aea60dafd">» будет удалён из темы. Текстовая версия останется в ревизиях.</phrase>
+	<phrase data="auto_1ca6beeb6bb0b2fc">», его ассеты и ревизии будут удалены без возможности восстановления.</phrase>
+	<phrase data="auto_aa370155ac5f16ea">». Подключения применятся только там, где установлены новые теги темы.</phrase>
+	<phrase data="auto_8a4509bcfc42dd6f">Активировать тему?</phrase>
+	<phrase data="auto_1abd196f40f96066">В теме не указан файл Twig-оболочки</phrase>
+	<phrase data="auto_f79f3d992355453b">Версию файла нельзя будет восстановить.</phrase>
+	<phrase data="auto_29f3b29df0d0e54f">Восстановить</phrase>
+	<phrase data="auto_5963e9975982a831">Восстановить ревизию?</phrase>
+	<phrase data="auto_ad4cc9931b4f3b23">Восстановление</phrase>
+	<phrase data="auto_398c7d4f7b0d522a">Готово</phrase>
+	<phrase data="auto_c98fa825d60a3b71">Загрузка</phrase>
+	<phrase data="auto_3f8c55176b7891d9">Импорт</phrase>
+	<phrase data="auto_bbd4ac5417cf093d">Имя без точки и служебных символов.</phrase>
+	<phrase data="auto_735d8993396a84ff">История текстовых файлов будет очищена без возможности восстановления.</phrase>
+	<phrase data="auto_0a1d18826741e77d">Каталог «</phrase>
+	<phrase data="auto_a84dcf3979eb714c">Каталог с таким именем уже существует</phrase>
+	<phrase data="auto_8db0eb865503ec31">Каталог содержит символическую ссылку</phrase>
+	<phrase data="auto_afb8bd281ddcda4e">Каталог создан</phrase>
+	<phrase data="auto_edbe417e021a142f">Контент</phrase>
+	<phrase data="auto_b9c0f063903c0a5e">Настройки темы сохранены</phrase>
+	<phrase data="auto_de7fb9566c3ab6f8">Не удалось выполнить действие</phrase>
+	<phrase data="auto_c756738db24d115b">Не удалось записать файл темы</phrase>
+	<phrase data="auto_e27323528e74470c">Не удалось создать каталог</phrase>
+	<phrase data="auto_9bcc6eadd7054ac9">Не удалось сохранить файл</phrase>
+	<phrase data="auto_13f47f04ba060d79">Не удалось удалить файл</phrase>
+	<phrase data="auto_972df4d9c20fc2c7">Подключения темы сохранены</phrase>
+	<phrase data="auto_bf18fdaa443f0cb6">Предыдущая версия</phrase>
+	<phrase data="auto_658a0a40ed23298a">Проверьте значения настроек темы</phrase>
+	<phrase data="auto_d01aa1dbce39eff7">Просмотр тем, файлов и реестра подключаемых ассетов.</phrase>
+	<phrase data="auto_30c43ec13cededdc">Публичный сайт начнёт использовать тему «</phrase>
+	<phrase data="auto_e1e8719cc085e2f8">Размер файла должен быть от 1 байта до 10 МБ</phrase>
+	<phrase data="auto_cc156ceb9bf090e8">Расширение файла не разрешено для темы</phrase>
+	<phrase data="auto_a2c325869c6b079e">Ревизия восстановлена</phrase>
+	<phrase data="auto_e355fb2f4ed33801">Ревизия не найдена</phrase>
+	<phrase data="auto_3e096d0063299173">Ревизия удалена</phrase>
+	<phrase data="auto_b543bd83a14b6ad4">Реестр</phrase>
+	<phrase data="auto_ff3649dd979c8ec7">Реестр темы удалить нельзя</phrase>
+	<phrase data="auto_26e47597abc4b498">Сервер недоступен</phrase>
+	<phrase data="auto_d258b559c0f5da2b">Символические ссылки редактировать нельзя</phrase>
+	<phrase data="auto_3ac98f278c8c9081">Система</phrase>
+	<phrase data="auto_dcabf8a192f05329">Создание</phrase>
+	<phrase data="auto_ad17d16b52f9eddc">Создание, импорт, редактирование, активация и удаление тем.</phrase>
+	<phrase data="auto_176c0503245e6ad7">Создать можно CSS, JS, JSON, SVG, XML, Twig или текстовый файл</phrase>
+	<phrase data="auto_e0275b635c1c8e72">Сохранение</phrase>
+	<phrase data="auto_fb1e61efb4504d7c">Текстовый файл не должен превышать 2 МБ</phrase>
+	<phrase data="auto_a992ab4c9be30ed5">Текущее содержимое файла сначала будет сохранено как отдельная ревизия.</phrase>
+	<phrase data="auto_dc99e4e22dd4ea91">Тема активирована</phrase>
+	<phrase data="auto_4c9cee40ff1f1caf">Тема импортирована</phrase>
+	<phrase data="auto_1e8bf2df10259c81">Тема создана</phrase>
+	<phrase data="auto_5586c5f53054f3c2">Тема удалена</phrase>
+	<phrase data="auto_e2a19bbf9cd9b98c">Темы</phrase>
+	<phrase data="auto_85dc99d0776ebdab">Темы: просмотр</phrase>
+	<phrase data="auto_c0cb79c08de97448">Темы: управление</phrase>
+	<phrase data="auto_04963db06a10a410">Удаление</phrase>
+	<phrase data="auto_dbb85f6efdd7c965">Удалено ревизий:</phrase>
+	<phrase data="auto_86ea33aef5e95d4f">Удалить</phrase>
+	<phrase data="auto_c3df07c7b5b795cf">Удалить все</phrase>
+	<phrase data="auto_83fd45619005464a">Удалить все ревизии темы?</phrase>
+	<phrase data="auto_88d9445e61d23a8c">Удалить папку?</phrase>
+	<phrase data="auto_ee1819dfbfb0e1b6">Удалить ревизию?</phrase>
+	<phrase data="auto_039ccfe5ffc360de">Удалить тему?</phrase>
+	<phrase data="auto_5ccd43e336951571">Удалить файл?</phrase>
+	<phrase data="auto_7dd8b128b4f005a1">Файл загрузился не полностью</phrase>
+	<phrase data="auto_97c2dcb6cfaba85a">Файл или каталог не найден</phrase>
+	<phrase data="auto_1a5254b3e2aa03b1">Файл или каталог удалён</phrase>
+	<phrase data="auto_388b738c5c2db623">Файл не найден</phrase>
+	<phrase data="auto_61becb056f6aefde">Файл с таким именем уже существует</phrase>
+	<phrase data="auto_c8f07804d9f109df">Файл слишком большой для редактора</phrase>
+	<phrase data="auto_e7bf4ba598d3c1d1">Файл создан</phrase>
+	<phrase data="auto_ec47b187febef414">Файл сохранён</phrase>
+	<phrase data="auto_651bd42c0cb9c120">Файл темы не найден</phrase>
+	<phrase data="auto_d48a9f80726dfcd8">Файл уже существует</phrase>
+	<phrase data="auto_dd1ed4693c8671fa">файл(ов) загружено</phrase>
+	<phrase data="auto_47fafcc64df5143c">Это имя каталога зарезервировано</phrase>
+	<phrase data="auto_adf3d9139654e366">Этот тип файла нельзя редактировать как текст</phrase>
+</language>

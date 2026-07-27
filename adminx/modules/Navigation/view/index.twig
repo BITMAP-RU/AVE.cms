@@ -1,0 +1,391 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}Навигация{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i>
+  <span>Навигация</span>
+</nav>
+
+<div class="page-header">
+  <div class="between">
+    <div>
+      <h1>Навигация</h1>
+      <p class="text-secondary" style="margin-top:5px">Меню, вызываемые тегами <span class="mono">[tag:navigation:alias]</span></p>
+    </div>
+    {% if can_manage %}
+    <div class="cluster">
+      <button class="btn btn-primary" type="button" data-navigation-new data-open-drawer="navigationDrawer"><i class="ti ti-plus"></i>Создать навигацию</button>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="navigation-summary">
+  <div class="card navigation-stat">
+    <span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-sitemap"></i></span>
+    <div><b>{{ stats.total }}</b><span>Всего навигаций</span></div>
+  </div>
+  <div class="card navigation-stat">
+    <span class="icon-tile" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-list-tree"></i></span>
+    <div><b>{{ stats.items }}</b><span>Пунктов меню</span></div>
+  </div>
+  <div class="card navigation-stat">
+    <span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-tag"></i></span>
+    <div><b>{{ stats.aliases }}</b><span>С алиасом</span></div>
+  </div>
+  <div class="card navigation-stat">
+    <span class="icon-tile" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-users-group"></i></span>
+    <div><b>{{ stats.restricted }}</b><span>С группами доступа</span></div>
+  </div>
+</div>
+
+<section class="navigation-panel">
+  <div class="section-header navigation-panel-header">
+    <div class="section-icon"><i class="ti ti-sitemap"></i></div>
+    <div>
+      <div class="section-eyebrow">Контент</div>
+      <h2>Меню навигации</h2>
+      <p class="section-desc">Дерево пунктов меню и шаблоны их вывода.</p>
+    </div>
+  </div>
+
+  <div class="card navigation-card navigation-filter-card">
+    <div class="navigation-section-head">
+      <div class="navigation-section-title">
+        <span class="icon-tile navigation-head-icon" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-table"></i></span>
+        <div>
+          <h2>Навигации</h2>
+          <p class="text-secondary">{{ navigation_items|length }} в текущем фильтре, {{ stats.total }} всего.</p>
+        </div>
+      </div>
+      <span class="badge badge-blue">{{ filters.q ? 'filter' : 'all' }}</span>
+    </div>
+    <div class="table-toolbar navigation-toolbar">
+      <form class="navigation-filter" method="get" action="{{ ADMINX_BASE }}/navigation">
+        <div class="input-wrap">
+          <i class="ti ti-search"></i>
+          <input class="input" type="search" name="q" value="{{ filters.q }}" placeholder="ID, название или алиас">
+        </div>
+        <button class="btn btn-secondary" type="submit"><i class="ti ti-filter"></i>Показать</button>
+        {% if filters.q %}
+        <button class="btn btn-ghost" type="button" data-navigation-filter-reset><i class="ti ti-x"></i>Сбросить</button>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+
+  <div class="card navigation-card">
+    <div class="navigation-section-head">
+      <div class="navigation-section-title">
+        <span class="icon-tile navigation-head-icon" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-list-tree"></i></span>
+        <div>
+          <h2>Шаблоны меню</h2>
+          <p class="text-secondary">Навигация #1 защищена от удаления; тег можно скопировать из списка.</p>
+        </div>
+      </div>
+      <span class="badge badge-blue">{{ navigation_items|length }}</span>
+    </div>
+    <div class="table-scroll">
+      <table class="table table-compact navigation-table">
+        <colgroup>
+          <col class="navigation-col-id">
+          <col class="navigation-col-title">
+          <col class="navigation-col-tag">
+          <col class="navigation-col-state">
+          <col class="navigation-col-meta">
+          {% if can_manage %}<col class="navigation-col-actions">{% endif %}
+        </colgroup>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Название</th>
+            <th>Тег</th>
+            <th>Состояние</th>
+            <th>Метаданные</th>
+            {% if can_manage %}<th class="table-actions"><span class="sr-only">Действия</span></th>{% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in navigation_items %}
+          <tr data-navigation-row data-id="{{ item.navigation_id }}" data-title="{{ item.title|e('html_attr') }}">
+            <td class="mono text-muted">{{ item.navigation_id }}</td>
+            <td>
+              <div class="navigation-name">
+                <b>{{ item.title }}</b>
+                <small>{{ item.alias ? item.alias : 'без алиаса' }}</small>
+              </div>
+            </td>
+            <td>
+              <button class="ax-tag" type="button" data-ax-copy="{{ item.tag|e('html_attr') }}" data-tooltip="Скопировать тег" aria-label="Скопировать тег {{ item.tag }}"><span>{{ item.tag }}</span><i class="ti ti-copy"></i></button>
+            </td>
+            <td>
+              <div class="navigation-badges">
+                <span class="badge badge-blue">{{ item.expand_label }}</span>
+                {% if item.has_groups %}<span class="badge badge-violet">группы</span>{% endif %}
+                {% if item.navigation_id == 1 %}<span class="badge badge-amber">system</span>{% endif %}
+              </div>
+            </td>
+            <td>
+              <div class="navigation-meta">
+                <span>{{ item.items_count }} пунктов</span>
+              </div>
+            </td>
+            {% if can_manage %}
+            <td class="table-actions">
+              <div class="cluster navigation-actions">
+                <button class="btn btn-ghost btn-icon btn-sm navigation-action-edit" type="button" data-navigation-edit data-open-drawer="navigationDrawer" data-tooltip="Изменить" aria-label="Изменить"><i class="ti ti-pencil"></i></button>
+                <button class="btn btn-ghost btn-icon btn-sm navigation-action-items" type="button" data-navigation-items data-open-drawer="navigationItemsDrawer" data-tooltip="Пункты меню" aria-label="Пункты меню"><i class="ti ti-list-tree"></i></button>
+                <button class="btn btn-ghost btn-icon btn-sm navigation-action-copy" type="button" data-navigation-copy data-tooltip="Копировать" aria-label="Копировать"><i class="ti ti-copy"></i></button>
+                <button class="btn btn-ghost btn-icon btn-sm navigation-action-cache" type="button" data-navigation-cache data-tooltip="Очистить кеш" aria-label="Очистить кеш"><i class="ti ti-refresh"></i></button>
+                {% if item.can_delete %}
+                <button class="btn btn-ghost btn-icon btn-sm navigation-action-danger" type="button" data-navigation-delete data-tooltip="Удалить" aria-label="Удалить"><i class="ti ti-trash"></i></button>
+                {% else %}
+                <button class="btn btn-ghost btn-icon btn-sm navigation-action-locked" type="button" disabled data-tooltip="Удаление недоступно" aria-label="Удаление недоступно"><i class="ti ti-lock"></i></button>
+                {% endif %}
+              </div>
+            </td>
+            {% endif %}
+          </tr>
+          {% else %}
+          <tr><td colspan="{{ can_manage ? 6 : 5 }}"><div class="empty-state">Навигации не найдены.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+{% if can_manage %}
+<aside class="drawer drawer-right drawer-lg navigation-drawer-panel" id="navigationDrawer" role="dialog" aria-modal="true" aria-labelledby="navigationDrawerTitle" hidden>
+  <div class="drawer-header">
+    <div class="navigation-drawer-title">
+      <h3 id="navigationDrawerTitle">Новая навигация</h3>
+      <p class="text-secondary text-sm">Шаблоны уровней поддерживают теги пунктов меню.</p>
+    </div>
+    <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <form id="navigationForm" class="navigation-drawer" data-base="{{ ADMINX_BASE }}">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <input type="hidden" name="id" value="">
+    <div class="drawer-body">
+      <div class="form-grid">
+        <label class="field col-6"><span class="field-label">Название</span><input class="input" type="text" name="title" required><span class="field-error" data-error="title"></span></label>
+        <label class="field col-6"><span class="field-label">Алиас</span><input class="input" type="text" name="alias" required maxlength="20" autocomplete="off"><span class="field-hint" data-navigation-alias-state></span><span class="field-error" data-error="alias"></span></label>
+        <label class="field col-6"><span class="field-label">Разворачивание</span><select class="select" name="expand_ext"><option value="1">Все уровни</option><option value="0">Только активная ветка</option><option value="2">Текущий уровень</option></select></label>
+        <div class="field col-6 navigation-groups-field" data-navigation-groups>
+          <span class="field-label">Группы доступа</span>
+          <input type="hidden" name="user_group" value="">
+          <div class="dropdown navigation-groups-dropdown">
+            <button class="navigation-groups-trigger" type="button" data-dropdown aria-haspopup="true" aria-expanded="false">
+              <span class="navigation-groups-trigger-icon"><i class="ti ti-users-group"></i></span>
+              <span class="navigation-groups-trigger-copy"><b data-navigation-groups-summary>Выберите группы</b><small data-navigation-groups-detail>Доступ к навигации на сайте</small></span>
+              <i class="ti ti-chevron-down navigation-groups-chevron"></i>
+            </button>
+            <div class="dropdown-menu navigation-groups-menu" role="group" aria-label="Группы доступа">
+              <div class="navigation-groups-menu-head"><span>Публичные группы</span><span data-navigation-groups-count>0 из {{ access_groups|length }}</span></div>
+              <div class="navigation-groups-actions">
+                <button type="button" data-navigation-groups-all>Выбрать все</button>
+                <button type="button" data-navigation-groups-none>Снять выбор</button>
+              </div>
+              <div class="navigation-groups-options">
+                {% for group in access_groups %}
+                <label class="navigation-group-option{{ not group.active ? ' is-inactive' : '' }}">
+                  <input type="checkbox" value="{{ group.id }}" data-navigation-group-option data-group-name="{{ group.name|e('html_attr') }}">
+                  <span class="navigation-group-check"><i class="ti ti-check"></i></span>
+                  <span class="navigation-group-copy"><b>{{ group.name ?: 'Группа #' ~ group.id }}</b><small>Группа #{{ group.id }}</small></span>
+                  {% if not group.active %}<span class="badge badge-gray">выключена</span>{% endif %}
+                </label>
+                {% else %}
+                <div class="navigation-groups-empty">Группы публичных пользователей не созданы.</div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+          <span class="field-hint">Отметьте, кому показывать эту навигацию.</span>
+        </div>
+      </div>
+
+      <div class="alert alert-info navigation-template-help">
+        <i class="ti ti-info-circle"></i>
+        <div><b>Готовый шаблон первого уровня уже заполнен.</b><span>Обёртка формирует <code>&lt;nav&gt;</code>, начало и конец уровня — список <code>&lt;ul&gt;</code>, а обычный и активный пункты — элементы <code>&lt;li&gt;</code>. Поля уровней 2–3 нужны только для вложенного меню.</span></div>
+      </div>
+
+      <div class="navigation-template-layout">
+        {% set template_sections = [
+          ['base', 'Основа', 'ti-frame', 'Внешняя обёртка всего меню', [
+            ['begin', 'Начало навигации', 'Выводится один раз перед деревом пунктов.', '<nav class="site-navigation" aria-label="Основная навигация">'],
+            ['end', 'Конец навигации', 'Закрывает общую обёртку после всех уровней.', '</nav>']
+          ]],
+          ['level1', 'Уровень 1', 'ti-list', 'Корневые пункты меню', [
+            ['level1_begin', 'Начало уровня', 'Обёртка корневого списка. Тег [tag:content] определяет место вывода пунктов.', '<ul class="site-navigation-list">[tag:content]'],
+            ['level1', 'Обычный пункт', 'Шаблон неактивной ссылки первого уровня.', '<li><a href="[tag:link]">[tag:linkname]</a></li>'],
+            ['level1_active', 'Активный пункт', 'Используется для текущей страницы и её активной ветки.', '<li class="is-active"><a href="[tag:link]">[tag:linkname]</a></li>'],
+            ['level1_end', 'Конец уровня', 'Закрывает список первого уровня.', '</ul>']
+          ]],
+          ['level2', 'Уровень 2', 'ti-corner-down-right', 'Первая ступень вложенного меню', [
+            ['level2_begin', 'Начало уровня', 'Обёртка вложенного списка второго уровня.', '<ul class="site-navigation-submenu">[tag:content]'],
+            ['level2', 'Обычный пункт', 'Шаблон неактивной ссылки второго уровня.', '<li><a href="[tag:link]">[tag:linkname]</a></li>'],
+            ['level2_active', 'Активный пункт', 'Шаблон активной ссылки второго уровня.', '<li class="is-active"><a href="[tag:link]">[tag:linkname]</a></li>'],
+            ['level2_end', 'Конец уровня', 'Закрывает список второго уровня.', '</ul>']
+          ]],
+          ['level3', 'Уровень 3', 'ti-corner-down-right-double', 'Вторая ступень вложенного меню', [
+            ['level3_begin', 'Начало уровня', 'Обёртка вложенного списка третьего уровня.', '<ul>[tag:content]'],
+            ['level3', 'Обычный пункт', 'Шаблон неактивной ссылки третьего уровня.', '<li><a href="[tag:link]">[tag:linkname]</a></li>'],
+            ['level3_active', 'Активный пункт', 'Шаблон активной ссылки третьего уровня.', '<li class="is-active"><a href="[tag:link]">[tag:linkname]</a></li>'],
+            ['level3_end', 'Конец уровня', 'Закрывает список третьего уровня.', '</ul>']
+          ]]
+        ] %}
+        <div class="navigation-template-tabs" role="tablist" aria-label="Секции шаблона навигации">
+          {% for section in template_sections %}
+          <button class="navigation-template-tab{{ loop.first ? ' is-active' : '' }}" type="button" role="tab" aria-selected="{{ loop.first ? 'true' : 'false' }}" data-navigation-template-tab="{{ section[0] }}"><i class="ti {{ section[2] }}"></i><span><b>{{ section[1] }}</b><small>{{ section[3] }}</small></span><em>{{ section[4]|length }}</em></button>
+          {% endfor %}
+        </div>
+        <div class="navigation-template-panels">
+          {% for section in template_sections %}
+          <section class="navigation-template-panel" role="tabpanel" data-navigation-template-panel="{{ section[0] }}"{{ not loop.first ? ' hidden' : '' }}>
+            <div class="navigation-template-panel-head"><span class="icon-tile"><i class="ti {{ section[2] }}"></i></span><div><h3>{{ section[1] }}</h3><p>{{ section[3] }}. Редакторы расположены в порядке сборки HTML.</p></div></div>
+            <div class="navigation-code-sequence">
+              {% for field in section[4] %}
+              <section class="field navigation-code-field">
+                <div class="navigation-code-field-head">
+                  <span class="navigation-template-step">{{ loop.index }}</span>
+                  <div><label class="field-label" for="navigation-template-{{ field[0] }}">{{ field[1] }}</label><p>{{ field[2] }}</p></div>
+                  <button class="btn btn-ghost btn-icon btn-sm navigation-tags-button" type="button" data-navigation-tags-toggle data-tooltip-left="Вставить тег" aria-label="Вставить тег"><i class="ti ti-brackets-contain"></i></button>
+                </div>
+                <textarea class="textarea mono" id="navigation-template-{{ field[0] }}" name="{{ field[0] }}" rows="6" placeholder="{{ field[3]|e('html_attr') }}" data-code-editor data-mode="htmlmixed" data-height="168"></textarea>
+                <span class="field-error" data-error="{{ field[0] }}"></span>
+              </section>
+              {% endfor %}
+            </div>
+          </section>
+          {% endfor %}
+        </div>
+
+        <div class="navigation-tag-palette" data-navigation-tags hidden>
+          <div class="navigation-tag-toolbar">
+            <div class="input-wrap"><i class="ti ti-search"></i><input class="input" type="search" placeholder="Поиск тегов" data-navigation-tags-search></div>
+            <button class="btn btn-ghost btn-icon btn-sm" type="button" data-navigation-tags-close aria-label="Закрыть"><i class="ti ti-x"></i></button>
+          </div>
+          <div class="navigation-tag-nav" role="tablist" aria-label="Группы тегов">
+            <button class="is-active" type="button" data-navigation-tag-tab="wrap"><span>Обёртки</span><b>1</b></button>
+            <button type="button" data-navigation-tag-tab="item"><span>Пункт меню</span><b>13</b></button>
+            <button type="button" data-navigation-tag-tab="conditions"><span>Условия</span><b>9</b></button>
+            <button type="button" data-navigation-tag-tab="html"><span>HTML</span><b>11</b></button>
+          </div>
+          <div class="navigation-tag-groups">
+            <section class="navigation-tag-group is-active" data-navigation-tag-group data-navigation-tag-panel="wrap"><div class="navigation-tag-list"><button type="button" data-navigation-template-tag="[tag:content]"><code>[tag:content]</code><span>Содержимое вложенных пунктов</span></button></div></section>
+            <section class="navigation-tag-group" data-navigation-tag-group data-navigation-tag-panel="item"><div class="navigation-tag-list">{% for tag in ['[tag:linkid]', '[tag:linkname]', '[tag:link]', '[tag:target]', '[tag:desc]', '[tag:img]', '[tag:img_act]', '[tag:img_id]', '[tag:css_style]', '[tag:css_id]', '[tag:css_class]', '[tag:level:2]', '[tag:level:3]'] %}<button type="button" data-navigation-template-tag="{{ tag|e('html_attr') }}"><code>{{ tag }}</code><span>Данные пункта меню</span></button>{% endfor %}</div></section>
+            <section class="navigation-tag-group" data-navigation-tag-group data-navigation-tag-panel="conditions"><div class="navigation-tag-list">
+              <button type="button" data-navigation-template-tag="[tag:if_first][tag:/if]" data-navigation-template-select="[tag:if_first]"><code>[tag:if_first]</code><span>Первый пункт</span></button>
+              <button type="button" data-navigation-template-tag="[tag:if_not_first][tag:/if]" data-navigation-template-select="[tag:if_not_first]"><code>[tag:if_not_first]</code><span>Не первый пункт</span></button>
+              <button type="button" data-navigation-template-tag="[tag:if_last][tag:/if]" data-navigation-template-select="[tag:if_last]"><code>[tag:if_last]</code><span>Последний пункт</span></button>
+              <button type="button" data-navigation-template-tag="[tag:if_not_last][tag:/if]" data-navigation-template-select="[tag:if_not_last]"><code>[tag:if_not_last]</code><span>Не последний пункт</span></button>
+              <button type="button" data-navigation-template-tag="[tag:if_every:][tag:/if]" data-navigation-template-select="[tag:if_every:]"><code>[tag:if_every:XXX]</code><span>Каждый N-й пункт</span></button>
+              <button type="button" data-navigation-template-tag="[tag:if_not_every:][tag:/if]" data-navigation-template-select="[tag:if_not_every:]"><code>[tag:if_not_every:XXX]</code><span>Кроме каждого N-го</span></button>
+              <button type="button" data-navigation-template-tag="[tag:if_sub_level][tag:/if]" data-navigation-template-select="[tag:if_sub_level]"><code>[tag:if_sub_level]</code><span>Есть вложенный уровень</span></button>
+              <button type="button" data-navigation-template-tag="[tag:if_no_sub_level][tag:/if]" data-navigation-template-select="[tag:if_no_sub_level]"><code>[tag:if_no_sub_level]</code><span>Нет вложенного уровня</span></button>
+              <button type="button" data-navigation-template-tag="[tag:if_every:2]чётный[tag:if_else]нечётный[tag:/if]"><code>пример чётности</code><span>Условие с альтернативой</span></button>
+            </div></section>
+            <section class="navigation-tag-group" data-navigation-tag-group data-navigation-tag-panel="html"><div class="navigation-tag-list">{% for tag in ['<ol></ol>', '<ul></ul>', '<li></li>', '<p class=\"\"></p>', '<strong></strong>', '<em></em>', '<div class=\"\" id=\"\"></div>', '<a href=\"\" title=\"\"></a>', '<img src=\"\" alt=\"\" />', '<span></span>', '<br>'] %}<button type="button" data-navigation-template-tag="{{ tag|e('html_attr') }}"><code>{{ tag }}</code><span>HTML</span></button>{% endfor %}</div></section>
+            <div class="navigation-tag-empty" data-navigation-tags-empty hidden>Ничего не найдено</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <button class="btn btn-ghost" type="button" data-close-drawer>Отмена</button>
+      <button class="btn btn-secondary" type="button" data-navigation-submit-stay data-code-save-stay style="margin-left:auto"><i class="ti ti-device-floppy"></i>Сохранить и остаться</button>
+      <button class="btn btn-primary" type="submit"><i class="ti ti-check"></i>Сохранить</button>
+    </div>
+  </form>
+</aside>
+
+<aside class="drawer drawer-right drawer-lg navigation-builder-drawer-panel" id="navigationItemsDrawer" role="dialog" aria-modal="true" aria-labelledby="navigationItemsDrawerTitle" hidden>
+  <div class="drawer-header">
+    <div class="navigation-builder-drawer-head">
+      <span class="icon-tile navigation-head-icon" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-sitemap"></i></span>
+      <div class="navigation-drawer-title">
+        <h3 id="navigationItemsDrawerTitle">Конструктор меню сайта</h3>
+        <p class="text-secondary text-sm" data-navigation-items-subtitle>Структура меню.</p>
+      </div>
+    </div>
+    <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="drawer-body navigation-builder">
+    <div class="navigation-builder-layout">
+      <section class="dual-panel navigation-builder-tree-panel">
+        <div class="navigation-builder-panel-head">
+          <span class="icon-tile navigation-mini-icon" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-list-tree"></i></span>
+          <div>
+            <h2>Структура меню</h2>
+            <p>Порядок и вложенность пунктов.</p>
+          </div>
+          <span class="badge badge-blue" data-navigation-items-count>0</span>
+          <button class="btn btn-primary btn-sm" type="button" data-navigation-item-new><i class="ti ti-plus"></i>Пункт</button>
+        </div>
+        <div class="navigation-items-tree" data-navigation-items-tree></div>
+      </section>
+
+      <section class="dual-panel navigation-builder-props">
+        <div class="navigation-builder-panel-head">
+          <span class="icon-tile navigation-mini-icon" style="--tile-bg:var(--amber-100);--tile-fg:var(--amber-600)"><i class="ti ti-adjustments-horizontal"></i></span>
+          <div>
+            <h2 data-navigation-item-form-title>Свойства пункта</h2>
+            <p>Ссылка, родитель и оформление.</p>
+          </div>
+          <span class="badge badge-gray" data-navigation-item-form-state>не выбран</span>
+        </div>
+        <form id="navigationItemForm" class="navigation-item-form" data-base="{{ ADMINX_BASE }}">
+          <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+          <input type="hidden" name="navigation_item_id" value="">
+          <input type="hidden" name="navigation_id" value="">
+          <input type="hidden" name="position" value="1">
+          <div class="navigation-builder-empty" data-navigation-item-empty>
+            <span class="icon-tile" style="--tile-bg:var(--gray-100);--tile-fg:var(--gray-600)"><i class="ti ti-pointer"></i></span>
+            <b>Выберите пункт меню</b>
+          </div>
+          <div class="navigation-item-fields" data-navigation-item-fields hidden>
+            <div class="form-grid">
+              <label class="field col-12"><span class="field-label">Название</span><input class="input" type="text" name="title" required><span class="field-error" data-error="item_title"></span></label>
+              <label class="field col-12"><span class="field-label">Ссылка / alias</span><input class="input" type="text" name="alias" required><span class="field-error" data-error="item_alias"></span></label>
+              <label class="field col-6"><span class="field-label">Родитель</span><select class="select" name="parent_id" data-navigation-item-parent><option value="0">Корень меню</option></select></label>
+              <div class="field col-6">
+                <span class="field-label">Документ</span>
+                <input type="hidden" name="document_id" value="" data-navigation-document-id>
+                <div class="navigation-picker-input">
+                  <input class="input" type="text" value="" placeholder="Не выбран" readonly data-navigation-document-display>
+                  <button class="btn btn-secondary btn-icon" type="button" data-navigation-document-pick data-tooltip="Выбрать документ" aria-label="Выбрать документ"><i class="ti ti-file-search"></i></button>
+                  <button class="btn btn-ghost btn-icon" type="button" data-navigation-document-clear data-tooltip="Убрать документ" aria-label="Убрать документ" hidden><i class="ti ti-x"></i></button>
+                </div>
+                <span class="field-error" data-error="item_document_id"></span>
+              </div>
+              <label class="field col-6"><span class="field-label">Target</span><select class="select" name="target"><option value="_self">В этом окне</option><option value="_blank">В новом окне</option><option value="_parent">Parent</option><option value="_top">Top</option></select></label>
+              <div class="field col-6">
+                <span class="field-label">Изображение</span>
+                <div class="navigation-picker-input">
+                  <input class="input" type="text" name="image" placeholder="/uploads/..." data-navigation-image-input>
+                  <button class="btn btn-secondary btn-icon" type="button" data-navigation-image-pick data-tooltip="Выбрать изображение" aria-label="Выбрать изображение"><i class="ti ti-photo-search"></i></button>
+                  <button class="btn btn-ghost btn-icon" type="button" data-navigation-image-clear data-tooltip="Убрать изображение" aria-label="Убрать изображение" hidden><i class="ti ti-x"></i></button>
+                </div>
+                <div class="navigation-image-selection" data-navigation-image-selection hidden><img src="" alt=""><span data-navigation-image-name></span></div>
+              </div>
+              <label class="field col-12"><span class="field-label">Описание</span><textarea class="textarea" name="description" rows="4"></textarea></label>
+              <label class="field col-12"><span class="field-label">CSS style</span><input class="input" type="text" name="css_style"></label>
+              <label class="field col-6"><span class="field-label">CSS class</span><input class="input" type="text" name="css_class"></label>
+              <label class="field col-6"><span class="field-label">CSS ID</span><input class="input" type="text" name="css_id"></label>
+            </div>
+          </div>
+        </form>
+      </section>
+    </div>
+  </div>
+  <div class="drawer-footer navigation-builder-footer">
+    <button class="btn btn-ghost" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i>Закрыть</button>
+    <button class="btn btn-secondary" type="button" data-navigation-item-reset aria-label="Сбросить изменения" disabled><i class="ti ti-rotate"></i>Сбросить</button>
+    <button class="btn btn-primary" type="submit" form="navigationItemForm" data-navigation-item-save disabled><i class="ti ti-device-floppy"></i>Сохранить пункт</button>
+  </div>
+</aside>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS `{{module_prefix}}_registration_certificates` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `number` VARCHAR(120) NOT NULL DEFAULT '',
+  `holder` VARCHAR(255) NOT NULL DEFAULT '',
+  `product_name` VARCHAR(255) NOT NULL DEFAULT '',
+  `risk_class` VARCHAR(4) NOT NULL DEFAULT '',
+  `status` VARCHAR(20) NOT NULL DEFAULT 'active',
+  `document_id` INT UNSIGNED NULL DEFAULT NULL,
+  `scan_url` VARCHAR(500) NOT NULL DEFAULT '',
+  `issued_at` INT UNSIGNED NOT NULL DEFAULT 0,
+  `valid_until` INT UNSIGNED NOT NULL DEFAULT 0,
+  `perpetual` TINYINT(1) NOT NULL DEFAULT 0,
+  `note` TEXT NOT NULL,
+  `created_at` INT UNSIGNED NOT NULL DEFAULT 0,
+  `updated_at` INT UNSIGNED NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `idx_reg_status` (`status`, `updated_at`),
+  KEY `idx_reg_risk` (`risk_class`),
+  KEY `idx_reg_document` (`document_id`),
+  KEY `idx_reg_number` (`number`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

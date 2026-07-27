@@ -1,0 +1,10 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}404 — не найдено{% endblock %}
+{% block content %}
+<div class="error-screen">
+  <div class="error-code">404</div>
+  <h1>Страница не найдена</h1>
+  <p class="text-secondary">Раздел ещё не перенесён в новую админку или адрес указан неверно.</p>
+  <a class="btn btn-primary" href="{{ ADMINX_BASE }}/"><i class="ti ti-arrow-left"></i>На дашборд</a>
+</div>
+{% endblock %}

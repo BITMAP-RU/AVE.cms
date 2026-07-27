@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="auto_0156bf1b8aac8565">Add more...</phrase>
+	<phrase data="auto_0f9ccee053fe3b6b">New</phrase>
+	<phrase data="auto_12bfabff3d7dc01c">Add a keyword</phrase>
+	<phrase data="auto_1af72c14888c4574">Creation preset</phrase>
+	<phrase data="auto_25a9845975119103">Creation preset saved</phrase>
+	<phrase data="auto_25dc101484dbd55c">Failed to load list</phrase>
+	<phrase data="auto_3812a04b189ec1fd">new</phrase>
+	<phrase data="auto_4044fbc87708b9ad">Clear daily statistics?</phrase>
+	<phrase data="auto_46551a5e6e43e854">Statistics cleared</phrase>
+	<phrase data="auto_5c019fa5d03ca5cf">in the section</phrase>
+	<phrase data="auto_5e6d6b07b27b7a7c">All view_count lines will be removed. General document counters will remain unchanged.</phrase>
+	<phrase data="auto_619742ac4a834c45">doc.</phrase>
+	<phrase data="auto_66d207b9ebe9e4e3">&lt;div class=&quot;documents-term-status is-error&quot;&gt;&lt;i class=&quot;ti ti-alert-circle&quot;&gt;&lt;/i&gt;&lt;span&gt;Failed to load options&lt;/span&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_6e408d3c9c3156bf">Delete &quot;</phrase>
+	<phrase data="auto_707a724dce1fa0d4">URL copied</phrase>
+	<phrase data="auto_72c618d46424c93a">There are no saved values yet</phrase>
+	<phrase data="auto_7c3bb087be98e4e9">Failed to load statistics</phrase>
+	<phrase data="auto_7f09659cde925652">Find or add a tag</phrase>
+	<phrase data="auto_86ea33aef5e95d4f">Delete</phrase>
+	<phrase data="auto_8ff9429d66687894">No matches</phrase>
+	<phrase data="auto_9729bca62f6c558e">Request Error</phrase>
+	<phrase data="auto_98b2073ed1815f28">Clear</phrase>
+	<phrase data="auto_a90ed3357338f605">Loading...</phrase>
+	<phrase data="auto_b0a419827426861b">Preset deleted</phrase>
+	<phrase data="auto_beed168817322eeb">from</phrase>
+	<phrase data="auto_c2b70c3bb20678a7">Failed to apply filters</phrase>
+	<phrase data="auto_c5eb26618a7ede98">Read only</phrase>
+	<phrase data="auto_c7fca87d8dd9b0e6">Click to find document</phrase>
+	<phrase data="auto_c9d8ea6476aa730d">Add &quot;</phrase>
+	<phrase data="auto_cccd51a8c6aa88c1">&lt;div class=&quot;documents-term-status&quot;&gt;&lt;i class=&quot;ti ti-loader-2&quot;&gt;&lt;/i&gt;&lt;span&gt;Looking for matches...&lt;/span&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_ccfe048a5551ed0f">preset</phrase>
+	<phrase data="auto_cdd3b42f2a48df2f">Delete preset</phrase>
+	<phrase data="auto_dcedec8acc4af7ca">Assignment document</phrase>
+	<phrase data="auto_eeb60e75b96656e7">Incorrect answer</phrase>
+	<phrase data="auto_f26e5c0c72082089">Find or add a keyword</phrase>
+	<phrase data="auto_f3d123e46297531d">in</phrase>
+	<phrase data="auto_f61de80bf0ca15a4">No document selected</phrase>
+	<phrase data="auto_f7286439b109e428">New redirect</phrase>
+	<phrase data="auto_fa9f0524f3a0531e">Add a tag</phrase>
+	<phrase data="runtime_b8012cb642c887a0">in</phrase>
+	<phrase data="runtime_c5412ba2cc2fc45a">Creation preset saved</phrase>
+	<phrase data="runtime_dd48804aa38b03e1">Preset deleted</phrase>
+	<phrase data="runtime_e1c88af54b9fced2">Document #</phrase>
+	<phrase data="runtime_f9a506077fa0d961">New</phrase>
+</language>

@@ -1,0 +1,203 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}Системные события{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i>
+  <span>Системные события</span>
+</nav>
+
+<div class="page-header">
+  <div class="between">
+    <div>
+      <h1>Системные события</h1>
+      <p class="text-secondary" style="margin-top:5px">Аудит действий, ошибки и системные журналы сайта</p>
+    </div>
+    <div class="cluster">
+      <a class="btn btn-secondary" href="{{ ADMINX_BASE }}/events/export/{{ active_source }}?q={{ q|url_encode }}"><i class="ti ti-download"></i>Экспорт</a>
+      {% if can_manage and active_source_def.clearable %}
+      <button class="btn btn-danger-soft" type="button" data-events-clear="{{ active_source }}"><i class="ti ti-trash"></i>Очистить</button>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="events-summary">
+  {% for source in sources %}
+  <a class="card events-source{{ active_source == source.code ? ' active' : '' }}" href="{{ ADMINX_BASE }}/events?source={{ source.code }}">
+    <span class="icon-tile" style="--tile-bg:{{ source.tile_bg }};--tile-fg:{{ source.tile_fg }}"><i class="{{ source.icon }}"></i></span>
+    <div>
+      <div class="events-source-title">{{ source.label }}</div>
+      <div class="text-secondary text-sm">{{ source.description }}</div>
+      <div class="cluster events-source-meta">
+        <span class="badge badge-blue">{{ source.count }}</span>
+        <span class="text-muted text-xs">{{ source.size }}</span>
+      </div>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+
+<div class="tabs events-tabs" role="tablist" aria-label="Источники событий">
+  {% for source in sources %}
+  <a class="tab" role="tab" aria-selected="{{ active_source == source.code ? 'true' : 'false' }}" href="{{ ADMINX_BASE }}/events?source={{ source.code }}"><i class="{{ source.icon }}"></i>{{ source.label }}<span class="tab-count">{{ source.count }}</span></a>
+  {% endfor %}
+</div>
+
+{% if active_source == 'legacy' %}
+<div class="alert alert-info events-source-help"><i class="ti ti-info-circle alert-ic"></i><div><b>Что попадает в журнал приложения</b><p>Сюда выводятся служебные сообщения публичного runtime: результаты фоновых операций, предупреждения и записи старых интеграций. Действия администраторов находятся во вкладке «Аудит», SQL и 404 вынесены отдельно.</p></div></div>
+{% endif %}
+
+<section class="tab-panel active">
+  <div class="section-header events-panel-header">
+    <div class="section-icon"><i class="{{ active_source_def.icon }}"></i></div>
+    <div>
+      <div class="section-eyebrow">Журнал</div>
+      <h2>{{ active_source_def.label }}</h2>
+      <p class="section-desc">{{ active_source_def.description }}</p>
+    </div>
+    <div class="section-header-right">
+      <form class="events-filter" method="get" action="{{ ADMINX_BASE }}/events">
+        <input type="hidden" name="source" value="{{ active_source }}">
+        <div class="input-wrap">
+          <i class="ti ti-search"></i>
+          <input class="input" type="search" name="q" value="{{ q }}" placeholder="Поиск по журналу">
+        </div>
+        <select class="select" name="limit">
+          {% for n in [100, 300, 500, 1000] %}
+          <option value="{{ n }}"{{ limit == n ? ' selected' : '' }}>{{ n }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn btn-secondary" type="submit"><i class="ti ti-filter"></i>Показать</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card events-card">
+    <div class="events-section-head">
+      <div class="events-section-title">
+        <span class="icon-tile events-head-icon" style="--tile-bg:{{ active_source_def.tile_bg }};--tile-fg:{{ active_source_def.tile_fg }}"><i class="{{ active_source_def.icon }}"></i></span>
+        <div>
+          <h2>{{ active_source == 'referrers' ? 'Журнал переходов' : 'Список событий' }}</h2>
+          <p class="text-secondary">{{ active_source == 'referrers' ? 'Сгруппированные внешние входы, источники и рекламные метки.' : 'Последние записи выбранного источника с фильтром и деталями.' }}</p>
+        </div>
+      </div>
+      <div class="events-section-meta">
+        <span class="badge badge-blue">{{ rows|length }}</span>
+      </div>
+    </div>
+    <div class="events-table-wrap table-scroll">
+      <table class="table table-compact events-table{{ active_source == 'referrers' ? ' events-referrers-table' : '' }}">
+        {% if active_source == 'referrers' %}
+        <colgroup>
+          <col class="events-col-time">
+          <col class="events-col-ref-type">
+          <col class="events-col-ref-source">
+          <col class="events-col-message">
+          <col class="events-col-hits">
+          <col class="events-col-actions">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Последний вход</th>
+            <th>Тип</th>
+            <th>Источник</th>
+            <th>Страница входа</th>
+            <th>Переходы</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+          <tr class="events-row {{ row.state_class }}">
+            <td class="mono text-muted">{{ row.time_display }}</td>
+            <td><span class="badge {{ row.source_type_badge }} events-source-kind">{{ row.source_type_label }}</span></td>
+            <td><div class="events-referrer-source">{{ row.source_name }}</div></td>
+            <td>
+              <div class="events-message mono">{{ row.message }}</div>
+              {% if row.url %}<div class="text-muted text-xs events-referrer-url">{{ row.url }}</div>{% endif %}
+            </td>
+            <td><span class="badge badge-gray events-hit-count">{{ row.hits }}</span></td>
+            <td>
+              {% if row.details_text %}
+              <button class="btn btn-ghost btn-icon btn-sm" type="button" data-events-details data-tooltip="Детали" aria-label="Детали"><i class="ti ti-chevron-down"></i></button>
+              {% endif %}
+            </td>
+          </tr>
+          {% if row.details_text %}
+          <tr class="events-details-row" hidden>
+            <td colspan="6"><pre class="events-details">{{ row.details_text }}</pre></td>
+          </tr>
+          {% endif %}
+          {% else %}
+          <tr>
+            <td colspan="6">
+              <div class="error-screen events-empty">
+                <div class="error-ic"><i class="ti ti-route-off"></i></div>
+                <h4>Переходов пока нет</h4>
+                <p class="text-sm text-secondary">Здесь появятся внешние входы и переходы с рекламными метками.</p>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        {% else %}
+        <colgroup>
+          <col class="events-col-time">
+          <col class="events-col-level">
+          <col class="events-col-actor">
+          <col class="events-col-message">
+          <col class="events-col-ip">
+          <col class="events-col-actions">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Время</th>
+            <th>Состояние</th>
+            <th>Пользователь</th>
+            <th>Событие</th>
+            <th>IP</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+          <tr class="events-row {{ row.state_class }}">
+            <td class="mono text-muted">{{ row.time_display }}</td>
+            <td><span class="badge {{ row.state_badge }} events-state"><i class="{{ row.state_icon }}"></i>{{ row.state_label }}</span></td>
+            <td>{{ row.actor }}</td>
+            <td>
+              <div class="events-message">{{ row.message }}</div>
+              {% if row.url %}<div class="mono text-muted text-xs">{{ row.url }}</div>{% endif %}
+            </td>
+            <td class="mono text-muted">{{ row.ip }}</td>
+            <td>
+              {% if row.details_text %}
+              <button class="btn btn-ghost btn-icon btn-sm" type="button" data-events-details data-tooltip="Детали" aria-label="Детали"><i class="ti ti-chevron-down"></i></button>
+              {% endif %}
+            </td>
+          </tr>
+          {% if row.details_text %}
+          <tr class="events-details-row" hidden>
+            <td colspan="6"><pre class="events-details">{{ row.details_text }}</pre></td>
+          </tr>
+          {% endif %}
+          {% else %}
+          <tr>
+            <td colspan="6">
+              <div class="error-screen events-empty">
+                <div class="error-ic"><i class="ti ti-history-off"></i></div>
+                <h4>Записей нет</h4>
+                <p class="text-sm text-secondary">Для выбранного источника журнал пуст или файл ещё не создан.</p>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+        {% endif %}
+      </table>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

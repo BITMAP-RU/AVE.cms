@@ -1,0 +1,72 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}PHP-консоль{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i><span>PHP-консоль</span>
+</nav>
+
+<div class="page-header">
+  <div class="between">
+    <div>
+      <h1>PHP-консоль</h1>
+      <p class="text-secondary">Системный инструмент · изолированный PHP-процесс</p>
+    </div>
+    <span class="badge badge-{{ runner_enabled ? 'orange' : 'red' }} badge-dot">{{ runner_enabled ? 'Локальное выполнение' : 'Выполнение отключено' }}</span>
+  </div>
+</div>
+
+<div class="alert alert-warning console-warning">
+  <i class="ti ti-alert-triangle"></i>
+  <div><b>Код выполняется с доступом к приложению и базе данных.</b> Старые фрагменты не импортируются автоматически.</div>
+</div>
+
+<div class="section-header ax-panel-header console-panel-header">
+  <div class="section-icon"><i class="ti ti-terminal-2"></i></div>
+  <div>
+    <div class="section-eyebrow">Система</div>
+    <h2>Редактор</h2>
+  </div>
+</div>
+
+<div class="card console-editor-card" data-console data-base="{{ ADMINX_BASE }}">
+  <div class="console-toolbar">
+    <select class="select" data-console-snippets aria-label="Сохранённые сниппеты">
+      <option value="">Новый сниппет</option>
+      {% for item in snippets %}<option value="{{ item.id }}">{{ item.name }}</option>{% endfor %}
+    </select>
+    <input class="input" type="text" maxlength="190" placeholder="Название сниппета" data-console-name{{ can_manage ? '' : ' disabled' }}>
+    <div class="cluster console-toolbar-actions">
+      <button class="btn btn-ghost btn-icon ax-act ax-act-view" type="button" data-console-new data-tooltip="Новый" aria-label="Новый"><i class="ti ti-file-plus"></i></button>
+      {% if can_manage %}
+      <button class="btn btn-ghost btn-icon ax-act ax-act-ok" type="button" data-console-save data-tooltip="Сохранить" aria-label="Сохранить"><i class="ti ti-device-floppy"></i></button>
+      <button class="btn btn-ghost btn-icon ax-act ax-act-danger" type="button" data-console-delete data-tooltip="Удалить" aria-label="Удалить" disabled><i class="ti ti-trash"></i></button>
+      {% endif %}
+    </div>
+  </div>
+
+  <textarea data-console-code data-code-editor data-mode="php" data-height="480" spellcheck="false">echo "AVE.cms " . APP_VERSION . PHP_EOL;</textarea>
+
+  <div class="console-actions">
+    <div class="cluster">
+      {% if can_manage %}<button class="btn btn-secondary" type="button" data-console-lint><i class="ti ti-shield-check"></i>Проверить</button>{% endif %}
+      <button class="btn btn-ghost" type="button" data-console-clear><i class="ti ti-eraser"></i>Очистить</button>
+    </div>
+    {% if can_execute %}<button class="btn btn-primary" type="button" data-console-execute{{ runner_enabled ? '' : ' disabled' }}><i class="ti ti-player-play"></i>Выполнить</button>{% endif %}
+  </div>
+</div>
+
+<div class="section-header ax-panel-header console-output-header">
+  <div class="section-icon"><i class="ti ti-file-description"></i></div>
+  <div>
+    <div class="section-eyebrow">Результат</div>
+    <h2>Вывод процесса</h2>
+  </div>
+  <div class="section-header-right"><span class="text-muted text-sm" data-console-meta>Не запускалось</span></div>
+</div>
+
+<div class="card console-output-card">
+  <pre data-console-output aria-live="polite">Готово к выполнению.</pre>
+</div>
+
+{% endblock %}

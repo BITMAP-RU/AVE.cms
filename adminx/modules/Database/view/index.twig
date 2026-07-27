@@ -1,0 +1,205 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}База данных{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i>
+  <span>База данных</span>
+</nav>
+
+<div class="page-header">
+  <div class="between">
+    <div>
+      <h1>База данных</h1>
+      <p class="text-secondary">{{ stats.database }} · префикс <span class="mono">{{ stats.prefix }}_</span></p>
+    </div>
+    {% if can_manage %}
+    <div class="cluster">
+      {% if schema.pending > 0 %}
+      <button class="btn btn-secondary" type="button" data-db-schema-update><i class="ti ti-database-cog"></i>Миграции <span class="badge badge-blue">{{ schema.pending }}</span></button>
+      {% else %}
+      <span class="database-schema-current"><i class="ti ti-circle-check"></i>Схема актуальна</span>
+      {% endif %}
+      <button class="btn btn-secondary" type="button" data-db-optimize-all><i class="ti ti-wand"></i>Оптимизировать все</button>
+      <button class="btn btn-primary" type="button" data-db-backup><i class="ti ti-database-export"></i>Полный бэкап</button>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="ax-summary">
+  <div class="card stat-tile"><div class="stat-ico"><i class="ti ti-table"></i></div><div><div class="stat-val">{{ stats.tables }}</div><div class="stat-label">Таблиц</div></div></div>
+  <div class="card stat-tile"><div class="stat-ico" style="background:var(--color-violet-soft);color:var(--color-violet)"><i class="ti ti-database"></i></div><div><div class="stat-val">{{ stats.size_h }}</div><div class="stat-label">Размер</div></div></div>
+  <div class="card stat-tile"><div class="stat-ico" style="background:var(--color-success-soft);color:var(--color-success)"><i class="ti ti-list-numbers"></i></div><div><div class="stat-val">{{ stats.rows|number_format(0, '.', ' ') }}</div><div class="stat-label">Записей</div></div></div>
+  <div class="card stat-tile"><div class="stat-ico" style="background:var(--background-inset);color:var(--text-muted)"><i class="ti ti-archive"></i></div><div><div class="stat-val">{{ backups|length }}</div><div class="stat-label">Бэкапов</div></div></div>
+</div>
+
+{% if stats.myisam > 0 %}
+<div class="alert alert-warning database-engine-note">
+  <i class="ti ti-database-cog alert-ic"></i>
+  <div>
+    <b>В рабочей схеме осталось {{ stats.myisam }} таблиц MyISAM</b>
+    <p>Это таблицы, перенесённые из легаси со старым движком. Перед переводом в InnoDB сделайте полный бэкап: операция может временно заблокировать запись в крупные таблицы.</p>
+  </div>
+  {% if can_manage %}<button class="btn btn-warning" type="button" data-db-convert-innodb><i class="ti ti-transfer"></i>Перевести в InnoDB</button>{% endif %}
+</div>
+{% else %}
+<div class="alert alert-success database-engine-note"><i class="ti ti-circle-check alert-ic"></i><div><b>Рабочая схема использует InnoDB</b><p>Все {{ stats.innodb }} таблиц поддерживают транзакции и восстановление после сбоя.</p></div></div>
+{% endif %}
+
+<div class="tabs db-tabs" role="tablist">
+  <button class="tab" type="button" role="tab" aria-selected="true" data-db-tab="tables"><i class="ti ti-table"></i>Таблицы<span class="tab-count">{{ tables|length }}</span></button>
+  <button class="tab" type="button" role="tab" aria-selected="false" data-db-tab="backups"><i class="ti ti-archive"></i>Резервные копии<span class="tab-count">{{ backups|length }}</span></button>
+</div>
+
+{# ---------------- Таблицы ---------------- #}
+<section data-db-panel="tables">
+  <div class="section-header ax-panel-header database-panel-header">
+    <div class="section-icon"><i class="ti ti-table"></i></div>
+    <div>
+      <div class="section-eyebrow">Схема</div>
+      <h2>Таблицы</h2>
+      <p class="section-desc">Движок, объём и ориентировочное число строк каждой таблицы рабочей схемы.</p>
+    </div>
+  </div>
+
+  <div class="card ax-list-card">
+    <div class="ax-list-head"><div class="ax-list-title"><span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-table"></i></span><div><h2>Таблицы текущей схемы</h2><p class="text-secondary">Движок, количество записей, размер и обслуживание.</p></div></div><span class="badge badge-blue">{{ tables|length }}</span></div>
+    <div class="table-toolbar db-tables-toolbar">
+      <div class="input-wrap"><i class="ti ti-search"></i><input class="input" type="search" placeholder="Поиск по имени таблицы" data-db-table-filter aria-label="Поиск по имени таблицы"></div>
+      <span class="text-muted text-sm db-tables-count" data-db-table-visible>{{ tables|length }} из {{ tables|length }}</span>
+    </div>
+    <div class="table-scroll db-tablewrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Таблица</th>
+            <th style="width:110px">Движок</th>
+            <th style="width:120px">Записей</th>
+            <th style="width:120px">Размер</th>
+            {% if can_manage %}<th class="table-actions" style="width:64px"><span class="sr-only">Действия</span></th>{% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for t in tables %}
+          <tr data-table="{{ t.name }}">
+            <td><span class="mono">{{ t.name }}</span></td>
+            <td><span class="badge badge-{{ t.is_myisam ? 'orange' : 'green' }}">{{ t.engine }}</span></td>
+            <td>{{ t.rows|number_format(0, '.', ' ') }}</td>
+            <td class="text-secondary">{{ t.size_h }}</td>
+            {% if can_manage %}
+            <td class="table-actions">
+              <div class="cluster" style="gap:4px">
+                <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-ok" data-db-op="optimize" data-tooltip="Оптимизировать" aria-label="Оптимизировать"><i class="ti ti-wand"></i></button>
+                {% if t.is_myisam %}
+                <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-view" data-db-op="repair" data-tooltip="Восстановить MyISAM" aria-label="Восстановить MyISAM"><i class="ti ti-heart-rate-monitor"></i></button>
+                {% endif %}
+              </div>
+            </td>
+            {% endif %}
+          </tr>
+          {% else %}
+          <tr><td colspan="5" class="ax-empty">Таблиц с префиксом {{ stats.prefix }}_ нет</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+{# ---------------- Резервные копии ---------------- #}
+<section data-db-panel="backups" hidden>
+  <div class="section-header ax-panel-header database-panel-header">
+    <div class="section-icon"><i class="ti ti-archive"></i></div>
+    <div>
+      <div class="section-eyebrow">Дампы</div>
+      <h2>Резервные копии</h2>
+      <p class="section-desc">SQL-дампы единой рабочей схемы <span class="mono">{{ stats.prefix }}_</span> хранятся в <span class="mono">tmp/backup</span>.</p>
+    </div>
+  </div>
+
+  <div class="alert alert-warning database-backup-note">
+    <i class="ti ti-alert-triangle alert-ic"></i>
+    <div><b>Восстановление полностью заменяет данные текущей схемы</b><p>Перед запуском AVE.cms автоматически создаст страховочную копию. Не закрывайте страницу до завершения операции.</p></div>
+  </div>
+
+  <div class="card ax-list-card database-backups-card">
+    <div class="ax-list-head">
+      <div class="ax-list-title"><span class="icon-tile" style="--tile-bg:var(--amber-100);--tile-fg:var(--amber-600)"><i class="ti ti-archive"></i></span><div><h2>Файлы резервных копий</h2><p class="text-secondary">Собственные и загруженные SQL-дампы базы данных.</p></div></div>
+      <div class="cluster database-backup-head-actions">
+        {% if can_manage %}
+        <input type="file" accept=".sql,.sql.gz,application/sql,application/gzip" data-db-backup-file hidden>
+        <button class="btn btn-secondary btn-sm" type="button" data-db-backup-upload><i class="ti ti-upload"></i>Загрузить копию</button>
+        {% endif %}
+        <span class="badge badge-blue">{{ backups|length }}</span>
+      </div>
+    </div>
+    <div class="table-scroll db-tablewrap">
+      <table class="table database-backups-table">
+        <thead>
+          <tr>
+            <th>Файл</th>
+            <th style="width:120px">Размер</th>
+            <th style="width:170px">Создан</th>
+            <th class="table-actions" style="width:134px"><span class="sr-only">Действия</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for b in backups %}
+          <tr data-backup="{{ b.name }}">
+            <td>
+              <span class="cluster" style="gap:8px">
+                <i class="ti ti-file-zip text-muted"></i>
+                <span class="mono text-sm">{{ b.name }}</span>
+                {% if b.own %}<span class="badge badge-blue">adminx</span>{% endif %}
+              </span>
+            </td>
+            <td class="text-secondary">{{ b.size_h }}</td>
+            <td class="text-muted text-sm">{{ b.mtime|date('d.m.Y H:i') }}</td>
+            <td class="table-actions">
+              <div class="cluster" style="gap:4px">
+                <a class="btn btn-ghost btn-icon btn-sm ax-act ax-act-view" href="{{ ADMINX_BASE }}/database/backup/download?file={{ b.name|url_encode }}" data-tooltip="Скачать" aria-label="Скачать"><i class="ti ti-download"></i></a>
+                {% if can_manage %}
+                {% if b.own %}<button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-ok" data-db-backup-restore data-tooltip="Восстановить" aria-label="Восстановить"><i class="ti ti-database-import"></i></button>{% endif %}
+                <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-danger" data-db-backup-delete data-tooltip="Удалить" aria-label="Удалить"><i class="ti ti-trash"></i></button>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" class="ax-empty">Резервных копий пока нет</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<div class="database-restore-overlay" data-db-restore-progress hidden>
+  <section class="card database-restore-dialog" role="dialog" aria-modal="true" aria-labelledby="databaseRestoreTitle">
+    <div class="database-restore-head">
+      <span class="icon-tile" data-db-restore-icon style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-database-import"></i></span>
+      <div><div class="section-eyebrow">Резервная копия</div><h2 id="databaseRestoreTitle" data-db-restore-title>Подготовка восстановления</h2></div>
+      <strong data-db-restore-percent>0%</strong>
+    </div>
+    <div class="database-restore-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-db-restore-track><span data-db-restore-bar></span></div>
+    <div class="database-restore-current">
+      <span class="database-restore-pulse" aria-hidden="true"></span>
+      <div><b data-db-restore-detail>Проверяем выбранный файл</b><small data-db-restore-counter>Операция ещё не началась</small></div>
+    </div>
+    <div class="database-restore-steps" data-db-restore-steps>
+      <div data-restore-stage="verify"><i class="ti ti-shield-check"></i><span>Проверка</span></div>
+      <div data-restore-stage="backup"><i class="ti ti-copy"></i><span>Страховочная копия</span></div>
+      <div data-restore-stage="clean"><i class="ti ti-database-off"></i><span>Подготовка</span></div>
+      <div data-restore-stage="restore"><i class="ti ti-database-import"></i><span>Импорт таблиц</span></div>
+      <div data-restore-stage="cache"><i class="ti ti-refresh"></i><span>Runtime</span></div>
+    </div>
+    <div class="database-restore-error" data-db-restore-error hidden><i class="ti ti-alert-triangle"></i><span></span></div>
+    <div class="database-restore-footer">
+      <p>Не закрывайте вкладку. При разрыве соединения AVE.cms проверит сохранённое состояние задания.</p>
+      <button class="btn btn-secondary" type="button" data-db-restore-close hidden>Закрыть</button>
+    </div>
+  </section>
+</div>
+
+{% endblock %}

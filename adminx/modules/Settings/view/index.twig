@@ -1,0 +1,591 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}{{ settings_title }}{% endblock %}
+{% block content %}
+<div data-settings-page="{{ settings_page }}" data-base="{{ ADMINX_BASE }}">
+
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i>
+  <a href="{{ ADMINX_BASE }}/settings/main">Настройки</a><i class="ti ti-chevron-right"></i><span>{{ settings_title }}</span>
+</nav>
+
+<div class="page-header">
+  <div class="between">
+    <div>
+      <h1>{{ settings_title }}</h1>
+      {% set settings_subtitles = {'main':'Системные параметры сайта и почты','interface':'Порядок и видимость элементов панели управления','security':'Подтверждение критических действий администратором','constants':'Типизированные значения системной конфигурации','paginations':'Шаблоны постраничной навигации','maintenance':'Кеш и служебные данные','diagnostics':'Проверка окружения перед production','files':'Редактируемые системные PHP-файлы'} %}
+      <p class="text-secondary" style="margin-top:5px">{{ settings_subtitles[settings_page]|default('Системные настройки') }}</p>
+    </div>
+    <div class="cluster">
+      {% if can_manage %}
+      {% if settings_page == 'main' %}<button class="btn btn-primary" type="submit" form="settingsForm"><i class="ti ti-check"></i>Сохранить</button>{% endif %}
+      {% if settings_page == 'interface' %}<button class="btn btn-primary" type="submit" form="interfaceSettingsForm"><i class="ti ti-device-floppy"></i>Сохранить порядок</button>{% endif %}
+      {% if settings_page == 'security' %}<button class="btn btn-primary" type="submit" form="securitySettingsForm"><i class="ti ti-device-floppy"></i>Сохранить</button>{% endif %}
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% if settings_page == 'main' %}
+<section class="tab-panel active" data-settings-panel="main">
+  <div class="section-header settings-panel-header">
+    <div class="section-icon"><i class="ti ti-adjustments"></i></div>
+    <div>
+      <div class="section-eyebrow">Настройки</div>
+      <h2>Основные</h2>
+      <p class="section-desc">Системные параметры сайта, почты, пагинации и хлебных крошек.</p>
+    </div>
+  </div>
+
+  <div class="ax-summary settings-main-summary">
+    {% for code, group in groups %}
+    <div class="card stat-tile"><span class="icon-tile" style="--tile-bg:{{ group.tile_bg|default('var(--color-primary-soft)') }};--tile-fg:{{ group.tile_fg|default('var(--color-primary)') }}"><i class="{{ group.icon }}"></i></span><div><div class="stat-val">{{ group.fields|length }}</div><div class="stat-label">{{ group.label }}</div></div></div>
+    {% endfor %}
+  </div>
+
+  <form id="settingsForm" class="settings-form" data-base="{{ ADMINX_BASE }}">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+
+    <div class="settings-stack">
+      {% for code, group in groups %}
+      <div class="card settings-card" id="settings-group-{{ code }}">
+        <div class="settings-section-head">
+          <div class="settings-section-title">
+            <span class="icon-tile settings-head-icon" style="--tile-bg:{{ group.tile_bg|default('var(--color-primary-soft)') }};--tile-fg:{{ group.tile_fg|default('var(--color-primary)') }}"><i class="{{ group.icon }}"></i></span>
+            <div>
+              <h2>{{ group.label }}</h2>
+              <p class="text-secondary">{{ group.description }}</p>
+            </div>
+          </div>
+          <div class="settings-section-meta">
+            <span class="badge badge-blue">{{ group.fields|length }}</span>
+          </div>
+        </div>
+
+        <div class="settings-grid">
+          {% for field in group.fields %}
+          {% if field.section|default('') %}<div class="settings-grid-section"><span>{{ field.section }}</span></div>{% endif %}
+          {% set wide = field.type in ['text', 'section_order'] %}
+          {% set depends = field.depends is defined ? field.depends : null %}
+          <div class="field settings-field{{ wide ? ' settings-field-wide' : '' }}{{ field.type == 'bool' ? ' settings-field-bool' : '' }}" {% if depends %}{% for depKey, depValue in depends %}data-depends-key="{{ depKey }}" data-depends-value="{{ depValue }}"{% endfor %}{% endif %}>
+            <label class="field-label" for="settings-{{ field.key }}">
+              {{ field.label }}
+              {% if field.sensitive is defined and field.sensitive %}<span class="badge badge-amber">секрет</span>{% endif %}
+            </label>
+
+            {% if field.type == 'section_order' %}
+              <input type="hidden" id="settings-{{ field.key }}" name="{{ field.key }}" value="{{ field.order_items|json_encode|e('html_attr') }}" data-section-order-value>
+              <div class="settings-section-order" data-section-order>
+                {% for item in field.order_items %}
+                <article class="settings-section-order-row{{ item.visible ? '' : ' is-disabled' }}" draggable="{{ can_manage ? 'true' : 'false' }}" data-section-order-item data-code="{{ item.code }}">
+                  <button class="btn btn-ghost btn-icon settings-section-order-handle" type="button" data-section-order-handle data-tooltip="Перетащить" aria-label="Перетащить"{{ can_manage ? '' : ' disabled' }}><i class="ti ti-grip-vertical"></i></button>
+                  <span class="icon-tile"><i class="ti {{ item.code == 'hero' ? 'ti-photo' : (item.code == 'categories' ? 'ti-category' : (item.code in ['popular', 'new'] ? 'ti-package' : (item.code == 'news' ? 'ti-news' : 'ti-file-text'))) }}"></i></span>
+                  <span><b>{{ item.label }}</b><small>{{ item.code }}</small></span>
+                  <span class="settings-layout-move"><button class="btn btn-ghost btn-icon btn-sm" type="button" data-section-order-move="up" data-tooltip="Выше" aria-label="Выше"{{ can_manage ? '' : ' disabled' }}><i class="ti ti-chevron-up"></i></button><button class="btn btn-ghost btn-icon btn-sm" type="button" data-section-order-move="down" data-tooltip="Ниже" aria-label="Ниже"{{ can_manage ? '' : ' disabled' }}><i class="ti ti-chevron-down"></i></button></span>
+                  <label class="switch" data-tooltip="Показывать на главной"><input type="checkbox" data-section-order-visible{{ item.visible ? ' checked' : '' }}{{ can_manage ? '' : ' disabled' }}><span></span></label>
+                </article>
+                {% endfor %}
+              </div>
+            {% elseif field.type == 'text' %}
+              <textarea class="textarea" id="settings-{{ field.key }}" name="{{ field.key }}" rows="6" {{ can_manage ? '' : 'disabled' }}>{{ field.value }}</textarea>
+            {% elseif field.type == 'select' %}
+              <select class="select" id="settings-{{ field.key }}" name="{{ field.key }}" {{ can_manage ? '' : 'disabled' }}>
+                {% for optValue, optLabel in field.options %}
+                <option value="{{ optValue }}"{{ optValue == field.value ? ' selected' : '' }}>{{ optLabel }}</option>
+                {% endfor %}
+              </select>
+            {% elseif field.type == 'bool' %}
+              <label class="settings-switch-line" for="settings-{{ field.key }}">
+                <input type="hidden" name="{{ field.key }}" value="0">
+                <span><b>{{ field.value ? 'Включено' : 'Выключено' }}</b><small>Изменение применяется после сохранения настроек.</small></span>
+                <span class="switch"><input id="settings-{{ field.key }}" type="checkbox" name="{{ field.key }}" value="1" {{ field.value ? 'checked' : '' }} {{ can_manage ? '' : 'disabled' }}><span></span></span>
+              </label>
+            {% else %}
+              <input class="input" id="settings-{{ field.key }}" type="{{ field.type == 'password' ? 'password' : (field.type == 'email' ? 'email' : 'text') }}" name="{{ field.key }}" value="{{ field.value }}" {{ can_manage ? '' : 'disabled' }}>
+            {% endif %}
+
+            {% if field.hint|default('') %}<span class="field-hint">{{ field.hint }}</span>{% elseif field.theme_key is not defined %}<span class="field-hint mono">{{ field.key }}</span>{% endif %}
+            <span class="field-error" data-error="{{ field.key }}"></span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </form>
+</section>
+{% endif %}
+
+{% if settings_page == 'security' %}
+<section class="tab-panel active" data-settings-panel="security">
+  <div class="section-header settings-panel-header" style="--section-accent:var(--red-600);--section-accent-soft:var(--red-100)">
+    <div class="section-icon"><i class="ti ti-shield-lock"></i></div>
+    <div><div class="section-eyebrow">Безопасность Adminx</div><h2>Подтверждение действий</h2><p class="section-desc">Дополнительная проверка перед изменением исполняемого кода и установкой модулей.</p></div>
+  </div>
+
+  <div class="alert alert-warning settings-security-note"><i class="ti ti-alert-triangle"></i><div><b>На production защиту лучше оставить включённой</b><p>Одно успешное подтверждение действует 5 минут. Отключение не меняет права ролей и CSRF-защиту.</p></div></div>
+
+  <form id="securitySettingsForm" method="post" action="{{ ADMINX_BASE }}/settings/security" data-ax-ajax-form>
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <div class="card settings-card">
+      <div class="settings-section-head">
+        <div class="settings-section-title"><span class="icon-tile settings-head-icon" style="--tile-bg:var(--amber-100);--tile-fg:var(--amber-600)"><i class="ti ti-password-user"></i></span><div><h2>Повторный вход</h2><p class="text-secondary">Пароль перед операциями, которые могут изменить PHP/шаблоны или добавить исполняемые файлы.</p></div></div>
+        <span class="badge {{ reauth_enabled ? 'badge-green' : 'badge-gray' }}">{{ reauth_enabled ? 'Включено' : 'Выключено' }}</span>
+      </div>
+      <div class="settings-security-control">
+        <label class="settings-switch-line" for="adminxReauthEnabled">
+          <input type="hidden" name="adminx_reauth_enabled" value="0">
+          <span><b>Запрашивать пароль</b><small>Блоки, шаблоны, рубрики, запросы, навигация и операции с кодом.</small></span>
+          <span class="switch"><input id="adminxReauthEnabled" type="checkbox" name="adminx_reauth_enabled" value="1"{{ reauth_enabled ? ' checked' : '' }}{{ can_manage ? '' : ' disabled' }}><span></span></span>
+        </label>
+      </div>
+      {% if can_manage %}<div class="card-actions"><button class="btn btn-primary" type="submit"><i class="ti ti-device-floppy"></i>Сохранить</button></div>{% endif %}
+    </div>
+  </form>
+</section>
+{% endif %}
+
+{% if settings_page == 'interface' %}
+<section class="tab-panel active" data-settings-panel="interface">
+  <div class="section-header settings-panel-header">
+    <div class="section-icon"><i class="ti ti-layout-sidebar"></i></div>
+    <div><div class="section-eyebrow">Интерфейс</div><h2>Размещение элементов</h2><p class="section-desc">Скрытые элементы продолжают работать по прямому адресу и по-прежнему проверяют права доступа.</p></div>
+  </div>
+
+  <form id="interfaceSettingsForm" data-interface-layout-form>
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <div class="settings-stack">
+      <div class="card settings-card settings-layout-card">
+        <div class="settings-section-head">
+          <div class="settings-section-title"><span class="icon-tile settings-head-icon" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-layout-sidebar"></i></span><div><h2>Левое меню</h2><p class="text-secondary">Порядок разделов и вложенных пунктов панели.</p></div></div>
+          <div class="settings-section-meta"><span class="badge badge-blue">{{ navigation_layout|length }}</span></div>
+        </div>
+        <div class="settings-layout-list" data-layout-list="navigation">
+          {% for item in navigation_layout %}
+          <article class="settings-layout-row{{ item.layout_visible ? '' : ' is-disabled' }}" data-layout-item data-code="{{ item.layout_code }}">
+            <button class="btn btn-ghost btn-icon settings-layout-handle" type="button" draggable="{{ can_manage ? 'true' : 'false' }}" data-layout-handle data-tooltip="Перетащить" aria-label="Перетащить"{{ can_manage ? '' : ' disabled' }}><i class="ti ti-grip-vertical"></i></button>
+            <span class="icon-tile" style="--tile-bg:var(--surface-muted);--tile-fg:var(--text-secondary)"><i class="{{ item.icon ?: 'ti ti-point' }}"></i></span>
+            <span class="settings-layout-copy"><b>{{ item.label }}</b><small>{{ item.parent ? 'Вложен в ' ~ item.parent : (item.group ?: 'Без группы') }} · <span class="mono">{{ item.layout_code }}</span></small></span>
+            <span class="settings-layout-move"><button class="btn btn-ghost btn-icon btn-sm" type="button" data-layout-move="up" data-tooltip="Выше" aria-label="Выше"{{ can_manage ? '' : ' disabled' }}><i class="ti ti-chevron-up"></i></button><button class="btn btn-ghost btn-icon btn-sm" type="button" data-layout-move="down" data-tooltip="Ниже" aria-label="Ниже"{{ can_manage ? '' : ' disabled' }}><i class="ti ti-chevron-down"></i></button></span>
+            <label class="switch" data-tooltip="Показывать в меню"><input type="checkbox" data-layout-visible{{ item.layout_visible ? ' checked' : '' }}{{ can_manage ? '' : ' disabled' }}><span></span></label>
+          </article>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="card settings-card settings-layout-card">
+        <div class="settings-section-head">
+          <div class="settings-section-title"><span class="icon-tile settings-head-icon" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-layout-dashboard"></i></span><div><h2>Виджеты дашборда</h2><p class="text-secondary">Системные блоки и виджеты установленных модулей.</p></div></div>
+          <div class="settings-section-meta"><span class="badge badge-green">{{ dashboard_layout|length }}</span></div>
+        </div>
+        <div class="settings-layout-list" data-layout-list="dashboard">
+          {% for item in dashboard_layout %}
+          <article class="settings-layout-row{{ item.layout_visible ? '' : ' is-disabled' }}" data-layout-item data-code="{{ item.layout_code }}">
+            <button class="btn btn-ghost btn-icon settings-layout-handle" type="button" draggable="{{ can_manage ? 'true' : 'false' }}" data-layout-handle data-tooltip="Перетащить" aria-label="Перетащить"{{ can_manage ? '' : ' disabled' }}><i class="ti ti-grip-vertical"></i></button>
+            <span class="icon-tile" style="--tile-bg:var(--surface-muted);--tile-fg:var(--text-secondary)"><i class="{{ item.icon ?: 'ti ti-layout-dashboard' }}"></i></span>
+            <span class="settings-layout-copy"><b>{{ item.label }}</b><small>{{ item.description ?: item.layout_code }}{% if item.description %} · <span class="mono">{{ item.layout_code }}</span>{% endif %}</small></span>
+            <span class="settings-layout-move"><button class="btn btn-ghost btn-icon btn-sm" type="button" data-layout-move="up" data-tooltip="Выше" aria-label="Выше"{{ can_manage ? '' : ' disabled' }}><i class="ti ti-chevron-up"></i></button><button class="btn btn-ghost btn-icon btn-sm" type="button" data-layout-move="down" data-tooltip="Ниже" aria-label="Ниже"{{ can_manage ? '' : ' disabled' }}><i class="ti ti-chevron-down"></i></button></span>
+            <label class="switch" data-tooltip="Показывать на дашборде"><input type="checkbox" data-layout-visible{{ item.layout_visible ? ' checked' : '' }}{{ can_manage ? '' : ' disabled' }}><span></span></label>
+          </article>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </form>
+</section>
+{% endif %}
+
+{% if settings_page == 'constants' %}
+<section class="tab-panel active" data-settings-panel="constants">
+  <div class="section-header settings-panel-header">
+    <div class="section-icon"><i class="ti ti-code"></i></div>
+    <div>
+      <div class="section-eyebrow">Настройки</div>
+      <h2>Константы</h2>
+      <p class="section-desc">Типизированные значения публичного runtime, применяемые со следующего запроса.</p>
+    </div>
+    {% if can_manage %}
+    <div class="section-header-right">
+      <div class="cluster">
+        <button class="btn btn-primary" type="button" data-constant-new data-open-drawer="constantDrawer"><i class="ti ti-plus"></i>Добавить</button>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="settings-stack">
+    {% for group in constant_groups %}
+    <div class="card settings-card" data-constant-group="{{ group.code }}">
+      <div class="settings-section-head">
+        <div class="settings-section-title">
+          <span class="icon-tile settings-head-icon" style="--tile-bg:{{ cycle(['var(--blue-100)', 'var(--green-100)', 'var(--violet-100)', 'var(--amber-100)', 'var(--teal-100)', 'var(--cyan-100)', 'var(--pink-100)', 'var(--orange-100)', 'var(--indigo-100)', 'var(--gray-100)'], loop.index0) }};--tile-fg:{{ cycle(['var(--blue-600)', 'var(--green-600)', 'var(--violet-600)', 'var(--amber-600)', 'var(--teal-600)', 'var(--cyan-600)', 'var(--pink-600)', 'var(--orange-600)', 'var(--indigo-600)', 'var(--gray-600)'], loop.index0) }}"><i class="ti ti-folder"></i></span>
+          <div>
+            <h2>{{ group.label }}</h2>
+            <p class="text-secondary">{{ group.code }}</p>
+          </div>
+        </div>
+        <div class="settings-section-meta">
+          <span class="badge badge-blue">{{ group.items|length }}</span>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="table table-compact constants-table">
+          <colgroup>
+            <col class="constants-col-name">
+            <col class="constants-col-status">
+            <col class="constants-col-value">
+            <col class="constants-col-type">
+            <col class="constants-col-description">
+            {% if can_manage %}<col class="constants-col-actions">{% endif %}
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Имя</th>
+              <th>Статус</th>
+              <th>Значение</th>
+              <th>Тип</th>
+              <th>Описание</th>
+              {% if can_manage %}<th></th>{% endif %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in group.items %}
+            <tr data-constant-row data-name="{{ c.name }}">
+              <td class="mono"><span class="constant-name"><b>{{ c.name }}</b></span></td>
+              <td><span class="badge {{ c.usage_status == 'active' ? 'badge-green' : (c.usage_status == 'compatibility' ? 'badge-amber' : 'badge-gray') }}" title="{{ c.usage_reason }}">{{ c.usage_label }}</span></td>
+              <td class="mono text-sm constant-value">{{ c.value_display }}</td>
+              <td><span class="badge badge-blue" title="{{ c.type }}">{{ c.type_label }}</span></td>
+              <td class="text-secondary text-sm">{{ c.description }}</td>
+              {% if can_manage %}
+              <td>
+                <div class="cluster" style="gap:4px">
+                  <button class="btn btn-ghost btn-icon btn-sm" type="button" data-constant-edit data-open-drawer="constantDrawer" data-tooltip="Изменить" aria-label="Изменить"><i class="ti ti-pencil"></i></button>
+                  {% if not c.is_system %}
+                  <button class="btn btn-ghost btn-icon btn-sm" type="button" data-constant-delete data-tooltip="Удалить" aria-label="Удалить"><i class="ti ti-trash"></i></button>
+                  {% endif %}
+                </div>
+              </td>
+              {% endif %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% else %}
+    <div class="card settings-status">
+      <span class="stat-ico"><i class="ti ti-code-plus"></i></span>
+      <div>
+        <div class="settings-status-title">Константы ещё не созданы</div>
+        <div class="text-secondary text-sm">Добавьте первое типизированное значение. Оно станет доступно публичному runtime со следующего запроса.</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if settings_page == 'paginations' %}
+<section class="tab-panel active" data-settings-panel="paginations">
+  <div class="section-header settings-panel-header">
+    <div class="section-icon"><i class="ti ti-list-numbers"></i></div>
+    <div>
+      <div class="section-eyebrow">Настройки</div>
+      <h2>Шаблоны пагинации</h2>
+      <p class="section-desc">Шаблоны из <span class="mono">_paginations</span>, используемые запросами и документами.</p>
+    </div>
+    {% if can_manage %}
+    <div class="section-header-right">
+      <button class="btn btn-primary" type="button" data-pagination-new data-open-drawer="paginationDrawer"><i class="ti ti-plus"></i>Создать</button>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="card settings-card">
+    <div class="settings-section-head">
+      <div class="settings-section-title">
+        <span class="icon-tile settings-head-icon" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-table"></i></span>
+        <div>
+          <h2>Список шаблонов</h2>
+          <p class="text-secondary">Единая таблица шаблонов пагинации.</p>
+        </div>
+      </div>
+      <div class="settings-section-meta">
+        <span class="badge badge-blue">{{ paginations|length }}</span>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table class="table table-compact">
+        <thead>
+          <tr>
+            <th style="width:72px">ID</th>
+            <th>Название</th>
+            {% if can_manage %}<th style="width:120px"></th>{% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in paginations %}
+          <tr data-pagination-row data-id="{{ p.id }}" data-name="{{ p.pagination_name }}">
+            <td class="mono text-muted">{{ p.id }}</td>
+            <td><b>{{ p.pagination_name }}</b></td>
+            {% if can_manage %}
+            <td>
+              <div class="cluster" style="gap:4px">
+                <button class="btn btn-ghost btn-icon btn-sm" type="button" data-pagination-edit data-open-drawer="paginationDrawer" data-tooltip="Изменить" aria-label="Изменить"><i class="ti ti-pencil"></i></button>
+                {% if p.id != 1 %}
+                <button class="btn btn-ghost btn-icon btn-sm" type="button" data-pagination-delete data-tooltip="Удалить" aria-label="Удалить"><i class="ti ti-trash"></i></button>
+                {% endif %}
+              </div>
+            </td>
+            {% endif %}
+          </tr>
+          {% else %}
+          <tr><td colspan="3" class="text-muted" style="text-align:center;padding:24px">Шаблоны ещё не перенесены</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</section>
+{% endif %}
+
+{% if settings_page == 'files' %}
+<section class="tab-panel active" data-settings-panel="files">
+  <div class="section-header settings-panel-header"><div class="section-icon"><i class="ti ti-file-code"></i></div><div><div class="section-eyebrow">Настройки</div><h2>Системные файлы</h2><p class="section-desc">Редактирование разрешённых файлов без доступа к произвольным путям.</p></div></div>
+  <div class="settings-stack">
+    {% for code, file in system_files %}
+    <div class="card settings-card" data-system-file-row="{{ code }}">
+      <div class="settings-section-head"><div class="settings-section-title"><span class="icon-tile settings-head-icon" style="--tile-bg:{{ code == 'custom' ? 'var(--violet-100)' : 'var(--cyan-100)' }};--tile-fg:{{ code == 'custom' ? 'var(--violet-600)' : 'var(--cyan-600)' }}"><i class="ti ti-{{ code == 'custom' ? 'brand-php' : 'robot' }}"></i></span><div><h2>{{ file.label }}</h2><p class="text-secondary">{{ file.description }}</p></div></div><div class="cluster"><span class="badge badge-{{ file.writable ? 'green' : 'red' }}">{{ file.writable ? 'доступен' : 'только чтение' }}</span>{% if can_manage %}<button class="btn btn-secondary btn-sm" type="button" data-system-file-edit="{{ code }}" data-open-drawer="systemFileDrawer"><i class="ti ti-pencil"></i>Редактировать</button>{% endif %}</div></div>
+      <div class="settings-file-meta"><span class="mono">{{ file.path }}</span><span>{{ file.bytes }} Б</span></div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if settings_page == 'maintenance' %}
+<section class="tab-panel active" data-settings-panel="maintenance">
+  <div class="section-header settings-panel-header">
+    <div class="section-icon"><i class="ti ti-tool"></i></div>
+    <div>
+      <div class="section-eyebrow">Настройки</div>
+      <h2>Обслуживание</h2>
+      <p class="section-desc">Очистка актуальных cache-директорий и служебных данных.</p>
+    </div>
+  </div>
+
+  <div class="settings-stack">
+  <div class="card settings-card">
+    <div class="settings-section-head">
+      <div class="settings-section-title">
+        <span class="icon-tile settings-head-icon" style="--tile-bg:var(--amber-100);--tile-fg:var(--amber-600)"><i class="ti ti-trash"></i></span>
+        <div>
+          <h2>Источники кеша</h2>
+          <p class="text-secondary">Только каталоги, которые используются текущим runtime.</p>
+        </div>
+      </div>
+      <div class="settings-section-meta">
+        <span class="badge badge-blue">{{ cache_rows|length }}</span>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table class="table table-compact">
+        <thead>
+          <tr>
+            <th>Источник</th>
+            <th>Путь</th>
+            <th style="width:120px">Размер</th>
+            {% if can_manage %}<th style="width:110px"></th>{% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in cache_rows %}
+          <tr data-cache-row="{{ row.code }}">
+            <td><b>{{ row.label }}</b><div class="mono text-muted text-xs">{{ row.code }}</div></td>
+            <td class="mono text-xs">{{ row.path }}</td>
+            <td class="mono" data-cache-size>{{ row.size }}</td>
+            {% if can_manage %}
+            <td><button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-danger" type="button" data-cache-clear="{{ row.code }}" data-tooltip="Очистить кеш" aria-label="Очистить кеш {{ row.label }}"><i class="ti ti-trash"></i></button></td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card settings-card">
+    <div class="settings-section-head"><div class="settings-section-title"><span class="icon-tile settings-head-icon" style="--tile-bg:var(--red-100);--tile-fg:var(--red-600)"><i class="ti ti-database-minus"></i></span><div><h2>Служебные данные документов</h2><p class="text-secondary">Глобальная очистка старых ревизий и подневных счётчиков.</p></div></div></div>
+    <div class="settings-maintenance-actions">
+      <div><b>Ревизии документов</b><span class="text-secondary">{{ maintenance_counts.revisions }} записей</span>{% if can_manage %}<button class="btn btn-danger-soft btn-sm" type="button" data-maintenance-clear="revisions"><i class="ti ti-trash"></i>Очистить</button>{% endif %}</div>
+      <div><b>Подневные просмотры</b><span class="text-secondary">{{ maintenance_counts.views }} записей</span>{% if can_manage %}<button class="btn btn-danger-soft btn-sm" type="button" data-maintenance-clear="views"><i class="ti ti-trash"></i>Очистить</button>{% endif %}</div>
+    </div>
+  </div>
+  </div>
+</section>
+{% endif %}
+
+{% if settings_page == 'diagnostics' %}
+<section class="tab-panel active" data-settings-panel="diagnostics">
+  <div class="section-header settings-panel-header"><div class="section-icon"><i class="ti ti-stethoscope"></i></div><div><div class="section-eyebrow">Система</div><h2>Диагностика</h2><p class="section-desc">Проверка окружения и готовности сайта без изменения данных.</p></div></div>
+  <div class="card settings-card settings-production-card">
+    <div class="settings-section-head">
+      <div class="settings-section-title"><span class="icon-tile settings-head-icon" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-shield-check"></i></span><div><h2>Готовность production</h2><p class="text-secondary">Проверки выполняются без отправки писем и создания платежей.</p></div></div>
+      <div class="settings-production-summary"><span class="badge badge-green">{{ production_diagnostics.summary.ok }} готовы</span>{% if production_diagnostics.summary.warning %}<span class="badge badge-amber">{{ production_diagnostics.summary.warning }} внимания</span>{% endif %}{% if production_diagnostics.summary.error %}<span class="badge badge-red">{{ production_diagnostics.summary.error }} ошибок</span>{% endif %}</div>
+    </div>
+    <div class="settings-production-list">
+      {% for check in production_diagnostics.checks %}<div class="settings-production-check"><i class="ti ti-{{ check.state == 'ok' ? 'circle-check' : (check.state == 'error' ? 'circle-x' : 'alert-triangle') }} is-{{ check.state }}"></i><b>{{ check.label }}</b><span>{{ check.detail }}</span></div>{% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% if can_manage and settings_page == 'files' %}
+<aside class="drawer drawer-right drawer-lg settings-file-drawer" id="systemFileDrawer" role="dialog" aria-modal="true" aria-labelledby="systemFileDrawerTitle" hidden>
+  <div class="drawer-header"><div><h3 id="systemFileDrawerTitle">Системный файл</h3><p class="text-secondary text-sm" data-system-file-path></p></div><button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button></div>
+  <form data-system-file-form><input type="hidden" name="code"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><div class="drawer-body settings-file-editor"><textarea class="textarea mono" name="content" rows="30" data-code-editor data-code-mode="application/x-httpd-php"></textarea></div><div class="drawer-footer"><button class="btn btn-ghost" type="button" data-close-drawer>Закрыть</button><button class="btn btn-primary" type="submit" style="margin-left:auto"><i class="ti ti-device-floppy"></i>Сохранить</button></div></form>
+</aside>
+{% endif %}
+
+{% if can_manage and settings_page == 'constants' %}
+<aside class="drawer drawer-right drawer-lg" id="constantDrawer" role="dialog" aria-modal="true" aria-labelledby="constantDrawerTitle" hidden>
+  <div class="drawer-header">
+    <h3 id="constantDrawerTitle">Константа</h3>
+    <button class="btn btn-ghost btn-icon" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <form id="constantForm" data-base="{{ ADMINX_BASE }}">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <input type="hidden" name="is_system" value="0">
+    <input type="hidden" name="value" value="" data-constant-value>
+    <div class="drawer-body">
+      <div class="constant-editor-identity">
+        <label class="field">
+          <span class="field-label">Имя</span>
+          <input class="input mono" name="name" value="" placeholder="MY_CONSTANT" required>
+        </label>
+      </div>
+      <div class="tabs constant-editor-tabs" role="tablist" aria-label="Раздел редактора">
+        <button class="tab is-active" type="button" role="tab" aria-selected="true" data-constant-editor-tab="value"><i class="ti ti-adjustments"></i>Значение</button>
+        <button class="tab" type="button" role="tab" aria-selected="false" data-constant-editor-tab="settings"><i class="ti ti-settings"></i>Настройки</button>
+      </div>
+      <div class="constant-editor-panel" data-constant-editor-panel="value">
+        <div class="constant-value-editor" data-constant-control="string">
+          <label class="field"><span class="field-label">Значение</span><input class="input mono" type="text" data-constant-input="string"></label>
+        </div>
+        <div class="constant-value-editor" data-constant-control="path" hidden>
+          <label class="field"><span class="field-label">Путь</span><div class="input-wrap"><i class="ti ti-folder"></i><input class="input mono" type="text" data-constant-input="path" placeholder="/path/to/folder"></div></label>
+        </div>
+        <div class="constant-value-editor" data-constant-control="int" hidden>
+          <label class="field"><span class="field-label">Целое число</span><input class="input mono" type="number" step="1" data-constant-input="int"></label>
+        </div>
+        <div class="constant-value-editor" data-constant-control="bool" hidden>
+          <span class="field-label">Значение</span>
+          <div class="segmented constant-bool-control" role="group" aria-label="Значение константы">
+            <button type="button" aria-pressed="true" data-constant-bool="1"><i class="ti ti-check"></i>Да</button>
+            <button type="button" aria-pressed="false" data-constant-bool="0"><i class="ti ti-x"></i>Нет</button>
+          </div>
+        </div>
+        <div class="constant-value-editor" data-constant-control="select" hidden>
+          <label class="field"><span class="field-label">Выбранное значение</span><select class="select" data-constant-input="select"></select></label>
+          <div class="constant-value-empty" data-constant-select-empty hidden><i class="ti ti-alert-circle"></i><span>Сначала добавьте варианты во вкладке «Настройки».</span></div>
+        </div>
+        <div class="constant-value-editor" data-constant-control="tags" hidden>
+          <label class="field"><span class="field-label">Значения</span><textarea class="textarea mono" rows="5" data-constant-input="tags" placeholder="Одно значение на строку"></textarea></label>
+        </div>
+        <div class="constant-thumbnail-tools" data-thumbnail-preset-tools hidden>
+          <span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-photo-search"></i></span>
+          <div class="constant-thumbnail-tools-copy">
+            <b>Собрать используемые размеры</b>
+            <p>Проверит файлы темы, ядра, установленных модулей и текстовые данные текущей БД. Найденные пресеты заменят содержимое поля, но сохранятся только после нажатия «Сохранить».</p>
+            <div class="constant-thumbnail-result" data-thumbnail-preset-result hidden></div>
+          </div>
+          <button class="btn btn-secondary" type="button" data-thumbnail-preset-scan><i class="ti ti-scan"></i>Собрать</button>
+        </div>
+        <p class="constant-value-hint" data-constant-value-hint></p>
+      </div>
+      <div class="constant-editor-panel" data-constant-editor-panel="settings" hidden>
+        <div class="settings-pagination-grid">
+          <label class="field">
+            <span class="field-label">Тип значения</span>
+            <select class="select" name="type" data-constant-type>
+              {% for type, label in constant_type_labels %}<option value="{{ type }}">{{ label }}</option>{% endfor %}
+            </select>
+          </label>
+          <label class="field">
+          <span class="field-label">Группа</span>
+          <select class="select" name="group_code">
+            {% for code, label in constant_group_labels %}
+            <option value="{{ code }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+          </label>
+          <label class="field"><span class="field-label">Порядок</span><input class="input" type="number" name="sort_order" value="100"></label>
+          <label class="field settings-field-wide"><span class="field-label">Описание</span><textarea class="textarea" name="description" rows="4"></textarea></label>
+          <label class="field settings-field-wide" data-constant-options-field hidden><span class="field-label">Варианты выбора</span><textarea class="textarea mono" name="options" rows="6" placeholder="one&#10;two&#10;three" data-constant-options></textarea><small class="field-help">По одному варианту на строку.</small></label>
+        </div>
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <button class="btn btn-ghost" type="button" data-close-drawer>Отмена</button>
+      <button class="btn btn-primary" type="submit" style="margin-left:auto"><i class="ti ti-check"></i>Сохранить</button>
+    </div>
+  </form>
+</aside>
+{% endif %}
+
+{% if can_manage and settings_page == 'paginations' %}
+<aside class="drawer drawer-right drawer-lg" id="paginationDrawer" role="dialog" aria-modal="true" aria-labelledby="paginationDrawerTitle" hidden>
+  <div class="drawer-header">
+    <h3 id="paginationDrawerTitle">Шаблон пагинации</h3>
+    <button class="btn btn-ghost btn-icon" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <form id="paginationForm" data-base="{{ ADMINX_BASE }}">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <input type="hidden" name="id" value="">
+    <div class="drawer-body">
+      <div class="settings-pagination-grid">
+        {% set pagination_fields = {
+          'pagination_name': 'Название',
+          'pagination_box': 'Контейнер навигации',
+          'pagination_link_box': 'Контейнер ссылки',
+          'pagination_active_link_box': 'Контейнер активной ссылки',
+          'pagination_link_template': 'Шаблон ссылки',
+          'pagination_link_active_template': 'Шаблон активной ссылки',
+          'pagination_separator_box': 'Контейнер разделителя',
+          'pagination_separator_label': 'Метка разделителя',
+          'pagination_start_label': 'Метка первой',
+          'pagination_end_label': 'Метка последней',
+          'pagination_next_label': 'Метка следующей',
+          'pagination_prev_label': 'Метка предыдущей'
+        } %}
+        {% for key, label in pagination_fields %}
+        <label class="field {{ key in ['pagination_box','pagination_link_template','pagination_link_active_template'] ? 'settings-field-wide' : '' }}">
+          <span class="field-label">{{ label }}</span>
+          {% if key in ['pagination_box','pagination_link_template','pagination_link_active_template'] %}
+          <textarea class="textarea" name="{{ key }}" rows="3"></textarea>
+          {% else %}
+          <input class="input" name="{{ key }}" value="">
+          {% endif %}
+          <span class="field-hint mono">{{ key }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <button class="btn btn-ghost" type="button" data-close-drawer>Отмена</button>
+      <button class="btn btn-primary" type="submit" style="margin-left:auto"><i class="ti ti-check"></i>Сохранить</button>
+    </div>
+  </form>
+</aside>
+{% endif %}
+
+{% if can_manage and settings_page == 'main' %}
+<div class="settings-savebar" id="settingsSavebar" hidden>
+  <div class="text-secondary text-sm">Есть несохранённые изменения</div>
+  <button class="btn btn-ghost btn-sm" type="button" data-settings-reset>Сбросить</button>
+  <button class="btn btn-primary btn-sm" type="submit" form="settingsForm"><i class="ti ti-check"></i>Сохранить</button>
+</div>
+{% endif %}
+
+</div>
+{% endblock %}

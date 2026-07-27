@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /setup/
+Disallow: /configs/
+Disallow: /system/
+Disallow: /storage/
+Disallow: /modules/

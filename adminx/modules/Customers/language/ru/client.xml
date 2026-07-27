@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="auto_32b373146ceb643e">Не удалось загрузить профиль</phrase>
+	<phrase data="auto_3ad78d4634845d06">Новое поле</phrase>
+	<phrase data="auto_51aff18539497f49">Пользователь</phrase>
+	<phrase data="auto_54628e7921e2b7ef">Пользователь сайта</phrase>
+	<phrase data="auto_7851fbc651bc0177">: &apos;&amp;#039;&apos; }[character];
+      });
+    },
+
+    deleteField: function (button) {
+      var self = this;
+      Adminx.Confirm.open({
+        kind: &apos;error&apos;, title: &apos;Удалить поле?&apos;,
+        message: &apos;Значения этого поля у пользователей сайта также будут удалены.&apos;,
+        confirmLabel: &apos;Удалить&apos;, confirmClass: &apos;btn-danger&apos;,
+        onConfirm: function () { self.request(button.getAttribute(&apos;data-url&apos;), new FormData()).then(function () { window.location.reload(); }); }
+      });
+    },
+
+    toggleField: function (input) {
+      var self = this;
+      var item = input.closest(&apos;[data-field-id]&apos;);
+      this.request(input.getAttribute(&apos;data-url&apos;), new FormData()).then(function (response) {
+        var active = !!Number(response.data &amp;&amp; response.data.is_active);
+        input.checked = active;
+        item.classList.toggle(&apos;is-disabled&apos;, !active);
+        var preview = document.querySelector(&apos;[data-preview-field=</phrase>
+	<phrase data="auto_de7fb9566c3ab6f8">Не удалось выполнить действие</phrase>
+	<phrase data="auto_f0dff5ab4a669f7a">Сохранено</phrase>
+</language>

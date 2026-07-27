@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="dashboard_title">Обзор</phrase>
+	<phrase data="dashboard_breadcrumbs">Хлебные крошки</phrase>
+	<phrase data="dashboard_home">Главная</phrase>
+	<phrase data="dashboard_summary">Сводка системы и последние изменения</phrase>
+	<phrase data="dashboard_greeting_night">Доброй ночи</phrase>
+	<phrase data="dashboard_greeting_morning">Доброе утро</phrase>
+	<phrase data="dashboard_greeting_day">Добрый день</phrase>
+	<phrase data="dashboard_greeting_evening">Добрый вечер</phrase>
+	<phrase data="dashboard_system_health">Состояние системы</phrase>
+	<phrase data="dashboard_active_documents">Активных документов</phrase>
+	<phrase data="dashboard_active_users">Активных пользователей</phrase>
+	<phrase data="dashboard_unresolved_404">Нерешенных 404</phrase>
+	<phrase data="dashboard_database_errors">Ошибок базы данных</phrase>
+	<phrase data="dashboard_recent_documents">Недавние документы</phrase>
+	<phrase data="dashboard_recent_documents_desc">Последние измененные записи всех рубрик</phrase>
+	<phrase data="dashboard_all_documents">Все документы</phrase>
+	<phrase data="dashboard_document">Документ</phrase>
+	<phrase data="dashboard_rubric">Рубрика</phrase>
+	<phrase data="dashboard_state">Состояние</phrase>
+	<phrase data="dashboard_changed">Изменен</phrase>
+	<phrase data="dashboard_no_rubric">Без рубрики</phrase>
+	<phrase data="dashboard_published">Опубликован</phrase>
+	<phrase data="dashboard_disabled">Выключен</phrase>
+	<phrase data="dashboard_edit">Редактировать</phrase>
+	<phrase data="dashboard_no_documents">Документов пока нет</phrase>
+	<phrase data="dashboard_work">Работа</phrase>
+	<phrase data="dashboard_shortcuts">Быстрый доступ</phrase>
+	<phrase data="dashboard_new_document">Новый документ</phrase>
+	<phrase data="dashboard_new_document_desc">Создать и заполнить поля</phrase>
+	<phrase data="dashboard_media_desc">Файлы и изображения</phrase>
+	<phrase data="dashboard_catalog_desc">Разделы и фильтры</phrase>
+	<phrase data="dashboard_system_events">Системные события</phrase>
+	<phrase data="dashboard_events_desc">Аудит и ошибки</phrase>
+</language>

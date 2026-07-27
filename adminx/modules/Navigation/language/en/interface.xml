@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="navigation_parity_tag">[tag:if_every:2]even[tag:if_else]odd[tag:/if]</phrase>
+	<phrase data="auto_bf209b0159668b33">, and normal and active items are elements</phrase>
+	<phrase data="auto_3475d30e6543216b">, start and end of level - list</phrase>
+	<phrase data="auto_e9530a7c53465961">. Levels 2–3 fields are only needed for submenus.</phrase>
+	<phrase data="auto_93d63369c857c786">. The editors are arranged in order of HTML assembly.</phrase>
+	<phrase data="auto_a52738a5b29b6db7">0 of</phrase>
+	<phrase data="auto_daed835119849c8c">&lt;nav class=&quot;site-navigation&quot; aria-label=&quot;Main navigation&quot;&gt;</phrase>
+	<phrase data="auto_7572be6cdf241d5b">ID, name or alias</phrase>
+	<phrase data="auto_de535fa245b8a657">Active item</phrase>
+	<phrase data="auto_73dfa7ea85e8eb75">Alias</phrase>
+	<phrase data="auto_b11f29cdb631ad91">without alias</phrase>
+	<phrase data="auto_7d6613f2a9127b0d">In a new window</phrase>
+	<phrase data="auto_13d02127fcff628c">in the current filter,</phrase>
+	<phrase data="auto_895fbeb7dd320709">In this window</phrase>
+	<phrase data="auto_89715f5b9948ee95">Outer wrapper of the entire menu</phrase>
+	<phrase data="auto_31de01636108eec7">All levels</phrase>
+	<phrase data="auto_c703c9c49b94ef4f">Total navigations</phrase>
+	<phrase data="auto_a7bbea7ed2337936">everything.</phrase>
+	<phrase data="auto_351edbe4180b1ac4">Insert tag</phrase>
+	<phrase data="auto_7c6ab13571afdc2e">Second step of the nested menu</phrase>
+	<phrase data="auto_fab9a0a0491dc356">Select groups</phrase>
+	<phrase data="auto_5bf3e247170791a1">Select menu item</phrase>
+	<phrase data="auto_bdda7682fb64d386">Select all</phrase>
+	<phrase data="auto_9f3b3c3b78133faa">Select document</phrase>
+	<phrase data="auto_d7d9310af67c647b">Select image</phrase>
+	<phrase data="auto_b09834c7cb1c205b">Displayed once before the item tree.</phrase>
+	<phrase data="auto_3bafb215662faff1">off</phrase>
+	<phrase data="auto_71efad347b8790c0">The finished first level template has already been completed.</phrase>
+	<phrase data="auto_7e8692a57c2aa378">groups</phrase>
+	<phrase data="auto_1e9b9882dbfae49a">Access groups</phrase>
+	<phrase data="auto_e7adb22422703b43">No public user groups have been created.</phrase>
+	<phrase data="auto_dc8ad6500fde94aa">Tag groups</phrase>
+	<phrase data="auto_9610c0151327ff86">Menu item data</phrase>
+	<phrase data="auto_29fab881eb05ff3b">Tree of menu items and templates for their display.</phrase>
+	<phrase data="auto_a6d06dad6920911f">Access to site navigation</phrase>
+	<phrase data="auto_29bf15fbd8505f76">There is a nested level</phrase>
+	<phrase data="auto_a08a44a7fba955e4">Closes the general wrapper after all levels.</phrase>
+	<phrase data="auto_f67e82dc985e43e4">Closes the second level list.</phrase>
+	<phrase data="auto_51aee5cc379df27a">Closes the first level list.</phrase>
+	<phrase data="auto_622c7d636f86fb8c">Closes the third level list.</phrase>
+	<phrase data="auto_56a1fd52891d1c0f">Image</phrase>
+	<phrase data="auto_d892e5fbe89baa8f">Used for the current page and its active branch.</phrase>
+	<phrase data="auto_4b353607db7c3c0e">Every Nth point</phrase>
+	<phrase data="auto_8b950f4a43ee8fb2">End of navigation</phrase>
+	<phrase data="auto_cb41b06d65019ecd">End of level</phrase>
+	<phrase data="auto_53abe4a34d84e2f3">Website menu builder</phrase>
+	<phrase data="auto_3757f7f85265ba50">Menu root</phrase>
+	<phrase data="auto_7e48574e31811533">Root menu items</phrase>
+	<phrase data="auto_95345ca9528501dd">Except every Nth</phrase>
+	<phrase data="auto_8009b776b5493987">Navigation menu</phrase>
+	<phrase data="auto_c0e24d04b6dd297b">Menus called by tags</phrase>
+	<phrase data="auto_e77fb2fa732521da">Navigation</phrase>
+	<phrase data="auto_7219a9ed0cc16d10">No navigations found.</phrase>
+	<phrase data="auto_ae6968bf7aee2f99">Navigation #1 is protected from deletion; the tag can be copied from the list.</phrase>
+	<phrase data="auto_c18046694faf9391">Start navigation</phrase>
+	<phrase data="auto_762dda45ede5a55b">Start of level</phrase>
+	<phrase data="auto_92250813ceb742a9">Not selected</phrase>
+	<phrase data="auto_c610cbf449544098">not selected</phrase>
+	<phrase data="auto_61053c5dc4e3e947">Not the first point</phrase>
+	<phrase data="auto_6fa7a54a5dee778e">Not the last point</phrase>
+	<phrase data="auto_c6e6cba290bfd3a2">No nested level</phrase>
+	<phrase data="auto_b5dc778970fa525c">New navigation</phrase>
+	<phrase data="auto_a5a60296ff78c6f0">Regular item</phrase>
+	<phrase data="auto_dac3e3b4b5ee707c">Wrapper of a second level nested list.</phrase>
+	<phrase data="auto_91fe561f4e2f3243">Wrapper of a third level nested list.</phrase>
+	<phrase data="auto_b4e3fbf082df4fd2">Wrapper of the root list. The [tag:content] tag determines where the items are displayed.</phrase>
+	<phrase data="auto_0194a44cc89494f3">Wrapper shapes</phrase>
+	<phrase data="auto_76efe7c7e20308f4">Wrappers</phrase>
+	<phrase data="auto_adf905f367477309">Base</phrase>
+	<phrase data="auto_97d8a75430674d01">Main navigation</phrase>
+	<phrase data="auto_8e69fbfe61581b0c">Select who to show this navigation to.</phrase>
+	<phrase data="auto_e32a0222da8a9a71">First step of the nested menu</phrase>
+	<phrase data="auto_4d95414c0b5e3049">First point</phrase>
+	<phrase data="auto_2a812c1383643855">Search tags</phrase>
+	<phrase data="auto_0c5f91b7350e41e4">Order and nesting of items.</phrase>
+	<phrase data="auto_0bcb8de2baef313e">Last point</phrase>
+	<phrase data="auto_c03a7ea7c49590c6">parity example</phrase>
+	<phrase data="auto_c7a9ec419aae855c">Public groups</phrase>
+	<phrase data="auto_e13b4bdc24d987d2">Item</phrase>
+	<phrase data="auto_141924f7e6e6cff8">Menu item</phrase>
+	<phrase data="auto_401d91ec80eff65d">points</phrase>
+	<phrase data="auto_032620f5130641c9">Menu items</phrase>
+	<phrase data="auto_2f296338463d9686">Menu items</phrase>
+	<phrase data="auto_2b7bc3187b5e647a">Unfolding</phrase>
+	<phrase data="auto_06b5236605852d27">Parent</phrase>
+	<phrase data="auto_98ec9cca8586db53">With alias</phrase>
+	<phrase data="auto_9f91d63167704d38">With access groups</phrase>
+	<phrase data="auto_4b43cbb15837e71d">Reset changes</phrase>
+	<phrase data="auto_ac18b1187fa47440">Item properties</phrase>
+	<phrase data="auto_f428bbb3b6140e6e">Navigation Template Sections</phrase>
+	<phrase data="auto_be6772e9526be149">Deselect</phrase>
+	<phrase data="auto_81835716a29303d3">Contents of nested items</phrase>
+	<phrase data="auto_f938a2e0de0e4573">Create navigation</phrase>
+	<phrase data="auto_296f86beb5b001fd">Save item</phrase>
+	<phrase data="auto_bbd0d0e19a87f418">Link/alias</phrase>
+	<phrase data="auto_3b69d33f7253edc0">Link, parent and design.</phrase>
+	<phrase data="auto_1a4a85e95ad35531">Menu structure</phrase>
+	<phrase data="auto_d2bc848f6f7a7b2d">Menu structure.</phrase>
+	<phrase data="auto_1d34b74d4ff86db7">Current level</phrase>
+	<phrase data="auto_536c7c5c874917cd">Active branch only</phrase>
+	<phrase data="auto_ab30701c85ebee86">Remove document</phrase>
+	<phrase data="auto_cfb2b15208f2db7b">Remove image</phrase>
+	<phrase data="auto_50fa71be94dbeb13">Level 1</phrase>
+	<phrase data="auto_cd0b995b4ac664c4">Level 2</phrase>
+	<phrase data="auto_71a2dbf76a91220d">Level 3</phrase>
+	<phrase data="auto_f724238d6a355a17">Condition with alternative</phrase>
+	<phrase data="auto_5b1c65c008232b00">Terms</phrase>
+	<phrase data="auto_a5c0a98486381e76">Second level active link template.</phrase>
+	<phrase data="auto_6054f5e986f28fb3">Third level active link template.</phrase>
+	<phrase data="auto_dc9ebef17cac63b4">Second level inactive link template.</phrase>
+	<phrase data="auto_1574e6d983df2c58">First level inactive link template.</phrase>
+	<phrase data="auto_ea88467022ba5350">Third level inactive link template.</phrase>
+	<phrase data="auto_0e192653f3f0abde">Menu templates</phrase>
+	<phrase data="auto_121c6b91516ce0ec">Level templates support menu item tags.</phrase>
+	<phrase data="auto_d09bf6d4c36412be">&quot; data-tooltip=&quot;On/Off&quot; aria-label=&quot;On/Off&quot;&gt;&lt;i class=&quot;ti ti-power&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_d32b8258ca6f9d3e">&quot; data-tooltip=&quot;Change&quot; aria-label=&quot;Change&quot;&gt;&lt;i class=&quot;ti ti-pencil&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_a8e608c1f7384d26">&quot; data-tooltip=&quot;Delete&quot; aria-label=&quot;Delete&quot;&gt;&lt;i class=&quot;ti ti-trash&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_68ee41202091a86a">(copy)</phrase>
+	<phrase data="auto_7287413ae60a4181">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm navigation-action-level&quot; type=&quot;button&quot; data-navigation-item-indent=&quot;-1&quot; data-tooltip=&quot;Decrease level&quot; aria-label=&quot;Decrease level&quot;&gt;&lt;i class=&quot;ti ti-indent-decrease&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_542e162a598ab71f">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm navigation-action-level&quot; type=&quot;button&quot; data-navigation-item-indent=&quot;1&quot; data-tooltip=&quot;Increase level&quot; aria-label=&quot;Increase level&quot;&gt;&lt;i class=&quot;ti ti-indent-increase&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_967a51d5b40eac36">&lt;div class=&quot;modal-body&quot;&gt;&lt;div class=&quot;input-wrap navigation-document-search&quot;&gt;&lt;i class=&quot;ti ti-search&quot;&gt;&lt;/i&gt;&lt;input class=&quot;input&quot; type=&quot;search&quot; placeholder=&quot;ID, title or alias&quot; data-navigation-document-search&gt;&lt;/div&gt;&lt;div class=&quot;navigation-picker-status&quot; data-navigation-document-status&gt;Loading...&lt;/div&gt;&lt;div class=&quot;navigation-document-list&quot; data-navigation-document-list&gt;&lt;/div&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_af23cc9cdbff9203">&lt;div class=&quot;modal-footer&quot;&gt;&lt;div class=&quot;mf-left navigation-picker-count&quot; data-navigation-document-count&gt;&lt;/div&gt;&lt;button class=&quot;btn btn-ghost&quot; type=&quot;button&quot; data-navigation-picker-close&gt;Close&lt;/button&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_7f0cd82e07f3d267">&lt;div class=&quot;modal-header&quot;&gt;&lt;span class=&quot;dialog-icon info&quot;&gt;&lt;i class=&quot;ti ti-file-search&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;div&gt;&lt;h3 id=&quot;navigationDocumentPickerTitle&quot;&gt;Select document&lt;/h3&gt;&lt;p class=&quot;text-secondary&quot;&gt;Title and link will be filled in automatically.&lt;/p&gt;&lt;/div&gt;&lt;button class=&quot;modal-close&quot; type=&quot;button&quot; data-navigation-picker-close aria-label=&quot;Close&quot;&gt;&lt;i class=&quot;ti ti-x&quot;&gt;&lt;/i&gt;&lt;/button&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_915098e02d6dfa95">&lt;option value=&quot;0&quot;&gt;Menu root&lt;/option&gt;</phrase>
+	<phrase data="auto_b7cb5fb992168c7a">Alias is free</phrase>
+	<phrase data="auto_4297c5c52ad0e7c1">Alias saved</phrase>
+	<phrase data="auto_32b74a3c47908c1e">Untitled</phrase>
+	<phrase data="auto_b63a1af63b674733">All groups</phrase>
+	<phrase data="auto_c6a433696290fb08">Select at least one group</phrase>
+	<phrase data="auto_ded8be85355b425b">Group&#32;
+        detail.textContent =</phrase>
+	<phrase data="auto_beed168817322eeb">from</phrase>
+	<phrase data="auto_ed03d91e453e7a9d">Navigation cache cleared</phrase>
+	<phrase data="auto_edbe417e021a142f">Content</phrase>
+	<phrase data="auto_ace6b3bf4c06d407">Copy created</phrase>
+	<phrase data="auto_e37824987d64ee7d">Navigation</phrase>
+	<phrase data="auto_f3be21f58a8bb0a1">Navigation&#32;
+			}
+
+			$row = self::raw($id);
+			if (!$row) {
+				return false;
+			}
+
+			self::clearCache($id, isset($row[</phrase>
+	<phrase data="auto_ae086cab4ca2484c">Navigation not found</phrase>
+	<phrase data="auto_4ec5548679b3ebb0">Navigation created</phrase>
+	<phrase data="auto_b723b372cc14b332">Navigation saved</phrase>
+	<phrase data="auto_26588837b8cade08">Navigation removed</phrase>
+	<phrase data="auto_b1100b5e4642367c">Navigation: view</phrase>
+	<phrase data="auto_6762b310f3eec8e4">Navigation: controls</phrase>
+	<phrase data="auto_802ef4dbf9d97a12">Failed to load navigation</phrase>
+	<phrase data="auto_650078bec041bcf9">Failed to load item</phrase>
+	<phrase data="auto_c2b70c3bb20678a7">Failed to apply filters</phrase>
+	<phrase data="auto_3f48d3d91a14d8a0">Insufficient rights</phrase>
+	<phrase data="auto_dced636fe29b1021">Incorrect order of items</phrase>
+	<phrase data="auto_3c7f06641873483c">Incorrect parent</phrase>
+	<phrase data="auto_9069eda7952045d2">Not available to anyone</phrase>
+	<phrase data="auto_3697bef0b3fc93f5">new</phrase>
+	<phrase data="auto_6f6792553955fa39">New menu item</phrase>
+	<phrase data="auto_39807bbe8580ef40">Incomplete order of items transmitted</phrase>
+	<phrase data="auto_710b4d61663b2ab5">Drag</phrase>
+	<phrase data="auto_22b85f14d5be7427">Drag item</phrase>
+	<phrase data="auto_208dc9f48624bb45">The order of the items is preserved</phrase>
+	<phrase data="auto_d951fdfa04ae12be">The order contains an unknown or duplicate item</phrase>
+	<phrase data="auto_29d2f0e6febdd8f5">Check item fields</phrase>
+	<phrase data="auto_42039dbdd60cceb2">Check the form fields</phrase>
+	<phrase data="auto_98cbd327a3aa71b3">View templates and navigation items.</phrase>
+	<phrase data="auto_86d7d177db686474">Item included</phrase>
+	<phrase data="auto_34dfbf456f5da0cd">Item disabled</phrase>
+	<phrase data="auto_df17a685427a2d4f">Navigation point not found</phrase>
+	<phrase data="auto_df528107d2e0567a">Navigation point created</phrase>
+	<phrase data="auto_5f09026ac8e4a929">Navigation point saved</phrase>
+	<phrase data="auto_904c5f881102a4b1">Navigation item removed or disabled</phrase>
+	<phrase data="auto_11609834a799e96c">editing</phrase>
+	<phrase data="auto_2e5a0ee59bcd97f1">The parent of the item does not belong to this navigation</phrase>
+	<phrase data="auto_217e3ec23341fe67">Category&#32;
+            +</phrase>
+	<phrase data="auto_9d6ebbf754ddaef7">Create, edit, copy, delete and import navigations.</phrase>
+	<phrase data="auto_a9ee2e2619804624">This alias is already in use</phrase>
+	<phrase data="auto_0e3ea3a6b1f56530">A-Z only, 0-9, hyphen and underscore, up to 20 characters; not a number</phrase>
+	<phrase data="auto_a372421af1ae609a">Specify the active first level template</phrase>
+	<phrase data="auto_5ca79a23d7935521">Specify an alias</phrase>
+	<phrase data="auto_0916c48921c3c502">Please enter a name</phrase>
+	<phrase data="auto_16dc23ba6ac5700c">Enter the name of the item</phrase>
+	<phrase data="auto_a9b24e78923fdab4">Please provide a link or alias</phrase>
+	<phrase data="auto_5066c4cbc040221a">Specify the first level link template</phrase>
+</language>

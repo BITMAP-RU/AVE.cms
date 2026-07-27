@@ -1,0 +1,187 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}Темы{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i><span>Темы</span>
+</nav>
+
+<div class="page-header themes-page-header">
+  <div class="between">
+    <div>
+      <h1>Темы</h1>
+      <p class="text-secondary">Файлы, подключения CSS/JS и версии публичного оформления.</p>
+    </div>
+    <div class="themes-header-actions">
+      {% if themes %}
+      <label class="themes-picker"><span class="sr-only">Тема</span><select class="select" data-theme-select>{% for item in themes %}<option value="{{ item.code }}"{{ item.code == selected_theme ? ' selected' : '' }}>{{ item.name }} · {{ item.code }}{{ item.active ? ' · активна' : '' }}</option>{% endfor %}</select></label>
+      <a class="btn btn-secondary" href="{{ ADMINX_BASE }}/themes/export?theme={{ selected_theme|url_encode }}" data-tooltip="Скачать ZIP темы"><i class="ti ti-download"></i>Экспорт</a>
+      {% if can_manage and browser and not browser.theme.active %}<button class="btn btn-primary" type="button" data-theme-activate><i class="ti ti-circle-check"></i>Активировать</button><button class="btn btn-ghost btn-icon themes-action-delete" type="button" data-theme-delete data-tooltip="Удалить тему" aria-label="Удалить тему"><i class="ti ti-trash"></i></button>{% endif %}
+      {% endif %}
+      {% if can_manage %}
+      <button class="btn btn-secondary" type="button" data-open-drawer="themeImportDrawer"><i class="ti ti-package-import"></i>Импорт</button>
+      <button class="btn btn-primary" type="button" data-open-drawer="themeCreateDrawer"><i class="ti ti-plus"></i>Создать</button>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="themes-summary">
+  <div class="card themes-stat"><span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-palette"></i></span><div><b>{{ stats.themes }}</b><span>Тем</span></div></div>
+  <div class="card themes-stat"><span class="icon-tile" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-files"></i></span><div><b>{{ stats.files }}</b><span>Файлов темы</span></div></div>
+  <div class="card themes-stat"><span class="icon-tile" style="--tile-bg:var(--amber-100);--tile-fg:var(--amber-600)"><i class="ti ti-database"></i></span><div><b>{{ stats.size }}</b><span>Размер ассетов</span></div></div>
+  <div class="card themes-stat"><span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-plug-connected"></i></span><div><b>{{ stats.connections }}</b><span>Подключений</span></div></div>
+</div>
+
+{% if browser %}
+<section class="themes-panel" data-themes-root data-base="{{ ADMINX_BASE }}" data-theme="{{ selected_theme }}" data-directory="{{ browser.directory|e('html_attr') }}">
+  <div class="section-header themes-panel-header">
+    <div class="section-icon"><i class="ti ti-palette"></i></div>
+    <div><div class="section-eyebrow">Публичное оформление</div><h2>{{ browser.theme.name }}</h2><p class="section-desc"><code>{{ browser.theme.code }}</code> · версия {{ browser.theme.version }}{% if browser.theme.active %} · <span class="badge badge-green">активна</span>{% endif %}</p></div>
+  </div>
+
+  <div class="tabs themes-tabs" data-tabs>
+    <div class="tabs-list" role="tablist">
+      <button class="tab active" type="button" data-tab-target="files" aria-selected="true"><i class="ti ti-folders"></i>Файлы</button>
+      <button class="tab" type="button" data-tab-target="connections" aria-selected="false"><i class="ti ti-plug-connected"></i>Подключения</button>
+      <button class="tab" type="button" data-tab-target="settings" aria-selected="false"><i class="ti ti-adjustments"></i>Настройки</button>
+      <button class="tab" type="button" data-tab-target="revisions" aria-selected="false"><i class="ti ti-history"></i>Ревизии <span class="badge badge-gray">{{ revisions|length }}</span></button>
+    </div>
+
+    <div data-tab-panel="files">
+      <div class="card themes-card">
+        <div class="themes-section-head">
+          <div class="themes-section-title"><span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-folder"></i></span><div><h3>Файлы темы</h3><p class="text-secondary">CSS, JavaScript, изображения, шрифты и служебные JSON/XML-файлы.</p></div></div>
+          {% if can_manage %}<div class="themes-row-actions"><button class="btn btn-ghost btn-icon" type="button" data-open-drawer="themeCreateAssetDrawer" data-create-kind="file" data-tooltip="Создать файл" aria-label="Создать файл"><i class="ti ti-file-plus"></i></button><button class="btn btn-ghost btn-icon" type="button" data-open-drawer="themeCreateAssetDrawer" data-create-kind="folder" data-tooltip="Создать папку" aria-label="Создать папку"><i class="ti ti-folder-plus"></i></button><label class="btn btn-primary themes-upload-button"><i class="ti ti-upload"></i>Загрузить<input type="file" multiple data-theme-upload hidden></label></div>{% endif %}
+        </div>
+        <div class="themes-pathbar">
+          {% for crumb in browser.breadcrumbs %}<a href="{{ ADMINX_BASE }}/themes?theme={{ selected_theme|url_encode }}{% if crumb.path %}&dir={{ crumb.path|url_encode }}{% endif %}">{{ crumb.name }}</a>{% if not loop.last %}<i class="ti ti-chevron-right"></i>{% endif %}{% endfor %}
+        </div>
+        <div class="table-scroll">
+          <table class="table themes-files-table">
+            <colgroup><col class="themes-col-name"><col class="themes-col-type"><col class="themes-col-size"><col class="themes-col-date"><col class="themes-col-actions"></colgroup>
+            <thead><tr><th>Название</th><th>Тип</th><th>Размер</th><th>Изменён</th><th></th></tr></thead>
+            <tbody>
+            {% for item in browser.items %}
+              <tr data-theme-path="{{ item.path|e('html_attr') }}" data-theme-name="{{ item.name|e('html_attr') }}" data-theme-type="{{ item.type }}">
+                <td>{% if item.type == 'directory' %}<a class="themes-file-name" href="{{ ADMINX_BASE }}/themes?theme={{ selected_theme|url_encode }}&dir={{ item.path|url_encode }}"><span class="themes-file-icon is-folder"><i class="ti ti-folder-filled"></i></span><span><b>{{ item.name }}</b><small>Каталог</small></span></a>{% else %}<button class="themes-file-name" type="button"{{ item.editable ? ' data-theme-file-edit' : '' }}><span class="themes-file-icon is-{{ item.extension ?: 'file' }}">{% if item.preview %}<img src="{{ item.preview }}" alt="">{% else %}<i class="ti ti-file-code"></i>{% endif %}</span><span><b>{{ item.name }}</b><small>{{ item.path }}</small></span></button>{% endif %}</td>
+                <td>{% if item.type == 'directory' %}<span class="badge badge-blue">Папка</span>{% else %}<span class="badge {{ item.connected ? 'badge-green' : 'badge-gray' }}">{{ item.connected ?: (item.extension|upper ?: 'FILE') }}</span>{% endif %}</td>
+                <td class="mono text-secondary">{{ item.size_label ?: '—' }}</td><td class="mono text-secondary">{{ item.modified_label }}</td>
+                <td><div class="themes-row-actions">{% if item.type == 'file' and item.url %}<a class="btn btn-ghost btn-icon btn-sm" href="{{ item.url }}" target="_blank" rel="noopener" data-tooltip="Открыть" aria-label="Открыть"><i class="ti ti-external-link"></i></a>{% endif %}{% if can_manage and item.editable %}<button class="btn btn-ghost btn-icon btn-sm themes-action-edit" type="button" data-theme-file-edit data-tooltip="Изменить" aria-label="Изменить"><i class="ti ti-pencil"></i></button>{% endif %}{% if can_manage and item.name != 'theme.json' %}<button class="btn btn-ghost btn-icon btn-sm themes-action-delete" type="button" data-theme-path-delete data-tooltip="Удалить" aria-label="Удалить"><i class="ti ti-trash"></i></button>{% endif %}</div></td>
+              </tr>
+            {% else %}<tr><td colspan="5"><div class="empty-state"><i class="ti ti-folder-off"></i><b>Каталог пуст</b><span>Создайте папку или загрузите файлы темы.</span></div></td></tr>{% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div data-tab-panel="connections" hidden>
+      <form class="themes-manifest" data-theme-manifest-form>
+        <input type="hidden" name="theme" value="{{ selected_theme }}">
+        <div class="card themes-card">
+          <div class="themes-section-head"><div class="themes-section-title"><span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-plug-connected"></i></span><div><h3>Реестр подключений</h3><p class="text-secondary">Определяет порядок CSS и JS для тегов <code>[tag:theme-styles]</code> и <code>[tag:theme-scripts]</code>.</p></div></div></div>
+          <div class="themes-form-body">
+            <div class="form-grid"><label class="field col-8"><span class="field-label">Название темы</span><input class="input" name="name" value="{{ manifest.name }}" required></label><label class="field col-4"><span class="field-label">Версия</span><input class="input mono" name="version" value="{{ manifest.version }}" required></label></div>
+          </div>
+        </div>
+        <div class="themes-connection-grid">
+          <div class="card themes-card"><div class="themes-section-head"><div class="themes-section-title"><span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-brand-css3"></i></span><div><h3>Стили</h3><p class="text-secondary">Порядок подключения сверху вниз.</p></div></div>{% if can_manage %}<button class="btn btn-ghost btn-icon" type="button" data-manifest-add="style" data-tooltip="Добавить CSS"><i class="ti ti-plus"></i></button>{% endif %}</div><div class="themes-manifest-list" data-manifest-list="style">{% for row in manifest.styles %}<div class="themes-manifest-row" data-manifest-row><button class="themes-drag" type="button" aria-label="Переместить"><i class="ti ti-grip-vertical"></i></button><select class="select" data-field="file">{% for file in available_assets.styles %}<option value="{{ file }}"{{ file == row.file ? ' selected' : '' }}>{{ file }}</option>{% endfor %}</select><input class="input" data-field="media" value="{{ row.media }}" placeholder="media, например print"><button class="btn btn-ghost btn-icon themes-action-delete" type="button" data-manifest-remove aria-label="Удалить"><i class="ti ti-x"></i></button></div>{% endfor %}</div></div>
+          <div class="card themes-card"><div class="themes-section-head"><div class="themes-section-title"><span class="icon-tile" style="--tile-bg:var(--amber-100);--tile-fg:var(--amber-600)"><i class="ti ti-brand-javascript"></i></span><div><h3>Скрипты</h3><p class="text-secondary">Режим загрузки задаётся для каждого файла.</p></div></div>{% if can_manage %}<button class="btn btn-ghost btn-icon" type="button" data-manifest-add="script" data-tooltip="Добавить JS"><i class="ti ti-plus"></i></button>{% endif %}</div><div class="themes-manifest-list" data-manifest-list="script">{% for row in manifest.scripts %}<div class="themes-manifest-row is-script" data-manifest-row><button class="themes-drag" type="button" aria-label="Переместить"><i class="ti ti-grip-vertical"></i></button><select class="select" data-field="file">{% for file in available_assets.scripts %}<option value="{{ file }}"{{ file == row.file ? ' selected' : '' }}>{{ file }}</option>{% endfor %}</select><label class="switch themes-switch"><input type="checkbox" data-field="defer"{{ row.defer ? ' checked' : '' }}><span></span><b>defer</b></label><label class="switch themes-switch"><input type="checkbox" data-field="async"{{ row.async ? ' checked' : '' }}><span></span><b>async</b></label><label class="switch themes-switch"><input type="checkbox" data-field="module"{{ row.module ? ' checked' : '' }}><span></span><b>module</b></label><button class="btn btn-ghost btn-icon themes-action-delete" type="button" data-manifest-remove aria-label="Удалить"><i class="ti ti-x"></i></button></div>{% endfor %}</div></div>
+        </div>
+        {% if can_manage %}<div class="sticky-actions themes-sticky-actions"><span class="text-secondary">Изменения применятся после сохранения реестра.</span><button class="btn btn-primary" type="submit"><i class="ti ti-device-floppy"></i>Сохранить подключения</button></div>{% endif %}
+      </form>
+    </div>
+
+    <div data-tab-panel="settings" hidden>
+      <form class="themes-settings-form" data-theme-settings-form>
+        <input type="hidden" name="theme" value="{{ selected_theme }}">
+        <div class="card themes-card">
+          <div class="themes-section-head">
+            <div class="themes-section-title"><span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-template"></i></span><div><h3>Способ сборки сайта</h3><p class="text-secondary">Ассеты и переопределения темы работают в обоих режимах.</p></div></div>
+          </div>
+          <div class="themes-form-body">
+            <div class="themes-mode-grid" role="radiogroup" aria-label="Способ сборки публичной страницы">
+              <label class="themes-mode-card{{ manifest.presentation_mode == 'native' ? ' is-selected' : '' }}">
+                <input type="radio" name="presentation_mode" value="native"{{ manifest.presentation_mode == 'native' ? ' checked' : '' }}{{ can_manage ? '' : ' disabled' }}>
+                <span class="icon-tile" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-building-arch"></i></span>
+                <span><b>Нативные шаблоны AVE</b><small>Страница собирается из шаблона сайта, рубрик, запросов, блоков и навигации.</small></span>
+                <i class="ti ti-circle-check themes-mode-check" aria-hidden="true"></i>
+              </label>
+              <label class="themes-mode-card{{ manifest.presentation_mode == 'theme' ? ' is-selected' : '' }}{{ manifest.page_shell ? '' : ' is-disabled' }}">
+                <input type="radio" name="presentation_mode" value="theme"{{ manifest.presentation_mode == 'theme' ? ' checked' : '' }}{{ can_manage and manifest.page_shell ? '' : ' disabled' }}>
+                <span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-code"></i></span>
+                <span><b>Twig-оболочка темы</b><small>{% if manifest.page_shell %}<code>{{ manifest.page_shell }}</code> управляет общей композицией страницы.{% else %}В <code>theme.json</code> не указан файл <code>page_shell</code>.{% endif %}</small></span>
+                <i class="ti ti-circle-check themes-mode-check" aria-hidden="true"></i>
+              </label>
+            </div>
+            <div class="alert alert-info themes-mode-note"><i class="ti ti-info-circle"></i><div><b>Что изменит переключатель</b><p>Только сборку общей страницы. CSS, JavaScript, изображения темы и её оформления модулей останутся подключёнными.</p></div></div>
+          </div>
+        </div>
+
+        {% if theme_settings_fields %}
+        <div class="card themes-card themes-settings-card">
+          <div class="themes-section-head">
+            <div class="themes-section-title"><span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="{{ theme_settings_group.icon|default('ti ti-browser') }}"></i></span><div><h3>{{ theme_settings_group.label|default('Параметры темы') }}</h3><p class="text-secondary">{{ theme_settings_group.description|default('Значения, объявленные этой темой.') }}</p></div></div>
+            <span class="badge badge-blue">{{ theme_settings_fields|length }}</span>
+          </div>
+          <div class="themes-settings-grid">
+            {% for field in theme_settings_fields %}
+            {% if field.section|default('') %}<div class="themes-settings-section"><span>{{ field.section }}</span></div>{% endif %}
+            {% set wide = field.type in ['text', 'section_order'] %}
+            <div class="field themes-settings-field{{ wide ? ' is-wide' : '' }}">
+              <label class="field-label" for="theme-setting-{{ field.theme_key }}">{{ field.label }}</label>
+              {% if field.type == 'section_order' %}
+                <input type="hidden" id="theme-setting-{{ field.theme_key }}" name="{{ field.theme_key }}" value="{{ field.order_items|json_encode|e('html_attr') }}" data-theme-order-value>
+                <div class="themes-section-order" data-theme-order>
+                  {% for item in field.order_items %}
+                  <article class="themes-section-order-row{{ item.visible ? '' : ' is-disabled' }}" draggable="{{ can_manage ? 'true' : 'false' }}" data-theme-order-item data-code="{{ item.code }}">
+                    <button class="btn btn-ghost btn-icon themes-section-order-handle" type="button" data-theme-order-handle data-tooltip="Перетащить" aria-label="Перетащить"{{ can_manage ? '' : ' disabled' }}><i class="ti ti-grip-vertical"></i></button>
+                    <span class="icon-tile"><i class="ti ti-layout-dashboard"></i></span>
+                    <span><b>{{ item.label }}</b><small>{{ item.code }}</small></span>
+                    <span class="themes-section-order-move"><button class="btn btn-ghost btn-icon btn-sm" type="button" data-theme-order-move="up" data-tooltip="Выше" aria-label="Выше"{{ can_manage ? '' : ' disabled' }}><i class="ti ti-chevron-up"></i></button><button class="btn btn-ghost btn-icon btn-sm" type="button" data-theme-order-move="down" data-tooltip="Ниже" aria-label="Ниже"{{ can_manage ? '' : ' disabled' }}><i class="ti ti-chevron-down"></i></button></span>
+                    <label class="switch" data-tooltip="Показывать"><input type="checkbox" data-theme-order-visible{{ item.visible ? ' checked' : '' }}{{ can_manage ? '' : ' disabled' }}><span></span></label>
+                  </article>
+                  {% endfor %}
+                </div>
+              {% elseif field.type == 'text' %}
+                <textarea class="textarea" id="theme-setting-{{ field.theme_key }}" name="{{ field.theme_key }}" rows="5"{{ can_manage ? '' : ' disabled' }}>{{ field.value }}</textarea>
+              {% elseif field.type == 'select' %}
+                <select class="select" id="theme-setting-{{ field.theme_key }}" name="{{ field.theme_key }}"{{ can_manage ? '' : ' disabled' }}>{% for value, label in field.options %}<option value="{{ value }}"{{ value == field.value ? ' selected' : '' }}>{{ label }}</option>{% endfor %}</select>
+              {% elseif field.type == 'bool' %}
+                <label class="themes-setting-switch" for="theme-setting-{{ field.theme_key }}"><input type="hidden" name="{{ field.theme_key }}" value="0"><span><b>{{ field.value ? 'Включено' : 'Выключено' }}</b><small>Применится после сохранения.</small></span><span class="switch"><input id="theme-setting-{{ field.theme_key }}" type="checkbox" name="{{ field.theme_key }}" value="1"{{ field.value ? ' checked' : '' }}{{ can_manage ? '' : ' disabled' }}><span></span></span></label>
+              {% elseif field.type == 'ids' %}
+                <input class="input mono" id="theme-setting-{{ field.theme_key }}" type="text" inputmode="numeric" name="{{ field.theme_key }}" value="{{ field.value }}" placeholder="{{ field.placeholder|default('125, 42, 310') }}"{{ can_manage ? '' : ' disabled' }}>
+              {% else %}
+                <input class="input" id="theme-setting-{{ field.theme_key }}" type="{{ field.type == 'email' ? 'email' : (field.type == 'int' ? 'number' : 'text') }}" name="{{ field.theme_key }}" value="{{ field.value }}"{% if field.min is not null %} min="{{ field.min }}"{% endif %}{% if field.max is not null and field.type == 'int' %} max="{{ field.max }}"{% endif %}{{ can_manage ? '' : ' disabled' }}>
+              {% endif %}
+              {% if field.hint|default('') %}<span class="field-hint">{{ field.hint }}</span>{% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        {% if can_manage %}<div class="sticky-actions themes-sticky-actions"><span class="text-secondary">После сохранения публичный кеш будет очищен автоматически.</span><button class="btn btn-primary" type="submit"><i class="ti ti-device-floppy"></i>Сохранить настройки</button></div>{% endif %}
+      </form>
+    </div>
+
+    <div data-tab-panel="revisions" hidden>
+      <div class="card themes-card"><div class="themes-section-head"><div class="themes-section-title"><span class="icon-tile" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-history"></i></span><div><h3>Ревизии файлов</h3><p class="text-secondary">Текстовые версии сохраняются перед изменением, загрузкой и удалением.</p></div></div>{% if can_manage and revisions %}<button class="btn btn-ghost themes-action-delete" type="button" data-theme-revisions-clear><i class="ti ti-trash"></i>Удалить все</button>{% endif %}</div><div class="table-scroll"><table class="table themes-revisions-table"><thead><tr><th>Файл</th><th>Состояние</th><th>Автор</th><th>Дата</th><th></th></tr></thead><tbody>{% for row in revisions %}<tr data-revision-id="{{ row.id }}"><td><b>{{ row.path }}</b><small class="text-secondary">{{ row.size_label }} · {{ row.checksum|slice(0, 12) }}</small></td><td><span class="badge {{ row.badge }}">{{ row.action_label }}</span></td><td>{{ row.author_name ?: 'Система' }}</td><td class="mono text-secondary">{{ row.created_label }}</td><td><div class="themes-row-actions"><button class="btn btn-ghost btn-icon themes-action-revision" type="button" data-theme-revision-open data-tooltip="Посмотреть"><i class="ti ti-eye"></i></button>{% if can_manage %}<button class="btn btn-ghost btn-icon themes-action-delete" type="button" data-theme-revision-delete data-tooltip="Удалить"><i class="ti ti-trash"></i></button>{% endif %}</div></td></tr>{% else %}<tr class="themes-empty-row"><td colspan="5"><div class="empty-state"><i class="ti ti-history-off"></i><b>Ревизий пока нет</b><span>Они появятся после первого изменения текстового файла.</span></div></td></tr>{% endfor %}</tbody></table></div></div>
+    </div>
+  </div>
+</section>
+{% else %}<div class="card"><div class="empty-state"><i class="ti ti-palette-off"></i><b>Тем пока нет</b><span>Создайте пустую тему или импортируйте ZIP-пакет.</span></div></div>{% endif %}
+
+{% if can_manage %}
+<aside class="drawer drawer-right drawer-lg" id="themeFileDrawer" hidden><div class="drawer-header"><div><h3 data-file-title>Редактор файла</h3><p class="text-secondary text-sm" data-file-meta></p></div><button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button></div><form class="themes-drawer-form" data-theme-file-form><input type="hidden" name="theme" value="{{ selected_theme }}"><input type="hidden" name="path"><div class="drawer-body"><div class="themes-file-preview" data-file-preview hidden></div><textarea class="textarea mono" name="content" data-code-editor data-mode="css" data-height="620"></textarea></div><div class="drawer-footer"><button class="btn btn-secondary" type="button" data-close-drawer>Закрыть</button><button class="btn btn-primary" type="submit" data-code-save-stay><i class="ti ti-device-floppy"></i>Сохранить</button></div></form></aside>
+<aside class="drawer drawer-right" id="themeCreateAssetDrawer" hidden><div class="drawer-header"><div><h3 data-asset-create-title>Создать файл</h3><p class="text-secondary text-sm">В каталоге <code>{{ browser.directory ?: '/' }}</code></p></div><button class="btn btn-ghost btn-icon" type="button" data-close-drawer><i class="ti ti-x"></i></button></div><form class="themes-drawer-form" data-theme-create-asset><input type="hidden" name="theme" value="{{ selected_theme }}"><input type="hidden" name="directory" value="{{ browser.directory }}"><input type="hidden" name="kind" value="file"><div class="drawer-body"><label class="field"><span class="field-label">Имя</span><div class="input-wrap"><i class="ti ti-file"></i><input class="input" name="name" placeholder="styles.css" required></div><span class="field-hint" data-asset-create-hint>Расширения: css, js, json, svg, xml, txt.</span></label></div><div class="drawer-footer"><button class="btn btn-secondary" type="button" data-close-drawer>Закрыть</button><button class="btn btn-primary" type="submit"><i class="ti ti-plus"></i>Создать</button></div></form></aside>
+<aside class="drawer drawer-right" id="themeCreateDrawer" hidden><div class="drawer-header"><div><h3>Новая тема</h3><p class="text-secondary text-sm">Будет создан безопасный каркас с CSS, JS и theme.json.</p></div><button class="btn btn-ghost btn-icon" type="button" data-close-drawer><i class="ti ti-x"></i></button></div><form class="themes-drawer-form" data-theme-create-form><div class="drawer-body"><label class="field"><span class="field-label">Название</span><input class="input" name="name" required placeholder="Новая тема"></label><label class="field"><span class="field-label">Код каталога</span><div class="input-wrap"><i class="ti ti-folder"></i><input class="input mono" name="code" required pattern="[a-z0-9_-]+" placeholder="my-theme"></div></label></div><div class="drawer-footer"><button class="btn btn-secondary" type="button" data-close-drawer>Закрыть</button><button class="btn btn-primary" type="submit"><i class="ti ti-plus"></i>Создать</button></div></form></aside>
+<aside class="drawer drawer-right" id="themeImportDrawer" hidden><div class="drawer-header"><div><h3>Импорт темы</h3><p class="text-secondary text-sm">ZIP до 50 МБ с обязательным theme.json.</p></div><button class="btn btn-ghost btn-icon" type="button" data-close-drawer><i class="ti ti-x"></i></button></div><form class="themes-drawer-form" data-theme-import-form enctype="multipart/form-data"><div class="drawer-body"><label class="field"><span class="field-label">Код темы</span><div class="input-wrap"><i class="ti ti-folder"></i><input class="input mono" name="code" required pattern="[a-z0-9_-]+"></div></label><label class="themes-dropzone"><i class="ti ti-file-zip"></i><b>ZIP-пакет темы</b><span>Нажмите, чтобы выбрать архив</span><input type="file" name="archive" accept=".zip,application/zip" required></label></div><div class="drawer-footer"><button class="btn btn-secondary" type="button" data-close-drawer>Закрыть</button><button class="btn btn-primary" type="submit"><i class="ti ti-package-import"></i>Импортировать</button></div></form></aside>
+{% endif %}
+<aside class="drawer drawer-right drawer-lg" id="themeRevisionDrawer" hidden><div class="drawer-header"><div><h3 data-revision-title>Ревизия</h3><p class="text-secondary text-sm" data-revision-meta></p></div><button class="btn btn-ghost btn-icon" type="button" data-close-drawer><i class="ti ti-x"></i></button></div><div class="themes-drawer-form"><div class="drawer-body"><textarea class="textarea mono" data-revision-content data-code-editor data-mode="text/plain" data-height="620" data-readonly></textarea></div><div class="drawer-footer"><button class="btn btn-secondary" type="button" data-close-drawer>Закрыть</button>{% if can_manage %}<button class="btn btn-primary" type="button" data-theme-revision-restore><i class="ti ti-restore"></i>Восстановить</button>{% endif %}</div></div></aside>
+
+<template id="themeStyleRow"><div class="themes-manifest-row" data-manifest-row><button class="themes-drag" type="button"><i class="ti ti-grip-vertical"></i></button><select class="select" data-field="file">{% for file in available_assets.styles %}<option value="{{ file }}">{{ file }}</option>{% endfor %}</select><input class="input" data-field="media" placeholder="media, например print"><button class="btn btn-ghost btn-icon themes-action-delete" type="button" data-manifest-remove><i class="ti ti-x"></i></button></div></template>
+<template id="themeScriptRow"><div class="themes-manifest-row is-script" data-manifest-row><button class="themes-drag" type="button"><i class="ti ti-grip-vertical"></i></button><select class="select" data-field="file">{% for file in available_assets.scripts %}<option value="{{ file }}">{{ file }}</option>{% endfor %}</select><label class="switch themes-switch"><input type="checkbox" data-field="defer" checked><span></span><b>defer</b></label><label class="switch themes-switch"><input type="checkbox" data-field="async"><span></span><b>async</b></label><label class="switch themes-switch"><input type="checkbox" data-field="module"><span></span><b>module</b></label><button class="btn btn-ghost btn-icon themes-action-delete" type="button" data-manifest-remove><i class="ti ti-x"></i></button></div></template>
+
+{% endblock %}

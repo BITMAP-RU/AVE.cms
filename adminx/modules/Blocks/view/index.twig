@@ -1,0 +1,397 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}Блоки{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i>
+  <span>Блоки</span>
+</nav>
+
+<div class="page-header">
+  <div class="between">
+    <div>
+      <h1>Блоки</h1>
+      <p class="text-secondary" style="margin-top:5px">HTML-фрагменты и исполняемые блоки для шаблонов сайта.</p>
+    </div>
+    {% if can_manage %}
+    <div class="cluster">
+      <button class="btn btn-secondary" type="button" data-block-group-new data-open-drawer="blockGroupDrawer"><i class="ti ti-folder-plus"></i>Группа</button>
+      <button class="btn btn-primary" type="button" data-block-new data-open-drawer="blockDrawer"><i class="ti ti-plus"></i>Создать блок</button>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="blocks-summary">
+  <div class="card blocks-stat">
+    <span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-blockquote"></i></span>
+    <div><b>{{ stats.total }}</b><span>Всего блоков</span></div>
+  </div>
+  <div class="card blocks-stat">
+    <span class="icon-tile" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-circle-check"></i></span>
+    <div><b>{{ stats.active }}</b><span>Активных</span></div>
+  </div>
+  <div class="card blocks-stat">
+    <span class="icon-tile" style="--tile-bg:var(--amber-100);--tile-fg:var(--amber-600)"><i class="ti ti-bolt"></i></span>
+    <div><b>{{ stats.external }}</b><span>Внешний вызов</span></div>
+  </div>
+  <div class="card blocks-stat">
+    <span class="icon-tile" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-folders"></i></span>
+    <div><b>{{ stats.groups }}</b><span>Групп</span></div>
+  </div>
+</div>
+
+<div class="tabs blocks-tabs" role="tablist" aria-label="Блоки">
+  <button class="tab" type="button" role="tab" aria-selected="{{ initial_tab == 'blocks' ? 'true' : 'false' }}" data-blocks-tab="blocks"><i class="ti ti-blockquote"></i>Блоки<span class="tab-count">{{ blocks|length }}</span></button>
+  <button class="tab" type="button" role="tab" aria-selected="{{ initial_tab == 'groups' ? 'true' : 'false' }}" data-blocks-tab="groups"><i class="ti ti-folders"></i>Группы<span class="tab-count">{{ groups|length }}</span></button>
+</div>
+
+<section class="tab-panel{{ initial_tab == 'blocks' ? ' active' : '' }} blocks-panel" data-blocks-panel="blocks">
+  <div class="section-header blocks-panel-header">
+    <div class="section-icon"><i class="ti ti-blockquote"></i></div>
+    <div>
+      <div class="section-eyebrow">Контент и логика</div>
+      <h2>Единый реестр блоков</h2>
+      <p class="section-desc">После сохранения блока его кеш очищается автоматически.</p>
+    </div>
+  </div>
+
+  <div class="card blocks-card blocks-filter-card">
+    <div class="blocks-section-head">
+      <div class="blocks-section-title">
+        <span class="icon-tile blocks-head-icon" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-table"></i></span>
+        <div>
+          <h2>Блоки</h2>
+          <p class="text-secondary">{{ blocks|length }} в текущем фильтре, {{ stats.total }} всего.</p>
+        </div>
+      </div>
+      <span class="badge badge-blue">{{ filters.state ? filters.state : 'all' }}</span>
+    </div>
+
+    <div class="table-toolbar blocks-toolbar">
+      <form class="blocks-filter" method="get" action="{{ ADMINX_BASE }}/blocks">
+        <div class="input-wrap">
+          <i class="ti ti-search"></i>
+          <input class="input" type="search" name="q" value="{{ filters.q }}" placeholder="Название, алиас, описание или код">
+        </div>
+        <select class="select" name="group">
+          <option value="0">Все группы</option>
+          {% for group in groups %}
+          <option value="{{ group.id }}"{{ filters.group == group.id ? ' selected' : '' }}>{{ group.title }}</option>
+          {% endfor %}
+        </select>
+        <select class="select" name="state">
+          <option value="">Все состояния</option>
+          <option value="active"{{ filters.state == 'active' ? ' selected' : '' }}>Активные</option>
+          <option value="inactive"{{ filters.state == 'inactive' ? ' selected' : '' }}>Отключённые</option>
+          <option value="external"{{ filters.state == 'external' ? ' selected' : '' }}>Внешний вызов</option>
+          <option value="ajax"{{ filters.state == 'ajax' ? ' selected' : '' }}>Ajax</option>
+          <option value="visual"{{ filters.state == 'visual' ? ' selected' : '' }}>Визуальные</option>
+        </select>
+        <button class="btn btn-secondary" type="submit"><i class="ti ti-filter"></i>Показать</button>
+        {% if filters.q or filters.group or filters.state %}
+        <button class="btn btn-ghost" type="button" data-blocks-filter-reset><i class="ti ti-x"></i>Сбросить</button>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+
+  <div class="blocks-group-stack">
+    {% for group in block_groups %}
+    <div class="card blocks-card blocks-group-card" data-block-group-section="{{ group.id }}">
+      <div class="blocks-section-head">
+        <div class="blocks-section-title">
+          <span class="icon-tile blocks-head-icon" style="--tile-bg:{{ cycle(['var(--blue-100)', 'var(--green-100)', 'var(--violet-100)', 'var(--amber-100)', 'var(--cyan-100)', 'var(--teal-100)'], loop.index0) }};--tile-fg:{{ cycle(['var(--blue-600)', 'var(--green-600)', 'var(--violet-600)', 'var(--amber-600)', 'var(--cyan-600)', 'var(--teal-600)'], loop.index0) }}"><i class="ti ti-folder"></i></span>
+          <div>
+            <h2>{{ group.title }}</h2>
+            <p class="text-secondary">{{ group.description ?: 'Блоки этой группы.' }}</p>
+          </div>
+        </div>
+        <span class="badge badge-blue">{{ group.items|length }}</span>
+      </div>
+    <div class="table-scroll">
+      <table class="table table-compact blocks-table">
+        <colgroup>
+          <col class="blocks-col-id">
+          <col class="blocks-col-name">
+          <col class="blocks-col-alias">
+          <col class="blocks-col-flags">
+          <col class="blocks-col-meta">
+          {% if can_manage %}<col class="blocks-col-actions">{% endif %}
+        </colgroup>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Название</th>
+            <th>Тег</th>
+            <th>Состояния</th>
+            <th>Метаданные</th>
+            {% if can_manage %}<th class="table-actions"><span class="sr-only">Действия</span></th>{% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for block in group.items %}
+          <tr data-block-row
+              data-id="{{ block.id }}"
+              data-name="{{ block.sysblock_name|e('html_attr') }}"
+              data-alias="{{ block.sysblock_alias|e('html_attr') }}"
+              data-group="{{ block.sysblock_group_id }}">
+            <td class="mono text-muted">{{ block.id }}</td>
+            <td>
+              <div class="blocks-name">
+                <b>{{ block.sysblock_name }}</b>
+                {% if block.sysblock_description %}<small>{{ block.sysblock_description }}</small>{% endif %}
+              </div>
+            </td>
+            <td>
+              <button class="blocks-tag" type="button" data-block-tag-copy="[tag:sysblock:{{ block.sysblock_alias|e('html_attr') }}]" data-tooltip="Скопировать тег" aria-label="Скопировать тег [tag:sysblock:{{ block.sysblock_alias|e('html_attr') }}]"><span>[tag:sysblock:{{ block.sysblock_alias }}]</span><i class="ti ti-copy"></i></button>
+            </td>
+            <td>
+              <div class="blocks-badges">
+                {% if block.sysblock_active == '1' %}<span class="badge badge-green">активен</span>{% else %}<span class="badge badge-gray">выкл</span>{% endif %}
+                {% if block.sysblock_editor == 'php' %}<span class="badge badge-amber">PHP</span>{% endif %}
+                {% if block.sysblock_editor == 'html' %}<span class="badge badge-blue">HTML</span>{% endif %}
+                {% if block.sysblock_editor == 'rich' %}<span class="badge badge-cyan">Rich text</span>{% endif %}
+                {% if block.sysblock_editor == 'text' %}<span class="badge badge-gray">Текст</span>{% endif %}
+                {% if block.sysblock_external == '1' %}<span class="badge badge-blue">external</span>{% endif %}
+                {% if block.sysblock_ajax == '1' %}<span class="badge badge-violet">ajax</span>{% endif %}
+              </div>
+            </td>
+            <td>
+              <div class="blocks-meta">
+                <span>{{ block.author }}</span>
+                <span class="mono">{{ block.created_label }}</span>
+                <span class="mono">{{ block.text_size_label }}</span>
+              </div>
+            </td>
+            {% if can_manage %}
+            <td class="table-actions">
+              <div class="cluster blocks-actions">
+                {% if block.sysblock_editor != 'php' or can_manage_php %}<button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-edit blocks-action-edit" type="button" data-block-edit data-open-drawer="blockDrawer" data-tooltip="Изменить" aria-label="Изменить"><i class="ti ti-pencil"></i></button>
+                <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-view blocks-action-revisions" type="button" data-block-revisions data-tooltip="Ревизии" aria-label="Ревизии"><i class="ti ti-history"></i></button>
+                <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-copy blocks-action-copy" type="button" data-block-copy data-tooltip="Создать копию" aria-label="Создать копию"><i class="ti ti-copy-plus"></i></button>{% endif %}
+                <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-ok blocks-action-cache" type="button" data-block-cache data-tooltip="Очистить кеш" aria-label="Очистить кеш"><i class="ti ti-refresh"></i></button>
+                <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-danger blocks-action-danger" type="button" data-block-delete data-tooltip="Удалить" aria-label="Удалить"><i class="ti ti-trash"></i></button>
+              </div>
+            </td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+    {% else %}
+    <div class="card blocks-card">
+      <div class="empty-state">Блоки не найдены.</div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="tab-panel{{ initial_tab == 'groups' ? ' active' : '' }} blocks-panel" data-blocks-panel="groups">
+  <div class="section-header blocks-panel-header">
+    <div class="section-icon"><i class="ti ti-folders"></i></div>
+    <div>
+      <div class="section-eyebrow">Контент</div>
+      <h2>Группы блоков</h2>
+      <p class="section-desc">Группы упрощают навигацию; удаление группы переносит блоки в «Без группы».</p>
+    </div>
+  </div>
+
+  <div class="card blocks-card">
+    <div class="blocks-section-head">
+      <div class="blocks-section-title">
+        <span class="icon-tile blocks-head-icon" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-folders"></i></span>
+        <div>
+          <h2>Группы</h2>
+          <p class="text-secondary">{{ can_manage ? 'Перетащите строки за ручку, чтобы изменить порядок групп.' : 'Порядок групп задаётся в режиме управления.' }}</p>
+        </div>
+      </div>
+      <span class="badge badge-blue">{{ groups|length }}</span>
+    </div>
+    <div class="table-scroll">
+      <table class="table table-compact blocks-groups-table">
+        <thead><tr>{% if can_manage %}<th style="width:48px"></th>{% endif %}<th style="width:112px">Порядок</th><th>Название</th><th>Описание</th><th style="width:120px">Блоков</th>{% if can_manage %}<th style="width:140px"></th>{% endif %}</tr></thead>
+        <tbody{% if can_manage %} data-block-groups-sortable{% endif %}>
+          {% for group in groups %}
+          <tr data-block-group-row data-id="{{ group.id }}" data-title="{{ group.title|e('html_attr') }}" data-position="{{ group.position }}">
+            {% if can_manage %}
+            <td><button class="btn btn-ghost btn-icon btn-sm blocks-group-drag-handle" type="button" draggable="true" data-group-drag-handle data-tooltip-right="Перетащить" aria-label="Перетащить"><i class="ti ti-grip-vertical"></i></button></td>
+            {% endif %}
+            <td class="mono text-muted" data-group-position>{{ loop.index }}</td>
+            <td><b>{{ group.title }}</b></td>
+            <td class="text-secondary text-sm">{{ group.description }}</td>
+            <td><span class="badge badge-blue">{{ group.blocks_count }}</span></td>
+            {% if can_manage %}
+            <td>
+              <div class="cluster blocks-actions">
+                <button class="btn btn-ghost btn-icon btn-sm blocks-action-edit" type="button" data-block-group-edit data-open-drawer="blockGroupDrawer" data-tooltip="Изменить" aria-label="Изменить"><i class="ti ti-pencil"></i></button>
+                <button class="btn btn-ghost btn-icon btn-sm blocks-action-danger" type="button" data-block-group-delete data-tooltip="Удалить" aria-label="Удалить"><i class="ti ti-trash"></i></button>
+              </div>
+            </td>
+            {% endif %}
+          </tr>
+          {% else %}
+          <tr><td colspan="{{ can_manage ? 6 : 4 }}"><div class="empty-state">Группы не найдены.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+{% if can_manage %}
+<aside class="drawer drawer-right drawer-lg" id="blockDrawer" role="dialog" aria-modal="true" aria-labelledby="blockDrawerTitle" hidden>
+  <div class="drawer-header">
+    <div class="blocks-drawer-title">
+      <h3 id="blockDrawerTitle">Новый блок</h3>
+      <p class="text-secondary text-sm"><kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>S</kbd> сохраняет и оставляет форму открытой.</p>
+    </div>
+    <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <form id="blockForm" class="blocks-drawer" data-base="{{ ADMINX_BASE }}">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <input type="hidden" name="id" value="">
+    <div class="drawer-body">
+      <div class="form-grid">
+        <label class="field col-8"><span class="field-label">Название</span><input class="input" type="text" name="sysblock_name" required><span class="field-error" data-error="sysblock_name"></span></label>
+        <label class="field col-4"><span class="field-label">Алиас</span><input class="input mono" type="text" name="sysblock_alias" maxlength="20" required><span class="field-hint" data-alias-hint>A-Z, 0-9, - и _</span><span class="field-error" data-error="sysblock_alias"></span></label>
+        <label class="field col-8"><span class="field-label">Описание</span><input class="input" type="text" name="sysblock_description"></label>
+        <label class="field col-4"><span class="field-label">Группа</span><select class="select" name="sysblock_group_id"><option value="0">Без группы</option>{% for group in groups %}<option value="{{ group.id }}">{{ group.title }}</option>{% endfor %}</select></label>
+      </div>
+
+      <section class="blocks-options" aria-labelledby="blockOptionsTitle">
+        <div class="blocks-options-head">
+          <span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-adjustments-horizontal"></i></span>
+          <div>
+            <h4 id="blockOptionsTitle">Настройки выполнения</h4>
+            <p>Доступность блока и способ обработки его содержимого.</p>
+          </div>
+        </div>
+        <label class="blocks-editor-mode">
+          <span class="blocks-switch-icon" style="--switch-bg:var(--violet-100);--switch-fg:var(--violet-600)"><i class="ti ti-code-dots"></i></span>
+          <span><b>Режим содержимого</b><small data-block-editor-mode-hint>CodeMirror для PHP; код выполняется на сайте</small></span>
+          <select class="select" name="sysblock_editor" data-block-editor-mode>
+            {% if can_manage_php %}<option value="php">PHP · CodeMirror</option>{% endif %}
+            <option value="html">HTML и теги · CodeMirror</option>
+            <option value="rich">Визуальный редактор</option>
+            <option value="text">Текст без подсветки</option>
+          </select>
+          <input type="checkbox" name="sysblock_eval" value="1" checked hidden>
+          <input type="checkbox" name="sysblock_visual" value="1" hidden>
+        </label>
+        <div class="blocks-switch-grid">
+          <label class="blocks-switch">
+            <span class="blocks-switch-icon" style="--switch-bg:var(--green-100);--switch-fg:var(--green-600)"><i class="ti ti-power"></i></span>
+            <span class="blocks-switch-copy"><b>Блок включён</b><small>Разрешить использование на сайте</small></span>
+            <span class="switch blocks-switch-control"><input type="checkbox" name="sysblock_active" value="1" checked></span>
+          </label>
+          <label class="blocks-switch">
+            <span class="blocks-switch-icon" style="--switch-bg:var(--blue-100);--switch-fg:var(--blue-600)"><i class="ti ti-world-share"></i></span>
+            <span class="blocks-switch-copy"><b>Внешний вызов</b><small>Разрешить вызов вне шаблонов сайта</small></span>
+            <span class="switch blocks-switch-control"><input type="checkbox" name="sysblock_external" value="1"></span>
+          </label>
+          <label class="blocks-switch">
+            <span class="blocks-switch-icon" style="--switch-bg:var(--violet-100);--switch-fg:var(--violet-600)"><i class="ti ti-bolt"></i></span>
+            <span class="blocks-switch-copy"><b>AJAX-режим</b><small>Использовать блок в AJAX-запросах</small></span>
+            <span class="switch blocks-switch-control"><input type="checkbox" name="sysblock_ajax" value="1"></span>
+          </label>
+        </div>
+      </section>
+
+      <div class="field blocks-code-field">
+        <span class="field-label blocks-code-label">
+          <span data-block-editor-title>PHP-код блока</span>
+          <span class="blocks-code-tools">
+            <button class="btn btn-ghost btn-icon btn-sm blocks-lint-button" type="button" data-block-lint data-tooltip="Проверить PHP" aria-label="Проверить PHP"><i class="ti ti-bug"></i></button>
+            <button class="btn btn-ghost btn-icon btn-sm blocks-code-fullscreen-button" type="button" data-block-code-fullscreen data-tooltip="Развернуть редактор" aria-label="Развернуть редактор"><i class="ti ti-arrows-maximize"></i></button>
+          </span>
+        </span>
+        <div class="blocks-code-editor" data-block-code-editor><textarea class="textarea mono" name="sysblock_text" rows="18" data-code-editor data-mode="php" data-height="520"></textarea></div>
+        <div class="blocks-rich-editor" data-block-rich-editor hidden><textarea class="textarea" rows="18" data-rich-editor data-rich-preset="full" data-editor-height="520" aria-label="Визуальный редактор блока"></textarea></div>
+        <textarea class="textarea blocks-plain-editor" rows="18" data-block-plain-editor aria-label="Текст блока без подсветки" hidden></textarea>
+        <span class="field-hint" data-block-lint-result></span>
+        <span class="field-error" data-error="sysblock_text"></span>
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <button class="btn btn-ghost" type="button" data-close-drawer>Отмена</button>
+      <button class="btn btn-secondary" type="button" data-block-submit-stay data-code-save-stay style="margin-left:auto"><i class="ti ti-device-floppy"></i>Сохранить и остаться</button>
+      <button class="btn btn-primary" type="submit" data-block-submit><i class="ti ti-check"></i>Сохранить</button>
+    </div>
+  </form>
+</aside>
+
+<aside class="drawer drawer-right drawer-lg" id="blockRevisionsDrawer" role="dialog" aria-modal="true" aria-labelledby="blockRevisionsDrawerTitle" hidden>
+  <div class="drawer-header">
+    <div class="blocks-drawer-title">
+      <h3 id="blockRevisionsDrawerTitle">Ревизии блока</h3>
+      <p class="text-secondary text-sm" id="blockRevisionsDrawerSubtitle">История снимков системного блока.</p>
+    </div>
+    <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="drawer-body blocks-revisions-drawer">
+    <div class="blocks-revisions-layout">
+      <section class="blocks-revisions-list" aria-label="Список ревизий">
+        <div class="blocks-revisions-head">
+          <span class="icon-tile blocks-head-icon" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-history"></i></span>
+          <div>
+            <h4>Снимки</h4>
+            <p class="text-secondary" data-revisions-count>Загрузка...</p>
+          </div>
+        </div>
+        <div class="blocks-revisions-list-rows" data-revisions-list>
+          <div class="empty-state">Загрузка...</div>
+        </div>
+      </section>
+      <section class="blocks-revision-preview" aria-label="Просмотр ревизии">
+        <div class="blocks-revisions-head">
+          <span class="icon-tile blocks-head-icon" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-code"></i></span>
+          <div>
+            <h4 data-revision-title>Выберите ревизию</h4>
+            <p class="text-secondary" data-revision-meta>Код и метаданные появятся справа после выбора снимка.</p>
+          </div>
+        </div>
+        <div class="blocks-revision-fields" data-revision-fields></div>
+        <label class="field blocks-revision-code">
+          <span class="field-label">Код блока</span>
+          <textarea class="textarea mono" data-revision-code data-code-editor data-mode="php" data-readonly="true" data-height="420" rows="14" readonly></textarea>
+        </label>
+      </section>
+    </div>
+  </div>
+  <div class="drawer-footer">
+    <button class="btn btn-ghost" type="button" data-close-drawer>Закрыть</button>
+    <button class="btn btn-danger-soft" type="button" data-revisions-clear disabled><i class="ti ti-trash"></i>Удалить все</button>
+    <button class="btn btn-secondary" type="button" data-revision-delete disabled style="margin-left:auto"><i class="ti ti-trash"></i>Удалить</button>
+    <button class="btn btn-primary" type="button" data-revision-restore disabled><i class="ti ti-restore"></i>Восстановить</button>
+  </div>
+</aside>
+
+<aside class="drawer drawer-right" id="blockGroupDrawer" role="dialog" aria-modal="true" aria-labelledby="blockGroupDrawerTitle" hidden>
+  <div class="drawer-header">
+    <div class="blocks-drawer-title">
+      <h3 id="blockGroupDrawerTitle">Новая группа</h3>
+      <p class="text-secondary text-sm">Группа влияет только на организацию списка.</p>
+    </div>
+    <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <form id="blockGroupForm" data-base="{{ ADMINX_BASE }}">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <input type="hidden" name="id" value="">
+    <div class="drawer-body">
+      <div class="form-grid">
+        <label class="field col-12"><span class="field-label">Название</span><input class="input" type="text" name="title" required></label>
+        <label class="field col-12"><span class="field-label">Описание</span><textarea class="textarea" name="description" rows="5"></textarea></label>
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <button class="btn btn-ghost" type="button" data-close-drawer>Отмена</button>
+      <button class="btn btn-primary" type="submit" style="margin-left:auto"><i class="ti ti-check"></i>Сохранить</button>
+    </div>
+  </form>
+</aside>
+{% endif %}
+
+{% endblock %}

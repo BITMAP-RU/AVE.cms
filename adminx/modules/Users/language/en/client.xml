@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="auto_06f37f2d7b6e8b22">Failed to copy</phrase>
+	<phrase data="auto_0cf25610228dc363">Minimum 6 characters, preferably letters of different cases and numbers</phrase>
+	<phrase data="auto_17f83198acde283f">Leave the password blank unless you need to change it.</phrase>
+	<phrase data="auto_25906c15eac595d8">Delete user?</phrase>
+	<phrase data="auto_2752c33b8a5db20d">Password copied to clipboard</phrase>
+	<phrase data="auto_51aff18539497f49">User</phrase>
+	<phrase data="auto_5f2b736648be4ba7">) will be deleted without the possibility of recovery.</phrase>
+	<phrase data="auto_5f79bc5f4784e177">Password generated</phrase>
+	<phrase data="auto_721da5d070ce0d16">Failed to delete</phrase>
+	<phrase data="auto_7c3f2ca256870af9">Failed</phrase>
+	<phrase data="auto_86ea33aef5e95d4f">Delete</phrase>
+	<phrase data="auto_909c49f237faebd3">First enter or generate a password</phrase>
+	<phrase data="auto_9641f77f4d972b7d">weak</phrase>
+	<phrase data="auto_96807da1db18186a">Reliability:</phrase>
+	<phrase data="auto_a1f60d3adb508c79">New user</phrase>
+	<phrase data="auto_ad01d64df312c581">A password is required for a new account.</phrase>
+	<phrase data="auto_be5056724d4c98ce">Account has not been saved yet</phrase>
+	<phrase data="auto_c00aca49199296d7">Network error</phrase>
+	<phrase data="auto_ccb273c580334a41">You can&apos;t deactivate your account</phrase>
+	<phrase data="auto_ccbb0564affe8d84">Minimum 6 characters</phrase>
+	<phrase data="auto_d5f5ec340f5cbb80">good</phrase>
+	<phrase data="auto_d912ab21dc72b811">A disabled user will not be able to log in.</phrase>
+	<phrase data="auto_e529d154b41c6fc2">You cannot disable your own account.</phrase>
+	<phrase data="auto_f2d6a66eee4f2dba">average</phrase>
+	<phrase data="auto_f2f391cf89444519">excellent</phrase>
+	<phrase data="auto_f89814d87e446cdd">Change:</phrase>
+</language>

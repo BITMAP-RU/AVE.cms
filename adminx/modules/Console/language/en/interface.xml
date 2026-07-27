@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="auto_9dd1c09afddb1e31">Process output</phrase>
+	<phrase data="auto_32b8b8aa7b647ecc">Execution disabled</phrase>
+	<phrase data="auto_224c8e93c8887d91">Execute</phrase>
+	<phrase data="auto_8bfdc92e04867d27">Ready to run.</phrase>
+	<phrase data="auto_e24b348137e8df6d">The code runs with access to the application and database.</phrase>
+	<phrase data="auto_f76cf117c8a61988">Local execution</phrase>
+	<phrase data="auto_229bc02d2bce53c8">Snippet title</phrase>
+	<phrase data="auto_f51e1d7a33501fc5">Didn't start</phrase>
+	<phrase data="auto_0f9ccee053fe3b6b">New</phrase>
+	<phrase data="auto_7f18a1964134184c">New snippet</phrase>
+	<phrase data="auto_98b2073ed1815f28">Clear</phrase>
+	<phrase data="auto_9fa227c53f4fcbe8">Result</phrase>
+	<phrase data="auto_70a21ea37936ffe4">System tool · isolated PHP process</phrase>
+	<phrase data="auto_03ace2e79a9fd7d8">Saved snippets</phrase>
+	<phrase data="auto_d3a6ace92711a4e2">Old fragments are not imported automatically.</phrase>
+	<phrase data="auto_52b45239d7147e27">(output is empty)</phrase>
+	<phrase data="auto_e863376e85048c1f">&lt;option value=&quot;&quot;&gt;New snippet&lt;/option&gt;</phrase>
+	<phrase data="auto_2299eff1bc6701d8">\n[output truncated]</phrase>
+	<phrase data="auto_51c4ebd76e4e67ae">PHP console</phrase>
+	<phrase data="auto_4e6d593ee4121235">The PHP console will execute the entered code on the server.</phrase>
+	<phrase data="auto_6ca1a2bdaa4e2036">PHP console: execution</phrase>
+	<phrase data="auto_12e1a1bf3d2f66b6">PHP Console: View</phrase>
+	<phrase data="auto_3663ff68084a1e7b">PHP console: snippets</phrase>
+	<phrase data="auto_4f524d19cfc47822">proc_open is not available: isolated startup is not possible.</phrase>
+	<phrase data="auto_4c42a7f9c042600f">Enter PHP code</phrase>
+	<phrase data="auto_608ec6863b8afc32">Execute PHP code in an isolated process.</phrase>
+	<phrase data="auto_29f916f3c907a74e">PHP console execution is disabled by the environment.</phrase>
+	<phrase data="auto_f0e3a58250ac1a27">Execution...</phrase>
+	<phrase data="auto_398c7d4f7b0d522a">Done</phrase>
+	<phrase data="auto_2c4c95047906eb5c">Code completed</phrase>
+	<phrase data="auto_9ec27e348562ca10">ms code</phrase>
+	<phrase data="auto_279cdab132998e88">The PHP process failed to start.</phrase>
+	<phrase data="auto_3f48d3d91a14d8a0">Insufficient rights</phrase>
+	<phrase data="auto_c8f3fdbbe78128b6">Required field</phrase>
+	<phrase data="auto_72aecd9ad85642d8">Error</phrase>
+	<phrase data="auto_c00aca49199296d7">Network error</phrase>
+	<phrase data="auto_1f28c9e28f424307">Syntax error</phrase>
+	<phrase data="auto_a1711d06ac243729">Time limit exceeded</phrase>
+	<phrase data="auto_da97cf5fe3fc4c42">Checking...</phrase>
+	<phrase data="auto_25a230e3f8c266a0">View the system console and saved snippets.</phrase>
+	<phrase data="auto_d9df5b17838fbf39">The process ended with an error</phrase>
+	<phrase data="auto_acb90add1e105016">The syntax is correct</phrase>
+	<phrase data="auto_3ac98f278c8c9081">System</phrase>
+	<phrase data="auto_2cbf82d05cf4132f">The snippet will be deleted.</phrase>
+	<phrase data="auto_0dfc58864fa7ad34">Snippet not found</phrase>
+	<phrase data="auto_6be9ad0f4c477684">Snippet saved</phrase>
+	<phrase data="auto_32acb5d6c04b1edf">Snippet removed</phrase>
+	<phrase data="auto_feaf91e4b3d559c9">Creating, changing and deleting snippets.</phrase>
+	<phrase data="auto_f0dff5ab4a669f7a">Saved</phrase>
+	<phrase data="auto_9f0ad4c82c904c26">String</phrase>
+	<phrase data="auto_af87b40b9743683c">Deleted</phrase>
+	<phrase data="auto_86ea33aef5e95d4f">Delete</phrase>
+	<phrase data="auto_be20f32ffd5d3a9e">Delete snippet?</phrase>
+	<phrase data="auto_c8151c16a9b5d265">Enter the name and code</phrase>
+</language>

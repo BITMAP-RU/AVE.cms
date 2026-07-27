@@ -1,0 +1,344 @@
+{% extends '@adminx/main.twig' %}
+{% macro row_actions(item, base) %}
+  <div class="cluster documents-actions">
+    <a class="btn btn-ghost btn-icon btn-sm documents-action-edit" href="{{ base }}/documents/{{ item.Id }}/edit" data-tooltip="Изменить" aria-label="Изменить"><i class="ti ti-pencil"></i></a>
+    {% if item.can_toggle %}
+    <button class="btn btn-ghost btn-icon btn-sm documents-action-toggle" type="button" data-document-toggle data-tooltip="{{ item.document_status ? 'Снять с публикации' : 'Опубликовать' }}" aria-label="{{ item.document_status ? 'Снять с публикации' : 'Опубликовать' }}"><i class="ti ti-{{ item.document_status ? 'eye-off' : 'eye' }}"></i></button>
+    {% if item.can_copy %}<button class="btn btn-ghost btn-icon btn-sm documents-action-copy" type="button" data-document-copy data-tooltip="Создать копию" aria-label="Создать копию"><i class="ti ti-copy"></i></button>{% endif %}
+    {% endif %}
+    {% if item.can_restore %}
+    <button class="btn btn-ghost btn-icon btn-sm documents-action-restore" type="button" data-document-restore data-tooltip="Восстановить" aria-label="Восстановить"><i class="ti ti-restore"></i></button>
+    {% if item.can_purge %}<button class="btn btn-ghost btn-icon btn-sm documents-action-danger" type="button" data-document-purge data-tooltip="Удалить окончательно" aria-label="Удалить окончательно"><i class="ti ti-trash-x"></i></button>{% endif %}
+    {% elseif item.can_delete %}
+    <button class="btn btn-ghost btn-icon btn-sm documents-action-danger" type="button" data-document-delete data-tooltip="Удалить" aria-label="Удалить"><i class="ti ti-trash"></i></button>
+    {% else %}
+    <button class="btn btn-ghost btn-icon btn-sm documents-action-locked" type="button" disabled data-tooltip="Удаление недоступно" aria-label="Удаление недоступно"><i class="ti ti-lock"></i></button>
+    {% endif %}
+  </div>
+{% endmacro %}
+{% import _self as document_ui %}
+{% block title %}Документы{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i>
+  <span>Документы</span>
+</nav>
+
+<div class="page-header">
+  <div class="between">
+    <div>
+      <h1>Документы</h1>
+      <p class="text-secondary" style="margin-top:5px">Реестр страниц и товарных карточек сайта.</p>
+    </div>
+    {% if can_manage %}
+    <div class="cluster">
+      <button class="btn btn-secondary" type="button" data-documents-snapshots-rebuild><i class="ti ti-database-export"></i>Пересобрать JSON</button>
+      <button class="btn btn-primary" type="button" data-open-drawer="documentCreateDrawer"><i class="ti ti-plus"></i>Создать документ</button>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="tabs documents-page-tabs" role="tablist" aria-label="Разделы документов">
+  <a class="tab is-active" href="{{ ADMINX_BASE }}/documents"><i class="ti ti-files"></i>Документы</a>
+  <a class="tab" href="{{ ADMINX_BASE }}/documents/views"><i class="ti ti-chart-line"></i>Просмотры</a>
+  <a class="tab" href="{{ ADMINX_BASE }}/documents/redirects"><i class="ti ti-route"></i>Редиректы</a>
+  <a class="tab" href="{{ ADMINX_BASE }}/documents/api"><i class="ti ti-api"></i>JSON API</a>
+</div>
+
+<div class="documents-summary">
+  <div class="card documents-stat">
+    <span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-files"></i></span>
+    <div><b>{{ stats.total }}</b><span>Всего</span></div>
+  </div>
+  <div class="card documents-stat">
+    <span class="icon-tile" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-circle-check"></i></span>
+    <div><b>{{ stats.active }}</b><span>Опубликовано</span></div>
+  </div>
+  <div class="card documents-stat">
+    <span class="icon-tile" style="--tile-bg:var(--amber-100);--tile-fg:var(--amber-600)"><i class="ti ti-edit-circle"></i></span>
+    <div><b>{{ stats.draft }}</b><span>Черновиков</span></div>
+  </div>
+  <div class="card documents-stat">
+    <span class="icon-tile" style="--tile-bg:var(--gray-100);--tile-fg:var(--gray-600)"><i class="ti ti-trash"></i></span>
+    <div><b>{{ stats.deleted }}</b><span>В корзине</span></div>
+  </div>
+</div>
+
+<section class="documents-panel">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}" data-documents-csrf>
+
+  <div class="card documents-card documents-filter-card">
+    <div class="documents-section-head">
+      <div class="documents-section-title">
+        <span class="icon-tile documents-head-icon" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-filter"></i></span>
+        <div>
+          <h2>Фильтры</h2>
+          <p class="text-secondary">{{ pagination.from }}-{{ pagination.to }} из {{ pagination.total }} в текущем наборе.</p>
+        </div>
+      </div>
+      <span class="badge badge-blue">{{ filter_state_label }}</span>
+    </div>
+    <div class="table-toolbar documents-toolbar">
+      <form class="documents-filter" method="get" action="{{ ADMINX_BASE }}/documents">
+        <select class="select" name="rubric_id" aria-label="Рубрика">
+          <option value="0">Все рубрики</option>
+          {% for rubric in rubrics %}
+          <option value="{{ rubric.Id }}"{{ filters.rubric_id == rubric.Id ? ' selected' : '' }}>{{ rubric.rubric_title }}</option>
+          {% endfor %}
+        </select>
+        <select class="select documents-search-field" name="field" aria-label="Поле поиска">
+          <option value="">{{ filters.rubric_id ? 'Название / alias / ID' : 'Поле поиска: везде' }}</option>
+          {% for f in searchable_fields %}
+          <option value="{{ f.value }}"{{ filters.field == f.value ? ' selected' : '' }}>{{ f.title }}</option>
+          {% endfor %}
+        </select>
+        <div class="input-wrap">
+          <i class="ti ti-search"></i>
+          <input class="input" type="search" name="q" value="{{ filters.q }}" placeholder="{{ filters.field ? 'Поиск по значению поля' : 'ID, название или alias' }}">
+        </div>
+        <select class="select" name="state">
+          <option value=""{{ filters.state == '' ? ' selected' : '' }}>Рабочие</option>
+          <option value="active"{{ filters.state == 'active' ? ' selected' : '' }}>Опубликованные</option>
+          <option value="draft"{{ filters.state == 'draft' ? ' selected' : '' }}>Черновики</option>
+          <option value="deleted"{{ filters.state == 'deleted' ? ' selected' : '' }}>Удалённые</option>
+        </select>
+        <select class="select documents-per-page" name="per_page" aria-label="Строк на странице">
+          {% for size in [25, 50, 100, 300] %}
+          <option value="{{ size }}"{{ pagination.limit == size ? ' selected' : '' }}>{{ size }} на странице</option>
+          {% endfor %}
+        </select>
+        <button class="btn btn-secondary" type="submit"><i class="ti ti-filter"></i>Показать</button>
+        {% if filters.q or filters.field or filters.rubric_id or filters.state %}
+        <button class="btn btn-ghost" type="button" data-documents-filter-reset><i class="ti ti-x"></i>Сбросить</button>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+
+  <div class="card documents-card">
+    <div class="documents-section-head">
+      <div class="documents-section-title">
+        <span class="icon-tile documents-head-icon" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-list-details"></i></span>
+        <div>
+          <h2>Документы</h2>
+          <p class="text-secondary">Список документов сайта с быстрым переходом к редактированию.</p>
+        </div>
+      </div>
+      <span class="badge badge-blue">{{ documents|length }}</span>
+    </div>
+
+    {% if admin_view.mode == 'cards' or admin_view.mode == 'custom' %}
+    <div class="documents-admin-view-grid {{ admin_view.mode == 'custom' ? 'is-custom' : '' }}">
+      {% for item in documents %}
+      <article class="documents-admin-card {{ item.document_deleted ? 'is-deleted' : (item.document_status ? 'is-published' : 'is-draft') }}" data-document-row data-id="{{ item.Id }}" data-title="{{ item.document_title|e('html_attr') }}">
+        <header>
+          {% if can_manage %}<input type="checkbox" value="{{ item.Id }}" data-document-check aria-label="Выбрать документ #{{ item.Id }}">{% endif %}
+          <div class="documents-admin-card-title"><a href="{{ ADMINX_BASE }}/documents/{{ item.Id }}/edit">{{ item.document_title }}</a><small>#{{ item.Id }} · {{ item.document_alias ? item.document_alias : 'без alias' }}</small></div>
+          <span class="badge badge-{{ item.state_badge }}">{{ item.state_label }}</span>
+        </header>
+        <div class="documents-admin-card-body">
+          {% if admin_view.mode == 'custom' %}
+            <div class="documents-admin-custom">{{ item.admin_view_html|raw }}</div>
+          {% else %}
+            <div class="documents-admin-fields">
+              {% for display in item.admin_view_values %}
+              <div class="is-{{ display.width }}"><small>{{ display.label }}</small>
+                {% if display.format == 'image' %}{% if display.value.image %}<img src="{{ display.value.image }}" alt="">{% else %}<span class="text-muted">—</span>{% endif %}
+                {% elseif display.format == 'badge' %}<span class="badge badge-blue">{{ display.value.text ? display.value.text : '—' }}</span>
+                {% else %}<span>{{ display.value.text ? display.value.text : '—' }}</span>{% endif %}
+              </div>
+              {% else %}<div class="documents-admin-fields-empty">Добавьте поля в настройках вида рубрики.</div>{% endfor %}
+            </div>
+          {% endif %}
+        </div>
+        <footer><span class="text-secondary"><i class="ti ti-clock"></i>{{ item.changed_label }}</span>{% if can_manage %}{{ document_ui.row_actions(item, ADMINX_BASE) }}{% endif %}</footer>
+      </article>
+      {% else %}<div class="empty-state">Документы не найдены.</div>{% endfor %}
+    </div>
+    {% elseif admin_view.mode == 'table' %}
+    <div class="table-scroll documents-admin-table-scroll">
+      <table class="table table-compact documents-admin-table">
+        <thead><tr>
+          {% if can_manage %}<th class="documents-admin-check"><input type="checkbox" data-documents-check-all aria-label="Выбрать все на странице"></th>{% endif %}
+          <th class="documents-admin-id">ID</th><th>Документ</th>
+          {% for column in admin_view.items %}<th class="is-{{ column.width }}">{{ column.label }}</th>{% endfor %}
+          <th>Состояние</th>{% if can_manage %}<th class="documents-admin-actions"></th>{% endif %}
+        </tr></thead>
+        <tbody>
+          {% for item in documents %}
+          <tr class="documents-row {{ item.document_deleted ? 'is-deleted' : (item.document_status ? 'is-published' : 'is-draft') }}" data-document-row data-id="{{ item.Id }}" data-title="{{ item.document_title|e('html_attr') }}">
+            {% if can_manage %}<td><input type="checkbox" value="{{ item.Id }}" data-document-check aria-label="Выбрать документ #{{ item.Id }}"></td>{% endif %}
+            <td class="mono text-muted">{{ item.Id }}</td>
+            <td><div class="documents-name"><b title="{{ item.document_title|e('html_attr') }}">{{ item.document_title }}</b><small>{{ item.document_alias ? item.document_alias : 'без alias' }}</small></div></td>
+            {% for display in item.admin_view_values %}
+            <td class="documents-admin-value is-{{ display.width }}">
+              {% if display.format == 'image' %}{% if display.value.image %}<img src="{{ display.value.image }}" alt="">{% else %}<span class="text-muted">—</span>{% endif %}
+              {% elseif display.format == 'badge' %}<span class="badge badge-blue">{{ display.value.text ? display.value.text : '—' }}</span>
+              {% else %}<span>{{ display.value.text ? display.value.text : '—' }}</span>{% endif %}
+            </td>
+            {% endfor %}
+            <td><span class="badge badge-{{ item.state_badge }}">{{ item.state_label }}</span></td>
+            {% if can_manage %}<td>{{ document_ui.row_actions(item, ADMINX_BASE) }}</td>{% endif %}
+          </tr>
+          {% else %}<tr><td colspan="{{ 4 + admin_view.items|length }}"><div class="empty-state">Документы не найдены.</div></td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="table-scroll">
+      <table class="table table-compact documents-table">
+        <colgroup>
+          {% if can_manage %}<col class="documents-col-check">{% endif %}
+          <col class="documents-col-id">
+          <col class="documents-col-title">
+          <col class="documents-col-rubric">
+          <col class="documents-col-state">
+          <col class="documents-col-date">
+          {% if can_manage %}<col class="documents-col-actions">{% endif %}
+        </colgroup>
+        <thead>
+          <tr>
+            {% if can_manage %}<th><input type="checkbox" data-documents-check-all aria-label="Выбрать все на странице"></th>{% endif %}
+            <th>ID</th>
+            <th>Название</th>
+            <th>Рубрика</th>
+            <th>Состояние</th>
+            <th>Изменён</th>
+            {% if can_manage %}<th></th>{% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in documents %}
+          <tr class="documents-row {{ item.document_deleted ? 'is-deleted' : (item.document_status ? 'is-published' : 'is-draft') }}" data-document-row data-id="{{ item.Id }}" data-title="{{ item.document_title|e('html_attr') }}">
+            {% if can_manage %}<td class="documents-cell-check"><input type="checkbox" value="{{ item.Id }}" data-document-check aria-label="Выбрать документ #{{ item.Id }}"></td>{% endif %}
+            <td class="mono text-muted documents-cell-id"><span class="documents-mobile-label">ID</span>{{ item.Id }}</td>
+            <td class="documents-cell-title">
+              <div class="documents-name">
+                <b title="{{ item.document_title|e('html_attr') }}">{{ item.document_title }}</b>
+                <span class="documents-title-meta"><span><i class="ti ti-eye"></i>{{ item.document_count_view|number_format(0, '.', ' ') }} просмотров</span><span class="mono"><i class="ti ti-link"></i>{{ item.document_alias ? item.document_alias : 'без alias' }}</span></span>
+              </div>
+            </td>
+            <td class="documents-cell-rubric">
+              <div class="documents-meta">
+                <span>{{ item.rubric_title ? item.rubric_title : 'Рубрика не найдена' }}</span>
+                <span class="mono">#{{ item.rubric_id }}</span>
+              </div>
+            </td>
+            <td class="documents-cell-state">
+              <div class="documents-badges">
+                <span class="badge badge-{{ item.state_badge }}">{{ item.state_label }}</span>
+                {% if item.document_in_search %}<span class="badge badge-blue documents-search-flag"><i class="ti ti-search"></i>В поиске</span>{% endif %}
+                {% if item.Id == 1 %}<span class="badge badge-amber">system</span>{% endif %}
+              </div>
+            </td>
+            <td class="documents-cell-date">
+              <div class="documents-meta">
+                <span><span class="documents-mobile-label">Изменён</span>{{ item.changed_label }}</span>
+                <span><span class="documents-mobile-label">Публикация</span>{{ item.published_label }}</span>
+              </div>
+            </td>
+            {% if can_manage %}
+            <td class="documents-cell-actions">
+              <div class="cluster documents-actions">
+                <a class="btn btn-ghost btn-icon btn-sm documents-action-edit" href="{{ ADMINX_BASE }}/documents/{{ item.Id }}/edit" data-tooltip="Изменить" aria-label="Изменить"><i class="ti ti-pencil"></i></a>
+                {% if item.Id > 2 and not item.document_deleted %}
+                <button class="btn btn-ghost btn-icon btn-sm documents-action-toggle" type="button" data-document-toggle data-tooltip="{{ item.document_status ? 'Снять с публикации' : 'Опубликовать' }}" aria-label="{{ item.document_status ? 'Снять с публикации' : 'Опубликовать' }}"><i class="ti ti-{{ item.document_status ? 'eye-off' : 'eye' }}"></i></button>
+                <button class="btn btn-ghost btn-icon btn-sm documents-action-copy" type="button" data-document-copy data-tooltip="Создать копию" aria-label="Создать копию"><i class="ti ti-copy"></i></button>
+                {% endif %}
+                {% if item.can_restore %}
+                <button class="btn btn-ghost btn-icon btn-sm documents-action-restore" type="button" data-document-restore data-tooltip="Восстановить" aria-label="Восстановить"><i class="ti ti-restore"></i></button>
+                {% if item.Id > 2 %}<button class="btn btn-ghost btn-icon btn-sm documents-action-danger" type="button" data-document-purge data-tooltip="Удалить окончательно" aria-label="Удалить окончательно"><i class="ti ti-trash-x"></i></button>{% endif %}
+                {% elseif item.can_delete %}
+                <button class="btn btn-ghost btn-icon btn-sm documents-action-danger" type="button" data-document-delete data-tooltip="Удалить" aria-label="Удалить"><i class="ti ti-trash"></i></button>
+                {% else %}
+                <button class="btn btn-ghost btn-icon btn-sm documents-action-locked" type="button" disabled data-tooltip="Удаление недоступно" aria-label="Удаление недоступно"><i class="ti ti-lock"></i></button>
+                {% endif %}
+              </div>
+            </td>
+            {% endif %}
+          </tr>
+          {% else %}
+          <tr><td colspan="{{ can_manage ? 7 : 5 }}"><div class="empty-state">Документы не найдены.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    {% if can_manage %}<div class="bulk-bar documents-bulk" data-documents-bulk hidden><span>Выбрано: <b data-documents-selected>0</b></span><select class="select select-sm" data-documents-bulk-action><option value="">Выберите действие</option><option value="publish">Опубликовать</option><option value="unpublish">Снять с публикации</option><option value="delete">Переместить в корзину</option><option value="restore">Восстановить</option><option value="purge">Удалить окончательно</option></select><button class="btn btn-primary btn-sm" type="button" data-documents-bulk-apply>Применить</button><button class="btn btn-ghost btn-icon btn-sm" type="button" data-documents-bulk-clear aria-label="Снять выделение"><i class="ti ti-x"></i></button></div>{% endif %}
+
+    <div class="documents-pagination">
+      <span class="text-secondary">{{ pagination.from }}-{{ pagination.to }} из {{ pagination.total }}</span>
+      {% if pagination.pages > 1 %}
+      {% set current = pagination.page %}{% set pages = pagination.pages %}
+      {% set page_url = ADMINX_BASE ~ '/documents?q=' ~ filters.q|url_encode ~ '&field=' ~ filters.field|url_encode ~ '&rubric_id=' ~ filters.rubric_id ~ '&state=' ~ filters.state|url_encode ~ '&per_page=' ~ pagination.limit ~ '&page=' %}
+      <nav class="pagination" aria-label="Страницы документов">
+        {% if current > 1 %}<a class="page-link" data-documents-page href="{{ page_url ~ (current - 1) }}" aria-label="Предыдущая страница"><i class="ti ti-chevron-left"></i></a>{% endif %}
+        {% for page in 1..pages %}
+          {% if page == 1 or page == pages or (page >= current - 2 and page <= current + 2) %}<a class="page-link {{ page == current ? 'active' : '' }}" data-documents-page href="{{ page_url ~ page }}"{{ page == current ? ' aria-current="page"' : '' }}>{{ page }}</a>{% elseif (page == 2 and current > 4) or (page == pages - 1 and current < pages - 3) %}<span class="page gap" aria-hidden="true">…</span>{% endif %}
+        {% endfor %}
+        {% if current < pages %}<a class="page-link" data-documents-page href="{{ page_url ~ (current + 1) }}" aria-label="Следующая страница"><i class="ti ti-chevron-right"></i></a>{% endif %}
+      </nav>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% if can_manage %}
+<aside class="drawer drawer-right documents-create-drawer" id="documentCreateDrawer" role="dialog" aria-modal="true" aria-labelledby="documentCreateTitle" hidden{{ open_create ? ' data-documents-create-auto="1"' : '' }}>
+  <div class="drawer-header">
+    <div class="documents-drawer-title"><h3 id="documentCreateTitle">Новый документ</h3><p>Сначала выберите тип контента, затем пустую форму или готовый пресет.</p></div>
+    <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="drawer-body documents-create-body">
+    <div class="input-wrap documents-create-search"><i class="ti ti-search"></i><input class="input" type="search" data-document-create-search placeholder="Название, alias или ID рубрики" autocomplete="off"></div>
+    {% set initial_rubric_id = filters.rubric_id %}
+    {% if not initial_rubric_id and rubrics|length %}{% set initial_rubric_id = rubrics[0].Id %}{% endif %}
+    <div class="documents-create-layout">
+      <div class="documents-create-list" data-document-create-list role="listbox" aria-label="Типы контента">
+      {% for rubric in rubrics %}
+      <button class="documents-create-item{{ initial_rubric_id == rubric.Id ? ' is-current' : '' }}" type="button" role="option" aria-selected="{{ initial_rubric_id == rubric.Id ? 'true' : 'false' }}" data-document-create-item="{{ rubric.Id }}" data-search="{{ (rubric.rubric_title ~ ' ' ~ rubric.rubric_alias ~ ' ' ~ rubric.Id)|lower|e('html_attr') }}">
+        <span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-file-plus"></i></span>
+        <span class="documents-create-name"><b>{{ rubric.rubric_title }}</b><small><span class="mono">#{{ rubric.Id }}</span>{{ rubric.rubric_alias ? ' · /' ~ rubric.rubric_alias : ' · без шаблона URL' }}</small></span>
+        <i class="ti ti-chevron-right documents-create-arrow" aria-hidden="true"></i>
+      </button>
+      {% else %}
+      <div class="empty-state">Сначала создайте рубрику.</div>
+      {% endfor %}
+      </div>
+      <div class="documents-create-details">
+        {% for rubric in rubrics %}
+        <section class="documents-create-detail" data-document-create-detail="{{ rubric.Id }}"{{ initial_rubric_id != rubric.Id ? ' hidden' : '' }}>
+          <div class="documents-create-detail-head">
+            <span class="icon-tile" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-template"></i></span>
+            <div><h4>{{ rubric.rubric_title }}</h4><p>{{ rubric.fields_count }} {{ rubric.fields_count == 1 ? 'поле' : (rubric.fields_count in [2,3,4] ? 'поля' : 'полей') }} · {{ rubric.creation_presets|length }} {{ rubric.creation_presets|length == 1 ? 'пресет' : 'пресетов' }}</p></div>
+          </div>
+          <a class="documents-create-blank" href="{{ ADMINX_BASE }}/documents/create?rubric_id={{ rubric.Id }}">
+            <span class="icon-tile" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-file"></i></span>
+            <span><b>Пустой документ</b><small>Стандартные значения и поля рубрики</small></span><i class="ti ti-arrow-right"></i>
+          </a>
+          <div class="documents-create-presets-head"><h5>Пресеты заполнения</h5><span class="badge badge-blue">{{ rubric.creation_presets|length }}</span></div>
+          <div class="documents-create-presets">
+            {% for preset in rubric.creation_presets %}
+            <div class="documents-create-preset" data-document-preset-row="{{ preset.id }}">
+              <a href="{{ ADMINX_BASE }}/documents/create?rubric_id={{ rubric.Id }}&preset={{ preset.id }}">
+                <span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-copy-check"></i></span>
+                <span><b>{{ preset.title }}</b><small>{{ preset.description ?: (preset.fields_count ~ ' полей из документа #' ~ preset.source_document_id) }}</small></span>
+              </a>
+              <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-danger" type="button" data-document-preset-delete="{{ preset.id }}" data-tooltip="Удалить пресет" aria-label="Удалить пресет"><i class="ti ti-trash"></i></button>
+            </div>
+            {% else %}
+            <div class="documents-create-presets-empty"><i class="ti ti-template-off"></i><span>Для этой рубрики пресетов пока нет. Их можно создать из сохранённого документа.</span></div>
+            {% endfor %}
+          </div>
+        </section>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="empty-state documents-create-empty" data-document-create-empty hidden>Подходящие рубрики не найдены.</div>
+  </div>
+  <div class="drawer-footer"><button class="btn btn-ghost" type="button" data-close-drawer>Закрыть</button></div>
+</aside>
+{% endif %}
+{% endblock %}

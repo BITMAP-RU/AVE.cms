@@ -1,0 +1,18 @@
+<div class="static_page system-public-auth">
+  <div class="page_title"><div class="page_title_inner"><h1 class="page_title_heading">{{ page.title }}</h1></div></div>
+  <div class="static_page_inner">
+    {% if page.description %}<p class="text-muted">{{ page.description }}</p>{% endif %}
+    {% if error %}<div class="alert alert-danger" data-auth-error role="alert" tabindex="-1">{{ error }}</div>{% endif %}
+    <form method="post" action="{{ base }}{{ auth_urls.login }}" class="system-public-auth-form system-public-auth-form--compact" data-auth-login>
+      <input type="hidden" name="_csrf" value="{{ csrf|e }}">
+      <input type="hidden" name="_return" value="{{ return_url|default('/')|e }}">
+      <div class="form-group"><label for="public-auth-login">Email, телефон или логин</label><input class="form-control" id="public-auth-login" name="user_login" autocomplete="username" required></div>
+      <div class="form-group"><label for="public-auth-password">Пароль</label><input class="form-control" id="public-auth-password" type="password" name="user_pass" autocomplete="current-password" required></div>
+      <div class="form-check"><input class="form-check-input" id="public-auth-remember" type="checkbox" name="keep_in" value="1"><label class="form-check-label" for="public-auth-remember">Запомнить меня</label></div>
+      <div class="system-public-auth-actions"><button class="btn btn-primary" type="submit">{{ page.submit_label }}</button>{% if config.password_reset_enabled %}<a href="{{ base }}{{ auth_urls.remember }}">Забыли пароль?</a>{% endif %}</div>
+      {% if config.registration_enabled %}<p class="system-public-auth-secondary">Нет аккаунта? <a href="{{ base }}{{ auth_urls.register }}">Зарегистрироваться</a></p>{% endif %}
+    </form>
+    {% include '@system_auth/phone.twig' %}
+    {% include '@system_auth/oauth.twig' %}
+  </div>
+</div>

@@ -1,0 +1,299 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}Модули{% endblock %}
+{% block content %}
+
+<div data-modules-page data-tabs>
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i><span>Модули</span>
+</nav>
+
+<div class="page-header">
+  <div class="between">
+    <div>
+      <h1>Модули</h1>
+      <p class="text-secondary">Установленные модули сайта.</p>
+    </div>
+	    {% if can_manage and can_install_code %}
+	    <div class="page-header-actions">
+	      <button class="btn btn-primary" type="button" data-open-drawer="moduleArchiveDrawer"><i class="ti ti-package-import"></i>Установить ZIP</button>
+	    </div>
+	    {% endif %}
+  </div>
+</div>
+
+<div class="ax-summary">
+  <div class="card stat-tile"><div class="stat-ico"><i class="ti ti-puzzle"></i></div><div><div class="stat-val">{{ stats.total }}</div><div class="stat-label">Найдено</div></div></div>
+  <div class="card stat-tile"><div class="stat-ico modules-stat-active"><i class="ti ti-plug-connected"></i></div><div><div class="stat-val">{{ stats.active }}</div><div class="stat-label">Активны</div></div></div>
+  <div class="card stat-tile"><div class="stat-ico modules-stat-off"><i class="ti ti-plug-off"></i></div><div><div class="stat-val">{{ stats.inactive }}</div><div class="stat-label">Отключены</div></div></div>
+  <div class="card stat-tile"><div class="stat-ico modules-stat-update"><i class="ti ti-refresh"></i></div><div><div class="stat-val">{{ stats.updates }}</div><div class="stat-label">Обновления</div></div></div>
+</div>
+
+{% if fatal %}
+<div class="alert alert-danger"><i class="ti ti-alert-triangle"></i><div><b>Реестр модулей недоступен</b><div>{{ fatal }}</div></div></div>
+{% endif %}
+
+<div class="tabs modules-page-tabs" role="tablist">
+  <button class="tab active" type="button" data-tab-target="installed" aria-selected="true"><i class="ti ti-package"></i>Установленные<span class="tab-count">{{ stats.total }}</span></button>
+  <button class="tab" type="button" data-tab-target="catalog" aria-selected="false"><i class="ti ti-cloud-download"></i>Каталог<span class="tab-count">{{ repository.items|length }}</span></button>
+</div>
+
+<section class="modules-tab-panel" data-tab-panel="installed">
+
+<div class="section-header ax-panel-header modules-panel-header">
+  <div class="section-icon"><i class="ti ti-box-multiple"></i></div>
+  <div>
+    <div class="section-eyebrow">Расширения сайта</div>
+    <h2>Реестр модулей</h2>
+    <p class="section-desc">Состояние manifest, версии и доступные lifecycle-действия.</p>
+  </div>
+  <div class="section-header-right">
+    <div class="modules-filter">
+      <div class="input-wrap"><i class="ti ti-search"></i><input class="input" type="search" placeholder="Название, код, функция" data-module-search></div>
+      <select class="select" data-module-state aria-label="Состояние">
+        <option value="all">Все состояния</option>
+        <option value="active">Активные</option>
+        <option value="inactive">Отключённые</option>
+        <option value="update">Требуют обновления</option>
+        <option value="available">Не установлены</option>
+        <option value="error">С ошибками</option>
+        <option value="recovery">Требуют восстановления</option>
+      </select>
+      <select class="select modules-sort" data-module-sort aria-label="Сортировка по названию">
+        <option value="asc">Название: А–Я</option>
+        <option value="desc">Название: Я–А</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<div class="card modules-card ax-list-card">
+  <div class="ax-list-head"><div class="ax-list-title"><span class="icon-tile" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-puzzle"></i></span><div><h2>Установленные и доступные модули</h2><p class="text-secondary">Версии, состояние подключения и доступные системные действия.</p></div></div><span class="badge badge-blue">{{ modules|length }}</span></div>
+  <div class="table-scroll modules-table-scroll">
+    <table class="table table-compact modules-table">
+      <thead><tr>
+        <th>Модуль</th>
+        <th style="width:150px">Состояние</th>
+        <th style="width:154px">Область</th>
+        <th style="width:120px">Версия</th>
+        <th style="width:260px"></th>
+      </tr></thead>
+      <tbody>
+      {% for module in modules %}
+		{% set state = module.error ? 'error' : (module.recoverable ? 'recovery' : (not module.installed ? 'available' : (module.needs_update ? 'update' : (module.enabled ? 'active' : 'inactive')))) %}
+        <tr class="modules-scope-{{ module.scope }}" data-module-row data-code="{{ module.code }}" data-name="{{ module.name|lower|e('html_attr') }}" data-state="{{ state }}" data-scope="{{ module.scope }}" data-search="{{ (module.name ~ ' ' ~ module.code ~ ' ' ~ module.function ~ ' ' ~ module.scope)|lower }}">
+          <td>
+            <div class="modules-identity">
+              <span class="modules-icon"><i class="{{ module.icon|default('ti ti-puzzle') }}"></i></span>
+              <span class="modules-copy">
+                <span class="modules-title">{{ module.name }}</span>
+                <span class="modules-meta"><span class="mono">{{ module.code }}</span>{% if module.function %}<span>{{ module.function }}</span>{% endif %}{% if module.has_admin or module.admin_url %}<span class="badge badge-blue">настройки</span>{% endif %}</span>
+                {% if module.description %}<span class="modules-description">{{ module.description }}</span>{% endif %}
+                {% if module.error %}<span class="modules-error"><i class="ti ti-alert-circle"></i>{{ module.error }}</span>{% endif %}
+                {% if module.recoverable %}<span class="modules-error"><i class="ti ti-alert-triangle"></i>{{ module.last_error ?: 'Предыдущая операция не завершена' }}</span>{% endif %}
+              </span>
+            </div>
+          </td>
+          <td data-module-status>
+            {% if module.error %}<span class="badge badge-red badge-dot">Ошибка</span>
+            {% elseif module.recoverable %}<span class="badge badge-red badge-dot">Восстановление</span>
+            {% elseif not module.installed %}<span class="badge badge-gray badge-dot">Не установлен</span>
+	            {% elseif module.needs_update %}<span class="badge badge-orange badge-dot">{{ module.migration_pending ? 'Миграции' : 'Обновление' }}</span>
+            {% elseif module.enabled %}<span class="badge badge-green badge-dot">Активен</span>
+            {% else %}<span class="badge badge-gray badge-dot">Отключён</span>{% endif %}
+          </td>
+          <td>
+            {% if module.scope == 'mixed' %}<span class="badge modules-scope-badge is-mixed"><i class="ti ti-arrows-exchange"></i>Паблик + админка</span>
+            {% elseif module.scope == 'public' %}<span class="badge modules-scope-badge is-public"><i class="ti ti-world"></i>Публичный</span>
+            {% else %}<span class="badge modules-scope-badge is-admin"><i class="ti ti-settings"></i>Админка</span>{% endif %}
+          </td>
+          <td class="modules-version">
+	            <b class="mono" data-tooltip="Версия файлов">Файлы: {{ module.file_version ?: '—' }}</b>
+	            {% if module.installed and module.db_version != module.file_version %}<span class="text-muted text-xs mono">БД: {{ module.db_version ?: '—' }}</span>{% endif %}
+          </td>
+          <td>
+            {% if module.admin_url or can_manage %}
+            <div class="modules-actions">
+              {% if module.installed and not module.missing and module.admin_url %}
+              <a class="btn btn-ghost btn-icon btn-sm ax-act ax-act-view" href="{{ ADMINX_BASE }}{{ module.admin_url }}" data-module-admin data-tooltip="Открыть настройки" aria-label="Открыть настройки"><i class="ti ti-settings"></i></a>
+              {% endif %}
+              {% if can_manage and module.installed and (module.has_header or module.has_dashboard) %}
+              <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-view" type="button" data-module-presentation data-module-name="{{ module.name|e('html_attr') }}" data-has-header="{{ module.has_header ? '1' : '0' }}" data-header-enabled="{{ module.header_enabled ? '1' : '0' }}" data-has-dashboard="{{ module.has_dashboard ? '1' : '0' }}" data-dashboard-enabled="{{ module.dashboard_enabled ? '1' : '0' }}" data-tooltip="Размещение в интерфейсе" aria-label="Размещение в интерфейсе"><i class="ti ti-layout-dashboard"></i></button>
+              {% endif %}
+              {% if can_manage and module.managed %}
+              {% if module.recoverable %}
+              <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-edit" type="button" data-module-action="repair" data-tooltip="Повторить оборванную операцию" aria-label="Восстановить"><i class="ti ti-tool"></i></button>
+              {% elseif not module.installed and not module.error %}
+              <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-ok" type="button" data-module-action="install" data-tooltip="Установить" aria-label="Установить"><i class="ti ti-download"></i></button>
+              {% if module.removable %}<button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-danger" type="button" data-module-action="remove" data-tooltip="Удалить файлы" aria-label="Удалить файлы"><i class="ti ti-folder-x"></i></button>{% endif %}
+              {% elseif module.installed %}
+                <label class="switch modules-switch" data-tooltip="{{ module.enabled ? 'Отключить' : 'Включить' }}"><input type="checkbox" data-module-toggle{{ module.enabled ? ' checked' : '' }}><span></span></label>
+	                {% if module.needs_update %}<button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-ok" type="button" data-module-action="update" data-tooltip="{{ module.migration_pending ? 'Применить миграции' : 'Обновить модуль' }}" aria-label="{{ module.migration_pending ? 'Применить миграции' : 'Обновить модуль' }}"><i class="ti {{ module.migration_pending ? 'ti-database-import' : 'ti-refresh' }}"></i></button>{% endif %}
+                <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-view" type="button" data-module-action="reinstall" data-tooltip="Переустановить" aria-label="Переустановить"><i class="ti ti-reload"></i></button>
+                <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-danger" type="button" data-module-action="uninstall" data-tooltip="Деинсталлировать" aria-label="Деинсталлировать"><i class="ti ti-trash"></i></button>
+              {% endif %}
+              {% endif %}
+            </div>
+            {% endif %}
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5"><div class="empty-state">Модули не найдены</div></td></tr>
+      {% endfor %}
+        <tr data-module-empty hidden><td colspan="5"><div class="empty-state">По фильтру ничего не найдено</div></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if errors %}
+<details class="modules-diagnostics">
+  <summary><i class="ti ti-alert-triangle"></i>Диагностика файлов <span class="badge badge-red">{{ errors|length }}</span></summary>
+  <div class="modules-diagnostics-body">{% for error in errors %}<div><span class="mono">{{ error.code }}</span><span>{{ error.message }}</span></div>{% endfor %}</div>
+</details>
+{% endif %}
+</section>
+
+<section class="modules-tab-panel" data-tab-panel="catalog" hidden>
+<div class="section-header ax-panel-header modules-panel-header modules-repository-header">
+  <div class="section-icon"><i class="ti ti-cloud-download"></i></div>
+  <div>
+    <div class="section-eyebrow">Официальный источник</div>
+    <h2>Каталог модулей</h2>
+    <p class="section-desc">Подписанные пакеты, доступные для этой установки AVE.cms.</p>
+  </div>
+  <div class="section-header-right modules-repository-tools">
+    {% if repository.verified %}<span class="badge badge-green"><i class="ti ti-shield-check"></i>Подпись проверена</span>{% endif %}
+    {% if repository.enabled and repository.configured %}<button class="btn btn-ghost btn-icon" type="button" data-module-repository-refresh data-tooltip="Обновить каталог" aria-label="Обновить каталог"><i class="ti ti-refresh"></i></button>{% endif %}
+    {% if can_manage and can_install_code %}<button class="btn btn-secondary" type="button" data-open-drawer="moduleRepositoryDrawer"><i class="ti ti-cloud-cog"></i>Источник</button>{% endif %}
+  </div>
+</div>
+
+<div class="card modules-card ax-list-card modules-repository-card">
+  {% if not repository.enabled %}
+  <div class="empty-state modules-repository-empty">
+    <span class="empty-state-icon"><i class="ti ti-cloud-off"></i></span>
+    <b>Удалённый каталог выключен</b>
+    <p>Подключите свой HTTPS-источник подписанных модулей. Установка из локального ZIP продолжает работать независимо.</p>
+    {% if can_manage and can_install_code %}<button class="btn btn-secondary" type="button" data-open-drawer="moduleRepositoryDrawer"><i class="ti ti-settings"></i>Настроить источник</button>{% endif %}
+  </div>
+  {% elseif repository.error %}
+  <div class="modules-repository-message">
+    <div class="alert alert-danger"><i class="ti ti-cloud-x"></i><div><b>Каталог недоступен</b><div>{{ repository.error }}</div></div></div>
+    {% if can_manage and can_install_code %}<button class="btn btn-secondary" type="button" data-open-drawer="moduleRepositoryDrawer"><i class="ti ti-settings"></i>Проверить настройки</button>{% endif %}
+  </div>
+  {% else %}
+  <div class="ax-list-head">
+    <div class="ax-list-title"><span class="icon-tile" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-shield-check"></i></span><div><h2>{{ repository.name ?: 'AVE.cms' }}</h2><p class="text-secondary">Канал {{ repository.channel ?: 'stable' }}{% if repository.generated_at %} · обновлён {{ repository.generated_at|date('d.m.Y H:i') }}{% endif %}</p></div></div>
+    <div class="modules-list-tools"><select class="select modules-sort" data-repository-sort aria-label="Сортировка каталога по названию"><option value="asc">Название: А–Я</option><option value="desc">Название: Я–А</option></select><span class="badge badge-blue">{{ repository.items|length }}</span></div>
+  </div>
+  <div class="table-scroll modules-table-scroll">
+    <table class="table table-compact modules-repository-table">
+      <thead><tr><th>Модуль</th><th style="width:154px">Область</th><th style="width:170px">Версия</th><th style="width:150px">Состояние</th><th style="width:76px"></th></tr></thead>
+      <tbody>
+      {% for module in repository.items %}
+        <tr data-repository-row data-code="{{ module.code }}" data-name="{{ module.name|lower|e('html_attr') }}">
+          <td><div class="modules-identity"><span class="modules-icon"><i class="ti ti-package"></i></span><span class="modules-copy"><span class="modules-title">{{ module.name }}</span><span class="modules-meta"><span class="mono">{{ module.code }}</span>{% if module.author %}<span>{{ module.author }}</span>{% endif %}</span>{% if module.description %}<span class="modules-description">{{ module.description }}</span>{% endif %}</span></div></td>
+          <td>{% if module.kind == 'admin' %}<span class="badge modules-scope-badge is-admin"><i class="ti ti-settings"></i>Админка</span>{% else %}<span class="badge modules-scope-badge is-mixed"><i class="ti ti-arrows-exchange"></i>Паблик + админка</span>{% endif %}</td>
+	          <td class="modules-version"><b class="mono">Каталог: {{ module.version }}</b>{% if module.local_version %}<span class="text-muted text-xs mono">Файлы: {{ module.local_version }}</span>{% endif %}{% if module.migration_pending %}<span class="text-muted text-xs mono">БД: {{ module.database_version ?: '—' }}</span>{% endif %}</td>
+          <td>
+            {% if not module.compatible %}<span class="badge badge-red badge-dot" data-tooltip="{{ module.compatibility_message }}">Несовместим</span>
+            {% elseif module.status == 'available' %}<span class="badge badge-blue badge-dot">Доступен</span>
+            {% elseif module.status == 'local' %}<span class="badge badge-orange badge-dot">Не установлен</span>
+            {% elseif module.status == 'update' %}<span class="badge badge-orange badge-dot">Доступно обновление</span>
+            {% elseif module.status == 'migration' %}<span class="badge badge-orange badge-dot">Нужны миграции</span>
+            {% else %}<span class="badge badge-green badge-dot">Установлен</span>{% endif %}
+          </td>
+          <td><div class="modules-actions">
+            {% if can_manage and can_install_code and module.compatible and module.status in ['available', 'local'] %}<button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-ok" type="button" data-module-repository-install data-module-name="{{ module.name|e('html_attr') }}" data-tooltip="Скачать, проверить и установить" aria-label="Скачать, проверить и установить"><i class="ti ti-package-import"></i></button>
+            {% elseif can_manage and can_install_code and module.compatible and module.status == 'update' %}<button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-edit" type="button" data-module-repository-install data-module-operation="update" data-module-name="{{ module.name|e('html_attr') }}" data-tooltip="Скачать и обновить файлы" aria-label="Скачать и обновить файлы"><i class="ti ti-refresh"></i></button>
+            {% elseif can_manage and module.status == 'migration' %}<button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-ok" type="button" data-module-repository-migrate data-module-name="{{ module.name|e('html_attr') }}" data-tooltip="Применить миграции из локальных файлов" aria-label="Применить миграции"><i class="ti ti-database-import"></i></button>
+            {% endif %}
+          </div></td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5"><div class="empty-state">В опубликованном каталоге пока нет модулей</div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+</section>
+
+{% if can_manage %}
+<aside class="drawer drawer-right modules-presentation-drawer" id="modulePresentationDrawer" role="dialog" aria-modal="true" aria-labelledby="modulePresentationTitle" hidden>
+  <div class="drawer-header">
+    <div><h3 id="modulePresentationTitle" data-module-presentation-title>Размещение модуля</h3><p class="text-secondary text-sm mono" data-module-presentation-code></p></div>
+    <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <form data-module-presentation-form>
+    <div class="drawer-body modules-presentation-body">
+      <div class="alert alert-info"><i class="ti ti-info-circle"></i><div><b>Видимость для пользователей</b><div>Права модуля продолжают действовать. Эти настройки только убирают быстрые элементы из шапки и главной страницы.</div></div></div>
+      <div class="modules-placement-option" data-module-header-option>
+        <span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-layout-navbar"></i></span>
+        <div><b>Действие в шапке</b><p>Показывать кнопку или выпадающее меню, объявленное модулем.</p></div>
+        <label class="switch" data-tooltip="Показывать в шапке"><input type="checkbox" name="header_enabled"><span></span></label>
+      </div>
+      <div class="modules-placement-option" data-module-dashboard-option>
+        <span class="icon-tile" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-layout-dashboard"></i></span>
+        <div><b>Виджет на главной</b><p>Выводить блок модуля на Dashboard после системной сводки.</p></div>
+        <label class="switch" data-tooltip="Показывать на главной"><input type="checkbox" name="dashboard_enabled"><span></span></label>
+      </div>
+    </div>
+    <div class="drawer-footer"><button class="btn btn-ghost" type="button" data-close-drawer>Закрыть</button><button class="btn btn-primary" type="submit" style="margin-left:auto"><i class="ti ti-device-floppy"></i>Сохранить</button></div>
+  </form>
+</aside>
+
+	{% if can_install_code %}
+	<aside class="drawer drawer-right modules-repository-drawer" id="moduleRepositoryDrawer" role="dialog" aria-modal="true" aria-labelledby="moduleRepositoryTitle" hidden>
+  <div class="drawer-header">
+    <div><h3 id="moduleRepositoryTitle">Источник модулей</h3><p class="text-secondary text-sm">Подписанный каталог владельца системы</p></div>
+    <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <form data-module-repository-form>
+    <div class="drawer-body modules-repository-body">
+      <div class="modules-placement-option">
+        <span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-cloud-download"></i></span>
+        <div><b>Использовать удалённый каталог</b><p>Показывать опубликованные пакеты и разрешить их установку после проверки подписи.</p></div>
+        <label class="switch" data-tooltip="Включить каталог"><input type="checkbox" name="enabled"{{ repository_settings.enabled ? ' checked' : '' }}><span></span></label>
+      </div>
+      <label class="field"><span>URL каталога</span><div class="input-wrap"><i class="ti ti-link"></i><input class="input" type="url" name="url" value="{{ repository_settings.url|e('html_attr') }}" placeholder="https://example.org/modules/index.json" autocomplete="off"></div><small>Только публичный HTTPS-адрес. ZIP-пакеты должны находиться на том же хосте.</small></label>
+      <label class="field"><span>Публичный RSA-ключ</span><textarea class="input mono modules-repository-key" name="public_key" rows="10" spellcheck="false" placeholder="-----BEGIN PUBLIC KEY-----">{{ repository_settings.public_key }}</textarea><small>Нужен только для проверки подписи. Закрытый ключ хранится у издателя и никогда не загружается в AVE.cms.</small></label>
+      {% if official_repository.available %}<div class="modules-repository-note modules-repository-official"><span class="icon-tile" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-rosette-discount-check"></i></span><div><b>{{ official_repository.name }}</b><small>Открытый ключ: <span class="mono">{{ official_repository.fingerprint }}</span></small></div><button class="btn btn-secondary btn-sm" type="button" data-module-repository-official><i class="ti ti-restore"></i>Восстановить</button></div>{% endif %}
+      <div class="modules-repository-note"><span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-shield-lock"></i></span><div><b>Двойная проверка пакета</b><small>Каталог подписан RSA-SHA256, затем скачанный ZIP сверяется по размеру и SHA-256, а штатный установщик проверяет manifest каждого файла.</small></div></div>
+    </div>
+    <div class="drawer-footer"><button class="btn btn-ghost" type="button" data-close-drawer>Закрыть</button><button class="btn btn-primary" type="submit" style="margin-left:auto"><i class="ti ti-device-floppy"></i>Сохранить</button></div>
+  </form>
+	</aside>
+
+	<aside class="drawer drawer-right modules-archive-drawer" id="moduleArchiveDrawer" role="dialog" aria-modal="true" aria-labelledby="moduleArchiveTitle" hidden>
+  <div class="drawer-header">
+    <div><h3 id="moduleArchiveTitle">Установка модуля</h3><p class="text-secondary text-sm">Новый нативный модуль из ZIP-архива</p></div>
+    <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <form data-module-archive-form>
+    <div class="drawer-body modules-archive-body">
+      <label class="modules-archive-drop" data-module-archive-drop>
+        <input type="file" name="module_archive" accept=".zip,application/zip" data-module-archive-input hidden>
+        <span class="modules-archive-icon"><i class="ti ti-file-zip"></i></span>
+        <strong data-module-archive-title>Перетащите ZIP сюда</strong>
+        <span data-module-archive-meta>или нажмите, чтобы выбрать файл до 25 МБ</span>
+      </label>
+      <div class="modules-archive-format">
+	        <div><i class="ti ti-folder"></i><span><b>Структура архива</b><small>В корне обязателен официальный <span class="mono">AVE-MODULE.json</span> с SHA-256 всех файлов.</small></span></div>
+        <div><i class="ti ti-shield-lock"></i><span><b>Только доверенный код</b><small>Установка выполняет PHP manifest, миграции и lifecycle-обработчики модуля.</small></span></div>
+        <div><i class="ti ti-refresh"></i><span><b>Без перезаписи</b><small>Существующая папка или уже зарегистрированный code не заменяются.</small></span></div>
+      </div>
+      <div class="modules-archive-progress" data-module-archive-progress hidden role="status" aria-live="polite">
+        <span class="spinner" aria-hidden="true"></span>
+        <span><b data-module-archive-progress-title>Загружаем архив</b><small data-module-archive-progress-text>Проверяем состав, устанавливаем файлы и применяем миграции. Не закрывайте панель.</small></span>
+      </div>
+    </div>
+    <div class="drawer-footer"><button class="btn btn-ghost" type="button" data-close-drawer>Закрыть</button><button class="btn btn-primary" type="submit" data-module-archive-submit disabled style="margin-left:auto"><i class="ti ti-package-import"></i>Установить</button></div>
+  </form>
+	</aside>
+	{% endif %}
+	{% endif %}
+</div>
+
+{% endblock %}

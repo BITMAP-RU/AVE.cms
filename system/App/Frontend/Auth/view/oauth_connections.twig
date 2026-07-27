@@ -1,0 +1,9 @@
+{% if oauth_connections %}
+<section class="system-auth-connections" data-auth-connections>
+  <h2>Способы входа</h2>
+  <p>Привяжите сервис один раз, чтобы потом входить без пароля.</p>
+  <div class="system-auth-connections-list">
+    {% for provider in oauth_connections %}<div class="system-auth-connection"><span class="system-auth-provider-mark is-{{ provider.code }}">{{ provider.code == 'yandex' ? 'Я' : (provider.code == 'vk' ? 'VK' : provider.label|slice(0, 2)) }}</span><div><strong>{{ provider.label }}</strong><small>{{ provider.linked ? 'Аккаунт привязан' : 'Доступен для привязки' }}</small></div>{% if provider.linked %}<span class="system-auth-linked">Подключён</span>{% else %}<a href="{{ base }}{{ provider.link_url }}">Привязать</a>{% endif %}</div>{% endfor %}
+  </div>
+</section>
+{% endif %}

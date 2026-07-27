@@ -1,0 +1,27 @@
+###################### ADMINX_HTACCESS_BEGIN ##########################
+# Роутинг панели: все несуществующие пути внутри текущего каталога заворачиваем
+# на index.php (чистые URL). Реальные файлы (assets, css, js) отдаются
+# напрямую. Правила подкаталога перекрывают корневой .htaccess для этого дерева.
+
+Options -Indexes +FollowSymLinks
+
+<IfModule mod_rewrite.c>
+	RewriteEngine On
+	# Only the front controller may be executed over HTTP. Module PHP files are
+	# include-only; their assets remain available through the file rule below.
+	RewriteRule ^(?!index\.php$).*\.php$ - [R=404,L]
+
+	# /<admin-directory>/modules совпадает с физической директорией модулей.
+	# Сам экран менеджера должен попасть во front controller, а вложенные
+	# modules/<Name>/assets/* ниже по-прежнему отдаются как реальные файлы.
+	RewriteRule ^modules/?$ index.php [L,QSA]
+
+	# Реальные файлы и директории — напрямую (css/js/картинки/аватары).
+	RewriteCond %{REQUEST_FILENAME} -f [OR]
+	RewriteCond %{REQUEST_FILENAME} -d
+	RewriteRule ^ - [L]
+
+	# Всё остальное — во фронт-контроллер админки.
+	RewriteRule . index.php [L,QSA]
+</IfModule>
+####################### ADMINX_HTACCESS_END ###########################
