@@ -95,6 +95,7 @@
 					'phone_mask' => Phone::mask($phone),
 				), null, array(), 'phone_auth');
 			}
+
 			return array(
 				'challenge' => $publicId,
 				'phone_mask' => Phone::mask($phone),

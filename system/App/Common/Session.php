@@ -162,7 +162,7 @@
 			// COOKIE_DOMAIN или переданном аргументе. По умолчанию — host-only:
 			// атрибут Domain не выставляется, cookie привязана строго к текущему
 			// хосту. Это исключает коллизии сессии/auth между родительским доменом
-			// и поддоменами (напр. design.med-mos.ru ↔ .med-mos.ru).
+			// и поддоменами (например, preview.example.org и .example.org).
 			if ($cookie_domain === '' && defined('COOKIE_DOMAIN') && COOKIE_DOMAIN !== '') {
 				$cookie_domain = COOKIE_DOMAIN;
 			}

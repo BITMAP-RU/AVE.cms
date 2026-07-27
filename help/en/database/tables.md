@@ -12,10 +12,10 @@ resolver**, rather than writing it as a line. This gives the correct prefix and 
 
 | Class | Domain | Example result |
 | --- | --- | --- |
-| `App\Content\ContentTables::table($s)` | Content: documents, headings, fields | `marketplace_documents` |
-| `App\Common\SystemTables::table($s)` | Administrator system tables (by whitelist) | `marketplace_admin_notes` |
-| `App\Content\ExtensionTables::table($s)` | Core Content Tables | `marketplace_todos` |
-| `App\Content\PublicShellTables::table($s)` | Public shell (sessions, etc.) | `marketplace_public_sessions` |
+| `App\Content\ContentTables::table($s)` | Content: documents, headings, fields | `ave_documents` |
+| `App\Common\SystemTables::table($s)` | Administrator system tables (by whitelist) | `ave_admin_notes` |
+| `App\Content\ExtensionTables::table($s)` | Core Content Tables | `ave_todos` |
+| `App\Content\PublicShellTables::table($s)` | Public shell (sessions, etc.) | `ave_public_sessions` |
 
 ```php
 use App\Content\ContentTables;
@@ -44,7 +44,7 @@ ContentTables::table('users; DROP …');   // InvalidArgumentException
 
 ```php
 // ПЛОХО — префикс зашит, сломается в другом окружении/домене данных
-$rows = DB::query('SELECT * FROM marketplace_documents')->getAll();
+$rows = DB::query('SELECT * FROM ' . ContentTables::table('documents'))->getAll();
 
 // ХОРОШО — префикс подставит резолвер
 $t = ContentTables::table('documents');

@@ -58,6 +58,7 @@
 			if ($linkedProvider && (string) $linkedProvider['provider_user_id'] !== $providerUserId) {
 				throw new \RuntimeException('К аккаунту уже привязана другая учётная запись этого сервиса.');
 			}
+
 			$current = $this->find($provider, $providerUserId);
 			$now = time();
 			$data = array(

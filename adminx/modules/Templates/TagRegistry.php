@@ -18,12 +18,13 @@
 
 	use DB;
 	use App\Content\ContentTables;
+	use App\Helpers\Hooks;
 
 	class TagRegistry
 	{
 		public static function groups()
 		{
-			return array(
+			$groups = array(
 				self::group('Основные', array(
 					self::tag('[tag:theme:folder]', 'Папка темы', 'folder'),
 					self::tag('[tag:sitename]', 'Название сайта'),
@@ -65,8 +66,6 @@
 				self::group('Условия', array(
 					self::tag("[tag:if_print]\n\n[/tag:if_print]", 'Для печати', '', '[tag:if_print]'),
 					self::tag("[tag:if_notprint]\n\n[/tag:if_notprint]", 'Не печать', '', '[tag:if_notprint]'),
-					self::tag("[tag:if_payment_program:sfr]\n\n[tag:if:else]\n\n[tag:/if_payment_program]", 'Оплата через СФР', 'Условие доступности товара для программы СФР', '[tag:if_payment_program:sfr]'),
-					self::tag('[tag:payment_program_code:sfr]', 'Код СФР', 'Информационный код СФР текущего товара', '[tag:payment_program_code:sfr]'),
 				)),
 				self::group('HTML', array(
 					self::tag("<ol>\n\n</ol>", 'Список', '', 'OL'),
@@ -87,6 +86,9 @@
 					self::tag("\t", 'Табуляция', '', 'TAB'),
 				)),
 			);
+
+			$groups = Hooks::filter('admin.templates.tag_groups', $groups);
+			return is_array($groups) ? $groups : array();
 		}
 
 		protected static function sysblockTags()

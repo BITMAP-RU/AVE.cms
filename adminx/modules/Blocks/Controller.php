@@ -62,6 +62,7 @@
 			if (!$item) {
 				return $this->error('Системный блок не найден', array(), 404);
 			}
+
 			if (($err = $this->guardPhpItem($item)) !== null) { return $err; }
 
 			return $this->success('', array('data' => $item));
@@ -134,6 +135,7 @@
 			if (!$before) {
 				return $this->error('Системный блок не найден', array(), 404);
 			}
+
 			if (($err = $this->guardPhpItem($before)) !== null) { return $err; }
 
 			$input = Request::postAll();
@@ -166,6 +168,7 @@
 			} catch (\Throwable $e) {
 				return $this->error($e->getMessage(), array(), 422);
 			}
+
 			$this->audit('block.copied', $newId, array('source_id' => (int) $source['id'], 'editor' => (string) $source['sysblock_editor']));
 
 			return $this->success('Копия создана', array('redirect' => $this->base() . '/blocks'));
@@ -178,6 +181,7 @@
 			if (!$item) {
 				return $this->error('Системный блок не найден', array(), 404);
 			}
+
 			if (($err = $this->guardPhpItem($item)) !== null) { return $err; }
 
 			return $this->success('', array(
@@ -198,6 +202,7 @@
 			if (!$revision) {
 				return $this->error('Ревизия не найдена', array(), 404);
 			}
+
 			if (($err = $this->guardPhpSnapshot(isset($revision['snapshot']) ? $revision['snapshot'] : array())) !== null) { return $err; }
 
 			return $this->success('', array('data' => $revision));
@@ -218,6 +223,7 @@
 			} catch (\Throwable $e) {
 				return $this->error($e->getMessage(), array(), 422);
 			}
+
 			$this->audit('block.revision_restored', $blockId, array('revision_id' => $revisionId));
 
 			return $this->success('Блок восстановлен из ревизии', array(
@@ -255,6 +261,7 @@
 			if (!$item) {
 				return $this->error('Системный блок не найден', array(), 404);
 			}
+
 			if (($err = $this->guardPhpItem($item)) !== null) { return $err; }
 
 			$count = Revisions::deleteForBlock($id);
@@ -303,6 +310,7 @@
 			if (!Model::delete($id, Auth::id())) {
 				return $this->error('Системный блок не найден', array(), 404);
 			}
+
 			$this->audit('block.deleted', $id, array('editor' => (string) $item['sysblock_editor']));
 
 			return $this->success('Системный блок удалён');

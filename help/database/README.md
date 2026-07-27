@@ -43,7 +43,7 @@ DB::getDatabase();            // имя текущей БД
 
 ```php
 use App\Content\ContentTables;
-$t = ContentTables::table('documents');   // → 'marketplace_documents'
+$t = ContentTables::table('documents');   // например, 'ave_documents'
 
 // список (массив ассоц. строк; на пустой выборке — false)
 $items = DB::query('SELECT * FROM ' . $t . ' WHERE rubric_id = %i ORDER BY Id DESC', 5)->getAll() ?: array();

@@ -19,6 +19,7 @@
 	use DB;
 	use App\Content\BasketTables;
 	use App\Common\FileCacheInvalidator;
+	use App\Helpers\Hooks;
 
 	/** Product eligibility and runtime availability for alternative payment programs. */
 	class PaymentPrograms
@@ -144,7 +145,14 @@
 
 		protected static function documentProgramField($productId, $code)
 		{
-			$fieldAlias = $code === 'sfr' ? 'sertificattcr' : $code;
+			$context = Hooks::filter('content.payment_program.field_alias', array(
+				'code' => (string) $code,
+				'alias' => (string) $code,
+			));
+			$fieldAlias = is_array($context) && isset($context['alias'])
+				? trim((string) $context['alias'])
+				: (string) $code;
+			if ($fieldAlias === '') { return false; }
 			return DB::query('SELECT rf.Id FROM ' . ContentTables::table('rubric_fields') . ' rf'
 				. ' INNER JOIN ' . ContentTables::table('documents') . ' d ON d.rubric_id=rf.rubric_id'
 				. ' WHERE d.Id=%i AND rf.rubric_field_alias=%s LIMIT 1', (int) $productId, (string) $fieldAlias)->getAssoc() ?: false;

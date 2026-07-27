@@ -84,6 +84,7 @@
 				if (self::origin($target) !== self::origin($nextTarget)) {
 					$currentHeaders = self::withoutSensitiveHeaders($currentHeaders);
 				}
+
 				$currentUrl = $nextTarget['url'];
 				if ($response['status'] === 303 || (($response['status'] === 301 || $response['status'] === 302) && $currentMethod === 'POST')) {
 					$currentMethod = 'GET';
@@ -134,6 +135,7 @@
 						$headerOverflow = true;
 						return 0;
 					}
+
 					$responseHeaders[$name] = $value;
 					return $length;
 				},
@@ -147,6 +149,7 @@
 				if (in_array('https', $options['allowed_schemes'], true)) { $protocols |= CURLPROTO_HTTPS; }
 				$curlOptions[CURLOPT_PROTOCOLS] = $protocols;
 			}
+
 			if ($method === 'POST') {
 				$curlOptions[CURLOPT_POST] = true;
 				$curlOptions[CURLOPT_POSTFIELDS] = (string) $body;
@@ -161,9 +164,11 @@
 			if ($overflow || $headerOverflow) {
 				throw new \RuntimeException('Удалённый ответ превышает допустимый размер');
 			}
+
 			if ($result === false) {
 				throw new \RuntimeException('Не удалось получить удалённый ответ' . ($error !== '' ? ': ' . $error : ''));
 			}
+
 			if (!self::sameIp($primaryIp, $target['ip'])) {
 				throw new \RuntimeException('Удалённый сервер изменил проверенный сетевой адрес');
 			}
@@ -198,6 +203,7 @@
 			if (!$ips) {
 				throw new \RuntimeException('Удалённый хост не имеет доступного адреса');
 			}
+
 			foreach ($ips as $ip) {
 				if (!self::isPublicIp($ip)) {
 					throw new \RuntimeException('Удалённый хост указывает на private или reserved сеть');
@@ -222,6 +228,7 @@
 			if (filter_var($host, FILTER_VALIDATE_IP)) {
 				return array($host);
 			}
+
 			if (isset(self::$dnsCache[$host])) {
 				return self::$dnsCache[$host];
 			}
@@ -234,6 +241,7 @@
 					if (!empty($record['ipv6'])) { $addresses[] = (string) $record['ipv6']; }
 				}
 			}
+
 			if (!$addresses) {
 				$ipv4 = @gethostbynamel($host);
 				$addresses = is_array($ipv4) ? $ipv4 : array();
@@ -268,16 +276,20 @@
 			if ($host === '' || strlen($host) > 253) {
 				throw new \InvalidArgumentException('Некорректный хост удалённого URL');
 			}
+
 			if (filter_var($host, FILTER_VALIDATE_IP)) {
 				return $host;
 			}
+
 			if (preg_match('/[^\x20-\x7e]/', $host)) {
 				if (!function_exists('idn_to_ascii')) {
 					throw new \InvalidArgumentException('IDN-хост не поддерживается сервером');
 				}
+
 				$variant = defined('INTL_IDNA_VARIANT_UTS46') ? INTL_IDNA_VARIANT_UTS46 : 0;
 				$host = idn_to_ascii($host, 0, $variant);
 			}
+
 			if (!is_string($host) || !preg_match('/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)*[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/', $host)) {
 				throw new \InvalidArgumentException('Некорректный хост удалённого URL');
 			}
@@ -291,6 +303,7 @@
 			if ($location === '' || preg_match('/[\x00-\x20\x7f]/', $location)) {
 				throw new \RuntimeException('Удалённый сервер вернул некорректное перенаправление');
 			}
+
 			if (preg_match('#^https?://#i', $location)) {
 				return $location;
 			}
@@ -299,11 +312,13 @@
 			if (strpos($location, '//') === 0) {
 				return $parts['scheme'] . ':' . $location;
 			}
+
 			$origin = $parts['scheme'] . '://' . (strpos($parts['host'], ':') !== false ? '[' . $parts['host'] . ']' : $parts['host']);
 			if (isset($parts['port'])) { $origin .= ':' . (int) $parts['port']; }
 			if ($location[0] === '/') {
 				return $origin . $location;
 			}
+
 			if ($location[0] === '?') {
 				return $origin . (isset($parts['path']) ? $parts['path'] : '/') . $location;
 			}

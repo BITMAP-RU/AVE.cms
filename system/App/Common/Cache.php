@@ -144,6 +144,7 @@
 				if (!File::putAtomic($file, $payload)) {
 					return false;
 				}
+
 				self::deleteLegacyPath($key);
 
 				try {
@@ -341,6 +342,7 @@
 			foreach (array_unique($files) as $file) {
 				if (File::delete($file)) { $deleted++; }
 			}
+
 			self::removeEmptyShards(self::dataDir());
 			self::removeEmptyShards(self::tagsDir());
 
@@ -386,6 +388,7 @@
 				if (strpos(basename($file), 'tag_') === 0) {
 					continue;
 				}
+
 				$files[] = $file;
 			}
 
@@ -572,6 +575,7 @@
 					$deleted = false;
 				}
 			}
+
 			self::removeEmptyShard(dirname(self::path($key)), self::dataDir());
 
 			return $deleted;
@@ -588,6 +592,7 @@
 			foreach (array(self::tagPath($tag), self::legacyTagPath($tag)) as $file) {
 				if (is_file($file)) { File::delete($file); }
 			}
+
 			self::removeEmptyShard(dirname(self::tagPath($tag)), self::tagsDir());
 		}
 

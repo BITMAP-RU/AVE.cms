@@ -12,10 +12,10 @@
 
 | Класс | Домен | Пример результата |
 | --- | --- | --- |
-| `App\Content\ContentTables::table($s)` | Контент: документы, рубрики, поля | `marketplace_documents` |
-| `App\Common\SystemTables::table($s)` | Системные таблицы админки (по whitelist) | `marketplace_admin_notes` |
-| `App\Content\ExtensionTables::table($s)` | Таблицы ядра контента | `marketplace_todos` |
-| `App\Content\PublicShellTables::table($s)` | Публичная оболочка (сессии и т. п.) | `marketplace_public_sessions` |
+| `App\Content\ContentTables::table($s)` | Контент: документы, рубрики, поля | `ave_documents` |
+| `App\Common\SystemTables::table($s)` | Системные таблицы админки (по whitelist) | `ave_admin_notes` |
+| `App\Content\ExtensionTables::table($s)` | Таблицы ядра контента | `ave_todos` |
+| `App\Content\PublicShellTables::table($s)` | Публичная оболочка (сессии и т. п.) | `ave_public_sessions` |
 
 ```php
 use App\Content\ContentTables;
@@ -44,7 +44,7 @@ ContentTables::table('users; DROP …');   // InvalidArgumentException
 
 ```php
 // ПЛОХО — префикс зашит, сломается в другом окружении/домене данных
-$rows = DB::query('SELECT * FROM marketplace_documents')->getAll();
+$rows = DB::query('SELECT * FROM ' . ContentTables::table('documents'))->getAll();
 
 // ХОРОШО — префикс подставит резолвер
 $t = ContentTables::table('documents');

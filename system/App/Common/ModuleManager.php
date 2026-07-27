@@ -611,7 +611,7 @@
 			if (self::$disabledCodes === null) {
 				self::$disabledCodes = [];
 				if (self::$mode === 'public') {
-					self::publicLifecycleState('__module_state_warmup__');
+					self::lifecycleState('__module_state_warmup__', false);
 					foreach (self::$publicLifecycleStates as $moduleCode => $row) {
 						$status = isset($row['status']) ? (string) $row['status'] : '';
 						if (in_array($status, array('disabled', 'available'), true)) {

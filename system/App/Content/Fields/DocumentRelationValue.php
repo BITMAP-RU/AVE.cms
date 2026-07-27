@@ -80,6 +80,7 @@
 					self::collect($value['items'], $ids);
 					return;
 				}
+
 				foreach (array('document_id', 'id', 'Id') as $idKey) {
 					if (isset($value[$idKey])) {
 						self::collect($value[$idKey], $ids, $idKey);

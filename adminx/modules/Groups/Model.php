@@ -136,7 +136,6 @@
 				'notfound' => 'Ошибки 404',
 				'other' => 'Прочее',
 				'products' => 'Товары',
-				'psb' => 'ПСБ / СФР',
 				'ratings' => 'Рейтинги',
 				'related' => 'Похожие документы',
 				'requests' => 'Запросы',
@@ -154,7 +153,6 @@
 				'users' => 'Пользователи',
 				'vk_oauth' => 'Вход через VK ID',
 				'yandex_oauth' => 'Вход через Яндекс',
-				'yookassa' => 'YooKassa',
 			);
 			foreach (ModuleManager::all() as $module) {
 				$code = isset($module['code']) ? trim((string) $module['code']) : '';

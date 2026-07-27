@@ -24,6 +24,7 @@
 	use App\Common\ModuleManager;
 	use App\Common\Loader\Load;
 	use App\Common\Twig;
+	use App\Helpers\Hooks;
 	use App\Helpers\Request;
 	use App\Adminx\Rubrics\FieldAdminEditors;
 	use App\Adminx\Documents\Model as DocumentsModel;
@@ -887,7 +888,10 @@
 			try { $enabled = PaymentPrograms::setProduct($productId, isset($params['program']) ? $params['program'] : '', Request::postBool('enabled', false)); }
 			catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
 			$this->audit('catalog.product_payment_program_changed', $productId, array('program' => (string) $params['program'], 'enabled' => $enabled));
-			return $this->success($enabled ? 'Оплата через СФР доступна товару' : 'Оплата через СФР отключена для товара', array('data' => array('enabled' => $enabled)));
+			return $this->success(
+				$enabled ? 'Платёжная программа доступна товару' : 'Платёжная программа отключена для товара',
+				array('data' => array('enabled' => $enabled))
+			);
 		}
 
 		public function createCatalog(array $params = array())
@@ -1470,10 +1474,11 @@
 			$filters = array(
 				'q' => Request::getStr('q', ''), 'rubric_id' => Request::getInt('rubric_id', 0),
 				'category_id' => Request::getInt('category_id', 0), 'state' => Request::getStr('state', ''),
-				'sfr' => Request::getStr('sfr', ''), 'sfr_code' => Request::getStr('sfr_code', ''),
 				'incomplete' => Request::getBool('incomplete', false), 'limit' => Request::getInt('limit', 25),
 				'page' => Request::getInt('page', 1),
 			);
+			$filters = Hooks::filter('catalog.quick_edit.filters', $filters);
+			if (!is_array($filters)) { $filters = array(); }
 			return array('result' => QuickEditor::items($filters), 'filters' => $filters,
 				'rubrics' => QuickEditor::rubrics(), 'categories' => QuickEditor::categories(),
 				'can_manage' => Permission::check('manage_catalog'));

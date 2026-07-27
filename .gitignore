@@ -1,20 +1,35 @@
 .DS_Store
 
-# Runtime configuration
+# IDE / local tooling
+/.idea/
+/.vscode/
+/.claude/
+/.agents/
+
+# Node dependencies
+/node_modules/
+
+# Composer dev dependencies (тесты). composer.json/composer.lock — в гите.
+/vendor/
+/.phpunit.result.cache
+
+# Runtime configuration / secrets
 /configs/db.config.php
 
-# Runtime state and secrets
-/storage/*
-!/storage/.htaccess
+# Runtime data
+/tmp/
+/uploads/
+/storage/backups/
+/storage/releases/
+/storage/runtime/
+/storage/secrets/
+/storage/updates/
+/storage/installed.lock
+/sample/
+/demo/
+/landing-old/
+/banned/active/
+/banned/block/
 
-# Cache, logs and sessions
-/tmp/*
-!/tmp/.htaccess
-
-# Uploaded files
-/uploads/*
-!/uploads/.htaccess
-!/uploads/index.php
-
-# Installed optional modules
-/modules/*
+# Generated caches / logs
+*.log

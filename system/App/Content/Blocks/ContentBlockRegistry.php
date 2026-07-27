@@ -29,6 +29,7 @@
 			if (!preg_match('/^[a-z][a-z0-9_-]{1,63}$/', $code)) {
 				throw new \InvalidArgumentException('Некорректный код блока контента: ' . $code);
 			}
+
 			if (isset(self::$blocks[$code]) && (string) self::$blocks[$code]['source'] !== (string) $source) {
 				throw new \RuntimeException('Код блока контента уже зарегистрирован: ' . $code);
 			}
@@ -48,6 +49,7 @@
 				$code = is_string($key) ? $key : (isset($definition['code']) ? $definition['code'] : '');
 				$registered[] = self::register($code, $definition, $source, $available);
 			}
+
 			return $registered;
 		}
 
@@ -67,6 +69,7 @@
 			foreach (self::$blocks as $block) {
 				if ($includeUnavailable || !empty($block['available'])) { $blocks[] = $block; }
 			}
+
 			usort($blocks, function ($left, $right) {
 				$priority = (int) $left['priority'] <=> (int) $right['priority'];
 				return $priority !== 0 ? $priority : strcasecmp((string) $left['title'], (string) $right['title']);
@@ -112,6 +115,7 @@
 				if (!preg_match('/^[a-z][a-z0-9_]{1,63}$/', $key) || $type === '' || isset($keys[$key])) {
 					throw new \InvalidArgumentException('Некорректное поле блока ' . $code . ': ' . ($key !== '' ? $key : '(без ключа)'));
 				}
+
 				$keys[$key] = true;
 				$fields[] = array(
 					'key' => $key,
@@ -121,6 +125,7 @@
 					'settings' => isset($field['settings']) && is_array($field['settings']) ? $field['settings'] : array(),
 				);
 			}
+
 			if (!$fields) { throw new \InvalidArgumentException('Блок контента не содержит полей: ' . $code); }
 
 			return array(
