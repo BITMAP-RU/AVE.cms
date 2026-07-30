@@ -509,7 +509,7 @@
 			return $data;
 		}
 
-		/** Adminx identity is also a valid authenticated identity on public pages. */
+		/** A control-panel identity is also valid on public pages. */
 		protected function hasPublicIdentity()
 		{
 			return Auth::publicCheck() || (bool) Auth::systemUser();

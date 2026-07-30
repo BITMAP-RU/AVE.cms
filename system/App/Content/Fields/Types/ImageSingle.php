@@ -26,7 +26,7 @@
 	/**
 	 * Одно изображение (AVE image_single). Legacy value = путь|описание.
 	 *
-	 * Богатый media-редактор с превью, загрузкой и пикером подключается в adminx.
+	 * Богатый media-редактор с превью, загрузкой и пикером подключается в панели управления.
 	 */
 	class ImageSingle extends AbstractFieldType implements DocumentMediaFieldType
 	{

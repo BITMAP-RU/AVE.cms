@@ -119,7 +119,7 @@
 <section class="tab-panel active" data-settings-panel="security">
   <div class="section-header settings-panel-header" style="--section-accent:var(--red-600);--section-accent-soft:var(--red-100)">
     <div class="section-icon"><i class="ti ti-shield-lock"></i></div>
-    <div><div class="section-eyebrow">Безопасность Adminx</div><h2>Подтверждение действий</h2><p class="section-desc">Дополнительная проверка перед изменением исполняемого кода и установкой модулей.</p></div>
+    <div><div class="section-eyebrow">Безопасность панели</div><h2>Подтверждение действий</h2><p class="section-desc">Дополнительная проверка перед изменением исполняемого кода и установкой модулей.</p></div>
   </div>
 
   <div class="alert alert-warning settings-security-note"><i class="ti ti-alert-triangle"></i><div><b>На production защиту лучше оставить включённой</b><p>Одно успешное подтверждение действует 5 минут. Отключение не меняет права ролей и CSRF-защиту.</p></div></div>
@@ -415,9 +415,9 @@
   </div>
 
   <div class="card settings-card">
-    <div class="settings-section-head"><div class="settings-section-title"><span class="icon-tile settings-head-icon" style="--tile-bg:var(--red-100);--tile-fg:var(--red-600)"><i class="ti ti-database-minus"></i></span><div><h2>Служебные данные документов</h2><p class="text-secondary">Глобальная очистка старых ревизий и подневных счётчиков.</p></div></div></div>
+    <div class="settings-section-head"><div class="settings-section-title"><span class="icon-tile settings-head-icon" style="--tile-bg:var(--red-100);--tile-fg:var(--red-600)"><i class="ti ti-database-minus"></i></span><div><h2>Служебные данные</h2><p class="text-secondary">Глобальная очистка ревизий редакторов и подневных счётчиков.</p></div></div></div>
     <div class="settings-maintenance-actions">
-      <div><b>Ревизии документов</b><span class="text-secondary">{{ maintenance_counts.revisions }} записей</span>{% if can_manage %}<button class="btn btn-danger-soft btn-sm" type="button" data-maintenance-clear="revisions"><i class="ti ti-trash"></i>Очистить</button>{% endif %}</div>
+      <div class="settings-maintenance-revisions"><b>Все ревизии</b><span class="text-secondary">{{ maintenance_counts.revisions }} записей во всех редакторах</span>{% if can_manage %}<button class="btn btn-danger-soft btn-sm" type="button" data-maintenance-clear="revisions"><i class="ti ti-trash"></i>Очистить</button>{% endif %}<div class="settings-maintenance-breakdown">{% for source in maintenance_counts.revision_sources %}<span><b>{{ source.label }}</b> {{ source.count }}</span>{% endfor %}</div></div>
       <div><b>Подневные просмотры</b><span class="text-secondary">{{ maintenance_counts.views }} записей</span>{% if can_manage %}<button class="btn btn-danger-soft btn-sm" type="button" data-maintenance-clear="views"><i class="ti ti-trash"></i>Очистить</button>{% endif %}</div>
     </div>
   </div>
@@ -428,14 +428,43 @@
 {% if settings_page == 'diagnostics' %}
 <section class="tab-panel active" data-settings-panel="diagnostics">
   <div class="section-header settings-panel-header"><div class="section-icon"><i class="ti ti-stethoscope"></i></div><div><div class="section-eyebrow">Система</div><h2>Диагностика</h2><p class="section-desc">Проверка окружения и готовности сайта без изменения данных.</p></div></div>
-  <div class="card settings-card settings-production-card">
-    <div class="settings-section-head">
-      <div class="settings-section-title"><span class="icon-tile settings-head-icon" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-shield-check"></i></span><div><h2>Готовность production</h2><p class="text-secondary">Проверки выполняются без отправки писем и создания платежей.</p></div></div>
-      <div class="settings-production-summary"><span class="badge badge-green">{{ production_diagnostics.summary.ok }} готовы</span>{% if production_diagnostics.summary.warning %}<span class="badge badge-amber">{{ production_diagnostics.summary.warning }} внимания</span>{% endif %}{% if production_diagnostics.summary.error %}<span class="badge badge-red">{{ production_diagnostics.summary.error }} ошибок</span>{% endif %}</div>
-    </div>
-    <div class="settings-production-list">
-      {% for check in production_diagnostics.checks %}<div class="settings-production-check"><i class="ti ti-{{ check.state == 'ok' ? 'circle-check' : (check.state == 'error' ? 'circle-x' : 'alert-triangle') }} is-{{ check.state }}"></i><b>{{ check.label }}</b><span>{{ check.detail }}</span></div>{% endfor %}
-    </div>
+
+  <div class="settings-diagnostics-overview">
+    {% for item in production_diagnostics.overview %}
+    {% set tile_bg = item.state == 'ok' ? 'var(--green-100)' : (item.state == 'error' ? 'var(--red-100)' : 'var(--amber-100)') %}
+    {% set tile_fg = item.state == 'ok' ? 'var(--green-600)' : (item.state == 'error' ? 'var(--red-600)' : 'var(--amber-600)') %}
+    <article class="card settings-diagnostics-overview-card is-{{ item.state }}">
+      <span class="icon-tile" style="--tile-bg:{{ tile_bg }};--tile-fg:{{ tile_fg }}"><i class="ti {{ item.icon }}"></i></span>
+      <div>
+        <span>{{ item.label }}</span>
+        <b>{{ item.value }}</b>
+        <small>{{ item.detail }}</small>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+
+  <div class="settings-diagnostics-groups">
+    {% for group in production_diagnostics.groups %}
+    <section class="settings-diagnostics-group">
+      <div class="settings-diagnostics-group-head">
+        <div class="settings-section-title">
+          <span class="icon-tile settings-head-icon" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti {{ group.icon }}"></i></span>
+          <div><h2>{{ group.title }}</h2><p class="text-secondary">{{ group.description }}</p></div>
+        </div>
+        <span class="badge badge-blue">{{ group.checks|length }}</span>
+      </div>
+
+      <div class="settings-diagnostics-grid">
+        {% for check in group.checks %}
+        <article class="card settings-diagnostic-card is-{{ check.state }}">
+          <span class="settings-diagnostic-icon"><i class="ti ti-{{ check.state == 'ok' ? 'check' : (check.state == 'error' ? 'x' : 'alert-triangle') }}"></i></span>
+          <div><b>{{ check.label }}</b><span>{{ check.detail }}</span></div>
+        </article>
+        {% endfor %}
+      </div>
+    </section>
+    {% endfor %}
   </div>
 </section>
 {% endif %}

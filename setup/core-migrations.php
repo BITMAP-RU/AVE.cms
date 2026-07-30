@@ -47,6 +47,9 @@
 			'001_mysql_legacy_index_compatibility', '002_module_lifecycle_recovery',
 			'003_document_fields_text_composite_index',
 		), 'backup' => array('003_document_fields_text_composite_index' => array())),
+		'directories' => array('directory' => 'Directories', 'ids' => array(
+			'001_create_directories',
+		), 'backup' => array('001_create_directories' => array())),
 		'documents' => array('directory' => 'Documents', 'ids' => array(
 			'001_correct_breadcrumb_title', '002_correct_legacy_breadcrumb_title',
 			'003_create_document_api_tokens', '004_optimize_public_document_indexes',
@@ -64,13 +67,23 @@
 		'groups' => array('directory' => 'Groups', 'ids' => array(
 			'001_register_public_debug_permission', '002_remove_observer_role',
 			'003_seed_default_roles', '004_merge_legacy_roles',
-			'005_register_development_site_permission',
+			'005_register_development_site_permission', '006_normalize_control_panel_permission',
 		), 'backup' => array(
 			'005_register_development_site_permission' => array('{{prefix}}_permissions'),
+			'006_normalize_control_panel_permission' => array('{{prefix}}_permissions'),
 		)),
 		'navigation' => array('directory' => 'Navigation', 'ids' => array('001_create_navigation_tables')),
 		'notfound' => array('directory' => 'NotFound', 'optional' => true, 'ids' => array(
 			'001_register_notfound_permissions', '002_create_not_found_log',
+		)),
+		'public_site' => array('directory' => 'PublicSite', 'ids' => array(
+			'001_create_presentations',
+		), 'backup' => array(
+			'001_create_presentations' => array(
+				'{{content_prefix}}_presentations',
+				'{{content_prefix}}_presentation_revisions',
+				'{{content_prefix}}_presentation_assignments',
+			),
 		)),
 		'requests' => array('directory' => 'Requests', 'ids' => array(
 			'001_native_database_calls', '002_correct_native_database_escape',
@@ -88,10 +101,16 @@
 			'005_correct_native_database_escape', '006_admin_document_views',
 			'007_rubric_open_graph', '008_normalize_field_layout_width',
 			'009_expand_clean_starter_rubric', '010_form_conditions', '011_schema_revisions',
-			'012_linked_field_sets', '013_group_form_conditions',
+			'012_linked_field_sets', '013_group_form_conditions', '014_rubric_purpose',
+			'015_merge_directory_permissions',
 		), 'backup' => array(
 			'012_linked_field_sets' => array(),
 			'013_group_form_conditions' => array('{{content_prefix}}_rubric_fields_group'),
+			'014_rubric_purpose' => array('{{content_prefix}}_rubrics'),
+			'015_merge_directory_permissions' => array(
+				'{{prefix}}_permissions',
+				'{{prefix}}_role_permissions',
+			),
 		)),
 		'security' => array('directory' => 'Security', 'ids' => array('001_create_ip_blocks')),
 		'settings' => array('directory' => 'Settings', 'ids' => array(

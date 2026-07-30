@@ -42,7 +42,7 @@
 
 		public function settingsSchema()
 		{
-			return array(
+			return array_merge(array(
 				array(
 					'key' => 'mode',
 					'type' => 'select',
@@ -57,12 +57,12 @@
 					'options' => array('select' => 'Выпадающий список', 'checks' => 'Варианты списком'),
 					'default' => 'select',
 				),
-				array(
+			), $this->optionSettingsSchema(array(
 					'key' => 'options',
 					'type' => 'map',
 					'label' => 'Ключ → подпись',
 					'hint' => 'Стабильный ключ хранится в документе. Подпись можно менять без миграции значений.',
-				),
+				)), array(
 				array(
 					'key' => 'separator',
 					'type' => 'text',
@@ -70,7 +70,7 @@
 					'default' => ', ',
 					'hint' => 'Используется при выводе нескольких выбранных значений.',
 				),
-			);
+			));
 		}
 
 		public function validationSchema()
@@ -117,13 +117,23 @@
 			$map = $this->optionMap($ctx);
 			if (!$this->multiple($ctx)) {
 				$value = trim((string) $ctx->value);
-				return $value !== '' && array_key_exists($value, $map) ? $this->e($map[$value]) : '';
+				if ($value === '') {
+					return '';
+				}
+
+				if (array_key_exists($value, $map)) {
+					return $this->e($map[$value]);
+				}
+
+				return (string) $ctx->setting('option_source', 'local') === 'directory' ? $this->e($value) : '';
 			}
 
 			$labels = array();
 			foreach ($this->selection($ctx->value) as $value) {
 				if (array_key_exists($value, $map)) {
 					$labels[] = $this->e($map[$value]);
+				} elseif ((string) $ctx->setting('option_source', 'local') === 'directory') {
+					$labels[] = $this->e($value);
 				}
 			}
 

@@ -1,47 +1,290 @@
 <?xml version="1.0" encoding="utf-8"?>
 <language>
+	<phrase data="auto_003cc12783448df3">х</phrase>
 	<phrase data="auto_0156bf1b8aac8565">Добавить ещё…</phrase>
+	<phrase data="auto_02b4ebb5dc50bca5">В поле-ссылку будет записан адрес документа.</phrase>
+	<phrase data="auto_02fdd4b8923613d6">До 10 символов, необязательно.</phrase>
+	<phrase data="auto_04c0389bc0db2353">Токен скопирован</phrase>
+	<phrase data="auto_080887ebc7bb5402">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm documents-media-remove&quot; type=&quot;button&quot; data-document-media-remove data-tooltip=&quot;Удалить&quot; aria-label=&quot;Удалить&quot;&gt;&lt;i class=&quot;ti ti-trash&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_0957de938411c15b">поле</phrase>
+	<phrase data="auto_0af969e08c220502">Очистить все строки поля?</phrase>
+	<phrase data="auto_0db49b55557f2bde">Параметр</phrase>
+	<phrase data="auto_0e7fbe3404b67fe3">Пересобрать JSON-снимки?</phrase>
 	<phrase data="auto_0f9ccee053fe3b6b">Новый</phrase>
+	<phrase data="auto_0ff730d95f9c5bc3">нажмите, чтобы выбрать</phrase>
+	<phrase data="auto_122f4893d3d0d802">Не удалось проверить alias</phrase>
+	<phrase data="auto_1291e1971ba28ee6">API-токен создан</phrase>
 	<phrase data="auto_12bfabff3d7dc01c">Добавить ключевое слово</phrase>
+	<phrase data="auto_18337ef195f7d88d">&lt;div class=&quot;modal-body&quot;&gt;&lt;div class=&quot;input-wrap documents-relation-search&quot;&gt;&lt;i class=&quot;ti ti-search&quot;&gt;&lt;/i&gt;&lt;input class=&quot;input&quot; type=&quot;search&quot; placeholder=&quot;ID, название или alias&quot; data-relation-search&gt;&lt;/div&gt;&lt;div class=&quot;documents-picker-status&quot; data-relation-status&gt;Загрузка...&lt;/div&gt;&lt;div class=&quot;documents-relation-list&quot; data-relation-list&gt;&lt;/div&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_1894f01f2cfa4702">JSON-снимок</phrase>
+	<phrase data="auto_1a7725e697463fd8">к</phrase>
 	<phrase data="auto_1af72c14888c4574">Пресет создания</phrase>
+	<phrase data="auto_1bc16af35fa47103">э</phrase>
+	<phrase data="auto_1d00a5603a94c17d">ID тизера / ссылка</phrase>
+	<phrase data="auto_1d402bc8ffda29cd">Внутренняя ошибка сервера. Обновите страницу и повторите попытку.</phrase>
+	<phrase data="auto_1f864100c5c97f02">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm&quot; type=&quot;button&quot; data-document-media-down data-tooltip=&quot;Ниже&quot; aria-label=&quot;Ниже&quot;&gt;&lt;i class=&quot;ti ti-arrow-down&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_22dc89ab84f07324">&quot;&gt;&lt;button class=&quot;btn btn-secondary btn-icon btn-sm&quot; type=&quot;button&quot; data-document-media-pick data-tooltip=&quot;Выбрать файл&quot; aria-label=&quot;Выбрать файл&quot;&gt;&lt;i class=&quot;ti ti-</phrase>
+	<phrase data="auto_230b5877294e9726">ц</phrase>
+	<phrase data="auto_23289c89f8c038a0">В поле будет записан ID документа.</phrase>
+	<phrase data="auto_242f64ddfe84899b">после сохранения</phrase>
 	<phrase data="auto_25a9845975119103">Пресет создания сохранён</phrase>
 	<phrase data="auto_25dc101484dbd55c">Не удалось загрузить список</phrase>
+	<phrase data="auto_285cc4001478d568">ч</phrase>
+	<phrase data="auto_28c993e4935524d8">з</phrase>
+	<phrase data="auto_28fb6167ec0a79fe">&lt;section class=&quot;documents-revision-system&quot;&gt;&lt;div class=&quot;documents-revision-subhead&quot;&gt;&lt;i class=&quot;ti ti-settings&quot;&gt;&lt;/i&gt;&lt;b&gt;Основные настройки&lt;/b&gt;&lt;span&gt;</phrase>
+	<phrase data="auto_292688e9915e161b">[link]&quot; data-media-key=&quot;link&quot; value=&quot;&quot; placeholder=&quot;Ссылка или документ&quot; data-document-media-url data-document-picker-type=&quot;all&quot;&gt;</phrase>
+	<phrase data="auto_29f3b29df0d0e54f">Восстановить</phrase>
+	<phrase data="auto_2a9790fd6fab2922">&lt;button class=&quot;btn btn-secondary btn-icon btn-sm&quot; type=&quot;button&quot; data-document-media-doc-pick data-tooltip=&quot;Выбрать документ&quot; aria-label=&quot;Выбрать документ&quot;&gt;&lt;i class=&quot;ti ti-file-search&quot;&gt;&lt;/i&gt;&lt;/button&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_2ba58b00b4c52021">&lt;/span&gt;&lt;label class=&quot;documents-revision-group-check&quot;&gt;&lt;input type=&quot;checkbox&quot; data-document-revision-group=&quot;field&quot; checked&gt;&lt;span&gt;Все&lt;/span&gt;&lt;/label&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_2c501dc73177148a">ID, название или alias</phrase>
+	<phrase data="auto_2e31dae95f35e3b8">Выбрать файл</phrase>
+	<phrase data="auto_2ec20105a2757791">Колонка 3</phrase>
+	<phrase data="auto_2f1256a9610f7d64">Редирект сохранён</phrase>
+	<phrase data="auto_2ff1fe42207df255">Секрет готов к копированию.</phrase>
+	<phrase data="auto_301361625f901825">Сервер вернул некорректный ответ.</phrase>
+	<phrase data="auto_30278b05221dd957">Обновить страницу</phrase>
+	<phrase data="auto_32b74a3c47908c1e">Без названия</phrase>
+	<phrase data="auto_33392e5848b4a8eb">JSON-снимки пересобраны:</phrase>
+	<phrase data="auto_336d12a4f96485a3">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm&quot; type=&quot;button&quot; data-document-media-up data-tooltip=&quot;Выше&quot; aria-label=&quot;Выше&quot;&gt;&lt;i class=&quot;ti ti-arrow-up&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_359282f9ef75e654">ID документа</phrase>
+	<phrase data="auto_35de32df9d942d9a">Заметка добавлена</phrase>
+	<phrase data="auto_3697bef0b3fc93f5">новый</phrase>
 	<phrase data="auto_3812a04b189ec1fd">новое</phrase>
+	<phrase data="auto_39704f311a86cd23">Черновик</phrase>
+	<phrase data="auto_3de49828e86a4016">Название</phrase>
+	<phrase data="auto_3e096d0063299173">Ревизия удалена</phrase>
+	<phrase data="auto_3e25fbc59741a10a">Заголовок документа</phrase>
+	<phrase data="auto_3e670a1ec591883c">Файлы загружены</phrase>
+	<phrase data="auto_3eb77d3c13c51f92">Выберите ревизию</phrase>
+	<phrase data="auto_3f039532d65bb5e3">Пересобрать JSON</phrase>
 	<phrase data="auto_4044fbc87708b9ad">Очистить подневную статистику?</phrase>
+	<phrase data="auto_40785832c27c3a51">Колонка 1</phrase>
+	<phrase data="auto_42ba924b3732dc07">поля</phrase>
+	<phrase data="auto_433e4b40a403cdb0">й</phrase>
+	<phrase data="auto_447d642f14fb2c8c">В папке нет подходящих файлов</phrase>
 	<phrase data="auto_46551a5e6e43e854">Статистика очищена</phrase>
+	<phrase data="auto_48be85b47e187f3c">ещё не создан</phrase>
+	<phrase data="auto_4a05d8619dedc462">Копировать</phrase>
+	<phrase data="auto_4b4c88ed13b23b15">Редирект удалён</phrase>
+	<phrase data="auto_4d60d98f499d1580">Ревизии</phrase>
+	<phrase data="auto_4f566fb5e3df4276">я</phrase>
+	<phrase data="auto_516cbe2af24391af">л</phrase>
+	<phrase data="auto_51b4eac98af84251">а</phrase>
+	<phrase data="auto_51f784cde1916288">ь</phrase>
+	<phrase data="auto_522e27d7402089bc">Документ сохранён</phrase>
+	<phrase data="auto_53e908b396e3a6b3">&lt;span class=&quot;badge badge-gray&quot;&gt;не создан&lt;/span&gt;</phrase>
+	<phrase data="auto_54a8375d14dfdab5">Не удалось прочитать папку</phrase>
+	<phrase data="auto_56ac0cff0f4a358f">Заметка удалена</phrase>
+	<phrase data="auto_576895a59897535b">Файл не выбран</phrase>
+	<phrase data="auto_577021b5ac1fd915">ф</phrase>
+	<phrase data="auto_57afad1302f9645e">о</phrase>
+	<phrase data="auto_588c8feeb973dcb1">&lt;div&gt;&lt;dt&gt;Файл&lt;/dt&gt;&lt;dd class=&quot;mono&quot;&gt;</phrase>
+	<phrase data="auto_59ddef8a55503c83">кг</phrase>
+	<phrase data="auto_5a3b4bcf55400711">р</phrase>
+	<phrase data="auto_5bd0d9fe0580526f">. Окно нужно оставить открытым до завершения.</phrase>
 	<phrase data="auto_5c019fa5d03ca5cf">в рубрике</phrase>
+	<phrase data="auto_5e6c96299a2f11e9">ы</phrase>
 	<phrase data="auto_5e6d6b07b27b7a7c">Все строки view_count будут удалены. Общие счётчики документов останутся без изменений.</phrase>
+	<phrase data="auto_5f9eaa37c4e2ccff">&lt;button class=&quot;btn btn-secondary btn-icon btn-sm&quot; type=&quot;button&quot; data-document-media-pick data-tooltip=&quot;Выбрать файл&quot; aria-label=&quot;Выбрать файл&quot;&gt;&lt;i class=&quot;ti ti-paperclip&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_600363a73de5f3a5">Пересобрать</phrase>
+	<phrase data="auto_60512114c18fd5ed">&lt;span class=&quot;badge badge-amber&quot;&gt;нужна пересборка&lt;/span&gt;</phrase>
 	<phrase data="auto_619742ac4a834c45">док.</phrase>
+	<phrase data="auto_63b1fa390e91f75c">0 Б</phrase>
+	<phrase data="auto_65b7f1673713a00c">д</phrase>
 	<phrase data="auto_66d207b9ebe9e4e3">&lt;div class=&quot;documents-term-status is-error&quot;&gt;&lt;i class=&quot;ti ti-alert-circle&quot;&gt;&lt;/i&gt;&lt;span&gt;Не удалось загрузить варианты&lt;/span&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_6702cc12ca25aff1">&lt;div class=&quot;empty-state&quot;&gt;Ревизий пока нет. Первый снимок появится после сохранения документа.&lt;/div&gt;</phrase>
+	<phrase data="auto_691245657a52bdce">&lt;div&gt;&lt;label class=&quot;documents-revision-check&quot; aria-label=&quot;Восстановить</phrase>
+	<phrase data="auto_6972375800d3e590">Очистить поле?</phrase>
+	<phrase data="auto_698ace159126e252">Колонка 2</phrase>
+	<phrase data="auto_6b595786e068b5bc">Alias можно оставить пустым</phrase>
+	<phrase data="auto_6baaabf049b42cca">ё</phrase>
+	<phrase data="auto_6bee957a1f3ef55d">Длина,</phrase>
+	<phrase data="auto_6c190c23240564f5">ж</phrase>
 	<phrase data="auto_6e408d3c9c3156bf">Удалить «</phrase>
+	<phrase data="auto_6e52ded051aa402d">Отозван</phrase>
+	<phrase data="auto_6f658622a374b8d6">&lt;/p&gt;&lt;/div&gt;&lt;button class=&quot;modal-close&quot; type=&quot;button&quot; data-relation-close aria-label=&quot;Закрыть&quot;&gt;&lt;i class=&quot;ti ti-x&quot;&gt;&lt;/i&gt;&lt;/button&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_6fe63eee472a5a93">&lt;span class=&quot;badge badge-green&quot;&gt;актуален&lt;/span&gt;</phrase>
 	<phrase data="auto_707a724dce1fa0d4">URL скопирован</phrase>
 	<phrase data="auto_72c618d46424c93a">Сохранённых значений пока нет</phrase>
+	<phrase data="auto_736a75710565c2f2">[description]&quot; data-media-key=&quot;description&quot; rows=&quot;2&quot; placeholder=&quot;Описание&quot;&gt;&lt;/textarea&gt;</phrase>
+	<phrase data="auto_75285ce97dc1dc97">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm&quot; type=&quot;button&quot; data-document-value-down data-tooltip=&quot;Ниже&quot; aria-label=&quot;Ниже&quot;&gt;&lt;i class=&quot;ti ti-arrow-down&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_781e545c1063d5db">Интеграция сразу потеряет доступ. Вернуть этот токен будет невозможно.</phrase>
+	<phrase data="auto_7845e83aad6bffff">Найдено ошибок:</phrase>
+	<phrase data="auto_7a4f40b5797415a7">Шаблон рубрики: /</phrase>
+	<phrase data="auto_7a9b21737266b2d1">, ошибок:</phrase>
+	<phrase data="auto_7bd54e89985213b9">Шаблон</phrase>
 	<phrase data="auto_7c3bb087be98e4e9">Не удалось загрузить статистику</phrase>
+	<phrase data="auto_7dcc70f455f9f122">API-токен отозван</phrase>
 	<phrase data="auto_7f09659cde925652">Найти или добавить тег</phrase>
+	<phrase data="auto_7f7328fc7d7316b8">н</phrase>
+	<phrase data="auto_80a2c74df6ffb08d">Откройте нужную папку и подтвердите выбор. В поле добавятся все подходящие файлы из неё.</phrase>
+	<phrase data="auto_80c97478d2179d1c">&lt;div&gt;&lt;dt&gt;Состояние&lt;/dt&gt;&lt;dd&gt;</phrase>
+	<phrase data="auto_83c8e08533872aff">&lt;div class=&quot;empty-state&quot;&gt;Загрузка...&lt;/div&gt;</phrase>
+	<phrase data="auto_84b96b359e9c61d3">Содержимое снимка появится после выбора ревизии.</phrase>
 	<phrase data="auto_86ea33aef5e95d4f">Удалить</phrase>
+	<phrase data="auto_8922542f90c16aee">Скопировано</phrase>
+	<phrase data="auto_8bf2ee2944fdd73f">необязательно</phrase>
+	<phrase data="auto_8c34e8bce7d519b3">Описание появится после заполнения meta description.</phrase>
+	<phrase data="auto_8d333d8b91196c4b">Документов</phrase>
+	<phrase data="auto_8d5d38d878604c11">Документ восстановлен</phrase>
+	<phrase data="auto_8e8ca8428150664e">г</phrase>
 	<phrase data="auto_8ff9429d66687894">Совпадений нет</phrase>
+	<phrase data="auto_919be7c1e27ba64c">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm&quot; type=&quot;button&quot; data-document-value-up data-tooltip=&quot;Выше&quot; aria-label=&quot;Выше&quot;&gt;&lt;i class=&quot;ti ti-arrow-up&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_9541be7605dbe971">Права доступа для одной внешней интеграции.</phrase>
+	<phrase data="auto_96664ee8380d446c">Документ изменился</phrase>
 	<phrase data="auto_9729bca62f6c558e">Ошибка запроса</phrase>
+	<phrase data="auto_97c557fb133f1f95">полей</phrase>
 	<phrase data="auto_98b2073ed1815f28">Очистить</phrase>
+	<phrase data="auto_9b16ca539e602189">Отозвать</phrase>
+	<phrase data="auto_9bf756bd3124a21d">Изменения сохранены</phrase>
+	<phrase data="auto_9c4c0897f8ec6cf2">[title]&quot; data-media-key=&quot;title&quot; value=&quot;&quot; placeholder=&quot;Заголовок изображения&quot;&gt;</phrase>
+	<phrase data="auto_9c7449bfd16b63a0">Убрать</phrase>
+	<phrase data="auto_9caf4a95f812be6a">п</phrase>
+	<phrase data="auto_9d1e4bc060f5da40">Добавлено из папки:</phrase>
+	<phrase data="auto_9d809f884b63cdec">Изменить</phrase>
+	<phrase data="auto_9da304d709611b05">Не удалось загрузить ревизии</phrase>
+	<phrase data="auto_9f0b990967c8a2ad">Значение</phrase>
+	<phrase data="auto_9f3b3c3b78133faa">Выбрать документ</phrase>
+	<phrase data="auto_a15870f87e67e329">&lt;div&gt;&lt;dt&gt;Сформирован&lt;/dt&gt;&lt;dd&gt;</phrase>
+	<phrase data="auto_a18928c7baf57b4e">Только поля</phrase>
+	<phrase data="auto_a2e9f606da125a72">б</phrase>
+	<phrase data="auto_a37cb7b62a6f1b65">У рубрики нет шаблона пути: alias документа используется от корня сайта.</phrase>
+	<phrase data="auto_a45e66bc42d77b08">Не удалось сгенерировать alias</phrase>
+	<phrase data="auto_a59e2c2429fe7a88">и</phrase>
+	<phrase data="auto_a5ecb551ebd318c2">Высота,</phrase>
+	<phrase data="auto_a63e1ce2e55b8d0a">Изображение не выбрано</phrase>
+	<phrase data="auto_a690b9dead4d8d8d">&lt;div&gt;&lt;dt&gt;Размер&lt;/dt&gt;&lt;dd&gt;</phrase>
+	<phrase data="auto_a7774650638b586d">JSON-снимок пересобран</phrase>
+	<phrase data="auto_a78e4bb6eb8c9ced">Ревизии документа</phrase>
+	<phrase data="auto_a8504d513adfb6f5">Заголовок</phrase>
 	<phrase data="auto_a90ed3357338f605">Загрузка...</phrase>
+	<phrase data="auto_ab30701c85ebee86">Убрать документ</phrase>
+	<phrase data="auto_ac3008315dc50b25">Добавить из этой папки</phrase>
+	<phrase data="auto_ae008e22ec3a8627">Все строки этого поля будут удалены из документа после сохранения.</phrase>
+	<phrase data="auto_af962c31c15d28d8">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm documents-drag-handle&quot; type=&quot;button&quot; data-doc-drag draggable=&quot;true&quot; data-tooltip=&quot;Перетащить&quot; aria-label=&quot;Перетащить&quot;&gt;&lt;i class=&quot;ti ti-grip-vertical&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
 	<phrase data="auto_b0a419827426861b">Пресет удалён</phrase>
+	<phrase data="auto_b0d827d33fc8eb3f">Снимки</phrase>
+	<phrase data="auto_b1c30d9335b4ffb7">/ + alias документа. Дата берётся из публикации.</phrase>
+	<phrase data="auto_b279170b217c1e48">&lt;div&gt;&lt;dt&gt;Поля&lt;/dt&gt;&lt;dd class=&quot;mono&quot;&gt;</phrase>
+	<phrase data="auto_b2ac54889c1e667e">Пакетная пересборка остановлена</phrase>
+	<phrase data="auto_b36631e2d2874351">&lt;article class=&quot;documents-revision-field documents-revision-system-field&quot;&gt;&lt;div&gt;&lt;label class=&quot;documents-revision-check&quot; aria-label=&quot;Восстановить</phrase>
+	<phrase data="auto_b383b6f9be5e7ca2">Не удалось получить статус снимка</phrase>
+	<phrase data="auto_b40bbca36d2d172e">с</phrase>
+	<phrase data="auto_b5251271237d718b">Эти файлы уже есть в поле</phrase>
+	<phrase data="auto_b92a4704544f84aa">Снимки будут последовательно пересобраны для</phrase>
+	<phrase data="auto_b9917824e609b5b3">снимков</phrase>
+	<phrase data="auto_baa96cc9f67a7eb8">ю</phrase>
+	<phrase data="auto_be1aff65661f854c">[name]&quot; data-media-key=&quot;name&quot; value=&quot;&quot; placeholder=&quot;Название файла&quot;&gt;</phrase>
+	<phrase data="auto_be4a59e132257571">Отозвать API-токен?</phrase>
+	<phrase data="auto_be7ec45710267c5c">&lt;section class=&quot;documents-revision-content&quot;&gt;&lt;div class=&quot;documents-revision-subhead&quot;&gt;&lt;i class=&quot;ti ti-forms&quot;&gt;&lt;/i&gt;&lt;b&gt;Поля рубрики&lt;/b&gt;&lt;span&gt;</phrase>
+	<phrase data="auto_bea15c7bbd9e167c">е</phrase>
 	<phrase data="auto_beed168817322eeb">из</phrase>
+	<phrase data="auto_bf6379458cca6658">м</phrase>
+	<phrase data="auto_c13875d6c76e5c2e">ш</phrase>
 	<phrase data="auto_c2b70c3bb20678a7">Не удалось применить фильтры</phrase>
+	<phrase data="auto_c52083faa73d3829">Поле</phrase>
 	<phrase data="auto_c5eb26618a7ede98">Только чтение</phrase>
 	<phrase data="auto_c7fca87d8dd9b0e6">Нажмите, чтобы найти документ</phrase>
 	<phrase data="auto_c9d8ea6476aa730d">Добавить «</phrase>
 	<phrase data="auto_cccd51a8c6aa88c1">&lt;div class=&quot;documents-term-status&quot;&gt;&lt;i class=&quot;ti ti-loader-2&quot;&gt;&lt;/i&gt;&lt;span&gt;Ищем совпадения…&lt;/span&gt;&lt;/div&gt;</phrase>
 	<phrase data="auto_ccfe048a5551ed0f">пресет</phrase>
 	<phrase data="auto_cdd3b42f2a48df2f">Удалить пресет</phrase>
+	<phrase data="auto_ceebfda5155965db">Не удалось сгенерировать короткий алиас</phrase>
+	<phrase data="auto_cf0fc49836b59906">можно оставить пустым</phrase>
+	<phrase data="auto_cf412de9896e972b">Выберите хотя бы одно разрешение</phrase>
+	<phrase data="auto_d0888e0521387c25">Ширина,</phrase>
+	<phrase data="auto_d164037dc0f1bd06">Удалить ревизию</phrase>
+	<phrase data="auto_d2264bee0979ddf6">&lt;div&gt;&lt;dt&gt;Состояние&lt;/dt&gt;&lt;dd&gt;Загрузка...&lt;/dd&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_d6951b2c8c477f98">Все элементы этого поля будут удалены из документа после сохранения.</phrase>
+	<phrase data="auto_d6b08d92a7694cd4">Вес,</phrase>
+	<phrase data="auto_d77df87cd6098c73">История значений полей</phrase>
+	<phrase data="auto_d7907f4d435df378">Дополнительно</phrase>
+	<phrase data="auto_d944cde8b15c4d8b">у</phrase>
+	<phrase data="auto_d9c83b31f5cb2376">Не удалось проверить короткий alias</phrase>
+	<phrase data="auto_da97cf5fe3fc4c42">Проверка...</phrase>
+	<phrase data="auto_db4d819570e77e56">черновик</phrase>
 	<phrase data="auto_dcedec8acc4af7ca">Документ назначения</phrase>
+	<phrase data="auto_dd0ec9a1c7140562">Добавить файлы из папки</phrase>
+	<phrase data="auto_defc150c8003aa92">Ревизии удалены</phrase>
+	<phrase data="auto_df5763ef792cf2f4">см</phrase>
+	<phrase data="auto_e01aed78c667a5aa">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm documents-value-remove&quot; type=&quot;button&quot; data-document-value-remove data-tooltip=&quot;Удалить&quot; aria-label=&quot;Удалить&quot;&gt;&lt;i class=&quot;ti ti-trash&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_e4cedbc81a3c0d4e">ъ</phrase>
+	<phrase data="auto_e576260a6a03f359">т</phrase>
+	<phrase data="auto_e76f1ce35ab97dfb">&lt;/span&gt;&lt;label class=&quot;documents-revision-group-check&quot;&gt;&lt;input type=&quot;checkbox&quot; data-document-revision-group=&quot;document&quot; checked&gt;&lt;span&gt;Все&lt;/span&gt;&lt;/label&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_e83e7fbf2312ab9e">Документ уже изменён. Обновите страницу.</phrase>
+	<phrase data="auto_e94209605c9c0a4e">&lt;button class=&quot;documents-media-thumb&quot; type=&quot;button&quot; data-document-media-pick aria-label=&quot;Выбрать файл&quot;&gt;&lt;span&gt;&lt;i class=&quot;ti ti-</phrase>
+	<phrase data="auto_ec6be72560e6078a">История пока пустая</phrase>
 	<phrase data="auto_eeb60e75b96656e7">Некорректный ответ</phrase>
+	<phrase data="auto_f0b532724126bbe8">Очистить все элементы поля?</phrase>
 	<phrase data="auto_f26e5c0c72082089">Найти или добавить ключевое слово</phrase>
 	<phrase data="auto_f3d123e46297531d">в</phrase>
+	<phrase data="auto_f42c85cd57ba4aa0">Остаться</phrase>
+	<phrase data="auto_f6069600bcb07eea">&lt;div class=&quot;modal-footer&quot;&gt;&lt;div class=&quot;mf-left documents-picker-count&quot; data-relation-count&gt;&lt;/div&gt;&lt;button class=&quot;btn btn-ghost&quot; type=&quot;button&quot; data-relation-close&gt;Закрыть&lt;/button&gt;&lt;/div&gt;</phrase>
 	<phrase data="auto_f61de80bf0ca15a4">Документ не выбран</phrase>
 	<phrase data="auto_f7286439b109e428">Новый редирект</phrase>
+	<phrase data="auto_f7806fce80e51b40">Старый URL</phrase>
+	<phrase data="auto_f914c65278294e4a">&lt;div class=&quot;modal-header&quot;&gt;&lt;span class=&quot;dialog-icon info&quot;&gt;&lt;i class=&quot;ti ti-file-search&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;div style=&quot;flex:1&quot;&gt;&lt;h3&gt;Выбрать документ&lt;/h3&gt;&lt;p class=&quot;text-secondary&quot; style=&quot;margin-top:4px&quot;&gt;</phrase>
 	<phrase data="auto_fa9f0524f3a0531e">Добавить тег</phrase>
+	<phrase data="auto_fc8b3939cc9dc467">Путь будет записан в поле документа.</phrase>
+	<phrase data="auto_fda74d41e3311f87">На сервере уже сохранена более новая версия. Обновите страницу, проверьте изменения и сохраните документ повторно.</phrase>
+	<phrase data="auto_ffec67789fb1fcdc">щ</phrase>
+	<phrase data="runtime_05d4ae78b6f1bfee">н</phrase>
+	<phrase data="runtime_0918b4ba92684eaa">Название</phrase>
+	<phrase data="runtime_0940401102b8a3fe">т</phrase>
+	<phrase data="runtime_11cef8141437f8a6">ъ</phrase>
+	<phrase data="runtime_15f2ccabeb425c29">й</phrase>
+	<phrase data="runtime_1cc10a3947f7c245">д</phrase>
+	<phrase data="runtime_1d51ebe0fc45e38e">Только поля</phrase>
+	<phrase data="runtime_259f56cb715ba3a3">е</phrase>
+	<phrase data="runtime_3051067c6324c63f">з</phrase>
+	<phrase data="runtime_30fbc377ae9122ed">ё</phrase>
+	<phrase data="runtime_3164696756227147">Заметка добавлена</phrase>
+	<phrase data="runtime_34c6fbb62da8ce5c">п</phrase>
+	<phrase data="runtime_37d43a57a463add5">ю</phrase>
+	<phrase data="runtime_40831c5d98a57dfc">ч</phrase>
+	<phrase data="runtime_446cdc8e3c0d7efc">ы</phrase>
+	<phrase data="runtime_46b0d3855548054a">JSON-снимок пересобран</phrase>
+	<phrase data="runtime_4f60bd4e24e7dc7f">ш</phrase>
+	<phrase data="runtime_50338c005c41fb4e">о</phrase>
+	<phrase data="runtime_5225a95b111d47bf">к</phrase>
+	<phrase data="runtime_53b10ee4405f56d6">ещё не создан</phrase>
+	<phrase data="runtime_557f4cd2c6d3c150">см</phrase>
+	<phrase data="runtime_61095f9d62dfe291">Документ восстановлен</phrase>
+	<phrase data="runtime_6228f1454b196ffd">API-токен отозван</phrase>
+	<phrase data="runtime_65fd24f1cb37fec4">Черновик</phrase>
+	<phrase data="runtime_72a81659de042887">Ревизии удалены</phrase>
+	<phrase data="runtime_734dbc2b54ab6c95">р</phrase>
+	<phrase data="runtime_754309a41e0df98a">ф</phrase>
+	<phrase data="runtime_7592b7ec4eba966a">ц</phrase>
+	<phrase data="runtime_7b0ff8a2e5fdd66d">м</phrase>
+	<phrase data="runtime_823c4eb3e895adc9">а</phrase>
+	<phrase data="runtime_85011fce4419ee63">Поле #</phrase>
+	<phrase data="runtime_894f97c52af9e5ac">Заметка удалена</phrase>
+	<phrase data="runtime_9aa032336a8e122c">б</phrase>
+	<phrase data="runtime_9b21f5cf014c9efb">я</phrase>
+	<phrase data="runtime_9b6276c9a4ac5507">Документ сохранён</phrase>
+	<phrase data="runtime_a1f5d39a12e8f6be">с</phrase>
+	<phrase data="runtime_ab1f4be7e5d6fd8b">г</phrase>
+	<phrase data="runtime_ae51ade91d2b85b7">Ревизия удалена</phrase>
 	<phrase data="runtime_b8012cb642c887a0">в</phrase>
+	<phrase data="runtime_b95d78565f154f82">ь</phrase>
+	<phrase data="runtime_bb69a96efca3303e">х</phrase>
+	<phrase data="runtime_bbb369f210d2969f">щ</phrase>
+	<phrase data="runtime_beee80c256b458da">у</phrase>
+	<phrase data="runtime_bf0d18ef68a8a34e">можно оставить пустым</phrase>
+	<phrase data="runtime_c08fb476eca49399">кг</phrase>
 	<phrase data="runtime_c5412ba2cc2fc45a">Пресет создания сохранён</phrase>
+	<phrase data="runtime_c78364c5d0f27706">Б</phrase>
+	<phrase data="runtime_cdd02bd8b5684812">Редирект удалён</phrase>
+	<phrase data="runtime_d92fff560eb5495e">л</phrase>
 	<phrase data="runtime_dd48804aa38b03e1">Пресет удалён</phrase>
+	<phrase data="runtime_dd591284d827e17f">ж</phrase>
 	<phrase data="runtime_e1c88af54b9fced2">Документ #</phrase>
+	<phrase data="runtime_e35c8bb151d3530d">Редирект сохранён</phrase>
+	<phrase data="runtime_e93c3d6287d39cc3">API-токен создан</phrase>
+	<phrase data="runtime_ee71f8405f87d786">э</phrase>
+	<phrase data="runtime_eead37caf818d0fa">и</phrase>
+	<phrase data="runtime_f4019994d4e75a2a">после сохранения</phrase>
 	<phrase data="runtime_f9a506077fa0d961">Новый</phrase>
+	<phrase data="runtime_fff8b34d92dab340">Шаблон</phrase>
 </language>

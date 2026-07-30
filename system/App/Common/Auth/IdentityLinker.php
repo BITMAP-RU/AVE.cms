@@ -20,7 +20,7 @@
 	use App\Common\SystemTables;
 	use App\Content\PublicUserTables;
 
-	/** Keeps one person linked across the public profile and Adminx RBAC records. */
+	/** Keeps one person linked across the public profile and control-panel RBAC records. */
 	class IdentityLinker
 	{
 		public static function publicForSystem(array $systemUser)
@@ -143,7 +143,7 @@
 			$system = self::systemForPublic($publicId, $public['email']);
 			if (!$enabled) {
 				if ($system && (int) $system['id'] === (int) $currentSystemId) {
-					throw new \InvalidArgumentException('Нельзя отключить собственный доступ в Adminx');
+					throw new \InvalidArgumentException('Нельзя отключить собственный доступ к панели управления');
 				}
 
 				if ($system) {

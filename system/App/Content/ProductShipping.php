@@ -39,6 +39,38 @@
 			);
 		}
 
+		public static function summaries(array $productIds)
+		{
+			$productIds = array_values(array_unique(array_filter(array_map('intval', $productIds))));
+			$out = array();
+			foreach ($productIds as $productId) {
+				$out[$productId] = array(
+					'product_id' => $productId,
+					'shipping_enabled' => 0,
+					'package_count' => 0,
+					'places_count' => 0,
+					'total_weight' => 0,
+					'incomplete_count' => 0,
+				);
+			}
+
+			if (!$productIds) { return $out; }
+			$rows = DB::query(
+				'SELECT sp.product_id,MAX(sp.shipping_enabled) shipping_enabled,'
+					. ' COUNT(pk.id) package_count,COALESCE(SUM(pk.quantity),0) places_count,'
+					. ' COALESCE(SUM(pk.weight_kg*pk.quantity),0) total_weight,'
+					. ' COALESCE(SUM(CASE WHEN pk.id IS NOT NULL'
+						. ' AND (pk.weight_kg<=0 OR pk.length_cm<=0 OR pk.width_cm<=0 OR pk.height_cm<=0)'
+						. ' THEN 1 ELSE 0 END),0) incomplete_count'
+					. ' FROM ' . self::profilesTable() . ' sp'
+					. ' LEFT JOIN ' . self::packagesTable() . ' pk ON pk.product_id=sp.product_id'
+					. ' WHERE sp.product_id IN (' . implode(',', $productIds) . ')'
+					. ' GROUP BY sp.product_id'
+			)->getAll() ?: array();
+			foreach ($rows as $row) { $out[(int) $row['product_id']] = $row; }
+			return $out;
+		}
+
 		public static function save($productId, $enabled, array $packages)
 		{
 			$productId = (int) $productId;

@@ -133,6 +133,10 @@
 				return strcmp((string) $a['layout_code'], (string) $b['layout_code']);
 			});
 
+			if ($scope === 'navigation' && $config) {
+				$items = self::mergeNewNavigationItems($items);
+			}
+
 			foreach ($items as &$item) {
 				unset($item['_layout_position']);
 			}
@@ -146,6 +150,72 @@
 			return array_values(array_filter($items, function ($item) {
 				return !empty($item['layout_visible']);
 			}));
+		}
+
+		/**
+		 * Новые пункты, которых ещё нет в сохранённой раскладке, остаются внутри
+		 * своей группы по штатному sort_order, а не уходят в конец всего меню.
+		 */
+		protected static function mergeNewNavigationItems(array $items)
+		{
+			$configured = array();
+			$added = array();
+			foreach ($items as $item) {
+				if ($item['_layout_position'] === null) {
+					$added[] = $item;
+				} else {
+					$configured[] = $item;
+				}
+			}
+
+			usort($added, array(__CLASS__, 'compareDefaultOrder'));
+			foreach ($added as $item) {
+				$insertAt = count($configured);
+				$lastPeer = null;
+				foreach ($configured as $index => $peer) {
+					if (!self::navigationPeers($item, $peer)) {
+						continue;
+					}
+
+					$lastPeer = $index;
+					if (self::compareDefaultOrder($item, $peer) < 0) {
+						$insertAt = $index;
+						break;
+					}
+
+					$insertAt = $index + 1;
+				}
+
+				if ($lastPeer === null) {
+					$insertAt = count($configured);
+				}
+
+				array_splice($configured, $insertAt, 0, array($item));
+			}
+
+			return $configured;
+		}
+
+		protected static function navigationPeers(array $left, array $right)
+		{
+			$leftParent = isset($left['parent']) ? (string) $left['parent'] : '';
+			$rightParent = isset($right['parent']) ? (string) $right['parent'] : '';
+			if ($leftParent !== '' || $rightParent !== '') {
+				return $leftParent !== '' && $leftParent === $rightParent;
+			}
+
+			return (string) $left['group'] === (string) $right['group'];
+		}
+
+		protected static function compareDefaultOrder(array $left, array $right)
+		{
+			$leftOrder = isset($left['sort_order']) ? (int) $left['sort_order'] : 1000;
+			$rightOrder = isset($right['sort_order']) ? (int) $right['sort_order'] : 1000;
+			if ($leftOrder !== $rightOrder) {
+				return $leftOrder < $rightOrder ? -1 : 1;
+			}
+
+			return strcmp((string) $left['layout_code'], (string) $right['layout_code']);
 		}
 
 		protected static function navigationHierarchy(array $items)

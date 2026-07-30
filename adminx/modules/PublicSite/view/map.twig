@@ -1,0 +1,84 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}Карта сайта{% endblock %}
+{% block content %}
+
+{% macro branch(items, base) %}
+  {% import _self as map %}
+  <ul class="public-site-map-tree">
+    {% for item in items %}
+    <li class="{{ item.active and (item.document_id == 0 or item.document_active) ? '' : 'is-muted' }}">
+      <div class="public-site-map-node{{ item.document_id > 0 ? ' has-action' : '' }}">
+        <span class="icon-tile" style="--tile-bg:var(--blue-50);--tile-fg:var(--blue-700)"><i class="ti {{ item.children ? 'ti-folders' : 'ti-file' }}"></i></span>
+        <span class="public-site-map-copy"><b>{{ item.title ?: item.document_title ?: 'Пункт #' ~ item.id }}</b><small>{{ item.document_alias ?: item.alias ?: 'без URL' }}</small></span>
+        {% if item.document_id > 0 %}<a class="btn btn-ghost btn-icon btn-sm" href="{{ base }}/documents/{{ item.document_id }}/edit" data-tooltip="Редактировать документ" aria-label="Редактировать документ"><i class="ti ti-pencil"></i></a>{% endif %}
+      </div>
+      {% if item.children %}{{ map.branch(item.children, base) }}{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+{% endmacro %}
+
+{% import _self as map %}
+
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i>
+  <a href="{{ ADMINX_BASE }}/public-site">Публичный сайт</a><i class="ti ti-chevron-right"></i>
+  <span>Карта сайта</span>
+</nav>
+
+<div class="page-header">
+  <div class="between public-site-page-head">
+    <div><h1>Визуальная карта сайта</h1><p class="text-secondary">Меню, их уровни и связанные документы в одном представлении.</p></div>
+    <a class="btn btn-secondary" href="{{ ADMINX_BASE }}/navigation"><i class="ti ti-menu-2"></i>Редактировать меню</a>
+  </div>
+</div>
+
+{% set public_site_tab = 'map' %}
+{% include '@public_site/_tabs.twig' %}
+
+<div class="public-site-summary public-site-map-summary">
+  <div class="card public-site-stat"><span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-menu-2"></i></span><div><b>{{ site_map.stats.menus }}</b><span>Меню</span></div></div>
+  <div class="card public-site-stat"><span class="icon-tile" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-route"></i></span><div><b>{{ site_map.stats.items }}</b><span>Пунктов</span></div></div>
+  <div class="card public-site-stat"><span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-link"></i></span><div><b>{{ site_map.stats.linked_documents }}</b><span>Связано документов</span></div></div>
+  <div class="card public-site-stat"><span class="icon-tile" style="--tile-bg:var(--amber-100);--tile-fg:var(--amber-600)"><i class="ti ti-unlink"></i></span><div><b>{{ site_map.stats.orphans }}</b><span>Вне меню</span></div></div>
+</div>
+
+<section class="public-site-panel">
+  <div class="section-header public-site-panel-header">
+    <div class="section-icon"><i class="ti ti-route"></i></div>
+    <div><div class="section-eyebrow">Навигация</div><h2>Дерево страниц</h2><p class="section-desc">Карта ничего не меняет в публичной части и ведёт в штатные редакторы.</p></div>
+  </div>
+  <div class="card public-site-card public-site-map-card">
+    <form class="table-toolbar public-site-map-filter" method="get" action="{{ ADMINX_BASE }}/public-site/map">
+      <div class="input-wrap"><i class="ti ti-search"></i><input class="input" type="search" name="q" value="{{ filters.q }}" placeholder="Пункт, документ или URL"></div>
+      <button class="btn btn-secondary" type="submit"><i class="ti ti-filter"></i>Показать</button>
+      {% if filters.q %}<a class="btn btn-ghost" href="{{ ADMINX_BASE }}/public-site/map"><i class="ti ti-x"></i>Сбросить</a>{% endif %}
+    </form>
+    <div class="public-site-map-menus">
+      {% for menu in site_map.menus %}
+      <section class="public-site-map-menu">
+        <header><span class="icon-tile" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-menu-2"></i></span><div><h3>{{ menu.title }}</h3><p>{{ menu.alias }} · {{ menu.items_count }} пунктов</p></div></header>
+        {% if menu.tree %}{{ map.branch(menu.tree, ADMINX_BASE) }}{% else %}<p class="text-secondary">Подходящих пунктов нет.</p>{% endif %}
+      </section>
+      {% else %}
+      <div class="empty-state"><i class="ti ti-menu-2"></i><b>Меню пока нет</b><span>Создайте навигацию и добавьте пункты.</span></div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="public-site-panel public-site-orphans-panel">
+  <div class="section-header public-site-panel-header">
+    <div class="section-icon"><i class="ti ti-unlink"></i></div>
+    <div><div class="section-eyebrow">Контроль</div><h2>Документы вне меню</h2><p class="section-desc">Это не обязательно ошибка: такие страницы могут открываться из подборок, каталогов и прямых ссылок.</p></div>
+  </div>
+  <div class="card public-site-card">
+    <div class="public-site-orphans">
+      {% for item in site_map.orphans %}
+      <a href="{{ ADMINX_BASE }}/documents/{{ item.id }}/edit"><span><b>{{ item.title }}</b><small>{{ item.rubric_title }} · /{{ item.alias }}</small></span><span class="badge {{ item.active ? 'badge-green' : 'badge-gray' }}">{{ item.active ? 'опубликован' : 'черновик' }}</span></a>
+      {% else %}<div class="empty-state"><i class="ti ti-circle-check"></i><b>Документов вне меню не найдено</b></div>{% endfor %}
+    </div>
+  </div>
+</section>
+
+{% endblock %}

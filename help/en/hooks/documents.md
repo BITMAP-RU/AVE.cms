@@ -12,6 +12,7 @@ services.
 | Name | When |
 | --- | --- |
 | `content.document.saving` | Before recording; the data can be changed or rejected. |
+| `content.document.persisted` | After the write but before commit; only for a short transactional DB write. |
 | `content.document.saved` | After a successful commit and snapshot build. |
 | `content.document.created` | After creation. |
 | `content.document.updated` | After the update. |
@@ -35,7 +36,7 @@ public static function beforeSave(DocumentSaveEvent $event)
 
 | Method | Destination |
 | --- | --- |
-| `phase()` | `saving` or `saved`. |
+| `phase()` | `saving`, `persisted` or `saved`. |
 | `operation()` | `create` or `update`. |
 | `source()` | For example, `adminx` or API writer. |
 | `documentId()`, `rubricId()`, `actorId()` | Operation IDs. |
@@ -73,10 +74,14 @@ After events are executed after commit. Their exceptions are logged and not
 roll back an already saved document. Therefore the handler must be
 idempotent: calling again does not create a second post, payment or task.
 
+`content.document.persisted` is the exception: it runs inside the transaction.
+An exception rolls the document back. Do not send HTTP requests or email from
+this hook; only a short write to the same database is allowed. The built-in
+**Reliable events** module uses this hook automatically.
+
 ## External publication
 
-Don't send a slow HTTP request directly to `saving`: this will hold
-user and transaction. In `published` write a small task in outbox with
-unique key `service + document_id + revision`. Web-runner will process it
-limited packages, will save attempts and allow you to repeat the error from the panel
-management.
+Do not send slow HTTP requests from document hooks. Install **Reliable
+events**, subscribe to `content.document.published`, and enable its Scheduler
+task. The module writes the event atomically with the document and delivers it
+later in controlled batches.

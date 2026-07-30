@@ -28,6 +28,7 @@
 	use App\Helpers\Request;
 	use App\Adminx\Rubrics\FieldAdminEditors;
 	use App\Adminx\Documents\Model as DocumentsModel;
+	use App\Adminx\Support\BulkActionExecutor;
 	use App\Adminx\Support\CodeEditor;
 	use App\Adminx\Support\SavedViews;
 	use App\Content\PaymentPrograms;
@@ -42,11 +43,15 @@
 	use App\Adminx\Packages\Products\FilterTemplateRevisions;
 	use App\Adminx\Packages\Products\FilterTemplates;
 	use App\Adminx\Packages\Products\QuickEditor;
+	use App\Adminx\Packages\Products\QuickEditorColumns;
+	use App\Adminx\Packages\Products\QuickEditorProfiles;
 	use App\Adminx\Packages\Products\ProductRelations;
 	use App\Adminx\Packages\Products\ProductCollections;
 	use App\Adminx\Packages\Products\ProductDemands;
+	use App\Adminx\Packages\Products\ProductReadiness;
 	use App\Adminx\Packages\Products\ShippingPackageTemplates;
 	use App\Adminx\Packages\Products\VariantGroups;
+	use App\Adminx\Packages\Commerce\Promotions;
 	use App\Modules\Products\VariantSelectorSettings;
 	use App\Modules\Products\ComparisonSettings;
 	use App\Modules\Products\DemandService;
@@ -74,7 +79,7 @@
 
 		public function products(array $params = array())
 		{
-			if (!Permission::check('view_catalog')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
+			if (!Permission::check('view_products')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
 			if (!Model::hasCommerceCatalogs()) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Товарные каталоги не настроены'), 404); }
 			$this->assets();
 			$filters = array(
@@ -90,13 +95,13 @@
 				'stats' => Model::productStats(),
 				'filters' => $filters,
 				'saved_views' => SavedViews::all('catalog_products', Auth::id(), $this->savedViewFields('products')),
-				'can_manage' => Permission::check('manage_catalog'),
+				'can_manage' => Permission::check('manage_products'),
 			));
 		}
 
 		public function productQuality(array $params = array())
 		{
-			if (!Permission::check('view_catalog')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
+			if (!Permission::check('view_products')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
 			if (!Model::hasCommerceCatalogs()) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Товарные каталоги не настроены'), 404); }
 			$this->assets();
 			$stats = Model::productStats();
@@ -120,25 +125,25 @@
 				'issues' => $issues,
 				'filters' => $filters,
 				'saved_views' => SavedViews::all('catalog_quality', Auth::id(), $this->savedViewFields('quality')),
-				'can_manage' => Permission::check('manage_catalog'),
+				'can_manage' => Permission::check('manage_products'),
 			));
 		}
 
 		public function productComparison(array $params = array())
 		{
-			if (!Permission::check('view_catalog')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
+			if (!Permission::check('view_products')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
 			if (!Model::hasCommerceCatalogs()) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Товарные каталоги не настроены'), 404); }
 			$this->assets();
 			return $this->render('@products/product-comparison.twig', array(
 				'settings' => ComparisonSettings::get(),
 				'templates' => \App\Adminx\Rubrics\Model::templateOptions(),
-				'can_manage' => Permission::check('manage_catalog'),
+				'can_manage' => Permission::check('manage_products'),
 			));
 		}
 
 		public function saveProductComparison(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			try {
 				$settings = ComparisonSettings::save(Request::postAll());
 			} catch (\InvalidArgumentException $e) {
@@ -154,7 +159,7 @@
 
 		public function productDemands(array $params = array())
 		{
-			if (!Permission::check('view_catalog')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
+			if (!Permission::check('view_products')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
 			if (!Model::hasCommerceCatalogs()) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Товарные каталоги не настроены'), 404); }
 			$this->assets();
 			$type = Request::getStr('type', '');
@@ -174,13 +179,13 @@
 				'filters' => $filters,
 				'settings' => DemandSettings::get(),
 				'templates' => \App\Adminx\Rubrics\Model::templateOptions(),
-				'can_manage' => Permission::check('manage_catalog'),
+				'can_manage' => Permission::check('manage_products'),
 			));
 		}
 
 		public function saveProductDemandSettings(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			try {
 				$settings = DemandSettings::save(Request::postAll());
 			} catch (\InvalidArgumentException $e) {
@@ -196,7 +201,7 @@
 
 		public function saveProductDemandStatus(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			try {
 				$item = ProductDemands::setStatus(
 					isset($params['id']) ? (int) $params['id'] : 0,
@@ -212,7 +217,7 @@
 
 		public function notifyProductDemands(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$id = isset($params['id']) ? (int) $params['id'] : 0;
 			$result = DemandService::notifyReady($id > 0 ? 1 : 100, $id);
 			$this->audit('catalog.product_demand_notifications_sent', $id, $result);
@@ -224,7 +229,7 @@
 
 		public function deleteProductDemand(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			try {
 				$item = ProductDemands::delete(isset($params['id']) ? (int) $params['id'] : 0);
 			} catch (\InvalidArgumentException $e) {
@@ -272,7 +277,7 @@
 
 		public function shipping(array $params = array())
 		{
-			if (!Permission::check('view_catalog')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
+			if (!Permission::check('view_products')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
 			if (!Model::hasCommerceCatalogs()) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Товарные каталоги не настроены'), 404); }
 			$this->shippingAssets();
 			$state = Request::getStr('shipping_state', '');
@@ -292,13 +297,13 @@
 					'stats' => Model::productShippingStats(),
 					'filters' => $filters,
 					'package_templates' => ShippingPackageTemplates::all(),
-					'can_manage' => Permission::check('manage_catalog'),
+					'can_manage' => Permission::check('manage_products'),
 			));
 		}
 
 		public function productCollections(array $params = array())
 		{
-			if (!Permission::check('view_catalog')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
+			if (!Permission::check('view_products')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
 			if (!Model::hasCommerceCatalogs()) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Товарные каталоги не настроены'), 404); }
 			$this->collectionAssets();
 			return $this->render('@products/product-collections.twig', array(
@@ -309,13 +314,13 @@
 				'sort_modes' => ProductCollections::sortModes(),
 				'card_templates' => CardTemplates::options(),
 				'collections_available' => ProductCollections::available(),
-				'can_manage' => Permission::check('manage_catalog'),
+				'can_manage' => Permission::check('manage_products'),
 			));
 		}
 
 		public function productCollection(array $params = array())
 		{
-			if (!Permission::check('view_catalog')) { return $this->error('Недостаточно прав', array(), 403); }
+			if (!Permission::check('view_products')) { return $this->error('Недостаточно прав', array(), 403); }
 			$item = ProductCollections::one(isset($params['id']) ? (int) $params['id'] : 0);
 			return $item ? $this->success('', array('data' => array('collection' => $item)))
 				: $this->error('Подборка не найдена', array(), 404);
@@ -323,7 +328,7 @@
 
 		public function productCollectionProducts(array $params = array())
 		{
-			if (!Permission::check('view_catalog')) { return $this->error('Недостаточно прав', array(), 403); }
+			if (!Permission::check('view_products')) { return $this->error('Недостаточно прав', array(), 403); }
 			return $this->success('', array('data' => array(
 				'items' => ProductCollections::productOptions(Request::getStr('q', ''), 30),
 			)));
@@ -331,7 +336,7 @@
 
 		public function saveProductCollection(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$id = isset($params['id']) ? (int) $params['id'] : 0;
 			try {
 				$item = ProductCollections::save($id, Request::postAll());
@@ -352,7 +357,7 @@
 
 		public function deleteProductCollection(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$id = isset($params['id']) ? (int) $params['id'] : 0;
 			if (!ProductCollections::delete($id)) {
 				return $this->error('Подборка не найдена', array(), 404);
@@ -364,26 +369,26 @@
 
 		public function productRelations(array $params = array())
 		{
-			if (!Permission::check('view_catalog')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
+			if (!Permission::check('view_products')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
 			if (!Model::hasCommerceCatalogs()) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Товарные каталоги не настроены'), 404); }
 			$this->relationAssets();
 			$type = Request::getStr('type', '');
 			return $this->render('@products/product-relations.twig', array(
 				'relations' => ProductRelations::relations($type), 'bundles' => ProductRelations::bundles(),
 				'types' => ProductRelations::types(), 'stats' => ProductRelations::stats(), 'selected_type' => $type,
-				'can_manage' => Permission::check('manage_catalog'),
+				'can_manage' => Permission::check('manage_products'),
 			));
 		}
 
 		public function productRelationProducts(array $params = array())
 		{
-			if (!Permission::check('view_catalog')) { return $this->error('Недостаточно прав', array(), 403); }
+			if (!Permission::check('view_products')) { return $this->error('Недостаточно прав', array(), 403); }
 			return $this->success('', array('data' => array('items' => ProductRelations::productOptions(Request::getStr('q', ''), 40))));
 		}
 
 		public function saveProductRelation(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$id = isset($params['id']) ? (int) $params['id'] : 0;
 			try { $relation = ProductRelations::saveRelation($id, Request::postAll()); }
 			catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
@@ -393,7 +398,7 @@
 
 		public function deleteProductRelation(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$id = isset($params['id']) ? (int) $params['id'] : 0;
 			if (!ProductRelations::deleteRelation($id)) { return $this->error('Связь не найдена', array(), 404); }
 			$this->audit('catalog.product_relation_deleted', $id);
@@ -402,14 +407,14 @@
 
 		public function productBundle(array $params = array())
 		{
-			if (!Permission::check('view_catalog')) { return $this->error('Недостаточно прав', array(), 403); }
+			if (!Permission::check('view_products')) { return $this->error('Недостаточно прав', array(), 403); }
 			$bundle = ProductRelations::bundle(isset($params['id']) ? (int) $params['id'] : 0);
 			return $bundle ? $this->success('', array('data' => array('bundle' => $bundle))) : $this->error('Комплект не найден', array(), 404);
 		}
 
 		public function saveProductBundle(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$id = isset($params['id']) ? (int) $params['id'] : 0;
 			$items = Request::postJsonArray('items');
 			if (!is_array($items)) { return $this->error('Некорректный состав комплекта', array(), 422); }
@@ -421,7 +426,7 @@
 
 		public function deleteProductBundle(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$id = isset($params['id']) ? (int) $params['id'] : 0;
 			if (!ProductRelations::deleteBundle($id)) { return $this->error('Комплект не найден', array(), 404); }
 			$this->audit('catalog.product_bundle_deleted', $id);
@@ -430,7 +435,7 @@
 
 		public function productShipping(array $params = array())
 		{
-			if (!Permission::check('view_catalog')) { return $this->error('Недостаточно прав', array(), 403); }
+			if (!Permission::check('view_products')) { return $this->error('Недостаточно прав', array(), 403); }
 			$productId = isset($params['id']) ? (int) $params['id'] : 0;
 			$product = Model::product($productId);
 			if (!$product) { return $this->error('Товар не найден', array(), 404); }
@@ -443,19 +448,19 @@
 
 		public function quickEdit(array $params = array())
 		{
-			if (!Permission::check('view_catalog')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
+			if (!Permission::check('view_products')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
 			if (!Model::hasCommerceCatalogs()) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Товарные каталоги не настроены'), 404); }
 			$this->assets();
 			AdminAssets::addStyle('/modules/products/admin/assets/quick-edit.css', 53);
 			AdminAssets::addScript('/modules/products/admin/assets/quick-edit.js', 52);
 			$data = $this->quickEditData();
-			if ($this->wantsPartial()) { return $this->partial('@catalog/partials/quick-edit-table.twig', $data); }
+			if ($this->wantsPartial()) { return $this->partial('@products/quick-edit-table.twig', $data); }
 			return $this->render('@products/quick-edit.twig', $data);
 		}
 
 		public function cardTemplates(array $params = array())
 		{
-			if (!Permission::check('view_catalog')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
+			if (!Permission::check('view_products')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
 			$this->cardTemplateAssets();
 			return $this->render('@products/card-templates.twig', array(
 				'templates' => CardTemplates::all(Request::getStr('q', '')),
@@ -466,20 +471,20 @@
 				'filters' => array('q' => Request::getStr('q', '')),
 				'products' => CardTemplates::productOptions(100),
 				'default_markup' => CardTemplates::defaultMarkup(),
-				'can_manage' => Permission::check('manage_catalog'),
+				'can_manage' => Permission::check('manage_products'),
 			));
 		}
 
 		public function cardTemplate(array $params = array())
 		{
-			if (!Permission::check('view_catalog')) { return $this->error('Недостаточно прав', array(), 403); }
+			if (!Permission::check('view_products')) { return $this->error('Недостаточно прав', array(), 403); }
 			$item = CardTemplates::one(isset($params['id']) ? (int) $params['id'] : 0);
 			return $item ? $this->success('', array('data' => $item)) : $this->error('Представление не найдено', array(), 404);
 		}
 
 		public function saveCardContext(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$code = isset($params['code']) ? (string) $params['code'] : '';
 			try { $context = CardContexts::save($code, Request::postAll(), Auth::id()); }
 			catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
@@ -493,7 +498,7 @@
 
 		public function filterTemplates(array $params = array())
 		{
-			if (!Permission::check('view_catalog')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
+			if (!Permission::check('view_products')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
 			$this->cardTemplateAssets();
 			return $this->render('@products/filter-templates.twig', array(
 				'templates' => FilterTemplates::all(Request::getStr('q', '')),
@@ -501,13 +506,13 @@
 				'filters' => array('q' => Request::getStr('q', '')),
 				'catalogs' => FilterTemplates::previewOptions(100),
 				'default_markup' => FilterTemplates::defaultMarkup(),
-				'can_manage' => Permission::check('manage_catalog'),
+				'can_manage' => Permission::check('manage_products'),
 			));
 		}
 
 		public function filterTemplate(array $params = array())
 		{
-			if (!Permission::check('view_catalog')) { return $this->error('Недостаточно прав', array(), 403); }
+			if (!Permission::check('view_products')) { return $this->error('Недостаточно прав', array(), 403); }
 			$item = FilterTemplates::one(isset($params['id']) ? (int) $params['id'] : 0);
 			return $item ? $this->success('', array('data' => $item)) : $this->error('Представление не найдено', array(), 404);
 		}
@@ -517,7 +522,7 @@
 
 		public function lintFilterTemplate(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$result = CardTemplateSyntax::check(Request::postStr('draft_markup', ''));
 			return $result['ok'] ? $this->success($result['message'], array('data' => $result))
 				: $this->error($result['message'], array('draft_markup' => $result['message']), 422);
@@ -525,7 +530,7 @@
 
 		public function previewFilterTemplate(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$markup = Request::postStr('draft_markup', ''); $css = Request::postStr('draft_css', '');
 			$syntax = CardTemplateSyntax::check($markup);
 			if (!$syntax['ok']) { return $this->error($syntax['message'], array('draft_markup' => $syntax['message']), 422); }
@@ -548,7 +553,7 @@
 
 		public function publishFilterTemplate(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; } $id = isset($params['id']) ? (int) $params['id'] : 0;
+			if (($error = $this->productGuard()) !== null) { return $error; } $id = isset($params['id']) ? (int) $params['id'] : 0;
 			try { $item = FilterTemplates::publish($id, Auth::id()); } catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
 			$this->audit('catalog.filter_template_published', $id, array('version' => $item['version']));
 			return $this->success('Фильтры опубликованы', array('data' => $item));
@@ -556,14 +561,14 @@
 
 		public function copyFilterTemplate(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			try { $id = FilterTemplates::copy(isset($params['id']) ? (int) $params['id'] : 0, Auth::id()); } catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
 			$this->audit('catalog.filter_template_copied', $id); return $this->success('Копия создана', array('data' => array('id' => $id)));
 		}
 
 		public function deleteFilterTemplate(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; } $id = isset($params['id']) ? (int) $params['id'] : 0;
+			if (($error = $this->productGuard()) !== null) { return $error; } $id = isset($params['id']) ? (int) $params['id'] : 0;
 			try { $deleted = FilterTemplates::delete($id); } catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
 			if (!$deleted) { return $this->error('Представление не найдено', array(), 404); }
 			$this->audit('catalog.filter_template_deleted', $id); return $this->success('Представление удалено');
@@ -571,33 +576,33 @@
 
 		public function filterTemplateRevisions(array $params = array())
 		{
-			if (!Permission::check('view_catalog')) { return $this->error('Недостаточно прав', array(), 403); } $id = isset($params['id']) ? (int) $params['id'] : 0;
+			if (!Permission::check('view_products')) { return $this->error('Недостаточно прав', array(), 403); } $id = isset($params['id']) ? (int) $params['id'] : 0;
 			$item = FilterTemplates::one($id); if (!$item) { return $this->error('Представление не найдено', array(), 404); }
 			return $this->success('', array('data' => array('template' => array('id'=>$id,'title'=>$item['title']), 'revisions'=>FilterTemplateRevisions::listFor($id))));
 		}
 
 		public function filterTemplateRevision(array $params = array())
 		{
-			if (!Permission::check('view_catalog')) { return $this->error('Недостаточно прав', array(), 403); }
+			if (!Permission::check('view_products')) { return $this->error('Недостаточно прав', array(), 403); }
 			$item=FilterTemplateRevisions::one(isset($params['revision'])?(int)$params['revision']:0);return $item?$this->success('',array('data'=>$item)):$this->error('Ревизия не найдена',array(),404);
 		}
 
 		public function restoreFilterTemplateRevision(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			try{$id=FilterTemplateRevisions::restore(isset($params['revision'])?(int)$params['revision']:0,Auth::id());}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}
 			$this->audit('catalog.filter_template_revision_restored',$id);return $this->success('Ревизия восстановлена в черновик',array('data'=>array('id'=>$id)));
 		}
 
 		public function deleteFilterTemplateRevision(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }$id=FilterTemplateRevisions::delete(isset($params['revision'])?(int)$params['revision']:0);
+			if (($error = $this->productGuard()) !== null) { return $error; }$id=FilterTemplateRevisions::delete(isset($params['revision'])?(int)$params['revision']:0);
 			return $id?$this->success('Ревизия удалена',array('data'=>array('id'=>$id))):$this->error('Ревизия не найдена',array(),404);
 		}
 
 		public function deleteFilterTemplateRevisions(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }$id=isset($params['id'])?(int)$params['id']:0;
+			if (($error = $this->productGuard()) !== null) { return $error; }$id=isset($params['id'])?(int)$params['id']:0;
 			if(!FilterTemplates::one($id)){return $this->error('Представление не найдено',array(),404);}
 			return $this->success('Ревизии удалены',array('data'=>array('count'=>FilterTemplateRevisions::deleteFor($id))));
 		}
@@ -614,7 +619,7 @@
 
 		public function lintCardTemplate(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$result = CardTemplateSyntax::check(Request::postStr('draft_markup', ''));
 			return $result['ok']
 				? $this->success($result['message'], array('data' => $result))
@@ -623,7 +628,7 @@
 
 		public function previewCardTemplate(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$markup = Request::postStr('draft_markup', '');
 			$css = Request::postStr('draft_css', '');
 			$syntax = CardTemplateSyntax::check($markup);
@@ -651,7 +656,7 @@
 
 		public function publishCardTemplate(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$id = isset($params['id']) ? (int) $params['id'] : 0;
 			try { $item = CardTemplates::publish($id, Auth::id()); }
 			catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
@@ -661,7 +666,7 @@
 
 		public function copyCardTemplate(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			try { $id = CardTemplates::copy(isset($params['id']) ? (int) $params['id'] : 0, Auth::id()); }
 			catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
 			$this->audit('catalog.card_template_copied', $id);
@@ -670,7 +675,7 @@
 
 		public function deleteCardTemplate(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$id = isset($params['id']) ? (int) $params['id'] : 0;
 			try { $deleted = CardTemplates::delete($id); }
 			catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
@@ -681,7 +686,7 @@
 
 		public function cardTemplateRevisions(array $params = array())
 		{
-			if (!Permission::check('view_catalog')) { return $this->error('Недостаточно прав', array(), 403); }
+			if (!Permission::check('view_products')) { return $this->error('Недостаточно прав', array(), 403); }
 			$id = isset($params['id']) ? (int) $params['id'] : 0;
 			$item = CardTemplates::one($id);
 			if (!$item) { return $this->error('Представление не найдено', array(), 404); }
@@ -690,14 +695,14 @@
 
 		public function cardTemplateRevision(array $params = array())
 		{
-			if (!Permission::check('view_catalog')) { return $this->error('Недостаточно прав', array(), 403); }
+			if (!Permission::check('view_products')) { return $this->error('Недостаточно прав', array(), 403); }
 			$item = CardTemplateRevisions::one(isset($params['revision']) ? (int) $params['revision'] : 0);
 			return $item ? $this->success('', array('data' => $item)) : $this->error('Ревизия не найдена', array(), 404);
 		}
 
 		public function restoreCardTemplateRevision(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			try { $id = CardTemplateRevisions::restore(isset($params['revision']) ? (int) $params['revision'] : 0, Auth::id()); }
 			catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
 			$this->audit('catalog.card_template_revision_restored', $id);
@@ -706,14 +711,14 @@
 
 		public function deleteCardTemplateRevision(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$id = CardTemplateRevisions::delete(isset($params['revision']) ? (int) $params['revision'] : 0);
 			return $id ? $this->success('Ревизия удалена', array('data' => array('id' => $id))) : $this->error('Ревизия не найдена', array(), 404);
 		}
 
 		public function deleteCardTemplateRevisions(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$id = isset($params['id']) ? (int) $params['id'] : 0;
 			if (!CardTemplates::one($id)) { return $this->error('Представление не найдено', array(), 404); }
 			return $this->success('Ревизии удалены', array('data' => array('count' => CardTemplateRevisions::deleteFor($id))));
@@ -721,24 +726,26 @@
 
 		public function attributes(array $params = array())
 		{
-			if (!Permission::check('view_catalog')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
+			if (!Permission::check('view_products')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
 			$this->attributeAssets();
-			$view = Request::getStr('view', 'attributes');
-			if (!in_array($view, array('normalization', 'attributes', 'sets', 'migration', 'sections'), true)) { $view = 'attributes'; }
+			$view = Request::getStr('view', 'overview');
+			if (!in_array($view, array('overview', 'normalization', 'attributes', 'sets', 'migration', 'sections'), true)) { $view = 'overview'; }
 			return $this->render('@products/attributes.twig', array(
 				'view' => $view, 'stats' => Attributes::stats(), 'value_types' => Attributes::valueTypes(),
 				'attributes' => Attributes::all(Request::getStr('q', ''), Request::getStr('status', '')),
+				'product_attributes' => $view === 'migration' ? Attributes::all('', 'active', 'product') : array(),
 				'sets' => Attributes::sets(), 'legacy_fields' => $view === 'migration' ? Attributes::legacyFields() : array(),
 				'sections' => $view === 'sections' ? Attributes::sections() : array(),
 				'normalization' => $view === 'normalization' ? AttributeNormalization::audit() : array(),
+				'overview' => $view === 'overview' ? Attributes::overview() : array(),
 				'filters' => array('q'=>Request::getStr('q',''),'status'=>Request::getStr('status','')),
-				'can_manage' => Permission::check('manage_catalog'),
+				'can_manage' => Permission::check('manage_products'),
 			));
 		}
 
 		public function prepareAttributeNormalization(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			try { $run = AttributeNormalization::prepare(Auth::id()); }
 			catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
 			$this->audit('catalog.attribute_normalization_prepared', (int) $run['id'], $run['summary']);
@@ -750,7 +757,7 @@
 
 		public function approveAttributeNormalization(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$id = isset($params['id']) ? (int) $params['id'] : 0;
 			try { $run = AttributeNormalization::approve($id, Auth::id()); }
 			catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
@@ -763,14 +770,14 @@
 
 		public function attributeNormalizationReport(array $params = array())
 		{
-			if (!Permission::check('view_catalog')) { return $this->error('Недостаточно прав', array(), 403); }
+			if (!Permission::check('view_products')) { return $this->error('Недостаточно прав', array(), 403); }
 			$run = AttributeNormalization::run(isset($params['id']) ? (int) $params['id'] : 0);
 			return $run ? $this->success('', array('data' => $run)) : $this->error('Прогон не найден', array(), 404);
 		}
 
 		public function saveAttribute(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$id = isset($params['id']) ? (int) $params['id'] : 0;
 			try { $id = Attributes::save($id, Request::postAll(), Auth::id()); }
 			catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
@@ -780,12 +787,12 @@
 
 		public function attribute(array $params = array())
 		{
-			if(!Permission::check('view_catalog')){return $this->error('Недостаточно прав',array(),403);}$item=Attributes::one(isset($params['id'])?(int)$params['id']:0);return $item?$this->success('',array('data'=>$item)):$this->error('Характеристика не найдена',array(),404);
+			if(!Permission::check('view_products')){return $this->error('Недостаточно прав',array(),403);}$item=Attributes::one(isset($params['id'])?(int)$params['id']:0);return $item?$this->success('',array('data'=>$item)):$this->error('Характеристика не найдена',array(),404);
 		}
 
 		public function deleteAttribute(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			try { Attributes::delete(isset($params['id']) ? (int) $params['id'] : 0); }
 			catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
 			$this->audit('catalog.attribute_deleted', (int) $params['id']);
@@ -794,16 +801,16 @@
 
 		public function attributeSet(array $params = array())
 		{
-			if (!Permission::check('view_catalog')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
+			if (!Permission::check('view_products')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
 			$set = Attributes::set(isset($params['id']) ? (int) $params['id'] : 0);
 			if (!$set) { return $this->renderStatus('@adminx/404.twig', array('title'=>'Набор не найден'), 404); }
 			$this->attributeAssets();
-			return $this->render('@products/attribute-set.twig', array('set'=>$set,'attributes'=>Attributes::all('', 'active'),'can_manage'=>Permission::check('manage_catalog')));
+			return $this->render('@products/attribute-set.twig', array('set'=>$set,'attributes'=>Attributes::all('', 'active', 'product'),'can_manage'=>Permission::check('manage_products')));
 		}
 
 		public function saveAttributeSet(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$id=isset($params['id'])?(int)$params['id']:0;
 			try{$id=Attributes::saveSet($id,Request::postAll(),Auth::id());}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}
 			$this->audit('catalog.attribute_set_saved',$id);return $this->success('Набор сохранён',array('redirect'=>$this->base().'/catalog/attribute-sets/'.$id,'data'=>array('id'=>$id)));
@@ -811,67 +818,67 @@
 
 		public function deleteAttributeSet(array $params = array())
 		{
-			if(($error=$this->guard())!==null){return $error;}try{Attributes::deleteSet((int)$params['id']);}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}$this->audit('catalog.attribute_set_deleted',(int)$params['id']);return $this->success('Набор удалён',array('redirect'=>$this->base().'/catalog/attributes?view=sets'));
+			if(($error=$this->productGuard())!==null){return $error;}try{Attributes::deleteSet((int)$params['id']);}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}$this->audit('catalog.attribute_set_deleted',(int)$params['id']);return $this->success('Набор удалён',array('redirect'=>$this->base().'/catalog/attributes?view=sets'));
 		}
 
 		public function saveAttributeGroup(array $params = array())
 		{
-			if(($error=$this->guard())!==null){return $error;}try{$id=Attributes::saveGroup((int)$params['id'],Request::postInt('group_id',0),Request::postStr('name',''));}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}return $this->success('Группа сохранена',array('data'=>array('id'=>$id)));
+			if(($error=$this->productGuard())!==null){return $error;}try{$id=Attributes::saveGroup((int)$params['id'],Request::postInt('group_id',0),Request::postStr('name',''));}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}return $this->success('Группа сохранена',array('data'=>array('id'=>$id)));
 		}
 
 		public function deleteAttributeGroup(array $params = array())
 		{
-			if(($error=$this->guard())!==null){return $error;}Attributes::deleteGroup((int)$params['id'],(int)$params['group']);return $this->success('Группа удалена, характеристики перенесены в «Без группы»');
+			if(($error=$this->productGuard())!==null){return $error;}Attributes::deleteGroup((int)$params['id'],(int)$params['group']);return $this->success('Группа удалена, характеристики перенесены в «Без группы»');
 		}
 
 		public function saveAttributeSetItem(array $params = array())
 		{
-			if(($error=$this->guard())!==null){return $error;}try{$id=Attributes::saveSetItem((int)$params['id'],Request::postAll());}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}return $this->success('Характеристика добавлена',array('data'=>array('id'=>$id)));
+			if(($error=$this->productGuard())!==null){return $error;}try{$id=Attributes::saveSetItem((int)$params['id'],Request::postAll());}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}return $this->success('Характеристика добавлена',array('data'=>array('id'=>$id)));
 		}
 
 		public function deleteAttributeSetItem(array $params = array())
 		{
-			if(($error=$this->guard())!==null){return $error;}Attributes::deleteSetItem((int)$params['id'],(int)$params['attribute']);return $this->success('Характеристика удалена из набора');
+			if(($error=$this->productGuard())!==null){return $error;}Attributes::deleteSetItem((int)$params['id'],(int)$params['attribute']);return $this->success('Характеристика удалена из набора');
 		}
 
 		public function saveAttributeMapping(array $params = array())
 		{
-			if(($error=$this->guard())!==null){return $error;}try{$data=Attributes::saveLegacyMap((int)$params['field'],Request::postAll(),Auth::id());}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}return $this->success('Сопоставление сохранено',array('data'=>$data));
+			if(($error=$this->productGuard())!==null){return $error;}try{$data=Attributes::saveLegacyMap((int)$params['field'],Request::postAll(),Auth::id());}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}return $this->success('Сопоставление сохранено',array('data'=>$data));
 		}
 
 		public function attributeMappingPreview(array $params = array())
 		{
-			if(!Permission::check('view_catalog')){return $this->error('Недостаточно прав',array(),403);}try{$data=Attributes::migrationPreview((int)$params['field']);}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}return $this->success('',array('data'=>$data));
+			if(!Permission::check('view_products')){return $this->error('Недостаточно прав',array(),403);}try{$data=Attributes::migrationPreview((int)$params['field']);}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}return $this->success('',array('data'=>$data));
 		}
 
 		public function migrateAttributeField(array $params = array())
 		{
-			if(($error=$this->guard())!==null){return $error;}try{$data=Attributes::migrate((int)$params['field'],Auth::id(),Request::postBool('verified',false));}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}$this->audit('catalog.attribute_field_migrated',(int)$params['field'],$data);return $this->success('Значения перенесены в новый контур',array('data'=>$data));
+			if(($error=$this->productGuard())!==null){return $error;}try{$data=Attributes::migrate((int)$params['field'],Auth::id(),Request::postBool('verified',false));}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}$this->audit('catalog.attribute_field_migrated',(int)$params['field'],$data);return $this->success('Значения перенесены в новый контур',array('data'=>$data));
 		}
 
 		public function verifyAttributeField(array $params = array())
 		{
-			if(($error=$this->guard())!==null){return $error;}try{$data=Attributes::verifyMigration((int)$params['field'],Auth::id());}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}$this->audit('catalog.attribute_field_verified',(int)$params['field'],$data);return $this->success('Перенесённые значения подтверждены',array('data'=>$data));
+			if(($error=$this->productGuard())!==null){return $error;}try{$data=Attributes::verifyMigration((int)$params['field'],Auth::id());}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}$this->audit('catalog.attribute_field_verified',(int)$params['field'],$data);return $this->success('Перенесённые значения подтверждены',array('data'=>$data));
 		}
 
 		public function saveAttributeSection(array $params = array())
 		{
-			if(($error=$this->guard())!==null){return $error;}try{$data=Attributes::saveSection((int)$params['id'],Request::postAll(),Auth::id());}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}return $this->success('Режим раздела сохранён',array('data'=>$data));
+			if(($error=$this->productGuard())!==null){return $error;}try{$data=Attributes::saveSection((int)$params['id'],Request::postAll(),Auth::id());}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}return $this->success('Режим раздела сохранён',array('data'=>$data));
 		}
 
 		public function rebuildAttributeShadow(array $params = array())
 		{
-			if(($error=$this->guard())!==null){return $error;}try{$data=Attributes::rebuildShadowIndex((int)$params['id']);}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}$this->audit('catalog.attribute_shadow_rebuilt',(int)$params['id'],$data);return $this->success('Теневой индекс раздела перестроен',array('data'=>$data));
+			if(($error=$this->productGuard())!==null){return $error;}try{$data=Attributes::rebuildShadowIndex((int)$params['id']);}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}$this->audit('catalog.attribute_shadow_rebuilt',(int)$params['id'],$data);return $this->success('Теневой индекс раздела перестроен',array('data'=>$data));
 		}
 
 		public function attributeShadowReport(array $params = array())
 		{
-			if(!Permission::check('view_catalog')){return $this->error('Недостаточно прав',array(),403);}try{$data=Attributes::shadowReport((int)$params['id']);}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}return $this->success('',array('data'=>$data));
+			if(!Permission::check('view_products')){return $this->error('Недостаточно прав',array(),403);}try{$data=Attributes::shadowReport((int)$params['id']);}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}return $this->success('',array('data'=>$data));
 		}
 
 		public function saveQuickEdit(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$productId = isset($params['id']) ? (int) $params['id'] : 0;
 			$key = Request::postStr('key', '');
 			try { $saved = QuickEditor::save($productId, $key, Request::postStr('value', ''), Auth::id()); }
@@ -880,9 +887,48 @@
 			return $this->success('Изменение сохранено', array('data' => $saved));
 		}
 
+		public function saveQuickEditProfile(array $params = array())
+		{
+			if (($error = $this->productGuard()) !== null) { return $error; }
+			$columns = json_decode(Request::postStr('columns_json', '[]'), true);
+			if (!is_array($columns)) { return $this->error('Не удалось прочитать набор колонок', array(), 422); }
+			try {
+				$columns = QuickEditorColumns::normalize($columns);
+				$profile = QuickEditorProfiles::save(
+					Request::postInt('id', 0),
+					Auth::id(),
+					Request::postAll(),
+					$columns
+				);
+			} catch (\Throwable $e) {
+				return $this->error($e->getMessage(), array(), 422);
+			}
+
+			$this->audit('catalog.quick_edit_profile_saved', (int) $profile['id'], array(
+				'title' => (string) $profile['title'],
+				'columns' => count($columns),
+				'shared' => (int) $profile['is_shared'],
+			));
+			return $this->success('Набор колонок сохранён', array('data' => array('profile' => $profile)));
+		}
+
+		public function deleteQuickEditProfile(array $params = array())
+		{
+			if (($error = $this->productGuard()) !== null) { return $error; }
+			$id = isset($params['id']) ? (int) $params['id'] : 0;
+			if (!QuickEditorProfiles::delete($id, Auth::id())) {
+				return $this->error('Профиль не найден или принадлежит другому пользователю', array(), 404);
+			}
+
+			$this->audit('catalog.quick_edit_profile_deleted', $id);
+			return $this->success('Набор колонок удалён', array(
+				'redirect' => $this->base() . '/catalog/quick-edit',
+			));
+		}
+
 		public function setProductPaymentProgram(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$productId = isset($params['id']) ? (int) $params['id'] : 0;
 			if (!Model::product($productId)) { return $this->error('Товар не найден', array(), 404); }
 			try { $enabled = PaymentPrograms::setProduct($productId, isset($params['program']) ? $params['program'] : '', Request::postBool('enabled', false)); }
@@ -905,19 +951,19 @@
 
 		public function variantGroups(array $params = array())
 		{
-			if (!Permission::check('view_catalog')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
+			if (!Permission::check('view_products')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
 			if (!Model::hasCommerceCatalogs()) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Товарные каталоги не настроены'), 404); }
 			$this->assets();
 			return $this->render('@products/variant-groups.twig', array(
 				'groups' => VariantGroups::all(),
 				'selector_settings' => VariantSelectorSettings::get(),
-				'can_manage' => Permission::check('manage_catalog'),
+				'can_manage' => Permission::check('manage_products'),
 			));
 		}
 
 		public function saveVariantSelectorSettings(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$settings = VariantSelectorSettings::save(Request::postAll());
 			$this->audit('catalog.variant_selector_settings_saved', 0, $settings);
 			return $this->success('Вид выбора вариантов сохранён', array(
@@ -928,7 +974,7 @@
 
 		public function variantGroup(array $params = array())
 		{
-			if (!Permission::check('view_catalog')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
+			if (!Permission::check('view_products')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
 			$group = VariantGroups::one(isset($params['id']) ? (int) $params['id'] : 0);
 			if (!$group) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Группа не найдена'), 404); }
 			$this->shippingAssets();
@@ -939,13 +985,13 @@
 				'variant_attributes' => VariantGroups::nativeAttributes(),
 				'package_templates' => ShippingPackageTemplates::all(),
 				'candidates' => $search !== '' ? Model::products(array('q' => $search, 'page' => 1)) : array('items' => array()),
-				'can_manage' => Permission::check('manage_catalog'),
+				'can_manage' => Permission::check('manage_products'),
 			));
 		}
 
 		public function saveVariantGroup(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$id = isset($params['id']) ? (int) $params['id'] : 0;
 			try { $id = VariantGroups::save($id, Request::postStr('title', ''), Request::postBool('status', false), Auth::id()); }
 			catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
@@ -955,7 +1001,7 @@
 
 		public function addVariantProduct(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			try { VariantGroups::add((int) $params['id'], Request::postInt('product_id', 0)); }
 			catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
 			$this->audit('catalog.variant_added', (int) $params['id'], array('product_id' => Request::postInt('product_id', 0)));
@@ -964,7 +1010,7 @@
 
 		public function primaryVariantProduct(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			try { VariantGroups::primary((int) $params['id'], (int) $params['product']); }
 			catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
 			$this->audit('catalog.variant_primary_changed', (int) $params['id'], array('product_id' => (int) $params['product']));
@@ -973,7 +1019,7 @@
 
 		public function removeVariantProduct(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			try { VariantGroups::remove((int) $params['id'], (int) $params['product']); }
 			catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
 			$this->audit('catalog.variant_removed', (int) $params['id'], array('product_id' => (int) $params['product']));
@@ -982,7 +1028,7 @@
 
 		public function statusVariantProduct(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$status = Request::postBool('status', false);
 			try { VariantGroups::status((int) $params['id'], (int) $params['product'], $status); }
 			catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
@@ -992,7 +1038,7 @@
 
 		public function saveVariantAttribute(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			try { VariantGroups::saveAttribute((int) $params['id'], (int) $params['product'], Request::postInt('field_id', 0), Request::postStr('label', ''), Request::postStr('swatch', '')); }
 			catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
 			$this->audit('catalog.variant_attribute_saved', (int) $params['id'], array('product_id' => (int) $params['product'], 'field_id' => Request::postInt('field_id', 0)));
@@ -1001,7 +1047,7 @@
 
 		public function deleteVariantAttribute(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			VariantGroups::deleteAttribute((int) $params['id'], (int) $params['product'], (int) $params['field']);
 			$this->audit('catalog.variant_attribute_deleted', (int) $params['id'], array('product_id' => (int) $params['product'], 'field_id' => (int) $params['field']));
 			return $this->success('Атрибут удалён');
@@ -1009,7 +1055,7 @@
 
 		public function saveVariantNativeAttribute(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$attributeId = Request::postInt('attribute_id', 0);
 			try {
 				VariantGroups::saveNativeAttribute(
@@ -1031,7 +1077,7 @@
 
 		public function deleteVariantNativeAttribute(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			VariantGroups::deleteNativeAttribute((int) $params['id'], (int) $params['product'], (int) $params['attribute']);
 			$this->audit('catalog.variant_native_attribute_deleted', (int) $params['id'], array(
 				'product_id' => (int) $params['product'],
@@ -1042,7 +1088,7 @@
 
 		public function reorderVariantProducts(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$order = Request::postJsonArray('order');
 			if (!is_array($order)) { return $this->error('Некорректный порядок', array(), 422); }
 			try { VariantGroups::reorder((int) $params['id'], $order); }
@@ -1053,7 +1099,7 @@
 
 		public function copyVariantProduct(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$sourceId = (int) $params['product'];
 			$newId = 0;
 			try {
@@ -1071,7 +1117,7 @@
 
 		public function deleteVariantGroup(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			try { VariantGroups::delete((int) $params['id']); }
 			catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
 			$this->audit('catalog.variant_group_deleted', (int) $params['id']);
@@ -1080,7 +1126,7 @@
 
 		public function reindexProducts(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			try { $result = Model::reindexProducts(); }
 			catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 500); }
 			$this->audit('catalog.products_reindexed', null, $result);
@@ -1089,7 +1135,7 @@
 
 		public function reindexProduct(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$id = isset($params['id']) ? (int) $params['id'] : 0;
 			if ($id <= 0 || !DocumentsModel::one($id)) { return $this->error('Товар не найден', array(), 404); }
 			try {
@@ -1105,7 +1151,7 @@
 
 		public function createProductVariantGroup(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$productId = isset($params['id']) ? (int) $params['id'] : 0;
 			$product = Model::product($productId);
 			if (!$product) { return $this->error('Товар не найден', array(), 404); }
@@ -1120,7 +1166,7 @@
 
 		public function editProduct(array $params = array())
 		{
-			if (!Permission::check('manage_catalog') || !Permission::check('manage_documents')) {
+			if (!Permission::check('manage_products') || !Permission::check('manage_documents')) {
 				return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403);
 			}
 
@@ -1132,6 +1178,9 @@
 			AdminAssets::addScript($this->base() . '/modules/Documents/assets/documents.js', 50);
 			CodeEditor::useRichEditor();
 			$this->attributeAssets();
+			$variantGroup = VariantGroups::membership($id);
+			$shippingProfile = ProductShipping::profile($id);
+			$nativeAttributes = Attributes::productEditor($id);
 			return $this->render('@documents/edit.twig', array(
 				'document' => $document,
 				'field_groups' => DocumentsModel::fieldsForDocument($id),
@@ -1141,18 +1190,110 @@
 				'authors' => DocumentsModel::authors(),
 				'is_new' => false, 'can_manage' => true,
 				'actor_id' => Auth::id(),
-				'catalog_mode' => true, 'product' => $product, 'variant_group' => VariantGroups::membership($id),
-					'shipping_profile' => ProductShipping::profile($id),
+				'catalog_mode' => true, 'product' => $product, 'variant_group' => $variantGroup,
+					'shipping_profile' => $shippingProfile,
 					'package_templates' => ShippingPackageTemplates::all(),
-					'native_attributes' => Attributes::productEditor($id),
+					'native_attributes' => $nativeAttributes,
+					'product_readiness' => ProductReadiness::build($product, $nativeAttributes, $shippingProfile, $variantGroup),
+					'product_promotions_available' => Promotions::available(),
+					'product_promotions' => Promotions::forProduct($id),
+					'can_manage_product_promotions' => Permission::check('manage_orders'),
 				'return_url' => $this->base() . '/catalog/products',
 				'submit_url' => $this->base() . '/documents/' . $id,
 			));
 		}
 
+		public function saveProductPromotion(array $params = array())
+		{
+			if (($error = $this->productPromotionGuard()) !== null) { return $error; }
+			$productId = isset($params['id']) ? (int) $params['id'] : 0;
+			$promotionId = isset($params['promotion']) ? (int) $params['promotion'] : 0;
+			$product = Model::product($productId);
+			if (!$product) { return $this->error('Товар не найден', array(), 404); }
+			if ($promotionId > 0 && !Promotions::isDirectProductRule($promotionId, $productId)) {
+				return $this->error('Эта акция управляется через общий конструктор', array(), 409);
+			}
+
+			$rewardType = Request::postStr('reward_type', 'percent');
+			$targetMode = Request::postStr('target_mode', 'current');
+			$targetId = $targetMode === 'current' && $rewardType !== 'gift'
+				? $productId
+				: Request::postInt('target_product_id', 0);
+			$title = Request::postStr('title', '');
+			if ($title === '') { $title = 'Акция: ' . (string) $product['title']; }
+			$input = array(
+				'title' => $title,
+				'code' => Request::postStr('code', ''),
+				'description' => Request::postStr('description', ''),
+				'status' => Request::postBool('status', false),
+				'condition_scope' => 'products',
+				'condition_product_ids' => array($productId),
+				'condition_quantity' => Request::postInt('condition_quantity', 1),
+				'condition_min_total' => 0,
+				'reward_type' => $rewardType,
+				'reward_scope' => 'products',
+				'reward_product_ids' => $rewardType === 'gift' ? array() : array($targetId),
+				'reward_product_id' => $rewardType === 'gift' ? $targetId : 0,
+				'reward_value' => Request::post('reward_value', 0),
+				'reward_quantity' => Request::postInt('reward_quantity', 1),
+				'max_uses_per_cart' => 0,
+				'allow_coupon' => Request::postBool('allow_coupon', false),
+				'stop_processing' => false,
+				'starts_at' => Request::postStr('starts_at', ''),
+				'ends_at' => Request::postStr('ends_at', ''),
+				'priority' => Request::postInt('priority', 100),
+			);
+			try {
+				$promotionId = Promotions::save($promotionId, $input);
+			} catch (\Throwable $e) {
+				return $this->error($e->getMessage(), array(), 422);
+			}
+
+			$this->audit('catalog.product_promotion_saved', $productId, array('promotion_id' => $promotionId));
+			return $this->success('Акция товара сохранена', array('data' => array('id' => $promotionId), 'reload' => true));
+		}
+
+		public function toggleProductPromotion(array $params = array())
+		{
+			if (($error = $this->productPromotionGuard()) !== null) { return $error; }
+			$productId = isset($params['id']) ? (int) $params['id'] : 0;
+			$promotionId = isset($params['promotion']) ? (int) $params['promotion'] : 0;
+			if (!Promotions::isDirectProductRule($promotionId, $productId)) {
+				return $this->error('Эта акция управляется через общий конструктор', array(), 409);
+			}
+
+			try {
+				Promotions::toggle($promotionId, Request::postBool('active', false));
+			} catch (\Throwable $e) {
+				return $this->error($e->getMessage(), array(), 422);
+			}
+
+			$this->audit('catalog.product_promotion_toggled', $productId, array('promotion_id' => $promotionId));
+			return $this->success('Состояние акции обновлено');
+		}
+
+		public function deleteProductPromotion(array $params = array())
+		{
+			if (($error = $this->productPromotionGuard()) !== null) { return $error; }
+			$productId = isset($params['id']) ? (int) $params['id'] : 0;
+			$promotionId = isset($params['promotion']) ? (int) $params['promotion'] : 0;
+			if (!Promotions::isDirectProductRule($promotionId, $productId)) {
+				return $this->error('Эта акция управляется через общий конструктор', array(), 409);
+			}
+
+			try {
+				Promotions::delete($promotionId);
+			} catch (\Throwable $e) {
+				return $this->error($e->getMessage(), array(), 422);
+			}
+
+			$this->audit('catalog.product_promotion_deleted', $productId, array('promotion_id' => $promotionId));
+			return $this->success('Акция товара удалена', array('reload' => true));
+		}
+
 		public function saveProductShipping(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$productId = isset($params['id']) ? (int) $params['id'] : 0;
 			$packages = Request::postJsonArray('packages');
 			if (!is_array($packages)) { return $this->error('Некорректный список грузовых мест', array(), 422); }
@@ -1164,12 +1305,12 @@
 
 		public function saveProductAttributes(array $params = array())
 		{
-			if(($error=$this->guard())!==null){return $error;}$productId=isset($params['id'])?(int)$params['id']:0;if(!Model::product($productId)){return $this->error('Товар не найден',array(),404);}try{$data=Attributes::saveProductValues($productId,Request::postAll(),Auth::id());}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}$this->audit('catalog.product_attributes_saved',$productId,$data);return $this->success('Характеристики товара сохранены',array('data'=>$data));
+			if(($error=$this->productGuard())!==null){return $error;}$productId=isset($params['id'])?(int)$params['id']:0;if(!Model::product($productId)){return $this->error('Товар не найден',array(),404);}try{$data=Attributes::saveProductValues($productId,Request::postAll(),Auth::id());}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}$this->audit('catalog.product_attributes_saved',$productId,$data);return $this->success('Характеристики товара сохранены',array('data'=>$data));
 		}
 
 		public function copyProductShippingToVariants(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$productId = isset($params['id']) ? (int)$params['id'] : 0; $membership = VariantGroups::membership($productId);
 			if (!$membership) { return $this->error('Товар не входит в группу вариантов', array(), 422); }
 			$group = VariantGroups::one((int)$membership['id']); $targets = array();
@@ -1182,22 +1323,64 @@
 
 		public function bulkProductShipping(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$ids=Request::postJsonArray('ids');if(!is_array($ids)||count($ids)<1||count($ids)>200){return $this->error('Выберите от 1 до 200 товаров',array(),422);}
 			$enabled=Request::postBool('enabled',false);$done=ProductShipping::setEnabled($ids,$enabled);
 			$this->audit('catalog.product_shipping_bulk_status',null,array('enabled'=>$enabled,'updated'=>$done));
 			return $this->success(($enabled?'Расчёт включён: ':'Расчёт выключен: ').$done,array('data'=>array('updated'=>$done)));
 		}
 
+		public function bulkProducts(array $params = array())
+		{
+			if (($error = $this->productGuard()) !== null) { return $error; }
+			$authorId = Auth::id();
+			try {
+				$result = BulkActionExecutor::execute(
+					Request::postStr('action', ''),
+					Request::post('ids', array()),
+					array(
+						'publish' => function ($id) use ($authorId) {
+							QuickEditor::save($id, 'active', '1', $authorId);
+							return true;
+						},
+						'disable' => function ($id) use ($authorId) {
+							QuickEditor::save($id, 'active', '0', $authorId);
+							return true;
+						},
+						'show_price' => function ($id) use ($authorId) {
+							QuickEditor::save($id, 'show_price', '1', $authorId);
+							return true;
+						},
+						'hide_price' => function ($id) use ($authorId) {
+							QuickEditor::save($id, 'show_price', '0', $authorId);
+							return true;
+						},
+						'reindex' => function ($id) {
+							Model::reindexDocument($id);
+							return true;
+						},
+					),
+					300
+				);
+			} catch (\InvalidArgumentException $e) {
+				return $this->error($e->getMessage(), array(), 422);
+			}
+
+			$this->audit('catalog.products_bulk_action', null, $result);
+			$message = 'Обработано товаров: ' . (int) $result['done'];
+			if (!empty($result['errors'])) { $message .= ', ошибок: ' . count($result['errors']); }
+			return $this->success($message, array('data' => $result));
+		}
+
 		public function shippingPackageTemplates(array $params = array())
 		{
-			if (!Permission::check('view_catalog')) { return $this->error('Недостаточно прав', array(), 403); }
+			if (!Permission::check('view_products')) { return $this->error('Недостаточно прав', array(), 403); }
 			return $this->success('', array('data' => array('templates' => ShippingPackageTemplates::all())));
 		}
 
 		public function saveShippingPackageTemplate(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$id = isset($params['id']) ? (int) $params['id'] : 0;
 			try { $template = ShippingPackageTemplates::save($id, Request::postAll()); }
 			catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
@@ -1210,7 +1393,7 @@
 
 		public function deleteShippingPackageTemplate(array $params = array())
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			$id = isset($params['id']) ? (int) $params['id'] : 0;
 			$template = ShippingPackageTemplates::one($id);
 			if (!$template) { return $this->error('Шаблон упаковки не найден', array(), 404); }
@@ -1221,7 +1404,7 @@
 
 		public function createProduct(array $params = array())
 		{
-			if (!Permission::check('manage_catalog') || !Permission::check('manage_documents')) {
+			if (!Permission::check('manage_products') || !Permission::check('manage_documents')) {
 				return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403);
 			}
 
@@ -1410,7 +1593,7 @@
 
 		protected function persistCardTemplate($id)
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			try { $saved = CardTemplates::save((int) $id, Request::postAll(), Auth::id()); }
 			catch (\Throwable $e) { return $this->error($e->getMessage(), array('draft_markup' => $e->getMessage()), 422); }
 			$this->audit($id > 0 ? 'catalog.card_template_saved' : 'catalog.card_template_created', $saved);
@@ -1419,7 +1602,7 @@
 
 		protected function persistFilterTemplate($id)
 		{
-			if (($error = $this->guard()) !== null) { return $error; }
+			if (($error = $this->productGuard()) !== null) { return $error; }
 			try { $saved = FilterTemplates::save((int) $id, Request::postAll(), Auth::id()); }
 			catch (\Throwable $e) { return $this->error($e->getMessage(), array('draft_markup' => $e->getMessage()), 422); }
 			$this->audit($id > 0 ? 'catalog.filter_template_saved' : 'catalog.filter_template_created', $saved);
@@ -1445,10 +1628,25 @@
 			return $this->guardPermission('manage_catalog');
 		}
 
+		protected function productGuard()
+		{
+			return $this->guardPermission('manage_products');
+		}
+
+		protected function productPromotionGuard()
+		{
+			if (($error = $this->csrfGuard()) !== null) { return $error; }
+			if (!Permission::check('manage_products') || !Permission::check('manage_orders')) {
+				return $this->error('Недостаточно прав для управления акциями', array(), 403);
+			}
+
+			return null;
+		}
+
 		protected function savedViewGuard()
 		{
 			if (($error = $this->csrfGuard()) !== null) { return $error; }
-			if (!Permission::check('view_catalog')) { return $this->error('Недостаточно прав', array(), 403); }
+			if (!Permission::check('view_products')) { return $this->error('Недостаточно прав', array(), 403); }
 			return null;
 		}
 
@@ -1475,13 +1673,21 @@
 				'q' => Request::getStr('q', ''), 'rubric_id' => Request::getInt('rubric_id', 0),
 				'category_id' => Request::getInt('category_id', 0), 'state' => Request::getStr('state', ''),
 				'incomplete' => Request::getBool('incomplete', false), 'limit' => Request::getInt('limit', 25),
-				'page' => Request::getInt('page', 1),
+				'page' => Request::getInt('page', 1), 'profile' => Request::getStr('profile', ''),
 			);
 			$filters = Hooks::filter('catalog.quick_edit.filters', $filters);
 			if (!is_array($filters)) { $filters = array(); }
-			return array('result' => QuickEditor::items($filters), 'filters' => $filters,
+			$profiles = QuickEditorProfiles::all(Auth::id());
+			$activeProfile = QuickEditorProfiles::active(isset($filters['profile']) ? $filters['profile'] : '', Auth::id());
+			$columns = QuickEditorColumns::normalize(isset($activeProfile['columns']) ? $activeProfile['columns'] : array());
+			$filters['profile'] = (string) $activeProfile['id'];
+			return array('result' => QuickEditor::items($filters, $columns), 'filters' => $filters,
 				'rubrics' => QuickEditor::rubrics(), 'categories' => QuickEditor::categories(),
-				'can_manage' => Permission::check('manage_catalog'));
+				'can_manage' => Permission::check('manage_products'),
+				'quick_profiles' => $profiles,
+				'quick_profile' => array_merge($activeProfile, array('columns' => $columns)),
+				'quick_column_groups' => QuickEditorColumns::groups(),
+				'quick_profiles_available' => QuickEditorProfiles::available());
 		}
 
 		protected function assets()

@@ -1,47 +1,290 @@
 <?xml version="1.0" encoding="utf-8"?>
 <language>
+	<phrase data="auto_003cc12783448df3">x</phrase>
 	<phrase data="auto_0156bf1b8aac8565">Add more...</phrase>
+	<phrase data="auto_02b4ebb5dc50bca5">The address of the document will be written into the link field.</phrase>
+	<phrase data="auto_02fdd4b8923613d6">Up to 10 characters, optional.</phrase>
+	<phrase data="auto_04c0389bc0db2353">Token copied</phrase>
+	<phrase data="auto_080887ebc7bb5402">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm documents-media-remove&quot; type=&quot;button&quot; data-document-media-remove data-tooltip=&quot;Delete&quot; aria-label=&quot;Delete&quot;&gt;&lt;i class=&quot;ti ti-trash&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_0957de938411c15b">field</phrase>
+	<phrase data="auto_0af969e08c220502">Clear all field lines?</phrase>
+	<phrase data="auto_0db49b55557f2bde">Parameter</phrase>
+	<phrase data="auto_0e7fbe3404b67fe3">Rebuild JSON snapshots?</phrase>
 	<phrase data="auto_0f9ccee053fe3b6b">New</phrase>
+	<phrase data="auto_0ff730d95f9c5bc3">click to select</phrase>
+	<phrase data="auto_122f4893d3d0d802">Failed to check alias</phrase>
+	<phrase data="auto_1291e1971ba28ee6">API token created</phrase>
 	<phrase data="auto_12bfabff3d7dc01c">Add a keyword</phrase>
+	<phrase data="auto_18337ef195f7d88d">&lt;div class=&quot;modal-body&quot;&gt;&lt;div class=&quot;input-wrap documents-relation-search&quot;&gt;&lt;i class=&quot;ti ti-search&quot;&gt;&lt;/i&gt;&lt;input class=&quot;input&quot; type=&quot;search&quot; placeholder=&quot;ID, title or alias&quot; data-relation-search&gt;&lt;/div&gt;&lt;div class=&quot;documents-picker-status&quot; data-relation-status&gt;Loading...&lt;/div&gt;&lt;div class=&quot;documents-relation-list&quot; data-relation-list&gt;&lt;/div&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_1894f01f2cfa4702">JSON snapshot</phrase>
+	<phrase data="auto_1a7725e697463fd8">to</phrase>
 	<phrase data="auto_1af72c14888c4574">Creation preset</phrase>
+	<phrase data="auto_1bc16af35fa47103">uh</phrase>
+	<phrase data="auto_1d00a5603a94c17d">Teaser ID/link</phrase>
+	<phrase data="auto_1d402bc8ffda29cd">Internal server error. Please refresh the page and try again.</phrase>
+	<phrase data="auto_1f864100c5c97f02">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm&quot; type=&quot;button&quot; data-document-media-down data-tooltip=&quot;Below&quot; aria-label=&quot;Below&quot;&gt;&lt;i class=&quot;ti ti-arrow-down&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_22dc89ab84f07324">&quot;&gt;&lt;button class=&quot;btn btn-secondary btn-icon btn-sm&quot; type=&quot;button&quot; data-document-media-pick data-tooltip=&quot;Select file&quot; aria-label=&quot;Select file&quot;&gt;&lt;i class=&quot;ti ti-</phrase>
+	<phrase data="auto_230b5877294e9726">ts</phrase>
+	<phrase data="auto_23289c89f8c038a0">The document ID will be written in the field.</phrase>
+	<phrase data="auto_242f64ddfe84899b">after saving</phrase>
 	<phrase data="auto_25a9845975119103">Creation preset saved</phrase>
 	<phrase data="auto_25dc101484dbd55c">Failed to load list</phrase>
+	<phrase data="auto_285cc4001478d568">h</phrase>
+	<phrase data="auto_28c993e4935524d8">h</phrase>
+	<phrase data="auto_28fb6167ec0a79fe">&lt;section class=&quot;documents-revision-system&quot;&gt;&lt;div class=&quot;documents-revision-subhead&quot;&gt;&lt;i class=&quot;ti ti-settings&quot;&gt;&lt;/i&gt;&lt;b&gt;Basic settings&lt;/b&gt;&lt;span&gt;</phrase>
+	<phrase data="auto_292688e9915e161b">[link]&quot; data-media-key=&quot;link&quot; value=&quot;&quot; placeholder=&quot;Link or document&quot; data-document-media-url data-document-picker-type=&quot;all&quot;&gt;</phrase>
+	<phrase data="auto_29f3b29df0d0e54f">Restore</phrase>
+	<phrase data="auto_2a9790fd6fab2922">&lt;button class=&quot;btn btn-secondary btn-icon btn-sm&quot; type=&quot;button&quot; data-document-media-doc-pick data-tooltip=&quot;Select document&quot; aria-label=&quot;Select document&quot;&gt;&lt;i class=&quot;ti ti-file-search&quot;&gt;&lt;/i&gt;&lt;/button&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_2ba58b00b4c52021">&lt;/span&gt;&lt;label class=&quot;documents-revision-group-check&quot;&gt;&lt;input type=&quot;checkbox&quot; data-document-revision-group=&quot;field&quot; checked&gt;&lt;span&gt;All&lt;/span&gt;&lt;/label&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_2c501dc73177148a">ID, name or alias</phrase>
+	<phrase data="auto_2e31dae95f35e3b8">Select file</phrase>
+	<phrase data="auto_2ec20105a2757791">Column 3</phrase>
+	<phrase data="auto_2f1256a9610f7d64">Redirect saved</phrase>
+	<phrase data="auto_2ff1fe42207df255">The secret is ready to be copied.</phrase>
+	<phrase data="auto_301361625f901825">The server returned an incorrect response.</phrase>
+	<phrase data="auto_30278b05221dd957">Refresh page</phrase>
+	<phrase data="auto_32b74a3c47908c1e">Untitled</phrase>
+	<phrase data="auto_33392e5848b4a8eb">JSON snapshots reassembled:</phrase>
+	<phrase data="auto_336d12a4f96485a3">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm&quot; type=&quot;button&quot; data-document-media-up data-tooltip=&quot;Above&quot; aria-label=&quot;Above&quot;&gt;&lt;i class=&quot;ti ti-arrow-up&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_359282f9ef75e654">Document ID</phrase>
+	<phrase data="auto_35de32df9d942d9a">Note added</phrase>
+	<phrase data="auto_3697bef0b3fc93f5">new</phrase>
 	<phrase data="auto_3812a04b189ec1fd">new</phrase>
+	<phrase data="auto_39704f311a86cd23">Draft</phrase>
+	<phrase data="auto_3de49828e86a4016">Title</phrase>
+	<phrase data="auto_3e096d0063299173">Revision deleted</phrase>
+	<phrase data="auto_3e25fbc59741a10a">Document title</phrase>
+	<phrase data="auto_3e670a1ec591883c">Files uploaded</phrase>
+	<phrase data="auto_3eb77d3c13c51f92">Select revision</phrase>
+	<phrase data="auto_3f039532d65bb5e3">Rebuild JSON</phrase>
 	<phrase data="auto_4044fbc87708b9ad">Clear daily statistics?</phrase>
+	<phrase data="auto_40785832c27c3a51">Column 1</phrase>
+	<phrase data="auto_42ba924b3732dc07">fields</phrase>
+	<phrase data="auto_433e4b40a403cdb0">th</phrase>
+	<phrase data="auto_447d642f14fb2c8c">There are no matching files in the folder</phrase>
 	<phrase data="auto_46551a5e6e43e854">Statistics cleared</phrase>
+	<phrase data="auto_48be85b47e187f3c">not created yet</phrase>
+	<phrase data="auto_4a05d8619dedc462">Copy</phrase>
+	<phrase data="auto_4b4c88ed13b23b15">Redirect removed</phrase>
+	<phrase data="auto_4d60d98f499d1580">Audits</phrase>
+	<phrase data="auto_4f566fb5e3df4276">I</phrase>
+	<phrase data="auto_516cbe2af24391af">l</phrase>
+	<phrase data="auto_51b4eac98af84251">a</phrase>
+	<phrase data="auto_51f784cde1916288">b</phrase>
+	<phrase data="auto_522e27d7402089bc">Document saved</phrase>
+	<phrase data="auto_53e908b396e3a6b3">&lt;span class=&quot;badge badge-gray&quot;&gt;not created&lt;/span&gt;</phrase>
+	<phrase data="auto_54a8375d14dfdab5">Failed to read folder</phrase>
+	<phrase data="auto_56ac0cff0f4a358f">Note deleted</phrase>
+	<phrase data="auto_576895a59897535b">File not selected</phrase>
+	<phrase data="auto_577021b5ac1fd915">f</phrase>
+	<phrase data="auto_57afad1302f9645e">o</phrase>
+	<phrase data="auto_588c8feeb973dcb1">&lt;div&gt;&lt;dt&gt;File&lt;/dt&gt;&lt;dd class=&quot;mono&quot;&gt;</phrase>
+	<phrase data="auto_59ddef8a55503c83">kg</phrase>
+	<phrase data="auto_5a3b4bcf55400711">r</phrase>
+	<phrase data="auto_5bd0d9fe0580526f">. The window must be left open until completion.</phrase>
 	<phrase data="auto_5c019fa5d03ca5cf">in the section</phrase>
+	<phrase data="auto_5e6c96299a2f11e9">s</phrase>
 	<phrase data="auto_5e6d6b07b27b7a7c">All view_count lines will be removed. General document counters will remain unchanged.</phrase>
+	<phrase data="auto_5f9eaa37c4e2ccff">&lt;button class=&quot;btn btn-secondary btn-icon btn-sm&quot; type=&quot;button&quot; data-document-media-pick data-tooltip=&quot;Select file&quot; aria-label=&quot;Select file&quot;&gt;&lt;i class=&quot;ti ti-paperclip&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_600363a73de5f3a5">Rebuild</phrase>
+	<phrase data="auto_60512114c18fd5ed">&lt;span class=&quot;badge badge-amber&quot;&gt;needs reassembly&lt;/span&gt;</phrase>
 	<phrase data="auto_619742ac4a834c45">doc.</phrase>
+	<phrase data="auto_63b1fa390e91f75c">0 B</phrase>
+	<phrase data="auto_65b7f1673713a00c">d</phrase>
 	<phrase data="auto_66d207b9ebe9e4e3">&lt;div class=&quot;documents-term-status is-error&quot;&gt;&lt;i class=&quot;ti ti-alert-circle&quot;&gt;&lt;/i&gt;&lt;span&gt;Failed to load options&lt;/span&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_6702cc12ca25aff1">&lt;div class=&quot;empty-state&quot;&gt;There are no revisions yet. The first snapshot will appear after saving the document.&lt;/div&gt;</phrase>
+	<phrase data="auto_691245657a52bdce">&lt;div&gt;&lt;label class=&quot;documents-revision-check&quot; aria-label=&quot;Restore</phrase>
+	<phrase data="auto_6972375800d3e590">Clear the field?</phrase>
+	<phrase data="auto_698ace159126e252">Column 2</phrase>
+	<phrase data="auto_6b595786e068b5bc">Alias can be left empty</phrase>
+	<phrase data="auto_6baaabf049b42cca">e</phrase>
+	<phrase data="auto_6bee957a1f3ef55d">Length</phrase>
+	<phrase data="auto_6c190c23240564f5">f</phrase>
 	<phrase data="auto_6e408d3c9c3156bf">Delete &quot;</phrase>
+	<phrase data="auto_6e52ded051aa402d">Withdrawn</phrase>
+	<phrase data="auto_6f658622a374b8d6">&lt;/p&gt;&lt;/div&gt;&lt;button class=&quot;modal-close&quot; type=&quot;button&quot; data-relation-close aria-label=&quot;Close&quot;&gt;&lt;i class=&quot;ti ti-x&quot;&gt;&lt;/i&gt;&lt;/button&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_6fe63eee472a5a93">&lt;span class=&quot;badge badge-green&quot;&gt;relevant&lt;/span&gt;</phrase>
 	<phrase data="auto_707a724dce1fa0d4">URL copied</phrase>
 	<phrase data="auto_72c618d46424c93a">There are no saved values yet</phrase>
+	<phrase data="auto_736a75710565c2f2">[description]&quot; data-media-key=&quot;description&quot; rows=&quot;2&quot; placeholder=&quot;Description&quot;&gt;&lt;/textarea&gt;</phrase>
+	<phrase data="auto_75285ce97dc1dc97">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm&quot; type=&quot;button&quot; data-document-value-down data-tooltip=&quot;Below&quot; aria-label=&quot;Below&quot;&gt;&lt;i class=&quot;ti ti-arrow-down&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_781e545c1063d5db">The integration will immediately lose access. It will be impossible to return this token.</phrase>
+	<phrase data="auto_7845e83aad6bffff">Errors found:</phrase>
+	<phrase data="auto_7a4f40b5797415a7">Category template: /</phrase>
+	<phrase data="auto_7a9b21737266b2d1">, errors:</phrase>
+	<phrase data="auto_7bd54e89985213b9">Template</phrase>
 	<phrase data="auto_7c3bb087be98e4e9">Failed to load statistics</phrase>
+	<phrase data="auto_7dcc70f455f9f122">API token revoked</phrase>
 	<phrase data="auto_7f09659cde925652">Find or add a tag</phrase>
+	<phrase data="auto_7f7328fc7d7316b8">n</phrase>
+	<phrase data="auto_80a2c74df6ffb08d">Open the desired folder and confirm your selection. All suitable files from it will be added to the field.</phrase>
+	<phrase data="auto_80c97478d2179d1c">&lt;div&gt;&lt;dt&gt;State&lt;/dt&gt;&lt;dd&gt;</phrase>
+	<phrase data="auto_83c8e08533872aff">&lt;div class=&quot;empty-state&quot;&gt;Loading...&lt;/div&gt;</phrase>
+	<phrase data="auto_84b96b359e9c61d3">The contents of the snapshot will appear after selecting a revision.</phrase>
 	<phrase data="auto_86ea33aef5e95d4f">Delete</phrase>
+	<phrase data="auto_8922542f90c16aee">Copied</phrase>
+	<phrase data="auto_8bf2ee2944fdd73f">optional</phrase>
+	<phrase data="auto_8c34e8bce7d519b3">The description will appear after filling out the meta description.</phrase>
+	<phrase data="auto_8d333d8b91196c4b">Documents</phrase>
+	<phrase data="auto_8d5d38d878604c11">The document has been restored</phrase>
+	<phrase data="auto_8e8ca8428150664e">g</phrase>
 	<phrase data="auto_8ff9429d66687894">No matches</phrase>
+	<phrase data="auto_919be7c1e27ba64c">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm&quot; type=&quot;button&quot; data-document-value-up data-tooltip=&quot;Above&quot; aria-label=&quot;Above&quot;&gt;&lt;i class=&quot;ti ti-arrow-up&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_9541be7605dbe971">Permissions for one external integration.</phrase>
+	<phrase data="auto_96664ee8380d446c">The document has changed</phrase>
 	<phrase data="auto_9729bca62f6c558e">Request Error</phrase>
+	<phrase data="auto_97c557fb133f1f95">fields</phrase>
 	<phrase data="auto_98b2073ed1815f28">Clear</phrase>
+	<phrase data="auto_9b16ca539e602189">Revoke</phrase>
+	<phrase data="auto_9bf756bd3124a21d">Changes saved</phrase>
+	<phrase data="auto_9c4c0897f8ec6cf2">[title]&quot; data-media-key=&quot;title&quot; value=&quot;&quot; placeholder=&quot;Image title&quot;&gt;</phrase>
+	<phrase data="auto_9c7449bfd16b63a0">Remove</phrase>
+	<phrase data="auto_9caf4a95f812be6a">n</phrase>
+	<phrase data="auto_9d1e4bc060f5da40">Added from folder:</phrase>
+	<phrase data="auto_9d809f884b63cdec">Edit</phrase>
+	<phrase data="auto_9da304d709611b05">Failed to load revisions</phrase>
+	<phrase data="auto_9f0b990967c8a2ad">Meaning</phrase>
+	<phrase data="auto_9f3b3c3b78133faa">Select document</phrase>
+	<phrase data="auto_a15870f87e67e329">&lt;div&gt;&lt;dt&gt;Formed by&lt;/dt&gt;&lt;dd&gt;</phrase>
+	<phrase data="auto_a18928c7baf57b4e">Fields only</phrase>
+	<phrase data="auto_a2e9f606da125a72">b</phrase>
+	<phrase data="auto_a37cb7b62a6f1b65">The category does not have a path template: the document alias is used from the root of the site.</phrase>
+	<phrase data="auto_a45e66bc42d77b08">Failed to generate alias</phrase>
+	<phrase data="auto_a59e2c2429fe7a88">and</phrase>
+	<phrase data="auto_a5ecb551ebd318c2">Height,</phrase>
+	<phrase data="auto_a63e1ce2e55b8d0a">No image selected</phrase>
+	<phrase data="auto_a690b9dead4d8d8d">&lt;div&gt;&lt;dt&gt;Size&lt;/dt&gt;&lt;dd&gt;</phrase>
+	<phrase data="auto_a7774650638b586d">JSON snapshot rebuilt</phrase>
+	<phrase data="auto_a78e4bb6eb8c9ced">Document revisions</phrase>
+	<phrase data="auto_a8504d513adfb6f5">Heading</phrase>
 	<phrase data="auto_a90ed3357338f605">Loading...</phrase>
+	<phrase data="auto_ab30701c85ebee86">Remove document</phrase>
+	<phrase data="auto_ac3008315dc50b25">Add from this folder</phrase>
+	<phrase data="auto_ae008e22ec3a8627">All lines in this field will be removed from the document after saving.</phrase>
+	<phrase data="auto_af962c31c15d28d8">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm documents-drag-handle&quot; type=&quot;button&quot; data-doc-drag draggable=&quot;true&quot; data-tooltip=&quot;Drag&quot; aria-label=&quot;Drag&quot;&gt;&lt;i class=&quot;ti ti-grip-vertical&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
 	<phrase data="auto_b0a419827426861b">Preset deleted</phrase>
+	<phrase data="auto_b0d827d33fc8eb3f">Pictures</phrase>
+	<phrase data="auto_b1c30d9335b4ffb7">/ + document alias. The date is taken from the publication.</phrase>
+	<phrase data="auto_b279170b217c1e48">&lt;div&gt;&lt;dt&gt;Fields&lt;/dt&gt;&lt;dd class=&quot;mono&quot;&gt;</phrase>
+	<phrase data="auto_b2ac54889c1e667e">Batch rebuild stopped</phrase>
+	<phrase data="auto_b36631e2d2874351">&lt;article class=&quot;documents-revision-field documents-revision-system-field&quot;&gt;&lt;div&gt;&lt;label class=&quot;documents-revision-check&quot; aria-label=&quot;Restore</phrase>
+	<phrase data="auto_b383b6f9be5e7ca2">Failed to get snapshot status</phrase>
+	<phrase data="auto_b40bbca36d2d172e">with</phrase>
+	<phrase data="auto_b5251271237d718b">These files are already in the field</phrase>
+	<phrase data="auto_b92a4704544f84aa">The pictures will be sequentially reassembled to</phrase>
+	<phrase data="auto_b9917824e609b5b3">pictures</phrase>
+	<phrase data="auto_baa96cc9f67a7eb8">yu</phrase>
+	<phrase data="auto_be1aff65661f854c">[name]&quot; data-media-key=&quot;name&quot; value=&quot;&quot; placeholder=&quot;File name&quot;&gt;</phrase>
+	<phrase data="auto_be4a59e132257571">Revoke an API token?</phrase>
+	<phrase data="auto_be7ec45710267c5c">&lt;section class=&quot;documents-revision-content&quot;&gt;&lt;div class=&quot;documents-revision-subhead&quot;&gt;&lt;i class=&quot;ti ti-forms&quot;&gt;&lt;/i&gt;&lt;b&gt;Category fields&lt;/b&gt;&lt;span&gt;</phrase>
+	<phrase data="auto_bea15c7bbd9e167c">e</phrase>
 	<phrase data="auto_beed168817322eeb">from</phrase>
+	<phrase data="auto_bf6379458cca6658">m</phrase>
+	<phrase data="auto_c13875d6c76e5c2e">w</phrase>
 	<phrase data="auto_c2b70c3bb20678a7">Failed to apply filters</phrase>
+	<phrase data="auto_c52083faa73d3829">Field</phrase>
 	<phrase data="auto_c5eb26618a7ede98">Read only</phrase>
 	<phrase data="auto_c7fca87d8dd9b0e6">Click to find document</phrase>
 	<phrase data="auto_c9d8ea6476aa730d">Add &quot;</phrase>
 	<phrase data="auto_cccd51a8c6aa88c1">&lt;div class=&quot;documents-term-status&quot;&gt;&lt;i class=&quot;ti ti-loader-2&quot;&gt;&lt;/i&gt;&lt;span&gt;Looking for matches...&lt;/span&gt;&lt;/div&gt;</phrase>
 	<phrase data="auto_ccfe048a5551ed0f">preset</phrase>
 	<phrase data="auto_cdd3b42f2a48df2f">Delete preset</phrase>
+	<phrase data="auto_ceebfda5155965db">Failed to generate short alias</phrase>
+	<phrase data="auto_cf0fc49836b59906">can be left blank</phrase>
+	<phrase data="auto_cf412de9896e972b">Select at least one resolution</phrase>
+	<phrase data="auto_d0888e0521387c25">Width,</phrase>
+	<phrase data="auto_d164037dc0f1bd06">Delete revision</phrase>
+	<phrase data="auto_d2264bee0979ddf6">&lt;div&gt;&lt;dt&gt;Status&lt;/dt&gt;&lt;dd&gt;Loading...&lt;/dd&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_d6951b2c8c477f98">All elements of this field will be removed from the document after saving.</phrase>
+	<phrase data="auto_d6b08d92a7694cd4">Weight,</phrase>
+	<phrase data="auto_d77df87cd6098c73">History of field values</phrase>
+	<phrase data="auto_d7907f4d435df378">Additionally</phrase>
+	<phrase data="auto_d944cde8b15c4d8b">at</phrase>
+	<phrase data="auto_d9c83b31f5cb2376">Failed to check short alias</phrase>
+	<phrase data="auto_da97cf5fe3fc4c42">Checking...</phrase>
+	<phrase data="auto_db4d819570e77e56">draft</phrase>
 	<phrase data="auto_dcedec8acc4af7ca">Assignment document</phrase>
+	<phrase data="auto_dd0ec9a1c7140562">Add files from a folder</phrase>
+	<phrase data="auto_defc150c8003aa92">Revisions deleted</phrase>
+	<phrase data="auto_df5763ef792cf2f4">cm</phrase>
+	<phrase data="auto_e01aed78c667a5aa">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm documents-value-remove&quot; type=&quot;button&quot; data-document-value-remove data-tooltip=&quot;Delete&quot; aria-label=&quot;Delete&quot;&gt;&lt;i class=&quot;ti ti-trash&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
+	<phrase data="auto_e4cedbc81a3c0d4e">ъ</phrase>
+	<phrase data="auto_e576260a6a03f359">t</phrase>
+	<phrase data="auto_e76f1ce35ab97dfb">&lt;/span&gt;&lt;label class=&quot;documents-revision-group-check&quot;&gt;&lt;input type=&quot;checkbox&quot; data-document-revision-group=&quot;document&quot; checked&gt;&lt;span&gt;All&lt;/span&gt;&lt;/label&gt;&lt;/div&gt;</phrase>
+	<phrase data="auto_e83e7fbf2312ab9e">The document has already been changed. Refresh the page.</phrase>
+	<phrase data="auto_e94209605c9c0a4e">&lt;button class=&quot;documents-media-thumb&quot; type=&quot;button&quot; data-document-media-pick aria-label=&quot;Select file&quot;&gt;&lt;span&gt;&lt;i class=&quot;ti ti-</phrase>
+	<phrase data="auto_ec6be72560e6078a">The story is still empty</phrase>
 	<phrase data="auto_eeb60e75b96656e7">Incorrect answer</phrase>
+	<phrase data="auto_f0b532724126bbe8">Clear all field elements?</phrase>
 	<phrase data="auto_f26e5c0c72082089">Find or add a keyword</phrase>
 	<phrase data="auto_f3d123e46297531d">in</phrase>
+	<phrase data="auto_f42c85cd57ba4aa0">Stay</phrase>
+	<phrase data="auto_f6069600bcb07eea">&lt;div class=&quot;modal-footer&quot;&gt;&lt;div class=&quot;mf-left documents-picker-count&quot; data-relation-count&gt;&lt;/div&gt;&lt;button class=&quot;btn btn-ghost&quot; type=&quot;button&quot; data-relation-close&gt;Close&lt;/button&gt;&lt;/div&gt;</phrase>
 	<phrase data="auto_f61de80bf0ca15a4">No document selected</phrase>
 	<phrase data="auto_f7286439b109e428">New redirect</phrase>
+	<phrase data="auto_f7806fce80e51b40">Old URL</phrase>
+	<phrase data="auto_f914c65278294e4a">&lt;div class=&quot;modal-header&quot;&gt;&lt;span class=&quot;dialog-icon info&quot;&gt;&lt;i class=&quot;ti ti-file-search&quot;&gt;&lt;/i&gt;&lt;/span&gt;&lt;div style=&quot;flex:1&quot;&gt;&lt;h3&gt;Select document&lt;/h3&gt;&lt;p class=&quot;text-secondary&quot; style=&quot;margin-top:4px&quot;&gt;</phrase>
 	<phrase data="auto_fa9f0524f3a0531e">Add a tag</phrase>
+	<phrase data="auto_fc8b3939cc9dc467">The path will be written in the document field.</phrase>
+	<phrase data="auto_fda74d41e3311f87">A newer version is already saved on the server. Refresh the page, check the changes, and save the document again.</phrase>
+	<phrase data="auto_ffec67789fb1fcdc">sch</phrase>
+	<phrase data="runtime_05d4ae78b6f1bfee">n</phrase>
+	<phrase data="runtime_0918b4ba92684eaa">Title</phrase>
+	<phrase data="runtime_0940401102b8a3fe">t</phrase>
+	<phrase data="runtime_11cef8141437f8a6">ъ</phrase>
+	<phrase data="runtime_15f2ccabeb425c29">th</phrase>
+	<phrase data="runtime_1cc10a3947f7c245">d</phrase>
+	<phrase data="runtime_1d51ebe0fc45e38e">Fields only</phrase>
+	<phrase data="runtime_259f56cb715ba3a3">e</phrase>
+	<phrase data="runtime_3051067c6324c63f">h</phrase>
+	<phrase data="runtime_30fbc377ae9122ed">e</phrase>
+	<phrase data="runtime_3164696756227147">Note added</phrase>
+	<phrase data="runtime_34c6fbb62da8ce5c">n</phrase>
+	<phrase data="runtime_37d43a57a463add5">yu</phrase>
+	<phrase data="runtime_40831c5d98a57dfc">h</phrase>
+	<phrase data="runtime_446cdc8e3c0d7efc">s</phrase>
+	<phrase data="runtime_46b0d3855548054a">JSON snapshot rebuilt</phrase>
+	<phrase data="runtime_4f60bd4e24e7dc7f">w</phrase>
+	<phrase data="runtime_50338c005c41fb4e">o</phrase>
+	<phrase data="runtime_5225a95b111d47bf">to</phrase>
+	<phrase data="runtime_53b10ee4405f56d6">not created yet</phrase>
+	<phrase data="runtime_557f4cd2c6d3c150">cm</phrase>
+	<phrase data="runtime_61095f9d62dfe291">The document has been restored</phrase>
+	<phrase data="runtime_6228f1454b196ffd">API token revoked</phrase>
+	<phrase data="runtime_65fd24f1cb37fec4">Draft</phrase>
+	<phrase data="runtime_72a81659de042887">Revisions deleted</phrase>
+	<phrase data="runtime_734dbc2b54ab6c95">r</phrase>
+	<phrase data="runtime_754309a41e0df98a">f</phrase>
+	<phrase data="runtime_7592b7ec4eba966a">ts</phrase>
+	<phrase data="runtime_7b0ff8a2e5fdd66d">m</phrase>
+	<phrase data="runtime_823c4eb3e895adc9">a</phrase>
+	<phrase data="runtime_85011fce4419ee63">Field #</phrase>
+	<phrase data="runtime_894f97c52af9e5ac">Note deleted</phrase>
+	<phrase data="runtime_9aa032336a8e122c">b</phrase>
+	<phrase data="runtime_9b21f5cf014c9efb">I</phrase>
+	<phrase data="runtime_9b6276c9a4ac5507">Document saved</phrase>
+	<phrase data="runtime_a1f5d39a12e8f6be">with</phrase>
+	<phrase data="runtime_ab1f4be7e5d6fd8b">g</phrase>
+	<phrase data="runtime_ae51ade91d2b85b7">Revision deleted</phrase>
 	<phrase data="runtime_b8012cb642c887a0">in</phrase>
+	<phrase data="runtime_b95d78565f154f82">b</phrase>
+	<phrase data="runtime_bb69a96efca3303e">x</phrase>
+	<phrase data="runtime_bbb369f210d2969f">sch</phrase>
+	<phrase data="runtime_beee80c256b458da">at</phrase>
+	<phrase data="runtime_bf0d18ef68a8a34e">can be left blank</phrase>
+	<phrase data="runtime_c08fb476eca49399">kg</phrase>
 	<phrase data="runtime_c5412ba2cc2fc45a">Creation preset saved</phrase>
+	<phrase data="runtime_c78364c5d0f27706">B</phrase>
+	<phrase data="runtime_cdd02bd8b5684812">Redirect removed</phrase>
+	<phrase data="runtime_d92fff560eb5495e">l</phrase>
 	<phrase data="runtime_dd48804aa38b03e1">Preset deleted</phrase>
+	<phrase data="runtime_dd591284d827e17f">f</phrase>
 	<phrase data="runtime_e1c88af54b9fced2">Document #</phrase>
+	<phrase data="runtime_e35c8bb151d3530d">Redirect saved</phrase>
+	<phrase data="runtime_e93c3d6287d39cc3">API token created</phrase>
+	<phrase data="runtime_ee71f8405f87d786">uh</phrase>
+	<phrase data="runtime_eead37caf818d0fa">and</phrase>
+	<phrase data="runtime_f4019994d4e75a2a">after saving</phrase>
 	<phrase data="runtime_f9a506077fa0d961">New</phrase>
+	<phrase data="runtime_fff8b34d92dab340">Template</phrase>
 </language>

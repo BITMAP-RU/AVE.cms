@@ -58,7 +58,7 @@
 					'size'   => filesize($path),
 					'size_h' => Model::human(filesize($path)),
 					'mtime'  => filemtime($path),
-					'own'    => strpos($f, 'adminx_') === 0,
+					'own'    => self::isManagedName($f),
 				);
 			}
 
@@ -111,7 +111,7 @@
 			}
 
 			$dir = self::ensureDir();
-			$name = self::uniqueName('adminx_uploaded_' . date('Ymd_His'), $extension);
+			$name = self::uniqueName('avecms_uploaded_' . date('Ymd_His'), $extension);
 			$temporary = $dir . DS . '.upload-' . bin2hex(random_bytes(6)) . $extension;
 			if (!move_uploaded_file($file['tmp_name'], $temporary)) {
 				throw new \RuntimeException('Не удалось сохранить загруженный файл');
@@ -151,11 +151,11 @@
 
 			$prefixes = Model::prefixes();
 			$purpose = preg_replace('/[^a-z0-9_-]+/', '', strtolower((string) $purpose));
-			$name = self::uniqueName('adminx_' . ($purpose !== '' ? $purpose . '_' : '') . implode('-', $prefixes) . '_' . date('Ymd_His'), '.sql.gz');
+			$name = self::uniqueName('avecms_' . ($purpose !== '' ? $purpose . '_' : '') . implode('-', $prefixes) . '_' . date('Ymd_His'), '.sql.gz');
 			$path = $dir . DS . $name;
 
 			$temporary = $path . '.part';
-			$lockPath = $dir . DS . '.adminx-backup.lock';
+			$lockPath = $dir . DS . '.avecms-backup.lock';
 			$lock = fopen($lockPath, 'c');
 			if (!$lock || !flock($lock, LOCK_EX | LOCK_NB)) {
 				if ($lock) { fclose($lock); }
@@ -169,7 +169,7 @@
 				throw new \RuntimeException('Не удалось создать файл дампа');
 			}
 
-			gzwrite($fp, "-- adminx full dump\n-- database: " . Model::databaseName() . "\n-- prefixes: {{prefix}}\n-- source-prefix: " . Model::basePrefix() .
+			gzwrite($fp, "-- AVE.cms full dump\n-- database: " . Model::databaseName() . "\n-- prefixes: {{prefix}}\n-- source-prefix: " . Model::basePrefix() .
 				"\n-- date: " . date('Y-m-d H:i:s') . "\n\nSET NAMES utf8mb4;\nSET FOREIGN_KEY_CHECKS=0;\n\n");
 
 			$mysqli = DB::mysqli();
@@ -203,6 +203,13 @@
 			fclose($lock);
 
 			return array('name' => $name, 'size' => filesize($path), 'tables' => count($tables), 'prefixes' => $prefixes);
+		}
+
+		/** Новые имена AVE.cms и старые adminx-дампы поддерживаются одинаково. */
+		public static function isManagedName($name)
+		{
+			$name = basename((string) $name);
+			return strpos($name, 'avecms_') === 0 || strpos($name, 'adminx_') === 0;
 		}
 
 		protected static function dumpTable($fp, $table, $mysqli, $progress = null, $current = 0, $total = 0)

@@ -165,8 +165,8 @@
       var name = button.getAttribute('data-name') || button.getAttribute('data-path') || '';
       Adminx.Confirm.open({
         kind: 'warning',
-        title: 'Удалить превью в папке?',
-        message: 'Будет удалена только служебная папка превью для «' + name + '». Исходные файлы останутся на месте.',
+        title: 'Удалить все превью?',
+        message: 'Во всех вложенных папках «' + name + '» будут удалены только служебные каталоги превью. Исходные файлы останутся на месте.',
         confirmLabel: 'Удалить превью',
         confirmClass: 'btn-danger',
         onConfirm: function () {

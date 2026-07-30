@@ -1,0 +1,75 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}Библиотека наборов полей{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i>
+  <a href="{{ ADMINX_BASE }}/rubrics">Рубрики и поля</a><i class="ti ti-chevron-right"></i>
+  <span>Наборы полей</span>
+</nav>
+
+<div class="page-header">
+  <div class="between">
+    <div>
+      <h1>Библиотека наборов полей</h1>
+      <p class="text-secondary" style="margin-top:5px">Готовые схемы полей для быстрого запуска рубрик.</p>
+    </div>
+    <a class="btn btn-secondary" href="{{ ADMINX_BASE }}/rubrics"><i class="ti ti-forms"></i>К рубрикам</a>
+  </div>
+</div>
+
+<div class="field-sets-summary">
+  <div class="card field-sets-stat"><span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-library"></i></span><div><b>{{ stats.total }}</b><span>Наборов</span></div></div>
+  <div class="card field-sets-stat"><span class="icon-tile" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-circle-check"></i></span><div><b>{{ stats.available }}</b><span>Доступны</span></div></div>
+  <div class="card field-sets-stat"><span class="icon-tile" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-input-search"></i></span><div><b>{{ stats.fields }}</b><span>Полей всего</span></div></div>
+</div>
+
+{% set content_model_section = 'field_sets' %}
+{% include '@rubrics/_content_tabs.twig' %}
+
+<section class="field-sets-panel" data-field-sets-root data-base="{{ ADMINX_BASE }}">
+  <div class="section-header field-sets-panel-header">
+    <div class="section-icon"><i class="ti ti-library"></i></div>
+    <div>
+      <div class="section-eyebrow">Рубрики</div>
+      <h2>Готовые схемы</h2>
+      <p class="section-desc">Копия становится независимой. Связанный набор можно синхронизировать после обновления его источника.</p>
+    </div>
+  </div>
+
+  <div class="field-sets-grid">
+    {% for item in field_sets %}
+    <article class="card field-set-card{{ item.available ? '' : ' is-unavailable' }}" data-field-set="{{ item.code }}">
+      <div class="field-set-head">
+        <span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-700)"><i class="ti {{ item.icon }}"></i></span>
+        <div><h3>{{ item.title }}</h3><p>{{ item.description }}</p></div>
+        <span class="badge {{ item.available ? 'badge-green' : 'badge-gray' }}">{{ item.field_count }} полей</span>
+      </div>
+      <div class="field-set-groups">
+        {% for group in item.groups %}
+        <div>
+          <b>{{ group.title }}</b>
+          <span>{{ group.fields|length }} полей</span>
+          <small>{% for field in group.fields %}{{ field.title }}{% if not loop.last %}, {% endif %}{% endfor %}</small>
+        </div>
+        {% endfor %}
+      </div>
+      {% if can_manage %}
+      <div class="field-set-actions">
+        <label class="field"><span class="field-label">Добавить в рубрику</span><select class="select" data-field-set-rubric><option value="">Выберите рубрику</option>{% for rubric in rubrics %}<option value="{{ rubric.Id }}">{{ rubric.rubric_title }}</option>{% endfor %}</select></label>
+        <div class="segmented" role="group" aria-label="Способ добавления">
+          <button type="button" data-field-set-mode="copy" aria-pressed="true">Копия</button>
+          <button type="button" data-field-set-mode="linked" aria-pressed="false">Связанный</button>
+        </div>
+        <button class="btn btn-primary" type="button" data-field-set-apply{{ item.available ? '' : ' disabled' }}><i class="ti ti-library-plus"></i>Добавить</button>
+      </div>
+      {% endif %}
+      {% if item.missing_types %}<p class="field-set-warning"><i class="ti ti-alert-triangle"></i>Включите типы полей: {{ item.missing_types|join(', ') }}</p>{% endif %}
+    </article>
+    {% else %}
+    <div class="card empty-state"><i class="ti ti-library-off"></i><b>Наборов пока нет</b><span>Они появятся вместе с ядром или установленными модулями.</span></div>
+    {% endfor %}
+  </div>
+</section>
+
+{% endblock %}

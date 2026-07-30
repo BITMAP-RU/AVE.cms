@@ -5,7 +5,7 @@
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
--- Framework and Adminx identity ------------------------------------------------
+-- Framework and control-panel identity -----------------------------------------
 
 CREATE TABLE IF NOT EXISTS `{{prefix}}_settings` (
   `param` VARCHAR(190) NOT NULL,
@@ -574,6 +574,7 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}_rubrics` (
   `rubric_footer_template` TEXT NOT NULL,
   `rubric_linked_rubric` VARCHAR(255) NOT NULL DEFAULT '0',
   `rubric_description` TEXT NOT NULL,
+  `rubric_purpose` VARCHAR(20) CHARACTER SET ascii NOT NULL DEFAULT 'content',
   `rubric_meta_gen` ENUM('0','1') NOT NULL DEFAULT '0',
   `rubric_form_conditions` TINYINT UNSIGNED NOT NULL DEFAULT 0,
   `rubric_position` INT UNSIGNED NOT NULL DEFAULT 100,
@@ -581,6 +582,7 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}_rubrics` (
   `rubric_changed_fields` INT NOT NULL DEFAULT 0,
   PRIMARY KEY (`Id`),
   KEY `idx_rubric_position` (`rubric_position`),
+  KEY `idx_rubric_purpose` (`rubric_purpose`),
   KEY `idx_rubric_alias` (`rubric_alias`(191))
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8mb4;
 
@@ -661,6 +663,37 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}_rubric_field_set_links` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_rubric_set` (`rubric_id`,`set_code`),
   KEY `idx_set_code` (`set_code`)
+) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `{{prefix}}_directories` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `code` VARCHAR(64) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `name` VARCHAR(190) NOT NULL,
+  `description` TEXT NULL,
+  `settings_json` TEXT NULL,
+  `is_active` TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
+  `created_at` INT UNSIGNED NOT NULL DEFAULT 0,
+  `updated_at` INT UNSIGNED NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_directory_code` (`code`),
+  KEY `idx_directory_active_name` (`is_active`, `name`)
+) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `{{prefix}}_directory_items` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `directory_id` INT UNSIGNED NOT NULL,
+  `item_key` VARCHAR(120) NOT NULL,
+  `label` VARCHAR(255) NOT NULL,
+  `sort_order` INT UNSIGNED NOT NULL DEFAULT 0,
+  `is_active` TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
+  `parent_id` INT UNSIGNED NOT NULL DEFAULT 0,
+  `data_json` TEXT NULL,
+  `created_at` INT UNSIGNED NOT NULL DEFAULT 0,
+  `updated_at` INT UNSIGNED NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_directory_item_key` (`directory_id`, `item_key`(120)),
+  KEY `idx_directory_item_order` (`directory_id`, `sort_order`, `id`),
+  KEY `idx_directory_item_parent` (`directory_id`, `parent_id`)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `{{prefix}}_rubric_templates` (
@@ -934,6 +967,63 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}_request_conditions` (
   PRIMARY KEY (`Id`),
   KEY `idx_request` (`request_id`),
   KEY `idx_request_group_position` (`request_id`, `condition_group_id`, `condition_position`)
+) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `{{prefix}}_presentations` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `title` VARCHAR(190) NOT NULL,
+  `code` VARCHAR(80) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `kind` VARCHAR(32) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT 'card',
+  `description` TEXT NULL,
+  `draft_item_markup` LONGTEXT NOT NULL,
+  `draft_wrapper_markup` LONGTEXT NOT NULL,
+  `draft_empty_markup` LONGTEXT NOT NULL,
+  `draft_css` LONGTEXT NOT NULL,
+  `draft_settings_json` TEXT NULL,
+  `published_item_markup` LONGTEXT NOT NULL,
+  `published_wrapper_markup` LONGTEXT NOT NULL,
+  `published_empty_markup` LONGTEXT NOT NULL,
+  `published_css` LONGTEXT NOT NULL,
+  `published_settings_json` TEXT NULL,
+  `is_published` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+  `version` INT UNSIGNED NOT NULL DEFAULT 0,
+  `author_id` INT UNSIGNED NOT NULL DEFAULT 0,
+  `created_at` INT UNSIGNED NOT NULL DEFAULT 0,
+  `updated_at` INT UNSIGNED NOT NULL DEFAULT 0,
+  `published_at` INT UNSIGNED NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_content_presentation_code` (`code`),
+  KEY `idx_content_presentation_kind` (`kind`, `is_published`),
+  KEY `idx_content_presentation_updated` (`updated_at`)
+) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `{{prefix}}_presentation_revisions` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `presentation_id` INT UNSIGNED NOT NULL,
+  `action` VARCHAR(32) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `snapshot_hash` CHAR(40) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `snapshot_json` LONGTEXT NOT NULL,
+  `comment` VARCHAR(255) NOT NULL DEFAULT '',
+  `author_id` INT UNSIGNED NOT NULL DEFAULT 0,
+  `author_name` VARCHAR(190) NOT NULL DEFAULT '',
+  `created_at` INT UNSIGNED NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `idx_presentation_revision_owner` (`presentation_id`, `created_at`, `id`)
+) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `{{prefix}}_presentation_assignments` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `presentation_id` INT UNSIGNED NOT NULL,
+  `context_code` VARCHAR(64) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `target_type` VARCHAR(32) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL,
+  `target_key` VARCHAR(96) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT '0',
+  `mode` VARCHAR(16) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT 'legacy',
+  `settings_json` TEXT NULL,
+  `author_id` INT UNSIGNED NOT NULL DEFAULT 0,
+  `updated_at` INT UNSIGNED NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_presentation_assignment_target` (`context_code`, `target_type`, `target_key`),
+  KEY `idx_presentation_assignment_owner` (`presentation_id`, `mode`)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `{{prefix}}_navigation` (

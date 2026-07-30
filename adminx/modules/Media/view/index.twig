@@ -16,7 +16,7 @@
     {% if can_manage %}
     <div class="cluster">
       <button class="btn btn-secondary" type="button" data-media-folder><i class="ti ti-folder-plus"></i>Папка</button>
-      <button class="btn btn-danger-soft" type="button" data-media-clear-thumbs data-path="{{ dir }}" data-name="{{ dir }}" data-tooltip="Удалить все превью в текущей папке"><i class="ti ti-photo-off"></i>Очистить превью</button>
+      <button class="btn btn-danger-soft" type="button" data-media-clear-thumbs data-path="{{ dir }}" data-name="{{ dir }}" data-tooltip="Удалить превью в текущей и вложенных папках"><i class="ti ti-photo-off"></i>Очистить превью</button>
       <button class="btn btn-primary" type="button" data-media-upload-trigger><i class="ti ti-upload"></i>Загрузить</button>
     </div>
     {% endif %}
@@ -33,7 +33,7 @@
     <div><b>{{ stats.images }}</b><span>Изображений</span></div>
   </div>
   <div class="card media-stat">
-    <span class="icon-tile" style="--tile-bg:#fff7ed;--tile-fg:#ea580c"><i class="ti ti-folders"></i></span>
+    <span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-folders"></i></span>
     <div><b>{{ stats.folders }}</b><span>Папок</span></div>
   </div>
   <div class="card media-stat">
@@ -131,10 +131,10 @@
         <article class="media-tile is-folder">
           <a class="media-thumb" href="{{ ADMINX_BASE }}/media?dir={{ folder.path|url_encode }}&view=grid&q={{ filters.q|url_encode }}&type={{ filters.type }}"><i class="ti ti-folder"></i></a>
           <a class="media-name" href="{{ ADMINX_BASE }}/media?dir={{ folder.path|url_encode }}&view=grid&q={{ filters.q|url_encode }}&type={{ filters.type }}">{{ folder.name }}</a>
-          <small>{{ folder.count }} объектов</small>
+          <small>{% if filters.q %}{{ folder.path }} · {% endif %}{{ folder.count }} объектов</small>
           {% if can_manage %}
           <div class="media-actions">
-            <button class="btn btn-ghost btn-icon btn-sm media-action media-action-thumbs" type="button" data-media-clear-thumbs data-path="{{ folder.path }}" data-name="{{ folder.name }}" data-tooltip="Очистить превью" aria-label="Очистить превью"><i class="ti ti-photo-off"></i></button>
+            <button class="btn btn-ghost btn-icon btn-sm media-action media-action-thumbs" type="button" data-media-clear-thumbs data-path="{{ folder.path }}" data-name="{{ folder.name }}" data-tooltip="Очистить превью во вложенных папках" aria-label="Очистить превью"><i class="ti ti-photo-off"></i></button>
             <button class="btn btn-ghost btn-icon btn-sm media-action media-action-edit" type="button" data-media-rename data-path="{{ folder.path }}" data-name="{{ folder.name }}" data-kind="folder" data-tooltip="Переименовать" aria-label="Переименовать"><i class="ti ti-pencil"></i></button>
             <button class="btn btn-ghost btn-icon btn-sm media-action media-action-danger" type="button" data-media-delete data-path="{{ folder.path }}" data-name="{{ folder.name }}" data-kind="folder" data-tooltip="Удалить" aria-label="Удалить"><i class="ti ti-trash"></i></button>
           </div>
@@ -179,8 +179,8 @@
             {% for folder in folders %}
             <tr>
               <td><a class="media-row-name" href="{{ ADMINX_BASE }}/media?dir={{ folder.path|url_encode }}&view=table&q={{ filters.q|url_encode }}&type={{ filters.type }}"><span class="media-row-icon is-folder"><i class="ti ti-folder"></i></span><b>{{ folder.name }}</b></a></td>
-              <td>Папка</td><td>{{ folder.count }} объектов</td><td>-</td>
-              <td>{% if can_manage %}<div class="cluster media-row-actions"><button class="btn btn-ghost btn-icon btn-sm media-action media-action-thumbs" type="button" data-media-clear-thumbs data-path="{{ folder.path }}" data-name="{{ folder.name }}" data-tooltip="Очистить превью" aria-label="Очистить превью"><i class="ti ti-photo-off"></i></button><button class="btn btn-ghost btn-icon btn-sm media-action media-action-edit" type="button" data-media-rename data-path="{{ folder.path }}" data-name="{{ folder.name }}" data-kind="folder" data-tooltip="Переименовать" aria-label="Переименовать"><i class="ti ti-pencil"></i></button><button class="btn btn-ghost btn-icon btn-sm media-action media-action-danger" type="button" data-media-delete data-path="{{ folder.path }}" data-name="{{ folder.name }}" data-kind="folder" data-tooltip="Удалить" aria-label="Удалить"><i class="ti ti-trash"></i></button></div>{% endif %}</td>
+              <td>Папка</td><td>{% if filters.q %}<span class="media-folder-path">{{ folder.path }}</span>{% else %}{{ folder.count }} объектов{% endif %}</td><td>-</td>
+              <td>{% if can_manage %}<div class="cluster media-row-actions"><button class="btn btn-ghost btn-icon btn-sm media-action media-action-thumbs" type="button" data-media-clear-thumbs data-path="{{ folder.path }}" data-name="{{ folder.name }}" data-tooltip="Очистить превью во вложенных папках" aria-label="Очистить превью"><i class="ti ti-photo-off"></i></button><button class="btn btn-ghost btn-icon btn-sm media-action media-action-edit" type="button" data-media-rename data-path="{{ folder.path }}" data-name="{{ folder.name }}" data-kind="folder" data-tooltip="Переименовать" aria-label="Переименовать"><i class="ti ti-pencil"></i></button><button class="btn btn-ghost btn-icon btn-sm media-action media-action-danger" type="button" data-media-delete data-path="{{ folder.path }}" data-name="{{ folder.name }}" data-kind="folder" data-tooltip="Удалить" aria-label="Удалить"><i class="ti ti-trash"></i></button></div>{% endif %}</td>
             </tr>
             {% endfor %}
             {% for f in files %}

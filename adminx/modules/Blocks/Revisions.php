@@ -17,12 +17,13 @@
 	defined('BASEPATH') || die('Direct access to this location is not allowed.');
 
 	use DB;
-	use App\Common\SystemTables;
 	use App\Content\ContentTables;
-	use App\Helpers\Json;
+	use App\Content\Revisions\JsonRevisionStore;
 
 	class Revisions
 	{
+		protected static $store;
+
 		public static function table()
 		{
 			return ContentTables::table('sysblock_revisions');
@@ -43,14 +44,8 @@
 
 		public static function listForBlock($blockId, $limit = 50)
 		{
-			$rows = DB::query(
-				'SELECT * FROM ' . self::table() . ' WHERE block_id = %i ORDER BY created_at DESC, id DESC LIMIT %i',
-				(int) $blockId,
-				max(1, min(200, (int) $limit))
-			)->getAll();
-
 			$out = array();
-			foreach ($rows as $row) {
+			foreach (self::store()->listing($blockId, $limit) as $row) {
 				$out[] = self::format($row, false);
 			}
 
@@ -59,7 +54,7 @@
 
 		public static function one($id)
 		{
-			$row = DB::query('SELECT * FROM ' . self::table() . ' WHERE id = %i LIMIT 1', (int) $id)->getAssoc();
+			$row = self::store()->one($id);
 			return $row ? self::format($row, true) : null;
 		}
 
@@ -75,38 +70,19 @@
 			}
 
 			$snapshot = Model::snapshot($snapshot);
-			$json = Json::encode($snapshot, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-			if ($json === false) {
-				$json = '{}';
-			}
-
-			$snapshotHash = sha1($json);
 			$textHash = sha1((string) $snapshot['sysblock_text']);
-
-			if (in_array($action, array('update', 'import', 'restore'), true)) {
-				$last = DB::query(
-					'SELECT snapshot_hash FROM ' . self::table() . ' WHERE block_id = %i ORDER BY created_at DESC, id DESC LIMIT 1',
-					$blockId
-				)->getValue();
-				if ($last && (string) $last === $snapshotHash) {
-					return 0;
-				}
-			}
-
-			DB::Insert(self::table(), array(
-				'block_id' => $blockId,
-				'action' => (string) $action,
-				'snapshot_hash' => $snapshotHash,
+			return self::store()->capture(
+				$blockId,
+				$action,
+				$snapshot,
+				$authorId,
+				$comment,
+				array(
 				'text_hash' => $textHash,
-				'snapshot_json' => $json,
-				'comment' => trim((string) $comment),
-				'author_id' => (int) $authorId,
-				'author_name' => self::authorName((int) $authorId),
 				'source_revision_id' => (int) $sourceRevisionId,
-				'created_at' => time(),
-			));
-
-			return (int) DB::insertId();
+				),
+				in_array($action, array('update', 'import', 'restore'), true)
+			);
 		}
 
 		public static function captureCurrent($action, $authorId = 0, $comment = '')
@@ -144,98 +120,47 @@
 
 		public static function delete($revisionId)
 		{
-			$revision = self::one($revisionId);
-			if (!$revision) {
-				return false;
-			}
-
-			DB::Delete(self::table(), 'id = %i', (int) $revisionId);
-			return (int) $revision['block_id'];
+			return self::store()->delete($revisionId);
 		}
 
 		public static function deleteForBlock($blockId)
 		{
-			$blockId = (int) $blockId;
-			if ($blockId <= 0) {
-				return 0;
-			}
-
-			$count = (int) DB::query('SELECT COUNT(*) FROM ' . self::table() . ' WHERE block_id = %i', $blockId)->getValue();
-			DB::Delete(self::table(), 'block_id = %i', $blockId);
-			return $count;
+			return self::store()->deleteFor($blockId);
 		}
 
 		protected static function format(array $row, $withSnapshot)
 		{
-			$labels = self::labels();
-			$action = isset($row['action']) ? (string) $row['action'] : 'update';
-			$meta = isset($labels[$action]) ? $labels[$action] : array('label' => $action, 'badge' => 'badge-gray');
-			$snapshot = null;
-			if ($withSnapshot) {
-				$snapshot = Json::toArray((string) $row['snapshot_json']);
-			}
-
-			$created = isset($row['created_at']) ? (int) $row['created_at'] : 0;
+			$row = self::store()->formatRow($row, $withSnapshot);
+			$snapshot = $row['snapshot'];
 			$text = $withSnapshot && is_array($snapshot) && isset($snapshot['sysblock_text']) ? (string) $snapshot['sysblock_text'] : '';
 
 			return array(
 				'id' => (int) $row['id'],
 				'block_id' => (int) $row['block_id'],
-				'action' => $action,
-				'action_label' => $meta['label'],
-				'badge' => $meta['badge'],
+				'action' => $row['action'],
+				'action_label' => $row['action_label'],
+				'badge' => $row['badge'],
 				'comment' => (string) $row['comment'],
 				'author_id' => (int) $row['author_id'],
 				'author_name' => (string) $row['author_name'],
-				'created_at' => $created,
-				'created_label' => $created > 0 ? date('d.m.Y H:i:s', $created) : '-',
+				'created_at' => $row['created_at'],
+				'created_label' => $row['created_label'],
 				'source_revision_id' => (int) $row['source_revision_id'],
 				'snapshot_hash' => (string) $row['snapshot_hash'],
 				'text_hash' => (string) $row['text_hash'],
 				'text_size' => strlen($text),
-				'text_size_label' => $withSnapshot ? self::formatBytes(strlen($text)) : '',
+				'text_size_label' => $withSnapshot ? JsonRevisionStore::formatBytes(strlen($text)) : '',
 				'snapshot' => $snapshot,
 				'code' => $text,
 			);
 		}
 
-		protected static function authorName($id)
+		protected static function store()
 		{
-			if ((int) $id <= 0) {
-				return '';
+			if (!self::$store) {
+				self::$store = new JsonRevisionStore(self::table(), 'block_id', self::labels());
 			}
 
-			$row = DB::query('SELECT name, login, email FROM ' . SystemTables::table('users') . ' WHERE id = %i LIMIT 1', (int) $id)->getAssoc();
-			if (!$row) {
-				return '#' . (int) $id;
-			}
-
-			if (!empty($row['name'])) {
-				return (string) $row['name'];
-			}
-
-			if (!empty($row['login'])) {
-				return '@' . (string) $row['login'];
-			}
-
-			if (!empty($row['email'])) {
-				return (string) $row['email'];
-			}
-
-			return '#' . (int) $id;
-		}
-
-		protected static function formatBytes($bytes)
-		{
-			$bytes = (int) $bytes;
-			if ($bytes < 1024) {
-				return $bytes . ' Б';
-			}
-
-			if ($bytes < 1048576) {
-				return round($bytes / 1024, 1) . ' KB';
-			}
-
-			return round($bytes / 1048576, 1) . ' MB';
+			return self::$store;
 		}
 	}

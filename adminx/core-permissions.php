@@ -25,7 +25,7 @@
 			'code'        => 'admin_panel',
 			'group_code'  => 'core',
 			'name'        => 'Доступ в панель управления',
-			'description' => 'Разрешает вход в административную панель /adminx.',
+			'description' => 'Разрешает вход в панель управления.',
 			'sort_order'  => 1,
 		),
 		array(

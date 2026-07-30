@@ -49,7 +49,7 @@
 				'icon' => 'ti ti-sitemap',
 				'permission' => 'view_navigation',
 				'group' => 'Контент',
-				'sort_order' => 25,
+				'sort_order' => 26,
 				'match' => array(
 					'/navigation',
 				),

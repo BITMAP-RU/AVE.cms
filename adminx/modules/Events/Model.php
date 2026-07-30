@@ -29,7 +29,7 @@
 				'audit' => array(
 					'code' => 'audit',
 					'label' => 'Аудит',
-					'description' => 'Административные действия в панели управления.',
+					'description' => 'История административных действий с пользователями, объектами и техническими деталями.',
 					'icon' => 'ti ti-shield-check',
 					'tile_bg' => 'var(--blue-100)',
 					'tile_fg' => 'var(--blue-600)',
@@ -155,7 +155,7 @@
 				AuditLog::record('events.audit_cleared', array(
 					'actor_id' => (int) $actorId > 0 ? (int) $actorId : null,
 					'target_type' => 'audit_log',
-					'meta' => array('deleted_rows' => $count),
+					'meta' => array('deleted_rows' => $count, 'source' => $source['code']),
 				));
 				return true;
 			}
@@ -226,20 +226,24 @@
 		{
 			$rows = DB::query(
 				'SELECT * FROM ' . AuditLog::table() . ' ORDER BY created_at DESC, id DESC LIMIT ' . (int) $limit
-			)->getAll();
+			)->getAll() ?: array();
 
 			$out = array();
 			foreach ($rows as $row) {
 				$meta = self::decodeMeta(isset($row['meta']) ? $row['meta'] : '');
 				$state = self::auditState((string) $row['action']);
+				$timestamp = strtotime((string) $row['created_at']);
 				$out[] = array(
 					'id' => (int) $row['id'],
 					'source' => 'audit',
 					'level' => $state,
-					'time' => strtotime($row['created_at']),
-					'time_display' => self::formatTime(strtotime($row['created_at'])),
+					'time' => $timestamp,
+					'time_display' => self::formatTime($timestamp),
+					'date_group' => self::dateGroup($timestamp),
 					'ip' => (string) $row['ip'],
-					'actor' => $row['actor_name'] !== '' ? $row['actor_name'] : ('#' . (int) $row['actor_id']),
+					'actor' => (string) $row['actor_name'] !== ''
+						? (string) $row['actor_name']
+						: '#' . (int) $row['actor_id'],
 					'message' => AuditLog::actionLabel($row['action']),
 					'url' => trim((string) $row['target_type'] . ($row['target_id'] ? ' #' . $row['target_id'] : '')),
 					'details' => $meta,
@@ -248,6 +252,24 @@
 			}
 
 			return $out;
+		}
+
+		protected static function dateGroup($timestamp)
+		{
+			$timestamp = (int) $timestamp;
+			if ($timestamp <= 0) {
+				return 'Без даты';
+			}
+
+			if (date('Y-m-d', $timestamp) === date('Y-m-d')) {
+				return 'Сегодня';
+			}
+
+			if (date('Y-m-d', $timestamp) === date('Y-m-d', strtotime('-1 day'))) {
+				return 'Вчера';
+			}
+
+			return date('d.m.Y', $timestamp);
 		}
 
 		protected static function legacyRows($source, $limit)

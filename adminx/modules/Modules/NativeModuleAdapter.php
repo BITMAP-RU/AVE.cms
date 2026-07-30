@@ -140,10 +140,9 @@
 			}
 
 			$migrationPending = !empty($migrationState['pending']);
-			$needsUpdate = $installed && (
-				($fileVersion !== '' && $fileVersion !== $dbVersion)
-				|| $migrationPending
-			);
+			// The lifecycle version records the package that completed installation.
+			// A source version bump alone does not require a database operation.
+			$needsUpdate = $installed && $migrationPending;
 			return array(
 				'id' => 0,
 				'code' => $extension['code'],

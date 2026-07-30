@@ -40,8 +40,8 @@
 
 		public function settingsSchema()
 		{
-			return array(
-				array('key' => 'options', 'type' => 'map', 'label' => 'Ключ → подпись'),
+			return $this->optionSettingsSchema(
+				array('key' => 'options', 'type' => 'map', 'label' => 'Ключ → подпись')
 			);
 		}
 

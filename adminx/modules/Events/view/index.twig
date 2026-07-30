@@ -45,7 +45,7 @@
 </div>
 
 {% if active_source == 'legacy' %}
-<div class="alert alert-info events-source-help"><i class="ti ti-info-circle alert-ic"></i><div><b>Что попадает в журнал приложения</b><p>Сюда выводятся служебные сообщения публичного runtime: результаты фоновых операций, предупреждения и записи старых интеграций. Действия администраторов находятся во вкладке «Аудит», SQL и 404 вынесены отдельно.</p></div></div>
+<div class="alert alert-info events-source-help"><i class="ti ti-info-circle alert-ic"></i><div><b>Что попадает в журнал приложения</b><p>Сюда выводятся служебные сообщения публичного runtime: результаты фоновых операций, предупреждения и записи старых интеграций. Действия администраторов находятся в «Аудите», SQL и 404 вынесены отдельно.</p></div></div>
 {% endif %}
 
 <section class="tab-panel active">
@@ -78,8 +78,8 @@
       <div class="events-section-title">
         <span class="icon-tile events-head-icon" style="--tile-bg:{{ active_source_def.tile_bg }};--tile-fg:{{ active_source_def.tile_fg }}"><i class="{{ active_source_def.icon }}"></i></span>
         <div>
-          <h2>{{ active_source == 'referrers' ? 'Журнал переходов' : 'Список событий' }}</h2>
-          <p class="text-secondary">{{ active_source == 'referrers' ? 'Сгруппированные внешние входы, источники и рекламные метки.' : 'Последние записи выбранного источника с фильтром и деталями.' }}</p>
+          <h2>{{ active_source == 'audit' ? 'Аудит действий' : (active_source == 'referrers' ? 'Журнал переходов' : 'Список событий') }}</h2>
+          <p class="text-secondary">{{ active_source == 'audit' ? 'Кто, когда и что изменил в системе.' : (active_source == 'referrers' ? 'Сгруппированные внешние входы, источники и рекламные метки.' : 'Последние записи выбранного источника с фильтром и деталями.') }}</p>
         </div>
       </div>
       <div class="events-section-meta">
@@ -161,7 +161,14 @@
           </tr>
         </thead>
         <tbody>
+          {% set active_day = '' %}
           {% for row in rows %}
+          {% if active_source == 'audit' and active_day != row.date_group %}
+          {% set active_day = row.date_group %}
+          <tr class="events-table-day">
+            <td colspan="6"><span>{{ active_day }}</span></td>
+          </tr>
+          {% endif %}
           <tr class="events-row {{ row.state_class }}">
             <td class="mono text-muted">{{ row.time_display }}</td>
             <td><span class="badge {{ row.state_badge }} events-state"><i class="{{ row.state_icon }}"></i>{{ row.state_label }}</span></td>

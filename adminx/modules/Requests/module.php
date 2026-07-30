@@ -54,7 +54,7 @@
 				'icon' => 'ti ti-list-search',
 				'permission' => 'view_requests',
 				'group' => 'Контент',
-				'sort_order' => 26,
+				'sort_order' => 27,
 				'match' => array(
 					'/requests',
 				),

@@ -19,6 +19,7 @@
 	use App\Common\Twig;
 	use App\Content\ContentTables;
 	use App\Content\Documents\DocumentSnapshotRepository;
+	use App\Content\Presentation\DocumentPresentationBridge;
 	use App\Helpers\Request;
 	use DB;
 
@@ -85,13 +86,29 @@
 
 			$document = isset($context['document']) ? $context['document'] : null;
 			$alias = is_object($document) && isset($document->document_alias) ? (string) $document->document_alias : '';
+			$pagination = $paginate ? self::pagination($alias, $page, $pages) : array();
+			$presentation = DocumentPresentationBridge::renderList(
+				'content_list',
+				$rows,
+				array('rubric' => (string) $rubricId, 'module' => 'content'),
+				array(
+					'source' => 'content_list',
+					'rubric_id' => $rubricId,
+					'total' => $total,
+					'page' => $page,
+					'pages' => $pages,
+					'pagination' => $pagination,
+				)
+			);
+			if ($presentation !== null) { return $presentation; }
+
 			return Twig::twig()->render('@content_public/list.twig', array(
 				'rubric_id' => $rubricId,
 				'items' => $items,
 				'total' => $total,
 				'page' => $page,
 				'pages' => $pages,
-				'pagination' => $paginate ? self::pagination($alias, $page, $pages) : array(),
+				'pagination' => $pagination,
 			));
 		}
 

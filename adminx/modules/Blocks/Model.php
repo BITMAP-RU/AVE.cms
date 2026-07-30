@@ -285,6 +285,16 @@
 				return false;
 			}
 
+			$dependencies = \App\Content\ContentTagDependencies::block(
+				(int) $id,
+				isset($raw['sysblock_alias']) ? (string) $raw['sysblock_alias'] : ''
+			);
+			if ($dependencies) {
+				throw new \RuntimeException(
+					'Блок используется: ' . implode(', ', $dependencies) . '. Сначала уберите эти вызовы.'
+				);
+			}
+
 			Revisions::capture((int) $id, 'delete', (int) $authorId, 'Удаление блока', $raw);
 			$row = self::row($raw);
 			if (!$row) {

@@ -45,6 +45,7 @@ start with the in-depth chapter [Content Studio: From Category to Publishing](co
 | --- | --- |
 | Documents | [Creation, publication, URL, revisions and system pages](documents.md) |
 | Categories and fields | [Design content type, form and public output](rubrics.md) |
+| Dictionaries | [Shared value lists without documents, URLs, or SEO](directories.md) |
 | Templates | [External shell of the site, tags, cache and revisions](templates.md) |
 | Twig components | [Point modular inserts and the limits of their application](twig-components.md) |
 | Topics | [CSS, JavaScript, Images, Fonts and Theme ZIP Packages](themes.md) |
@@ -52,6 +53,9 @@ start with the in-depth chapter [Content Studio: From Category to Publishing](co
 | Navigation | [Level Templates, Items and HTML Assembly](navigation.md) |
 | Requests | [Document selections, condition groups and list templates](requests.md) |
 | Catalog | [Universal section trees, fields and filters](catalog.md) |
+| Public site | [Structure map, presentations and component placements](public-site.md) |
+| Presentations | [Reusable cards, lists, and safe public switching](presentations.md) |
+| Content model tools | [Directories, relations, computed fields, and field sets](content-model-tools.md) |
 
 Media, fields and modules are placed in separate chapters: [Media and
 thumbnails](../media/README.md), [Document fields](../fields/README.md) and

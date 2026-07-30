@@ -1,0 +1,236 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}Диагностика · Публичный сайт{% endblock %}
+{% block content %}
+
+{% macro request_group(group) %}
+  <div class="public-site-condition-group is-{{ group.state }}">
+    <div class="public-site-condition-head">
+      <span class="badge {{ group.state == 'passed' ? 'badge-green' : (group.state == 'failed' ? 'badge-red' : 'badge-gray') }}">{{ group.operator }}</span>
+      <b>{{ group.title }}</b>
+      <span>{{ group.state == 'passed' ? 'выполнена' : (group.state == 'failed' ? 'не выполнена' : 'не участвовала') }}</span>
+    </div>
+    {% for condition in group.conditions %}
+    <div class="public-site-condition is-{{ condition.state }}">
+      <i class="ti {{ condition.state == 'passed' ? 'ti-circle-check' : (condition.state == 'failed' ? 'ti-circle-x' : 'ti-circle-dashed') }}"></i>
+      <div>
+        <b>{{ condition.field }}{% if condition.alias %} · {{ condition.alias }}{% endif %}</b>
+        <span>{{ condition.actual is same as(null) ? 'нет значения' : condition.actual }} {{ condition.operator }} {{ condition.expected }}</span>
+        {% if condition.note %}<small>{{ condition.note }}</small>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+    {% for child in group.children %}{{ _self.request_group(child) }}{% endfor %}
+  </div>
+{% endmacro %}
+
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i>
+  <a href="{{ ADMINX_BASE }}/public-site">Публичный сайт</a><i class="ti ti-chevron-right"></i>
+  <span>Диагностика</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <h1>Диагностика публичной страницы</h1>
+    <p class="text-secondary">Показывает, из чего собрана страница и почему документ попадает в подборку. Ничего не сохраняет и не переключает.</p>
+  </div>
+</div>
+
+{% set public_site_tab = 'diagnostics' %}
+{% include '@public_site/_tabs.twig' %}
+
+<section class="public-site-panel">
+  <div class="section-header public-site-panel-header">
+    <div class="section-icon"><i class="ti ti-file-search"></i></div>
+    <div>
+      <div class="section-eyebrow">Контекст страницы</div>
+      <h2>Из чего собрана страница</h2>
+      <p class="section-desc">Введите публичный URL или ID документа. Проверка читает сохранённые данные без запуска страницы.</p>
+    </div>
+  </div>
+  <div class="card public-site-card public-site-inspector-form">
+    <form method="get" action="{{ ADMINX_BASE }}/public-site/diagnostics">
+      <div class="input-wrap"><i class="ti ti-link"></i><input class="input" name="target" value="{{ target }}" placeholder="/news/example или 42"></div>
+      <button class="btn btn-primary" type="submit"><i class="ti ti-search"></i>Разобрать страницу</button>
+    </form>
+  </div>
+</section>
+
+{% if page_error %}
+<div class="alert alert-danger public-site-inspector-message"><i class="ti ti-alert-circle"></i><div><b>Страница не разобрана</b><p>{{ page_error }}</p></div></div>
+{% endif %}
+
+{% if page_context %}
+<div class="public-site-summary public-site-inspector-summary">
+  <div class="card public-site-stat"><span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-file"></i></span><div><b>#{{ page_context.document.id }}</b><span>Документ</span></div></div>
+  <div class="card public-site-stat"><span class="icon-tile" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-forms"></i></span><div><b>{{ page_context.fields|length }}</b><span>Полей</span></div></div>
+  <div class="card public-site-stat"><span class="icon-tile" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-plug-connected"></i></span><div><b>{{ page_context.components|length }}</b><span>Связей</span></div></div>
+  <div class="card public-site-stat"><span class="icon-tile" style="--tile-bg:var(--amber-100);--tile-fg:var(--amber-600)"><i class="ti ti-stethoscope"></i></span><div><b>{{ page_context.diagnostics|length }}</b><span>Результатов проверки</span></div></div>
+</div>
+
+<section class="public-site-panel">
+  <div class="section-header public-site-panel-header">
+    <div class="section-icon"><i class="ti ti-report-medical"></i></div>
+    <div><div class="section-eyebrow">Результат</div><h2>{{ page_context.document.title }}</h2><p class="section-desc">{{ page_context.document.url }} · {{ page_context.rubric.title }}</p></div>
+    <a class="btn btn-secondary" href="{{ ADMINX_BASE }}{{ page_context.document.editor_url }}"><i class="ti ti-edit"></i>Открыть документ</a>
+  </div>
+  <div class="card public-site-card">
+    <div class="public-site-findings">
+      {% for finding in page_context.diagnostics %}
+      <div class="public-site-finding is-{{ finding.level }}">
+        <i class="ti {{ finding.level == 'error' ? 'ti-alert-triangle' : (finding.level == 'warning' ? 'ti-alert-circle' : (finding.level == 'ok' ? 'ti-circle-check' : 'ti-info-circle')) }}"></i>
+        <div><b>{{ finding.title }}</b><p>{{ finding.message }}</p><small>{{ finding.action }}</small></div>
+        {% if finding.editor_url %}<a class="icon-btn" href="{{ ADMINX_BASE }}{{ finding.editor_url }}" title="Открыть место настройки"><i class="ti ti-arrow-up-right"></i></a>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<div class="public-site-inspector-grid">
+  <section class="public-site-panel">
+    <div class="section-header public-site-panel-header"><div class="section-icon"><i class="ti ti-template"></i></div><div><div class="section-eyebrow">Цепочка вывода</div><h2>Шаблоны</h2></div></div>
+    <div class="card public-site-card">
+      <div class="public-site-inspector-list">
+        {% for template in [page_context.templates.site, page_context.templates.rubric, page_context.templates.alternate] %}
+        {% if template %}
+        <a href="{{ ADMINX_BASE }}{{ template.editor_url }}"><span><b>{{ template.title }}</b><small>{{ template.type }} · {{ template.content.length }} символов</small></span><span class="badge {{ template.content.empty ? 'badge-red' : 'badge-green' }}">{{ template.content.empty ? 'пустой' : 'заполнен' }}</span></a>
+        {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  <section class="public-site-panel">
+    <div class="section-header public-site-panel-header"><div class="section-icon"><i class="ti ti-database"></i></div><div><div class="section-eyebrow">Runtime</div><h2>Кеш документа</h2></div></div>
+    <div class="card public-site-card">
+      <div class="public-site-inspector-list">
+        {% for type, file in page_context.cache.files %}
+        <div><span><b>{{ type == 'page' ? 'Полная страница' : 'Шаблон документа' }}</b><small>{{ file.path }}</small></span><span class="badge {{ file.exists ? 'badge-green' : 'badge-gray' }}">{{ file.exists ? file.size ~ ' Б' : 'не создан' }}</span></div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+</div>
+
+<section class="public-site-panel">
+  <div class="section-header public-site-panel-header"><div class="section-icon"><i class="ti ti-route-square"></i></div><div><div class="section-eyebrow">Зависимости</div><h2>Подключённые компоненты</h2><p class="section-desc">Блоки, подборки, меню и модули, найденные в активной цепочке шаблонов.</p></div></div>
+  <div class="card public-site-card">
+    <div class="table-scroll">
+      <table class="table table-compact public-site-table">
+        <thead><tr><th>Где подключено</th><th>Компонент</th><th>Тег</th><th>Состояние</th><th></th></tr></thead>
+        <tbody>
+        {% for item in page_context.components %}
+          <tr class="{{ item.component_status == 'broken' ? 'is-row-danger' : (item.component_status == 'disabled' ? 'is-row-disabled' : '') }}">
+            <td><b>{{ item.source_title }}</b><small class="table-subtext">{{ item.source_part_title }}</small></td>
+            <td>{{ item.component_title }}</td>
+            <td><code>{{ item.tag }}</code></td>
+            <td><span class="badge {{ item.component_status == 'broken' ? 'badge-red' : (item.component_status == 'disabled' ? 'badge-gray' : 'badge-green') }}">{{ item.component_status_title }}</span></td>
+            <td class="table-actions">{% if item.component_url %}<a class="icon-btn" href="{{ ADMINX_BASE }}{{ item.component_url }}" title="Открыть компонент"><i class="ti ti-arrow-up-right"></i></a>{% endif %}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="5"><div class="empty-state"><i class="ti ti-link-off"></i><b>Компоненты в шаблонах не найдены</b></div></td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="public-site-panel">
+  <div class="section-header public-site-panel-header"><div class="section-icon"><i class="ti ti-forms"></i></div><div><div class="section-eyebrow">Схема документа</div><h2>Поля и фактические значения</h2><p class="section-desc">Показываются все поля рубрики, включая пустые и обязательные.</p></div></div>
+  <div class="card public-site-card">
+    <div class="table-scroll">
+      <table class="table table-compact public-site-table public-site-fields-table">
+        <thead><tr><th>Поле</th><th>Тип</th><th>Значение</th><th>Состояние</th></tr></thead>
+        <tbody>
+        {% for field in page_context.fields %}
+          <tr class="{{ field.required and field.empty ? 'is-row-danger' : '' }}">
+            <td><b>{{ field.title }}</b><small class="table-subtext">{{ field.alias ?: '#' ~ field.id }}</small></td>
+            <td><code>{{ field.type }}</code></td>
+            <td class="public-site-field-value">{% if field.value is iterable %}<code>{{ field.value|json_encode }}</code>{% else %}{{ field.value ?: '—' }}{% endif %}</td>
+            <td><span class="badge {{ field.required and field.empty ? 'badge-red' : (field.empty ? 'badge-gray' : 'badge-green') }}">{{ field.required and field.empty ? 'обязательное не заполнено' : (field.empty ? 'пусто' : 'заполнено') }}</span></td>
+          </tr>
+        {% else %}
+          <tr><td colspan="4"><div class="empty-state"><i class="ti ti-forms"></i><b>У рубрики нет полей</b></div></td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<div class="public-site-inspector-grid">
+  <section class="public-site-panel">
+    <div class="section-header public-site-panel-header"><div class="section-icon"><i class="ti ti-list-search"></i></div><div><div class="section-eyebrow">Подборки рубрики</div><h2>Запросы</h2></div></div>
+    <div class="card public-site-card">
+      <div class="public-site-inspector-list">
+        {% for item in page_context.requests %}
+        <a href="{{ ADMINX_BASE }}{{ item.editor_url }}"><span><b>{{ item.title }}</b><small>#{{ item.id }} · {{ item.alias ?: 'без alias' }} · {{ item.executor }}</small></span><span class="badge badge-blue">{{ item.items_per_page }}</span></a>
+        {% else %}
+        <div><span><b>Запросов для этой рубрики нет</b><small>Документ может использоваться напрямую или через модуль.</small></span></div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  <section class="public-site-panel">
+    <div class="section-header public-site-panel-header"><div class="section-icon"><i class="ti ti-layout-cards"></i></div><div><div class="section-eyebrow">Оформление результатов</div><h2>Представления</h2></div></div>
+    <div class="card public-site-card">
+      <div class="public-site-inspector-list">
+        {% for item in page_context.presentations %}
+        <a href="{{ ADMINX_BASE }}/public-site/presentations/{{ item.presentation_id }}"><span><b>{{ item.title }}</b><small>{{ item.context_code }} · {{ item.target_type }}:{{ item.target_key }}</small></span><span class="badge {{ item.is_published ? 'badge-green' : 'badge-gray' }}">{{ item.mode }}</span></a>
+        {% else %}
+        <div><span><b>Назначенных представлений нет</b><small>Страница использует обычные шаблоны AVE.cms.</small></span></div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+</div>
+
+<details class="card public-site-json">
+  <summary><i class="ti ti-braces"></i>Структурированный пакет страницы</summary>
+  <pre>{{ page_json }}</pre>
+</details>
+{% endif %}
+
+<section class="public-site-panel public-site-request-inspector">
+  <div class="section-header public-site-panel-header">
+    <div class="section-icon"><i class="ti ti-filter-search"></i></div>
+    <div><div class="section-eyebrow">Подборки</div><h2>Почему документ попал в запрос</h2><p class="section-desc">Параметры можно передать как <code>catalog=beds&amp;color=white</code> или JSON-объект.</p></div>
+  </div>
+  <div class="card public-site-card public-site-request-form">
+    <form method="get" action="{{ ADMINX_BASE }}/public-site/diagnostics">
+      {% if target %}<input type="hidden" name="target" value="{{ target }}">{% endif %}
+      <label><span>ID запроса</span><div class="input-wrap"><i class="ti ti-list-search"></i><input class="input" type="number" min="1" name="request_id" value="{{ request_id ?: '' }}"></div></label>
+      <label><span>ID документа</span><div class="input-wrap"><i class="ti ti-file"></i><input class="input" type="number" min="1" name="document_id" value="{{ document_id ?: '' }}"></div></label>
+      <label class="public-site-request-parameters"><span>Параметры страницы</span><div class="input-wrap"><i class="ti ti-adjustments-horizontal"></i><input class="input" name="parameters" value="{{ parameters_input }}" placeholder="catalog=beds&amp;color=white"></div></label>
+      <button class="btn btn-primary" type="submit"><i class="ti ti-player-play"></i>Объяснить</button>
+    </form>
+  </div>
+</section>
+
+{% if request_error %}
+<div class="alert alert-danger public-site-inspector-message"><i class="ti ti-alert-circle"></i><div><b>Запрос не проверен</b><p>{{ request_error }}</p></div></div>
+{% endif %}
+
+{% if request_explanation %}
+<section class="public-site-panel">
+  <div class="section-header public-site-panel-header">
+    <div class="section-icon"><i class="ti {{ request_explanation.matched ? 'ti-circle-check' : 'ti-circle-x' }}"></i></div>
+    <div><div class="section-eyebrow">Итог проверки</div><h2>{{ request_explanation.matched ? 'Документ входит в результат' : 'Документ не входит в результат' }}</h2><p class="section-desc">{{ request_explanation.request.title }} · {{ request_explanation.document.title }}</p></div>
+    <span class="badge {{ request_explanation.matched ? 'badge-green' : 'badge-red' }}">{{ request_explanation.matched ? 'найден' : 'исключён' }}</span>
+  </div>
+  <div class="card public-site-card">
+    <div class="public-site-base-checks">
+      {% for check in request_explanation.base %}
+      <div class="is-{{ check.state }}"><i class="ti {{ check.state == 'passed' ? 'ti-circle-check' : 'ti-circle-x' }}"></i><span><b>{{ check.label }}</b><small>{{ check.detail }}</small></span></div>
+      {% endfor %}
+    </div>
+    <div class="public-site-condition-tree">
+      {% for group in request_explanation.groups %}{{ _self.request_group(group) }}{% endfor %}
+    </div>
+  </div>
+</section>
+<details class="card public-site-json"><summary><i class="ti ti-braces"></i>Структурированное объяснение запроса</summary><pre>{{ request_json }}</pre></details>
+{% endif %}
+
+{% endblock %}

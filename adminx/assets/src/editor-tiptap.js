@@ -478,7 +478,7 @@ var EnhancedImage = Image.extend({
         params.set('limit', 40);
         status.hidden = false;
         status.textContent = 'Загрузка...';
-        fetch((window.ADMINX_BASE || '/adminx') + '/documents/picker?' + params.toString(), { headers: { 'Accept': 'application/json' }, credentials: 'same-origin' })
+        fetch((window.ADMINX_BASE || (Adminx.base ? Adminx.base() : '')) + '/documents/picker?' + params.toString(), { headers: { 'Accept': 'application/json' }, credentials: 'same-origin' })
           .then(function (response) { return response.json(); })
           .then(function (payload) {
             if (current !== request) { return; }

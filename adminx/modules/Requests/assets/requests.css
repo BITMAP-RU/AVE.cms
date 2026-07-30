@@ -211,7 +211,6 @@
   color: var(--blue-700);
   font-size: 10px;
   font-weight: 700;
-  font-variant-numeric: tabular-nums;
 }
 .request-sort-rule > label {
   display: grid;
@@ -714,7 +713,6 @@
 .request-contract-group-head span {
   color: var(--text-muted);
   font-size: 11px;
-  font-variant-numeric: tabular-nums;
 }
 .request-contract-options {
   display: grid;
@@ -1304,7 +1302,6 @@ body.req-code-fullscreen-open {
 }
 .request-condition-picker-id {
   color: var(--text-muted);
-  font-variant-numeric: tabular-nums;
   font-size: 11px;
 }
 .request-condition-picker-item > span:nth-child(2) {
@@ -1569,7 +1566,6 @@ tr.cond-dragging {
 .request-preview-stats b {
   font-size: 18px;
   line-height: 22px;
-  font-variant-numeric: tabular-nums;
 }
 .request-preview-stats span {
   color: var(--text-muted);
@@ -1702,7 +1698,6 @@ tr.cond-dragging {
 .request-preview-list-main small {
   color: var(--text-muted);
   font-size: 10px;
-  font-variant-numeric: tabular-nums;
 }
 .request-preview-list-values {
   display: grid;
@@ -1765,7 +1760,6 @@ tr.cond-dragging {
 .request-preview-table-title small {
   color: var(--text-muted);
   font-size: 9.5px;
-  font-variant-numeric: tabular-nums;
 }
 .request-preview-table-action {
   width: 52px;
@@ -1811,7 +1805,6 @@ tr.cond-dragging {
 .request-preview-item header small {
   color: var(--text-muted);
   font-size: 10px;
-  font-variant-numeric: tabular-nums;
 }
 .request-preview-values {
   display: grid;
@@ -2379,10 +2372,6 @@ tr.cond-dragging {
 .request-audit {
   display: grid;
   gap: 18px;
-}
-.request-audit-summary .stat-val,
-.request-audit-progress span {
-  font-variant-numeric: tabular-nums;
 }
 .request-audit-note {
   display: grid;

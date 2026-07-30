@@ -86,12 +86,16 @@
 		protected static function baselineDecision(array $payload)
 		{
 			$original = str_replace('\\', '/', (string) $payload['original_name']);
-			$name = strtolower(basename($original));
+			$position = strrpos($original, '/');
+			$name = $position === false ? $original : substr($original, $position + 1);
+			$name = function_exists('mb_strtolower')
+				? mb_strtolower($name, 'UTF-8')
+				: strtolower($name);
 			if ($name === '' || preg_match('/[\x00-\x1F\x7F]/', $name) || preg_match('/[.\s]$/u', $name)) {
 				return array('allowed' => false, 'reason' => 'Имя файла содержит недопустимые символы');
 			}
 
-			if ($name[0] === '.' || in_array($name, self::$blockedNames, true)) {
+			if ($name[0] === '.' || strpos($name, '~$') === 0 || in_array($name, self::$blockedNames, true)) {
 				return array('allowed' => false, 'reason' => 'Служебные файлы сервера загружать нельзя');
 			}
 

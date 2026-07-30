@@ -1,0 +1,225 @@
+{% if catalog_mode and not is_new %}
+<section class="product-promotions-panel" data-document-workspace-panel="promotions" data-product-promotions data-base="{{ ADMINX_BASE }}" data-product-id="{{ document.Id }}" data-product-title="{{ document.document_title|e('html_attr') }}" data-search-url="{{ ADMINX_BASE }}/catalog/product-relations/products" data-csrf="{{ csrf_token }}">
+  <header class="section-header blocks-panel-header product-promotions-header">
+    <div class="section-icon"><i class="ti ti-gift"></i></div>
+    <div>
+      <div class="section-eyebrow">Карточка товара</div>
+      <h2>Акции товара</h2>
+      <p class="section-desc">Настройте скидку на этот или сопутствующий товар либо выберите подарок.</p>
+    </div>
+    <div class="section-header-right"><a class="btn btn-ghost" href="{{ ADMINX_BASE }}/shop/settings?tab=promotions"><i class="ti ti-adjustments"></i>Все акции</a></div>
+  </header>
+
+  {% if not product_promotions_available %}
+  <div class="alert alert-warning product-promotions-alert"><i class="ti ti-database-exclamation"></i><div><b>Таблицы акций ещё не созданы</b><p>Примените миграции модуля «Магазин».</p></div></div>
+  {% elseif not can_manage_product_promotions %}
+  <div class="alert alert-warning product-promotions-alert"><i class="ti ti-lock"></i><div><b>Недостаточно прав</b><p>Для настройки нужны права на товары и управление заказами.</p></div></div>
+  {% else %}
+  <div class="product-promotions-layout">
+    <section class="product-promotions-list-panel">
+      <div class="product-promotions-subhead"><div><h3>Правила для товара</h3><p>Простые правила можно изменить здесь. Массовые открываются в общих настройках.</p></div><span class="badge badge-blue">{{ product_promotions|length }}</span></div>
+      <div class="product-promotions-list" data-product-promotion-list>
+        {% for item in product_promotions %}
+        <article class="product-promotion-row{{ not item.status ? ' is-disabled' : '' }}" data-product-promotion-row="{{ item.id }}">
+          <span class="icon-tile" style="--tile-bg:{{ item.reward_type == 'gift' ? 'var(--violet-100)' : 'var(--green-100)' }};--tile-fg:{{ item.reward_type == 'gift' ? 'var(--violet-600)' : 'var(--green-600)' }}"><i class="ti {{ item.reward_type == 'gift' ? 'ti-gift' : 'ti-discount-2' }}"></i></span>
+          <div class="product-promotion-row-copy">
+            <b>{{ item.title }}</b>
+            <small>
+              {% if item.reward_type == 'gift' %}
+                Подарок: {{ item.gift_product.title|default('товар не найден') }}
+              {% elseif item.reward_type == 'percent' %}
+                Скидка {{ item.reward_value|number_format(0, '.', ' ') }}%
+              {% elseif item.reward_type == 'fixed_price' %}
+                Цена {{ item.reward_value|number_format(0, '.', ' ') }} ₽
+              {% else %}
+                Скидка {{ item.reward_value|number_format(0, '.', ' ') }} ₽
+              {% endif %}
+              {% if item.reward_type != 'gift' and item.reward_products %} · {{ item.reward_products|first.title }}{% endif %}
+            </small>
+          </div>
+          <div class="product-promotion-row-actions">
+            {% if item.direct_product_rule %}
+            <label class="switch" data-tooltip="{{ item.status ? 'Выключить акцию' : 'Включить акцию' }}"><input type="checkbox"{{ item.status ? ' checked' : '' }} data-product-promotion-toggle data-url="{{ ADMINX_BASE }}/catalog/products/{{ document.Id }}/promotions/{{ item.id }}/toggle"><span></span></label>
+            <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-edit" type="button" data-product-promotion-edit data-rule="{{ item|json_encode|e('html_attr') }}" data-tooltip="Изменить" aria-label="Изменить"><i class="ti ti-pencil"></i></button>
+            <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-danger" type="button" data-product-promotion-delete data-url="{{ ADMINX_BASE }}/catalog/products/{{ document.Id }}/promotions/{{ item.id }}/delete" data-title="{{ item.title|e('html_attr') }}" data-tooltip="Удалить" aria-label="Удалить"><i class="ti ti-trash"></i></button>
+            {% else %}
+            <span class="badge badge-gray">общее правило</span>
+            <a class="btn btn-ghost btn-icon btn-sm" href="{{ ADMINX_BASE }}/shop/settings?tab=promotions" data-tooltip="Открыть общий конструктор" aria-label="Открыть общий конструктор"><i class="ti ti-external-link"></i></a>
+            {% endif %}
+          </div>
+        </article>
+        {% else %}
+        <div class="empty-state product-promotions-empty"><i class="ti ti-gift-off"></i><b>Акций для товара пока нет</b><span>Создайте скидку или выберите товар в подарок.</span></div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <form class="product-promotion-form" method="post" action="{{ ADMINX_BASE }}/catalog/products/{{ document.Id }}/promotions/0" data-product-promotion-form>
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <input type="hidden" name="code" value="">
+      <input type="hidden" name="priority" value="100">
+      <div class="product-promotions-subhead"><div><h3 data-product-promotion-form-title>Новая акция</h3><p>Редактируемый товар уже выбран как условие.</p></div><label class="switch" data-tooltip="Акция включена"><input type="checkbox" name="status" value="1" checked><span></span></label></div>
+      <div class="form-grid product-promotion-fields">
+        <label class="field col-8"><span class="field-label">Название</span><input class="input" name="title" maxlength="190" value="Акция: {{ document.document_title|e('html_attr') }}" required></label>
+        <label class="field col-4"><span class="field-label">При покупке, шт.</span><input class="input" type="number" name="condition_quantity" min="1" max="1000" value="1"></label>
+        <label class="field col-6"><span class="field-label">Что получает покупатель</span><select class="select" name="reward_type" data-product-promotion-type><option value="percent">Скидка, %</option><option value="fixed_discount">Скидка, ₽</option><option value="fixed_price">Специальная цена</option><option value="gift">Товар в подарок</option></select></label>
+        <label class="field col-6" data-product-promotion-value-field><span class="field-label" data-product-promotion-value-label>Размер скидки, %</span><input class="input" type="number" name="reward_value" min="0" step="0.01" value=""></label>
+        <label class="field col-6" data-product-promotion-target-mode-field><span class="field-label">На какой товар действует</span><select class="select" name="target_mode" data-product-promotion-target-mode><option value="current">На этот товар</option><option value="linked">На другой товар</option></select></label>
+        <label class="field col-6"><span class="field-label">Количество со скидкой / в подарок</span><input class="input" type="number" name="reward_quantity" min="1" max="1000" value="1"></label>
+        <div class="field col-12 product-promotion-picker" data-product-promotion-picker hidden>
+          <input type="hidden" name="target_product_id" value="">
+          <span class="field-label" data-product-promotion-target-label>Сопутствующий товар</span>
+          <div class="input-wrap"><i class="ti ti-search"></i><input class="input" type="search" autocomplete="off" placeholder="Название, артикул или ID" data-product-promotion-search></div>
+          <div class="product-picker-results" data-product-promotion-results hidden></div>
+          <div class="product-picker-selected" data-product-promotion-selected hidden></div>
+        </div>
+        <label class="field col-6"><span class="field-label">Начало</span><input class="input" type="datetime-local" name="starts_at"></label>
+        <label class="field col-6"><span class="field-label">Завершение</span><input class="input" type="datetime-local" name="ends_at"></label>
+        <label class="field col-12"><span class="field-label">Описание для покупателя</span><input class="input" name="description" maxlength="500" placeholder="Например: скидка действует при покупке вместе"></label>
+        <label class="product-promotion-option col-12"><span class="switch"><input type="checkbox" name="allow_coupon" value="1"><span></span></span><span><b>Разрешить применять купон</b><small>Купон будет рассчитан после акции товара.</small></span></label>
+      </div>
+      <div class="alert alert-info product-promotion-preview"><i class="ti ti-sparkles"></i><div><b>Как сработает</b><p data-product-promotion-preview>Укажите размер скидки.</p></div></div>
+      <div class="product-promotion-actions"><button class="btn btn-ghost" type="button" data-product-promotion-reset hidden>Отменить редактирование</button><button class="btn btn-primary" type="submit"><i class="ti ti-device-floppy"></i><span data-product-promotion-submit>Создать акцию</span></button></div>
+    </form>
+  </div>
+  {% endif %}
+</section>
+{% endif %}
+
+{% if catalog_mode and not is_new %}
+<section class="card documents-card catalog-product-variant-bridge" data-document-workspace-panel="variants">
+  <div class="documents-section-head"><h2>Варианты товара</h2>{% if variant_group %}<span class="badge badge-blue">Группа #{{ variant_group.id }}</span>{% endif %}</div>
+  <div class="documents-card-body between">
+    {% if variant_group %}
+    <div><b>{{ variant_group.title }}</b><p class="text-secondary">{{ variant_group.is_primary ? 'Основной вариант группы' : 'Вариант группы' }}</p></div>
+    <a class="btn btn-secondary" href="{{ ADMINX_BASE }}/catalog/variant-groups/{{ variant_group.id }}"><i class="ti ti-box-multiple"></i>Управление вариантами</a>
+    {% else %}
+    <div><b>Товар пока не объединён с вариантами</b><p class="text-secondary">Создайте группу на основе текущего товара.</p></div>
+    <form method="post" action="{{ ADMINX_BASE }}/catalog/products/{{ document.Id }}/variant-group" data-variant-action>
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <input type="hidden" name="title" value="{{ document.document_title|e('html_attr') }}">
+      <button class="btn btn-secondary" type="submit"><i class="ti ti-plus"></i>Создать группу вариантов</button>
+    </form>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
+
+{% if catalog_mode and not is_new %}
+<section class="product-native-attributes" data-document-workspace-panel="attributes">
+  {% if native_attributes.attributes_count %}
+  <form class="native-attributes-form" method="post" action="{{ ADMINX_BASE }}/catalog/products/{{ document.Id }}/attributes" data-attribute-ajax>
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <header class="section-header blocks-panel-header native-attributes-panel-header">
+      <div class="section-icon"><i class="ti ti-list-details"></i></div>
+      <div>
+        <div class="section-eyebrow">Карточка товара</div>
+        <h2>Нативные характеристики</h2>
+        <p class="section-desc">Характеристики сгруппированы по назначению. Единицы измерения сохраняются вместе со схемой и не вводятся вручную.</p>
+      </div>
+      <div class="section-header-right"><span class="badge badge-violet">{{ native_attributes.attributes_count }} полей</span></div>
+    </header>
+    <div class="native-attribute-groups">
+      {% for group in native_attributes.groups %}
+      <section class="card native-attribute-group">
+        <div class="native-attribute-group-head"><div><b>{{ group.name }}</b><small>{{ group.set_name }}</small></div><span class="badge badge-gray">{{ group.items|length }}</span></div>
+        <div class="native-attribute-grid">
+          {% for item in group.items %}
+          {% if item.value_type == 'multi_choice' and item.option_items %}
+          <fieldset class="field native-attribute-field native-attribute-multi-field">
+            <legend class="field-label">{{ item.label_override ?: item.name }}{% if item.required %}<span class="ax-required">*</span>{% endif %}</legend>
+            <div class="native-attribute-option-grid">
+              {% for option in item.option_items %}
+              <label class="check native-attribute-option" data-native-attribute-option>
+                <input type="checkbox" name="attribute[{{ item.id }}][]" value="{{ option.value_key|e('html_attr') }}"{{ item.value is iterable and option.value_key in item.value ? ' checked' : '' }}>
+                {% if option.swatch %}<i class="native-attribute-option-swatch" style="--attribute-swatch:{{ option.swatch|e('html_attr') }}"></i>{% endif %}
+                <span><b>{{ option.label }}</b>{% if option.legacy %}<small>Прежнее значение</small>{% endif %}</span>
+              </label>
+              {% endfor %}
+            </div>
+            <span class="native-attribute-meta"><span class="mono">{{ item.code }}</span>{% if item.value_state %}<span class="badge {{ item.value_state == 'verified' ? 'badge-green' : 'badge-amber' }}">{{ item.value_state == 'verified' ? 'проверено' : 'черновик' }}</span>{% endif %}</span>
+          </fieldset>
+          {% else %}
+          <label class="field native-attribute-field{{ item.editor == 'textarea' ? ' native-attribute-textarea-field' : '' }}">
+            <span class="field-label">{{ item.label_override ?: item.name }}{% if item.required %}<span class="ax-required">*</span>{% endif %}</span>
+            {% if item.value_type == 'boolean' %}
+            <select class="select" name="attribute[{{ item.id }}]"><option value="">Не задано</option><option value="1" {{ item.value is same as(true) or item.value == '1' ? 'selected' : '' }}>Да</option><option value="0" {{ item.value is same as(false) and item.value_json != '' or item.value == '0' ? 'selected' : '' }}>Нет</option></select>
+            {% elseif item.value_type == 'choice' and item.option_items %}
+            <span class="native-attribute-choice" data-native-attribute-choice><select class="select" name="attribute[{{ item.id }}]"><option value="" data-swatch="">Не задано</option>{% for option in item.option_items %}<option value="{{ option.value_key|e('html_attr') }}" data-swatch="{{ option.swatch|e('html_attr') }}" {{ item.value == option.value_key ? 'selected' : '' }}>{{ option.label }}{% if option.legacy %} · прежнее значение{% endif %}</option>{% endfor %}</select><span class="native-attribute-choice-swatch" data-native-attribute-choice-swatch hidden></span></span>
+            {% elseif item.value_type == 'number' %}
+            <span class="input-group native-attribute-input-group"><input class="input" type="number" step="any" name="attribute[{{ item.id }}]" value="{{ item.value }}">{% if item.unit %}<span class="input-addon">{{ item.unit }}</span>{% endif %}</span>
+            {% elseif item.value_type == 'date' %}
+            <input class="input" type="date" name="attribute[{{ item.id }}]" value="{{ item.value }}">
+            {% elseif item.value_type == 'multi_choice' %}
+            <textarea class="textarea" rows="3" name="attribute[{{ item.id }}]">{{ item.value is iterable ? item.value|join('\n') : item.value }}</textarea>
+            {% elseif item.editor == 'textarea' %}
+            <textarea class="textarea native-attribute-textarea" rows="5" name="attribute[{{ item.id }}]">{{ item.value is iterable ? item.value|join(', ') : item.value }}</textarea>
+            {% else %}
+            {% if item.unit %}<span class="input-group native-attribute-input-group"><input class="input" type="text" name="attribute[{{ item.id }}]" value="{{ item.value is iterable ? item.value|join(', ') : item.value }}"><span class="input-addon">{{ item.unit }}</span></span>{% else %}<input class="input" type="text" name="attribute[{{ item.id }}]" value="{{ item.value is iterable ? item.value|join(', ') : item.value }}">{% endif %}
+            {% endif %}
+            <span class="native-attribute-meta"><span class="mono">{{ item.code }}</span>{% if item.value_state %}<span class="badge {{ item.value_state == 'verified' ? 'badge-green' : 'badge-amber' }}">{{ item.value_state == 'verified' ? 'проверено' : 'черновик' }}</span>{% endif %}</span>
+          </label>
+          {% endif %}
+          {% endfor %}
+        </div>
+      </section>
+      {% endfor %}
+      <div class="native-attribute-footer"><a class="btn btn-ghost" href="{{ ADMINX_BASE }}/catalog/attributes?view=sections"><i class="ti ti-settings"></i>Настроить наборы</a><button class="btn btn-primary" type="submit"><i class="ti ti-device-floppy"></i>Сохранить характеристики</button></div>
+    </div>
+  </form>
+  {% else %}
+  <header class="section-header blocks-panel-header native-attributes-panel-header">
+    <div class="section-icon"><i class="ti ti-list-details"></i></div>
+    <div>
+      <div class="section-eyebrow">Карточка товара</div>
+      <h2>Нативные характеристики</h2>
+      <p class="section-desc">Для раздела товара пока не назначены характеристики.</p>
+    </div>
+  </header>
+  <div class="card native-attribute-empty">
+    <div class="documents-placeholder">
+      <span class="icon-tile" style="--tile-bg:var(--gray-100);--tile-fg:var(--gray-600)"><i class="ti ti-list-search"></i></span>
+      <div><b>Характеристик пока нет</b><p class="text-secondary">Назначьте набор характеристик разделу каталога.</p></div>
+      <a class="btn btn-secondary" href="{{ ADMINX_BASE }}/catalog/attributes?view=sections"><i class="ti ti-settings"></i>Настроить наборы</a>
+    </div>
+  </div>
+  {% endif %}
+</section>
+{% endif %}
+
+{% if catalog_mode and not is_new %}
+<section class="card documents-card product-shipping-card" data-product-shipping data-document-workspace-panel="shipping">
+  <form data-product-shipping-form action="{{ ADMINX_BASE }}/catalog/products/{{ document.Id }}/shipping" method="post">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <input type="hidden" name="packages" value="">
+    <div class="documents-section-head product-shipping-head">
+      <div class="documents-head-left"><span class="icon-tile documents-head-icon" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-package-export"></i></span><div><h2>Доставка и упаковка</h2><p class="text-secondary">Физические грузовые места для расчёта перевозчиками.</p></div></div>
+      <label class="switch"><input type="checkbox" name="shipping_enabled" value="1"{{ shipping_profile.shipping_enabled ? ' checked' : '' }}><span></span><b>Рассчитывать доставку</b></label>
+    </div>
+    <div class="documents-card-body product-shipping-body">
+      {% if shipping_profile.legacy %}<div class="product-shipping-legacy"><i class="ti ti-info-circle"></i><span>Найдены старые данные: {% for alias,value in shipping_profile.legacy %}<b>{{ alias }}</b> {{ value }}{% if not loop.last %}, {% endif %}{% endfor %}. Добавьте грузовое место, чтобы перейти на точный расчёт.</span></div>{% endif %}
+      <div class="product-package-template-picker"><select class="select" data-package-template-select><option value="">Добавить готовую упаковку</option>{% for template in package_templates %}<option value="{{ template.id }}" data-package="{{ template|json_encode|e('html_attr') }}">{{ template.title }} · {{ template.dimensions }} · {{ template.weight_label }}</option>{% endfor %}</select><button class="btn btn-secondary" type="button" data-package-template-apply disabled><i class="ti ti-plus"></i>Добавить</button><a class="btn btn-ghost btn-icon" href="{{ ADMINX_BASE }}/catalog/products/shipping" data-tooltip="Управление шаблонами" aria-label="Управление шаблонами упаковки"><i class="ti ti-settings"></i></a></div>
+      <div class="product-package-head" aria-hidden="true"><span>Грузовое место</span><span>Кол-во</span><span>Вес, кг</span><span>Длина, см</span><span>Ширина, см</span><span>Высота, см</span><span></span></div>
+      <div class="product-package-list" data-package-list>
+        {% for package in shipping_profile.packages %}
+        <div class="product-package-row" data-package-row>
+          <input class="input" name="title" value="{{ package.title|e('html_attr') }}" aria-label="Название грузового места">
+          <input class="input" type="number" name="quantity" min="1" max="999" step="1" value="{{ package.quantity }}" aria-label="Количество">
+          <input class="input" type="number" name="weight_kg" min="0" step="0.001" value="{{ package.weight_kg }}" aria-label="Вес в килограммах">
+          <input class="input" type="number" name="length_cm" min="0" step="0.1" value="{{ package.length_cm }}" aria-label="Длина в сантиметрах">
+          <input class="input" type="number" name="width_cm" min="0" step="0.1" value="{{ package.width_cm }}" aria-label="Ширина в сантиметрах">
+          <input class="input" type="number" name="height_cm" min="0" step="0.1" value="{{ package.height_cm }}" aria-label="Высота в сантиметрах">
+          <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-danger" type="button" data-package-remove data-tooltip="Удалить грузовое место" aria-label="Удалить грузовое место"><i class="ti ti-trash"></i></button>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="product-shipping-empty" data-package-empty{{ shipping_profile.packages ? ' hidden' : '' }}><i class="ti ti-package-off"></i><span>Грузовые места ещё не добавлены</span></div>
+      <div class="product-shipping-footer">
+        <div class="product-shipping-summary"><span><b data-package-places>{{ shipping_profile.summary.places }}</b> мест</span><span><b data-package-weight>{{ shipping_profile.summary.weight_kg|number_format(3, '.', ' ') }}</b> кг</span><span><b data-package-volume>{{ shipping_profile.summary.volume_m3|number_format(4, '.', ' ') }}</b> м³</span><span class="badge {{ shipping_profile.complete ? 'badge-green' : 'badge-amber' }}" data-package-state>{{ shipping_profile.complete ? 'данные заполнены' : 'нужны габариты' }}</span></div>
+        <div class="cluster">{% if variant_group %}<button class="btn btn-secondary" type="button" data-shipping-copy-variants data-url="{{ ADMINX_BASE }}/catalog/products/{{ document.Id }}/shipping/copy-to-variants" data-csrf="{{ csrf_token }}" data-tooltip="Заменить упаковку у всех вариантов"><i class="ti ti-copy"></i>Вариантам</button>{% endif %}<button class="btn btn-secondary" type="button" data-package-add><i class="ti ti-plus"></i>Добавить место</button><button class="btn btn-primary" type="submit"><i class="ti ti-device-floppy"></i>Сохранить упаковку</button></div>
+      </div>
+    </div>
+  </form>
+  <template data-package-template><div class="product-package-row" data-package-row><input class="input" name="title" value="" placeholder="Коробка 1" aria-label="Название грузового места"><input class="input" type="number" name="quantity" min="1" max="999" step="1" value="1" aria-label="Количество"><input class="input" type="number" name="weight_kg" min="0" step="0.001" value="" placeholder="0" aria-label="Вес в килограммах"><input class="input" type="number" name="length_cm" min="0" step="0.1" value="" placeholder="0" aria-label="Длина в сантиметрах"><input class="input" type="number" name="width_cm" min="0" step="0.1" value="" placeholder="0" aria-label="Ширина в сантиметрах"><input class="input" type="number" name="height_cm" min="0" step="0.1" value="" placeholder="0" aria-label="Высота в сантиметрах"><button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-danger" type="button" data-package-remove data-tooltip="Удалить грузовое место" aria-label="Удалить грузовое место"><i class="ti ti-trash"></i></button></div></template>
+</section>
+{% endif %}

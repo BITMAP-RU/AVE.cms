@@ -65,7 +65,7 @@ Valid Twig templates are determined by the module itself. He is also responsible
 
 ## Where to edit appearance
 
-Managed settings and module templates are edited in its Adminx section. If
+Managed settings and module templates are edited in its control panel section. If
 The module is allowed to be overridden by the active theme, the file is located in:
 
 ```text

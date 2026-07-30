@@ -28,7 +28,7 @@
 				'X-Frame-Options: SAMEORIGIN',
 				'Referrer-Policy: strict-origin-when-cross-origin',
 				'Permissions-Policy: camera=(), microphone=(), geolocation=()',
-				"Content-Security-Policy-Report-Only: default-src 'self' data: blob: https:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: http: https:; font-src 'self' data: https:; connect-src 'self' https: wss:; frame-src 'self' https:",
+				"Content-Security-Policy: default-src 'self' data: blob: https:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: http: https:; font-src 'self' data: https:; connect-src 'self' https: wss:; frame-src 'self' https:",
 			);
 		}
 

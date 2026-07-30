@@ -17,6 +17,7 @@
 	use App\Common\Loader\Load;
 	use App\Content\Fields\FieldRegistry;
 	use App\Content\Blocks\ContentBlockRegistry;
+	use App\Content\Presentation\PresentationDataRegistry;
 	use App\Content\Requests\RequestRendererRegistry;
 	use App\Content\Rubrics\FieldSetRegistry;
 	use App\Helpers\Hooks;
@@ -239,6 +240,7 @@
 				'last_error' => isset($state['last_error']) ? $state['last_error'] : '',
 				'admin_extension' => isset($descriptor['admin_extension']) && is_array($descriptor['admin_extension']) ? $descriptor['admin_extension'] : array(),
 				'dependencies' => self::normalizeDependencies(isset($descriptor['requires']) ? $descriptor['requires'] : null),
+				'recommended_dependencies' => self::normalizeDependencies(isset($descriptor['recommends']) ? $descriptor['recommends'] : null),
 				'permissions_count' => self::countPermissions(isset($descriptor['permissions']) ? $descriptor['permissions'] : null),
 				'navigation_count' => self::countItems(isset($descriptor['navigation']) ? $descriptor['navigation'] : null),
 				'hooks_count' => self::countItems(isset($descriptor['hooks']) ? $descriptor['hooks'] : null),
@@ -246,6 +248,7 @@
 				'field_sets_count' => self::countItems(isset($descriptor['field_sets']) ? $descriptor['field_sets'] : null),
 				'request_renderers_count' => self::countItems(isset($descriptor['request_renderers']) ? $descriptor['request_renderers'] : null),
 				'content_blocks_count' => self::countItems(isset($descriptor['content_blocks']) ? $descriptor['content_blocks'] : null),
+				'presentation_data_count' => self::countItems(isset($descriptor['presentation_data']) ? $descriptor['presentation_data'] : null),
 				'config_count' => self::countConfig(isset($descriptor['config']) ? $descriptor['config'] : null),
 				'settings_count' => self::countItems(isset($descriptor['settings']) ? $descriptor['settings'] : null),
 				'migrations_count' => self::countFiles(isset($descriptor['migrations']) ? $descriptor['migrations'] : null),
@@ -278,6 +281,7 @@
 			self::registerFieldSets($code, isset($descriptor['field_sets']) ? $descriptor['field_sets'] : null, !empty($state['enabled']));
 			self::registerRequestRenderers($code, isset($descriptor['request_renderers']) ? $descriptor['request_renderers'] : null, !empty($state['enabled']));
 			self::registerContentBlocks($code, isset($descriptor['content_blocks']) ? $descriptor['content_blocks'] : null, !empty($state['enabled']));
+			self::registerPresentationData($code, isset($descriptor['presentation_data']) ? $descriptor['presentation_data'] : null, !empty($state['enabled']));
 			self::registerHooks(isset($descriptor['hooks']) ? $descriptor['hooks'] : null);
 			self::registerPublicAccess($descriptor);
 
@@ -1054,6 +1058,16 @@
 				ContentBlockRegistry::registerMany('module:' . (string) $moduleCode, $blocks, (bool) $available);
 			} catch (\Throwable $e) {
 				self::$errors[] = 'Content blocks ' . (string) $moduleCode . ': ' . $e->getMessage();
+			}
+		}
+
+		protected static function registerPresentationData($moduleCode, $items, $available)
+		{
+			if (!is_array($items)) { return; }
+			try {
+				PresentationDataRegistry::registerMany('module:' . (string) $moduleCode, $items, (bool) $available);
+			} catch (\Throwable $e) {
+				self::$errors[] = 'Presentation data ' . (string) $moduleCode . ': ' . $e->getMessage();
 			}
 		}
 

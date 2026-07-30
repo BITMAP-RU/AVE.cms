@@ -19,7 +19,6 @@
   font-size: 20px;
   line-height: 1.1;
   font-weight: 800;
-  font-variant-numeric: tabular-nums;
 }
 .templates-stat span {
   font-size: 13px;
@@ -160,7 +159,6 @@
   gap: 2px;
   color: var(--text-secondary);
   font-size: 12px;
-  font-variant-numeric: tabular-nums;
 }
 .templates-actions {
   gap: 4px;
@@ -370,7 +368,6 @@
 .templates-tag-nav b {
   color: var(--text-muted);
   font-size: 10.5px;
-  font-variant-numeric: tabular-nums;
 }
 .templates-tag-nav button.is-active b {
   color: var(--color-primary);

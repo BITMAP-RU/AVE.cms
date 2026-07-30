@@ -13,6 +13,7 @@
       var state = document.querySelector('[data-module-state]');
       var sort = document.querySelector('[data-module-sort]');
       var repositorySort = document.querySelector('[data-repository-sort]');
+      this.focusRequestedModule(page, search, state);
       if (search) { search.addEventListener('input', function () { self.filter(); }); }
       if (state) { state.addEventListener('change', function () { self.filter(); }); }
       if (sort) { sort.addEventListener('change', function () { self.sortRows('[data-module-row]', sort.value); }); }
@@ -48,6 +49,26 @@
         Adminx.Tabs.activate(page, 'catalog');
       }
       this.initArchive();
+    },
+
+    focusRequestedModule: function (page, search, state) {
+      var params = new URLSearchParams(window.location.search);
+      var code = (params.get('focus') || '').trim().toLowerCase();
+      if (!code) { return; }
+
+      if (params.get('tab') !== 'catalog' && search) {
+        search.value = code;
+        if (state) { state.value = 'all'; }
+        this.filter();
+      }
+
+      window.setTimeout(function () {
+        var selector = params.get('tab') === 'catalog' ? '[data-repository-row]' : '[data-module-row]';
+        var row = page.querySelector(selector + '[data-code="' + CSS.escape(code) + '"]');
+        if (!row) { return; }
+        row.classList.add('is-focused');
+        row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 80);
     },
 
     base: function () { return Adminx.base(); },

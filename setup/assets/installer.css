@@ -128,7 +128,7 @@ input:focus, textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px r
 .installer-progress-head { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; align-items: center; gap: 16px; }
 .installer-progress-head p { margin-bottom: 0; color: var(--muted); }
 .installer-progress-head .installer-eyebrow { margin-bottom: 3px; color: var(--blue); }
-.installer-progress-head > strong { color: var(--blue); font-size: 22px; font-variant-numeric: tabular-nums; }
+.installer-progress-head > strong { color: var(--blue); font-size: 22px;  }
 .installer-progress-icon { display: grid; width: 48px; height: 48px; place-items: center; border-radius: 8px; background: var(--blue-soft); }
 .installer-progress-icon i { width: 22px; height: 22px; border: 3px solid #aac2f7; border-top-color: var(--blue); border-radius: 50%; animation: installer-spin .8s linear infinite; }
 .installer-progress-track { height: 8px; margin: 26px 0; overflow: hidden; border-radius: 4px; background: #e8edf5; }
@@ -164,7 +164,7 @@ input:focus, textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px r
 .installer-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
 .installer-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 22px; }
 .installer-summary span { padding: 12px; border: 1px solid var(--line); border-radius: 6px; color: var(--muted); text-align: center; font-size: 12px; }
-.installer-summary b { display: block; color: var(--text); font-size: 22px; font-variant-numeric: tabular-nums; }
+.installer-summary b { display: block; color: var(--text); font-size: 22px;  }
 @media (max-width: 820px) {
   .installer-header { margin-bottom: 32px; }
   .installer-layout { grid-template-columns: 1fr; }
@@ -226,7 +226,7 @@ input:focus, textarea:focus { border-color: var(--blue); box-shadow: 0 0 0 3px r
 .installer-package-body { min-width: 0; }
 .installer-package-status { display: flex; justify-content: space-between; gap: 16px; margin-top: 10px; color: #64748b; font-size: 13px; }
 .installer-package-status span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.installer-package-status strong { color: #0f172a; font-variant-numeric: tabular-nums; }
+.installer-package-status strong { color: #0f172a;  }
 .installer-package.is-complete .installer-package-icon { background: #dcfce7; color: #15803d; }
 .installer-package.is-error .installer-package-icon { background: #fee2e2; color: #b91c1c; }
 .installer-error { display: grid; gap: 8px; margin-top: 18px; padding: 14px; border-radius: 8px; background: #fef2f2; color: #991b1b; }

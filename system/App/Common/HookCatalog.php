@@ -110,6 +110,7 @@
 				'content.document.loading' => 'Документ готовится к загрузке',
 				'content.document.loaded' => 'Документ загружен',
 				'content.document.saving' => 'Документ готовится к сохранению',
+				'content.document.persisted' => 'Документ записан внутри транзакции',
 				'content.document.saved' => 'Документ сохранен',
 				'content.document.created' => 'Документ создан',
 				'content.document.updated' => 'Документ изменен',
@@ -158,6 +159,9 @@
 				'commerce.order.status_changed' => 'Состояние заказа изменено',
 				'commerce.payment.completed' => 'Платеж завершен',
 				'commerce.delivery.quoted' => 'Стоимость доставки рассчитана',
+				'http.outbound.requesting' => 'Исходящий HTTP-запрос подготовлен',
+				'http.outbound.responded' => 'Получен ответ на исходящий HTTP-запрос',
+				'http.outbound.failed' => 'Исходящий HTTP-запрос завершился ошибкой',
 				'cache.invalidating' => 'Кеш готовится к сбросу',
 				'cache.invalidated' => 'Кеш сброшен',
 				'file.upload.validating' => 'Загружаемый файл проверяется перед сохранением',
@@ -173,8 +177,13 @@
 			self::$definitions['auth.account.links']['context'] = 'array<int,array{url:string,label:string}>';
 			self::$definitions['auth.account.overview']['kind'] = 'filter';
 			self::$definitions['auth.account.overview']['context'] = 'array{user_id:int,preview:bool,extensions:array}';
+			foreach (array('http.outbound.requesting', 'http.outbound.responded', 'http.outbound.failed') as $name) {
+				self::$definitions[$name]['mutable'] = false;
+			}
+
 			foreach (array(
 				'content.document.saving',
+				'content.document.persisted',
 				'content.document.saved',
 				'content.document.created',
 				'content.document.updated',

@@ -299,7 +299,7 @@ the same.
 | Mode | What's going on |
 | --- | --- |
 | **Legacy** | The old selection works with all historical PHP and SQL capabilities. This is the default safe state. |
-| **Shadow** | The public site continues to use Legacy. In Adminx, the same request is additionally executed by the Native executor and the results are compared. |
+| **Shadow** | The public site continues to use Legacy. In the control panel, the same request is additionally executed by the Native executor and the results are compared. |
 | **Native** | The list is selected according to a parameterized plan without PHP execution from the condition values. Old templates continue to render the result. |
 
 Native cannot be selected immediately. First save the request, enable **Shadow** and
@@ -317,7 +317,7 @@ The order must end in a unique order for automatic confirmation
 system field **ID**. The same publication date, position or price may be
 on several documents. Without the final ID, MySQL has the right to rearrange such
 lines after clearing the cache, even if the composition of the list has not changed. In this case
-Adminx will show **Order not fixed** and save Shadow/Legacy. It protects
+The control panel will show **Order not fixed** and save Shadow/Legacy. It protects
 pagination, menus and cards from imperceptible rearrangement.
 
 For text sorting, equality is determined by the same collation base as in
@@ -343,7 +343,7 @@ the real value of the corresponding field is taken when available.
 
 The request will remain on Legacy if it uses arbitrary `FRE`, `ANY`, arbitrary PHP,
 `[field]`, random sorting without a permanent key or raw `USER_WHERE` passed when called,
-`USER_FROM`, `USER_JOIN`, `ORDER`, `SQL_QUERY`. Adminx shows specific
+`USER_FROM`, `USER_JOIN`, `ORDER`, `SQL_QUERY`. The control panel shows specific
 reasons. These possibilities are not interpreted approximately.
 
 Declarative range and multiple filter can store historical code
@@ -360,7 +360,7 @@ To safely navigate an existing site:
 1. **Check All** moves requests to Shadow. Recognized old conditions
    the typed description is written next to the PHP source, but the public HTML
    continues to be compiled by Legacy executor.
-2. Adminx sequentially compares up to 5000 documents of each request, without
+2. The control panel sequentially compares up to 5000 documents of each request, without
    creating a simultaneous load on the database. If the composition of the Legacy sample coincides
    all parameter states, PHP is replaced by a declarative tag and Legacy
    is checked again against the hash of the full list of IDs. If the value is different

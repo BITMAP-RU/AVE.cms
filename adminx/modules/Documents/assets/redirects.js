@@ -6,7 +6,7 @@
     filterTimer: null,
     filterAbort: null,
     filterRequest: 0,
-    base: function () { return window.ADMINX_BASE || '/adminx'; },
+    base: function () { return window.ADMINX_BASE || Adminx.base(); },
     csrf: function () { var el = document.querySelector('[data-redirect-csrf]'); return el ? el.value : ''; },
     json: function (response) { return response.json().then(function (data) { if (!response.ok || data.success === false) { throw new Error(data.message || 'Ошибка запроса'); } return data; }); },
     esc: function (value) { var div = document.createElement('div'); div.textContent = value == null ? '' : String(value); return div.innerHTML; },
@@ -47,6 +47,8 @@
 
     load: function (url, push) {
       var self = this;
+      clearTimeout(this.filterTimer);
+      this.filterTimer = null;
       var requestId = ++this.filterRequest;
       var active = document.activeElement;
       var focusName = active && active.closest && active.closest('[data-redirect-filter]') ? active.getAttribute('name') : '';

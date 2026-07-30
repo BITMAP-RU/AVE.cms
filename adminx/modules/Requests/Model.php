@@ -553,10 +553,25 @@
 		public static function delete($id)
 		{
 			$current = self::find($id);
+			if (!$current) {
+				return false;
+			}
+
+			$dependencies = \App\Content\ContentTagDependencies::request(
+				(int) $id,
+				isset($current->request_alias) ? (string) $current->request_alias : ''
+			);
+			if ($dependencies) {
+				throw new \RuntimeException(
+					'Запрос используется: ' . implode(', ', $dependencies) . '. Сначала уберите эти вызовы.'
+				);
+			}
+
 			DB::Delete(self::cond(), 'request_id = %i', (int) $id);
 			DB::Delete(self::groups(), 'request_id = %i', (int) $id);
 			DB::Delete(self::req(), 'Id = %i', (int) $id);
 			FileCacheInvalidator::request($id, $current ? $current->request_alias : '');
+			return true;
 		}
 
 		// ---------------- Условия ----------------
@@ -694,41 +709,7 @@
 
 		public static function documentPicker($query, $rubricIds = '', $limit = 30)
 		{
-			$limit = max(1, min(50, (int) $limit));
-			$sql = 'SELECT d.Id,d.rubric_id,d.document_title,d.document_alias,r.rubric_title'
-				. ' FROM ' . ContentTables::table('documents') . ' d'
-				. ' LEFT JOIN ' . ContentTables::table('rubrics') . ' r ON r.Id=d.rubric_id'
-				. " WHERE d.document_deleted!='1'";
-			$args = array();
-			$query = trim((string) $query);
-			if ($query !== '') {
-				$sql .= ' AND (d.document_title LIKE %ss OR d.document_alias LIKE %ss OR d.Id=%i)';
-				$args[] = $query;
-				$args[] = $query;
-				$args[] = (int) $query;
-			}
-
-			$ids = array();
-			foreach (explode(',', (string) $rubricIds) as $rubricId) {
-				$rubricId = (int) trim($rubricId);
-				if ($rubricId > 0) { $ids[$rubricId] = $rubricId; }
-			}
-
-			if ($ids) { $sql .= ' AND d.rubric_id IN (' . implode(',', $ids) . ')'; }
-			$sql .= ' ORDER BY d.document_changed DESC,d.Id DESC LIMIT ' . $limit;
-			$rows = call_user_func_array(array('DB', 'query'), array_merge(array($sql), $args))->getAll();
-			$result = array();
-			foreach ($rows as $row) {
-				$result[] = array(
-					'id' => (int) $row['Id'],
-					'title' => (string) $row['document_title'],
-					'alias' => (string) $row['document_alias'],
-					'rubric_id' => (int) $row['rubric_id'],
-					'rubric_title' => (string) $row['rubric_title'],
-				);
-			}
-
-			return $result;
+			return (new \App\Content\Documents\DocumentPickerRepository())->search($query, $rubricIds, $limit);
 		}
 
 		public static function paginationOptions()

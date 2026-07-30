@@ -18,6 +18,7 @@
 
 	use App\Helpers\Str;
 	use App\Helpers\Json;
+	use App\Content\Directories\DirectoryRepository;
 
 	/**
 	 * Форма настроек поля из его settingsSchema() — конструктор рубрики.
@@ -25,7 +26,7 @@
 	 * render() строит HTML-контролы (имена rubric_field_settings[<key>]),
 	 * collect() симметрично нормализует POST обратно в массив настроек для JSON.
 	 * Дескриптор схемы: ['key','type','label','options'?,'default'?,'multiple'?].
-	 * Поддержаны type: text|int|number|bool|select|list|map|rubric.
+	 * Поддержаны type: text|textarea|int|number|bool|select|list|map|rubric|directory.
 	 */
 	class FieldSettingsForm
 	{
@@ -79,7 +80,7 @@
 			$col = (isset($desc['type']) && in_array($desc['type'], array('int', 'number'), true)) ? 'col-6' : 'col-12';
 			$hint = (isset($desc['hint']) && $desc['hint'] !== '') ? '<span class="field-hint">' . self::e($desc['hint']) . '</span>' : '';
 			$tag = isset($desc['type']) && $desc['type'] === 'map' ? 'div' : 'label';
-			return '<' . $tag . ' class="field ' . $col . '"><span class="field-label">' . self::e(isset($desc['label']) ? $desc['label'] : $key) . '</span>'
+			return '<' . $tag . ' class="field ' . $col . '" data-field-setting-key="' . self::attr($key) . '"><span class="field-label">' . self::e(isset($desc['label']) ? $desc['label'] : $key) . '</span>'
 				. self::control($desc, $key, $value) . $hint . '</' . $tag . '>';
 		}
 
@@ -106,6 +107,11 @@
 				if ($v === '' || $v === array() || $v === null || $v === false) {
 					unset($out[$k]);
 				}
+			}
+
+			if (isset($out['option_source']) && $out['option_source'] === 'directory'
+				&& empty($out['directory_id'])) {
+				$out['option_source'] = 'local';
 			}
 
 			return $out;
@@ -150,6 +156,9 @@
 			$name = 'rubric_field_settings[' . self::attr($key) . ']';
 
 			switch ($kind) {
+				case 'textarea':
+					return '<textarea class="textarea mono" rows="' . max(3, (int) (isset($desc['rows']) ? $desc['rows'] : 5)) . '" name="' . $name . '">'
+						. self::e(is_scalar($value) ? $value : '') . '</textarea>';
 				case 'int':
 				case 'number':
 					return '<input class="input" type="number" name="' . $name . '" value="' . self::attr(is_scalar($value) ? $value : '') . '">';
@@ -194,6 +203,20 @@
 				case 'rubric':
 					$val = is_array($value) ? implode(',', $value) : (string) $value;
 					return '<input class="input mono" type="text" placeholder="ID рубрики (через запятую)" name="' . $name . '" value="' . self::attr($val) . '">';
+				case 'directory':
+					try {
+						$options = DirectoryRepository::choices(true);
+					} catch (\Throwable $e) {
+						$options = array();
+					}
+
+					$html = '<select class="select" name="' . $name . '"><option value="">— выберите справочник —</option>';
+					foreach ($options as $directoryId => $directoryName) {
+						$sel = ((string) $directoryId === (string) $value) ? ' selected' : '';
+						$html .= '<option value="' . self::attr($directoryId) . '"' . $sel . '>' . self::e($directoryName) . '</option>';
+					}
+
+					return $html . '</select>';
 				default:
 					return '<input class="input" type="text" name="' . $name . '" value="' . self::attr(is_scalar($value) ? $value : '') . '">';
 			}
@@ -255,6 +278,8 @@
 				case 'int':
 				case 'number':
 					return ($value === '' || $value === null) ? '' : (0 + $value);
+				case 'directory':
+					return max(0, (int) $value);
 				case 'bool':
 					return (!empty($value) && $value !== '0');
 				case 'list':

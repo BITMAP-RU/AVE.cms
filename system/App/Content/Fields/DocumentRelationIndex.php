@@ -84,6 +84,49 @@
 			return self::edges('target_document_id', $documentId, 'source_document_id ASC,position ASC,id ASC');
 		}
 
+		/**
+		 * Human-readable relation lists for administration and API consumers.
+		 * Reverse relations are derived from the edge index and are never written
+		 * back into document fields.
+		 */
+		public static function describe($documentId)
+		{
+			$documentId = (int) $documentId;
+			if (!self::available() || $documentId <= 0) {
+				return array('outgoing' => array(), 'incoming' => array());
+			}
+
+			$edges = self::table();
+			$documents = ContentTables::table('documents');
+			$rubrics = ContentTables::table('rubrics');
+			$fields = ContentTables::table('rubric_fields');
+			$select = 'SELECT e.id,e.source_document_id,e.source_field_id,e.target_document_id,e.relation_type,e.position,'
+				. ' f.rubric_field_title field_title,f.rubric_field_alias field_alias,'
+				. ' source.document_title source_title,source.document_alias source_alias,source.rubric_id source_rubric_id,'
+				. ' target.document_title target_title,target.document_alias target_alias,target.rubric_id target_rubric_id,'
+				. ' source_rubric.rubric_title source_rubric_title,target_rubric.rubric_title target_rubric_title'
+				. ' FROM ' . $edges . ' e'
+				. ' LEFT JOIN ' . $fields . ' f ON f.Id=e.source_field_id'
+				. ' LEFT JOIN ' . $documents . ' source ON source.Id=e.source_document_id'
+				. ' LEFT JOIN ' . $documents . ' target ON target.Id=e.target_document_id'
+				. ' LEFT JOIN ' . $rubrics . ' source_rubric ON source_rubric.Id=source.rubric_id'
+				. ' LEFT JOIN ' . $rubrics . ' target_rubric ON target_rubric.Id=target.rubric_id';
+
+			$outgoing = DB::query(
+				$select . ' WHERE e.source_document_id=%i ORDER BY e.position ASC,e.id ASC',
+				$documentId
+			)->getAll() ?: array();
+			$incoming = DB::query(
+				$select . ' WHERE e.target_document_id=%i ORDER BY source_rubric.rubric_title ASC,source.document_title ASC,e.id ASC',
+				$documentId
+			)->getAll() ?: array();
+
+			return array(
+				'outgoing' => self::normalizeDescriptions($outgoing),
+				'incoming' => self::normalizeDescriptions($incoming),
+			);
+		}
+
 		public static function resetAvailability()
 		{
 			self::$available = null;
@@ -118,5 +161,22 @@
 		protected static function table()
 		{
 			return ContentTables::table('document_relation_edges');
+		}
+
+		protected static function normalizeDescriptions(array $rows)
+		{
+			foreach ($rows as &$row) {
+				foreach (array('id', 'source_document_id', 'source_field_id', 'target_document_id', 'position', 'source_rubric_id', 'target_rubric_id') as $key) {
+					$row[$key] = isset($row[$key]) ? (int) $row[$key] : 0;
+				}
+
+				foreach (array('field_title', 'field_alias', 'source_title', 'source_alias', 'target_title', 'target_alias', 'source_rubric_title', 'target_rubric_title') as $key) {
+					$row[$key] = isset($row[$key]) ? trim(htmlspecialchars_decode(stripcslashes((string) $row[$key]), ENT_QUOTES)) : '';
+				}
+			}
+
+			unset($row);
+
+			return $rows;
 		}
 	}

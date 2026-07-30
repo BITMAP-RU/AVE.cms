@@ -24,6 +24,7 @@
   {% if site_development_mode %}<a class="env-badge" href="{{ ADMINX_BASE }}/settings/main" data-tooltip="{{ lang.development_mode_hint|default('Сайт закрыт для посетителей') }}"><i class="ti ti-lock"></i>{{ lang.development_mode|default('Режим разработки') }}</a>{% endif %}
   <div class="topbar-right">
     <a class="btn btn-ghost btn-icon topbar-site-link" href="{{ public_url }}" target="_blank" rel="noopener" aria-label="{{ lang.topbar_visit_site|default('Перейти на сайт') }}" data-tooltip="{{ lang.topbar_visit_site|default('Перейти на сайт') }}"><i class="ti ti-external-link"></i></a>
+    <button class="btn btn-ghost btn-icon topbar-command" type="button" data-command-palette-open aria-label="Быстрый переход" data-tooltip="Быстрый переход"><i class="ti ti-search"></i></button>
     {% if module_header_actions %}
     <div class="topbar-module-actions">
       {% for module_header in module_header_actions %}
@@ -32,7 +33,7 @@
     </div>
     {% endif %}
     {% if can_clear_cache %}
-    <style>#cacheMenu .dropdown-menu{min-width:260px}.dd-item.cache-item{display:flex;align-items:center;gap:8px;white-space:nowrap}.dd-item.cache-item .dd-size{margin-left:auto;padding-left:14px;font-size:11px;color:var(--text-muted);font-variant-numeric:tabular-nums}</style>
+    <style>#cacheMenu .dropdown-menu{min-width:260px}.dd-item.cache-item{display:flex;align-items:center;gap:8px;white-space:nowrap}.dd-item.cache-item .dd-size{margin-left:auto;padding-left:14px;font-size:11px;color:var(--text-muted);}</style>
     <div class="dropdown topbar-cache" id="cacheMenu">
       <button class="btn btn-ghost btn-icon" data-dropdown aria-haspopup="true" aria-expanded="false" aria-label="{{ lang.cache_clear|default('Очистить кеш') }}" data-tooltip="{{ lang.cache_clear|default('Очистить кеш') }}"><i class="ti ti-trash"></i></button>
       <div class="dropdown-menu right" role="menu">
@@ -86,7 +87,7 @@
         <form class="locale-form" method="post" action="{{ ADMINX_BASE }}/locale">
           <input type="hidden" name="_csrf" value="{{ csrf_token }}">
           <input type="hidden" name="locale" value="{{ locale_code }}">
-          <input type="hidden" name="_return" value="{{ ADMINX_BASE ~ current_path }}">
+          <input type="hidden" name="_return" value="{{ ADMINX_BASE ~ current_uri|default(current_path) }}">
           <button class="dd-item{{ current_lang == locale_code ? ' active' : '' }}" type="submit"><span class="locale-code">{{ locale_code|upper }}</span><span>{{ locale_label }}</span>{% if current_lang == locale_code %}<i class="ti ti-check"></i>{% endif %}</button>
         </form>
         {% endfor %}
@@ -173,6 +174,20 @@
   </details>
 </section>
 {% endif %}
+{% if module_dependency_notices and not popup_mode %}
+<div class="module-dependency-notices" role="status">
+  {% for notice in module_dependency_notices %}
+  <div class="alert {{ notice.level == 'required' ? 'alert-danger' : 'alert-warning' }}">
+    <i class="ti {{ notice.level == 'required' ? 'ti-plug-connected-x' : 'ti-shield-exclamation' }} alert-ic"></i>
+    <div class="module-dependency-copy">
+      <b class="alert-title">{{ notice.level == 'required' ? 'Не хватает обязательного модуля' : 'Рекомендуется дополнительная защита' }}</b>
+      <span><b>{{ notice.name }}</b>{% if notice.reason %} — {{ notice.reason }}{% elseif notice.level == 'required' %} нужен для работы этого раздела.{% else %} расширяет возможности этого раздела.{% endif %}</span>
+    </div>
+    <a class="btn btn-sm {{ notice.level == 'required' ? 'btn-danger' : 'btn-secondary' }}" href="{{ ADMINX_BASE }}{{ notice.url }}"><i class="ti ti-puzzle"></i>{{ notice.action }}</a>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
 {% block content %}{% endblock %}
 </div></main>
 </div>
@@ -180,6 +195,18 @@
 <div class="drawer-overlay" id="drawerOverlay"></div>
 
 {% if not popup_mode %}
+<div class="command-palette" data-command-palette data-base="{{ ADMINX_BASE }}" hidden>
+  <div class="command-palette-backdrop" data-command-palette-close></div>
+  <section class="command-palette-dialog" role="dialog" aria-modal="true" aria-label="Быстрый переход">
+    <div class="command-palette-input">
+      <i class="ti ti-search"></i>
+      <input type="search" placeholder="Раздел, документ, рубрика, блок или запрос" autocomplete="off" data-command-palette-input>
+      <button class="btn btn-ghost btn-icon btn-sm" type="button" data-command-palette-close aria-label="Закрыть"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="command-palette-results" role="listbox" data-command-palette-results></div>
+  </section>
+  <script type="application/json" data-command-palette-items>{{ command_palette_items|json_encode|raw }}</script>
+</div>
 <style>
 #helpDrawer .drawer-body{padding:0}
 .help-drawer-body{padding:22px 24px;line-height:1.62;font-size:14px}

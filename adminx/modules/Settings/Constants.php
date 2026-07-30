@@ -275,7 +275,7 @@
 				return array('usage_status' => 'compatibility', 'usage_label' => 'Совместимость', 'usage_reason' => 'Используется только переходным публичным или legacy-слоем.');
 			}
 
-			return array('usage_status' => 'active', 'usage_label' => 'Используется', 'usage_reason' => 'Есть обращения из текущего framework, Adminx или публичного runtime.');
+			return array('usage_status' => 'active', 'usage_label' => 'Используется', 'usage_reason' => 'Есть обращения из текущего фреймворка, панели управления или публичной части.');
 		}
 
 		protected static function displayValue($value, $type, $name = '')

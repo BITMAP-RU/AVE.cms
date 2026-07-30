@@ -35,6 +35,48 @@
 			});
 		}
 
+		/**
+		 * Additional top-level menu items are managed by the navigation selected
+		 * in catalog settings. Navigation classes only describe presentation:
+		 * catalog-menu-panel opens a pane, catalog-menu-sale/tcr set an accent.
+		 */
+		public static function navigation($purpose = 'commerce', $ttl = 600)
+		{
+			$purpose = self::purpose($purpose);
+			$key = CacheKey::make('catalog-menu-navigation', array('purpose' => $purpose));
+			return Cache::rememberTagged($key, max(0, (int) $ttl), array(
+				CacheKey::tag('catalog'),
+				CacheKey::tag('navigation'),
+			), function () use ($purpose) {
+				$settingsTable = CatalogTables::table('module_catalog_settings');
+				$navigationId = (int) DB::query(
+					'SELECT navi_id FROM ' . $settingsTable
+						. ' WHERE purpose=%s AND COALESCE(navi_id,0)>0 ORDER BY id ASC LIMIT 1',
+					$purpose
+				)->getValue();
+				if ($navigationId <= 0) {
+					return array();
+				}
+
+				$rows = DB::query(
+					'SELECT ni.navigation_item_id,ni.parent_id,ni.position,ni.document_id,'
+						. 'ni.alias,ni.title,ni.description,ni.target,ni.image,ni.css_class,'
+						. 'd.document_alias,d.document_status,d.document_deleted'
+						. ' FROM ' . ContentTables::table('navigation_items') . ' ni'
+						. ' LEFT JOIN ' . ContentTables::table('documents') . ' d ON d.Id=ni.document_id'
+						. ' WHERE ni.navigation_id=%i AND ni.status=1'
+						. ' AND (COALESCE(ni.document_id,0)=0'
+							. ' OR (d.Id IS NOT NULL AND d.document_status=%s AND d.document_deleted=%s))'
+						. ' ORDER BY ni.parent_id ASC,ni.position ASC,ni.navigation_item_id ASC',
+					$navigationId,
+					'1',
+					'0'
+				)->getAll() ?: array();
+
+				return self::navigationTree($rows);
+			});
+		}
+
 		public static function buildTree(array $rows)
 		{
 			$grouped = array();
@@ -115,6 +157,76 @@
 				'children' => array(),
 				'childs' => array(),
 			);
+		}
+
+		protected static function navigationTree(array $rows)
+		{
+			$grouped = array();
+			foreach ($rows as $row) {
+				$item = self::normalizeNavigation($row);
+				$parentId = max(0, (int) $item['parent']);
+				if (!isset($grouped[$parentId])) {
+					$grouped[$parentId] = array();
+				}
+
+				$grouped[$parentId][] = $item;
+			}
+
+			return self::navigationBranch(0, $grouped, array());
+		}
+
+		protected static function normalizeNavigation(array $row)
+		{
+			$classes = preg_split('/\s+/', trim(isset($row['css_class']) ? (string) $row['css_class'] : '')) ?: array();
+			$mode = in_array('catalog-menu-panel', $classes, true) ? 'panel' : 'link';
+			$tone = '';
+			foreach (array('sale', 'tcr') as $candidate) {
+				if (in_array('catalog-menu-' . $candidate, $classes, true)) {
+					$tone = $candidate;
+					break;
+				}
+			}
+
+			$alias = trim(isset($row['document_alias']) && $row['document_alias'] !== ''
+				? (string) $row['document_alias']
+				: (isset($row['alias']) ? (string) $row['alias'] : ''));
+			if ($alias !== '' && $alias !== '#' && !preg_match('#^(?:[a-z][a-z0-9+.-]*:|/)#i', $alias)) {
+				$alias = '/' . ltrim($alias, '/');
+			}
+
+			return array(
+				'id' => isset($row['navigation_item_id']) ? (int) $row['navigation_item_id'] : 0,
+				'parent' => isset($row['parent_id']) ? (int) $row['parent_id'] : 0,
+				'position' => isset($row['position']) ? (int) $row['position'] : 0,
+				'document_id' => isset($row['document_id']) ? (int) $row['document_id'] : 0,
+				'title' => trim(isset($row['title']) ? (string) $row['title'] : ''),
+				'description' => trim(isset($row['description']) ? (string) $row['description'] : ''),
+				'alias' => $alias,
+				'target' => isset($row['target']) ? (string) $row['target'] : '_self',
+				'image' => trim(isset($row['image']) ? (string) $row['image'] : ''),
+				'mode' => $mode,
+				'tone' => $tone,
+				'children' => array(),
+			);
+		}
+
+		protected static function navigationBranch($parentId, array $grouped, array $visited)
+		{
+			$items = isset($grouped[(int) $parentId]) ? $grouped[(int) $parentId] : array();
+			$out = array();
+			foreach ($items as $item) {
+				$itemId = (int) $item['id'];
+				if ($itemId <= 0 || isset($visited[$itemId])) {
+					continue;
+				}
+
+				$nextVisited = $visited;
+				$nextVisited[$itemId] = true;
+				$item['children'] = self::navigationBranch($itemId, $grouped, $nextVisited);
+				$out[$itemId] = $item;
+			}
+
+			return $out;
 		}
 
 		protected static function branch($parentId, array $grouped, array $visited)

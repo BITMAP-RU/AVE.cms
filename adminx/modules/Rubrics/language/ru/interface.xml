@@ -19,7 +19,6 @@
 	<phrase data="auto_54e9da895b7cce36">HTML-шаблоны отображения поля и request.</phrase>
 	<phrase data="auto_6754497b3d9b60b3">ID уже доступен. Изменённые свойства документа автоматически записываются ещё раз без повторного запуска хуков; значения полей сохраняются после обработчика.</phrase>
 	<phrase data="auto_31134f61f351a5a9">ID, название, алиас или описание</phrase>
-	<phrase data="auto_978de461f93f231f">Legacy fields пока нельзя удалять</phrase>
 	<phrase data="auto_b782057ce20ccef2">OG-разметка</phrase>
 	<phrase data="auto_8ea1e889fe3b118e">PHP и JavaScript запрещены. Доступны теги документа и добавленных полей.</phrase>
 	<phrase data="auto_00bcaade5f17e1d2">{{ type.enabled ? 'Отключить' : 'Включить' }} тип {{ type.name }}</phrase>
@@ -35,13 +34,11 @@
 	<phrase data="auto_735d5b6d6c735a9f">алиас поля</phrase>
 	<phrase data="auto_ed175b28d11da55a">Анонс</phrase>
 	<phrase data="auto_2f258806b7ad2100">Анонсы</phrase>
-	<phrase data="auto_ca45b3d4b2524c12">архивных файлов и не входит в чистую установку.</phrase>
 	<phrase data="auto_36a115ca2e90d494">Базовая разметка</phrase>
 	<phrase data="auto_e8ade67af65fb8ca">Базовые параметры рубрики.</phrase>
 	<phrase data="auto_b11f29cdb631ad91">без алиаса</phrase>
 	<phrase data="auto_94921ebedb12dd57">Без группы</phrase>
 	<phrase data="auto_284355addd46a03f">Безопасная HTML-разметка</phrase>
-	<phrase data="auto_a52c8b9c21c73d13">В БД используется</phrase>
 	<phrase data="auto_13d02127fcff628c">в текущем фильтре,</phrase>
 	<phrase data="auto_b0918da1c276f001">Вариант шаблона для документов рубрики.</phrase>
 	<phrase data="auto_2ee0510046cd11ff">Вид документов</phrase>
@@ -126,14 +123,13 @@
 	<phrase data="auto_5fadb71981cff17e">Контекст и системные API</phrase>
 	<phrase data="auto_7ff5bc3f5e8101a1">Контекст публичного вывода</phrase>
 	<phrase data="auto_065edae6bacea0cf">Копия</phrase>
-	<phrase data="auto_8e90af342894dab7">Корневая legacy-папка удалена; public и Adminx используют только нативные обработчики.</phrase>
-	<phrase data="auto_b7bf7b110b5aecf1">Корневая папка содержит</phrase>
 	<phrase data="auto_5e30f01694b5d357">Материалы</phrase>
 	<phrase data="auto_37efe2aa9ea48229">Метатеги для соцсетей и мессенджеров на страницах этой рубрики.</phrase>
 	<phrase data="auto_8358572fd682c744">Метка</phrase>
 	<phrase data="auto_9cb0080487eebb5d">миниатюра: c-обрезка/r-ресайз/f-вписать</phrase>
 	<phrase data="auto_512dca2759a79e5d">Можно скрыть группу или запретить изменение всех её полей.</phrase>
 	<phrase data="auto_59512661c8359d90">Набор полей</phrase>
+	<phrase data="auto_1f3b9642e8ccdd9c">Наборы полей</phrase>
 	<phrase data="auto_72cb3245f1f630fb">название поля</phrase>
 	<phrase data="auto_d8003257d294b3b2">Название сайта</phrase>
 	<phrase data="auto_923497eb520a69e2">Название, URL-алиас и описание рубрики.</phrase>
@@ -146,12 +142,10 @@
 	<phrase data="auto_c9856e041cbc0e86">Настройки, зависящие от выбранного типа поля.</phrase>
 	<phrase data="auto_208518c5823f0535">Настройте рабочий набор для новых рубрик. Отключение не влияет на уже созданные поля.</phrase>
 	<phrase data="auto_2e149b44fcc4eb4e">Настройте состав формы, затем сразу переходите к материалам выбранной рубрики.</phrase>
-	<phrase data="auto_33f0d86f638140a7">Нативный реестр покрывает рабочую базу</phrase>
 	<phrase data="auto_92250813ceb742a9">Не выбран</phrase>
 	<phrase data="auto_681d01462e5f184c">Не изменять</phrase>
 	<phrase data="auto_8b3b73811a10a8ef">Не индексировать</phrase>
 	<phrase data="auto_8976fe0108ce3e2e">Не сохранено</phrase>
-	<phrase data="auto_278f69be66b25911">Нет обработчиков:</phrase>
 	<phrase data="auto_55c6879c603672d7">Новая группа</phrase>
 	<phrase data="auto_789159f7e27adb92">Новая рубрика</phrase>
 	<phrase data="auto_1d29cbf2f275c548">Новое значение</phrase>
@@ -164,7 +158,7 @@
 	<phrase data="auto_7db6d80e63cfbc36">Обязательно при показе</phrase>
 	<phrase data="auto_344ca01189f66d08">Обязательность настраивается в «Редакторе типа» → Валидация.</phrase>
 	<phrase data="auto_849e4069148c24ae">Ограничить варианты</phrase>
-	<phrase data="auto_9f9afbfd53d56c42">Описание, использование и доступность каждого типа при создании поля.</phrase>
+	<phrase data="auto_0846f363dcaf14ac">Выберите, какие поля будут доступны при настройке рубрик.</phrase>
 	<phrase data="auto_6659789552679ba5">Основной</phrase>
 	<phrase data="auto_24fd76d0e81f5b31">Основной вывод</phrase>
 	<phrase data="auto_eb63e84eea0d7d50">Основной шаблон</phrase>
@@ -183,7 +177,7 @@
 	<phrase data="auto_1efb20307a13fe38">Первые документы рубрики, без сохранения настроек.</phrase>
 	<phrase data="auto_e36a97696325f42f">Перетаскивайте поля за маркер.</phrase>
 	<phrase data="auto_993f3350e395f3de">Перетащите строки за ручку, чтобы изменить порядок.</phrase>
-	<phrase data="auto_289fb7333d7ee50c">Плагины полей</phrase>
+	<phrase data="auto_1320b6b3f91d3ddc">Доступные типы полей</phrase>
 	<phrase data="auto_c602f690739149cd">По выбранным условиям типы не найдены.</phrase>
 	<phrase data="auto_a5dcf372a249c770">Подпись</phrase>
 	<phrase data="auto_2a812c1383643855">Поиск тегов</phrase>
@@ -198,6 +192,7 @@
 	<phrase data="auto_6ec8d1bd9f42005f">Половина</phrase>
 	<phrase data="auto_e3d30019ea18523a">Поля в компактной сетке</phrase>
 	<phrase data="auto_ae157a71ef815099">Поля рубрики</phrase>
+	<phrase data="auto_4a59b40b766f4154">Поля рубрик</phrase>
 	<phrase data="auto_2885cf71c3504eb2">После добавления поле исчезает из этого списка.</phrase>
 	<phrase data="auto_463a2ab3a738a261">После сохранения документа</phrase>
 	<phrase data="auto_15ed6e53b6a5c8ba">Последствия восстановления</phrase>
@@ -210,7 +205,6 @@
 	<phrase data="auto_4008c5920a67da7e">Проверяется также на сервере</phrase>
 	<phrase data="auto_0267dc0e672c1ddd">продолжают работать.</phrase>
 	<phrase data="auto_45da03e555267bd0">Просмотр структуры рубрик.</phrase>
-	<phrase data="auto_83271b3977462982">Прямые подключения:</phrase>
 	<phrase data="auto_aa0daec4094f7259">Публикация и вывод</phrase>
 	<phrase data="auto_20d71efb793e60ef">Публичный teaser-шаблон для списков и запросов сайта.</phrase>
 	<phrase data="auto_8ab91ce27aa298c7">Пустая рубрика</phrase>
@@ -225,6 +219,8 @@
 	<phrase data="auto_c205d1bc5da200e8">Рубрик</phrase>
 	<phrase data="auto_df748fb44738407e">Рубрика будет создана без дополнительных полей.</phrase>
 	<phrase data="auto_9a325c17d34e5017">Рубрики</phrase>
+	<phrase data="auto_a23b3610d1692f30">Справочники</phrase>
+	<phrase data="auto_1ac46e5c9423b358">Структура контента</phrase>
 	<phrase data="auto_d2df1095539213a5">Рубрики не найдены.</phrase>
 	<phrase data="auto_e7c3b4c1c8133062">Свой шаблон</phrase>
 	<phrase data="auto_c8d3e9321109a45c">Свойства выбранного поля.</phrase>
@@ -258,8 +254,7 @@
 	<phrase data="auto_f2729fd738c7bd47">Таблица</phrase>
 	<phrase data="auto_00fa87f0c54b1087">Текущий документ:</phrase>
 	<phrase data="auto_c22457c431288230">Тип поля</phrase>
-	<phrase data="auto_90c2a0d370e9452d">Тип поля хранится в формате рубрик, админский редактор строит adminx.</phrase>
-	<phrase data="auto_efbde855efcb7d93">типов; зарегистрировано</phrase>
+	<phrase data="auto_90c2a0d370e9452d">Тип хранится в схеме рубрики; панель управления подбирает для него подходящий редактор.</phrase>
 	<phrase data="auto_7f3560429f01c34f">Типы материалов, их поля и оформление.</phrase>
 	<phrase data="auto_10144e7fa309567f">Типы полей</phrase>
 	<phrase data="auto_043acf41e5172e0b">Типы полей не найдены.</phrase>

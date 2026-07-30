@@ -48,6 +48,11 @@
 				5,
 				array('cacheable' => true)
 			);
+			\App\Helpers\Hooks::add(
+				'frontend.response.rendering',
+				array(\App\Content\Presentation\PresentationRenderer::class, 'injectLifecycleAssets'),
+				900
+			);
 			Feeds\Feature::boot($config);
 			FieldEndpoint::boot();
 			Media\Feature::boot($config);

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <language>
+	<phrase data="action_done">Done</phrase>
 	<phrase data="auto_1cc70f8e0fc03e82">Delete view</phrase>
 	<phrase data="auto_86433d57abc272e9">Saved Views</phrase>
 	<phrase data="btn_apply">Apply</phrase>
@@ -37,6 +38,7 @@
 	<phrase data="ui_remove">Remove</phrase>
 	<phrase data="ui_search">Search</phrase>
 	<phrase data="ui_select">Select</phrase>
+	<phrase data="ui_selected">Selected</phrase>
 	<phrase data="ui_size">Size</phrase>
 	<phrase data="ui_source">Source</phrase>
 	<phrase data="ui_title">Title</phrase>

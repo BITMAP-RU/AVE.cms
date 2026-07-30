@@ -139,35 +139,7 @@
 
 		public static function documentPicker($q = '', $limit = 30)
 		{
-			$limit = max(5, min(50, (int) $limit));
-			$sql = 'SELECT d.Id, d.rubric_id, d.document_title, d.document_alias, d.document_status, r.rubric_title'
-				. ' FROM ' . ContentTables::table('documents') . ' d'
-				. ' LEFT JOIN ' . ContentTables::table('rubrics') . ' r ON r.Id = d.rubric_id'
-				. " WHERE d.document_deleted != '1'";
-			$args = array();
-			$q = trim((string) $q);
-			if ($q !== '') {
-				$sql .= ' AND (d.document_title LIKE %ss OR d.document_alias LIKE %ss OR d.Id = %i)';
-				$args[] = $q;
-				$args[] = $q;
-				$args[] = (int) $q;
-			}
-
-			$sql .= ' ORDER BY d.document_changed DESC, d.Id DESC LIMIT ' . (int) $limit;
-			$rows = call_user_func_array(array('DB', 'query'), array_merge(array($sql), $args))->getAll();
-			$out = array();
-			foreach ($rows as $row) {
-				$out[] = array(
-					'id' => (int) $row['Id'],
-					'rubric_id' => (int) $row['rubric_id'],
-					'title' => self::decode(isset($row['document_title']) ? $row['document_title'] : ''),
-					'alias' => (string) $row['document_alias'],
-					'status' => (int) $row['document_status'],
-					'rubric_title' => self::decode(isset($row['rubric_title']) ? $row['rubric_title'] : ''),
-				);
-			}
-
-			return $out;
+			return (new \App\Content\Documents\DocumentPickerRepository())->search($q, array(), $limit);
 		}
 
 		public static function stats()
@@ -386,6 +358,16 @@
 			$row = self::raw($id);
 			if (!$row) {
 				return false;
+			}
+
+			$dependencies = \App\Content\ContentTagDependencies::navigation(
+				$id,
+				isset($row['alias']) ? (string) $row['alias'] : ''
+			);
+			if ($dependencies) {
+				throw new \RuntimeException(
+					'Навигация используется: ' . implode(', ', $dependencies) . '. Сначала уберите эти связи.'
+				);
 			}
 
 			self::clearCache($id, isset($row['alias']) ? $row['alias'] : '');

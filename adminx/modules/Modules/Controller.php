@@ -52,6 +52,7 @@
 				'repository' => $repository,
 				'repository_settings' => ModuleRepository::settings(),
 				'official_repository' => ModuleRepository::officialSettings(),
+				'focus_code' => strtolower(trim(Request::getStr('focus', ''))),
 			));
 		}
 

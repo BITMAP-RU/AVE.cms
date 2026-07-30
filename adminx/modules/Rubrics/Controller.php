@@ -28,7 +28,6 @@
 	use App\Content\Fields\FieldSettings;
 	use App\Content\Fields\FieldConditionEvaluator;
 	use App\Content\Fields\FieldSettingsForm;
-	use App\Content\Fields\FieldInstallationAudit;
 	use App\Content\Documents\DocumentAliasTemplate;
 	use App\Content\Rubrics\FieldSetRegistry;
 	use DB;
@@ -43,6 +42,7 @@
 
 			$q = Request::getStr('q', '');
 			$state = Request::getStr('state', '');
+			$activeTab = Request::getStr('tab', '') === 'types' ? 'types' : 'rubrics';
 			$typeUsage = Model::fieldTypeUsage();
 
 			return $this->render('@rubrics/index.twig', array(
@@ -52,13 +52,37 @@
 				'templates' => Model::templateOptions(),
 				'field_type_usage' => $typeUsage,
 				'field_type_summary' => FieldTypes::summary($typeUsage),
-				'field_installation_audit' => FieldInstallationAudit::report(null, false, $typeUsage),
 				'field_presets' => RubricFieldPresets::all(),
 				'rubric_alias_tokens' => DocumentAliasTemplate::tokens(),
 				'filters' => array('q' => $q, 'state' => $state),
+				'active_tab' => $activeTab,
 				'can_manage' => Permission::check('manage_rubrics'),
 				'can_view_documents' => Permission::check('view_documents'),
 				'can_manage_documents' => Permission::check('manage_documents'),
+			));
+		}
+
+		public function fieldSets(array $params = array())
+		{
+			if (!Permission::check('view_rubrics')) {
+				return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403);
+			}
+
+			AdminAssets::addStyle($this->base() . '/modules/Rubrics/assets/field-sets.css', 55);
+			AdminAssets::addScript($this->base() . '/modules/Rubrics/assets/field-sets.js', 55);
+			$sets = RubricFieldPresets::all();
+			$fields = 0;
+			foreach ($sets as $set) { $fields += (int) $set['field_count']; }
+
+			return $this->render('@rubrics/field-sets.twig', array(
+				'field_sets' => $sets,
+				'rubrics' => Model::all(),
+				'stats' => array(
+					'total' => count($sets),
+					'fields' => $fields,
+					'available' => count(array_filter($sets, function ($set) { return !empty($set['available']); })),
+				),
+				'can_manage' => Permission::check('manage_rubrics'),
 			));
 		}
 
@@ -457,6 +481,7 @@
 			}
 
 			$preset = Request::postStr('rubric_preset', '');
+			$isDirectory = Request::postStr('rubric_purpose', '') === 'directory';
 			$presetError = RubricFieldPresets::availabilityError($preset);
 			if ($presetError !== '') {
 				return $this->error('Стартовый набор недоступен', array('rubric_preset' => $presetError), 422);
@@ -466,17 +491,23 @@
 			try {
 				$id = Model::saveRubric(0, Request::postAll(), Auth::id());
 				$created = RubricFieldPresets::apply($preset, $id, Auth::id());
-				$this->captureSchemaAfter($id, 'create', 'Создание рубрики и начальной схемы');
+				$this->captureSchemaAfter(
+					$id,
+					'create',
+					$isDirectory ? 'Создание справочника и начальной схемы' : 'Создание рубрики и начальной схемы'
+				);
 				DB::commit();
 			} catch (\Throwable $e) {
 				DB::rollback();
 				return $this->error($e->getMessage(), array(), 422);
 			}
 
-			$message = $created['fields'] > 0 ? 'Рубрика и стартовый набор полей созданы' : 'Рубрика создана';
+			$message = $isDirectory
+				? ($created['fields'] > 0 ? 'Справочник и стартовый набор полей созданы' : 'Справочник создан')
+				: ($created['fields'] > 0 ? 'Рубрика и стартовый набор полей созданы' : 'Рубрика создана');
 			return $this->success($message, array(
 				'data' => array('id' => $id, 'preset' => $preset, 'created' => $created),
-				'redirect' => $this->base() . '/rubrics',
+				'redirect' => $this->base() . ($isDirectory ? '/directories' : '/rubrics'),
 			));
 		}
 
@@ -496,8 +527,12 @@
 				return $this->error('Проверьте поля рубрики', $errors, 422);
 			}
 
+			$isDirectory = Request::postStr('rubric_purpose', '') === 'directory';
 			Model::saveRubric($id, Request::postAll(), Auth::id());
-			return $this->success('Рубрика сохранена', array('redirect' => $this->base() . '/rubrics'));
+			return $this->success(
+				$isDirectory ? 'Справочник сохранён' : 'Рубрика сохранена',
+				array('redirect' => $this->base() . ($isDirectory ? '/directories' : '/rubrics'))
+			);
 		}
 
 		public function destroyRubric(array $params = array())

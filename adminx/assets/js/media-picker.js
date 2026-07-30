@@ -91,7 +91,10 @@
         renderCrumbs(data.breadcrumbs || []);
         grid.innerHTML = '';
         folders.forEach(function (folder) {
-          grid.insertAdjacentHTML('beforeend', '<button class="media-picker-item is-folder" type="button" data-mp-dir="' + esc(folder.path || '') + '"><span class="media-picker-thumb"><span class="media-picker-folder-icon"><i class="ti ti-folder"></i></span></span><span class="media-picker-meta"><b>' + esc(folder.name || '') + '</b><small><i class="ti ti-files"></i>' + esc(folder.count || 0) + ' объектов</small></span></button>');
+          var folderMeta = state.q
+            ? '<i class="ti ti-folder-open"></i>' + esc(String(folder.path || '').replace(/^\/uploads\/?/, '') || 'uploads')
+            : '<i class="ti ti-files"></i>' + esc(folder.count || 0) + ' объектов';
+          grid.insertAdjacentHTML('beforeend', '<button class="media-picker-item is-folder" type="button" data-mp-dir="' + esc(folder.path || '') + '"><span class="media-picker-thumb"><span class="media-picker-folder-icon"><i class="ti ti-folder"></i></span></span><span class="media-picker-meta"><b>' + esc(folder.name || '') + '</b><small>' + folderMeta + '</small></span></button>');
         });
         files.forEach(function (file) {
           var thumb = file.thumb_url || file.preview_url || file.url || '';

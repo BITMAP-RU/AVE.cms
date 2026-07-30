@@ -1,0 +1,242 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}Размещения · Публичный сайт{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i>
+  <a href="{{ ADMINX_BASE }}/public-site">Публичный сайт</a><i class="ti ti-chevron-right"></i>
+  <span>Размещения</span>
+</nav>
+
+<div class="page-header">
+  <div class="between public-site-page-head">
+    <div>
+      <h1>Размещения</h1>
+      <p class="text-secondary">Где существующие шаблоны подключают блоки, подборки, меню и модули.</p>
+    </div>
+    <form method="post" action="{{ ADMINX_BASE }}/public-site/placements/rebuild">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <button class="btn btn-secondary" type="submit"><i class="ti ti-refresh"></i>Перестроить карту</button>
+    </form>
+  </div>
+</div>
+
+{% set public_site_tab = 'placements' %}
+{% include '@public_site/_tabs.twig' %}
+
+{% if rebuilt %}
+<div class="alert alert-success public-site-placement-notice">
+  <i class="ti ti-circle-check"></i>
+  <div><b>Карта обновлена</b><p>Все сохранённые шаблоны и ссылки на компоненты прочитаны заново.</p></div>
+</div>
+{% endif %}
+
+<div class="public-site-summary public-site-placement-summary">
+  <div class="card public-site-stat">
+    <span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-map-pin-share"></i></span>
+    <div><b>{{ placement_map.stats.total }}</b><span>Подключений</span></div>
+  </div>
+  <div class="card public-site-stat">
+    <span class="icon-tile" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-files"></i></span>
+    <div><b>{{ placement_map.stats.sources }}</b><span>Источников</span></div>
+  </div>
+  <div class="card public-site-stat">
+    <span class="icon-tile" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-plug-connected"></i></span>
+    <div><b>{{ placement_map.stats.modules }}</b><span>Модульных тегов</span></div>
+  </div>
+  <div class="card public-site-stat">
+    <span class="icon-tile" style="--tile-bg:var(--red-100);--tile-fg:var(--red-600)"><i class="ti ti-link-off"></i></span>
+    <div><b>{{ placement_map.stats.broken }}</b><span>Битых ссылок</span></div>
+  </div>
+</div>
+
+<div class="alert alert-info public-site-placement-help">
+  <i class="ti ti-info-circle"></i>
+  <div>
+    <b>Это безопасная карта действующего сайта</b>
+    <p>Она читает уже сохранённые теги и ничего не переключает в публичной части. Изменения по-прежнему выполняются в штатных редакторах.</p>
+  </div>
+</div>
+
+{% set filter_suffix = '&q=' ~ filters.q|url_encode ~ '&area=' ~ filters.area|url_encode ~ '&type=' ~ filters.type|url_encode ~ '&state=' ~ filters.state|url_encode %}
+<nav class="tabs public-site-placement-view-tabs" aria-label="Вид карты размещений">
+  <a class="tab {{ placement_view == 'placements' ? 'is-active' : '' }}" href="{{ ADMINX_BASE }}/public-site/placements?view=placements{{ filter_suffix }}"><i class="ti ti-route-square"></i>Размещения</a>
+  <a class="tab {{ placement_view == 'usage' ? 'is-active' : '' }}" href="{{ ADMINX_BASE }}/public-site/placements?view=usage{{ filter_suffix }}"><i class="ti ti-link"></i>Где используется</a>
+</nav>
+
+{% if placement_view == 'placements' %}
+  {% set section_icon = 'ti-route-square' %}
+  {% set section_eyebrow = 'Области страницы' %}
+  {% set section_title = 'Подключённые компоненты' %}
+  {% set section_desc = placement_map.stats.filtered ~ ' связей соответствует текущему фильтру.' %}
+{% else %}
+  {% set section_icon = 'ti-link' %}
+  {% set section_eyebrow = 'Где используется' %}
+  {% set section_title = 'Компоненты в текущей выборке' %}
+  {% set section_desc = 'Сводка помогает найти повторно используемые и потерянные компоненты.' %}
+{% endif %}
+
+<section class="public-site-panel">
+  <div class="section-header public-site-panel-header">
+    <div class="section-icon"><i class="ti {{ section_icon }}"></i></div>
+    <div>
+      <div class="section-eyebrow">{{ section_eyebrow }}</div>
+      <h2>{{ section_title }}</h2>
+      <p class="section-desc">{{ section_desc }}</p>
+    </div>
+  </div>
+
+<div class="card public-site-card public-site-placement-filter-card">
+  <form class="table-toolbar public-site-placement-filter" method="get" action="{{ ADMINX_BASE }}/public-site/placements">
+    <input type="hidden" name="view" value="{{ placement_view }}">
+    <div class="input-wrap public-site-placement-search">
+      <i class="ti ti-search"></i>
+      <input class="input" type="search" name="q" value="{{ filters.q }}" placeholder="Источник, компонент, alias или тег">
+    </div>
+    <select class="select" name="area" aria-label="Область страницы">
+      <option value="">Все области</option>
+      {% for value, title in placement_map.options.areas %}
+      <option value="{{ value }}"{{ filters.area == value ? ' selected' : '' }}>{{ title }}</option>
+      {% endfor %}
+    </select>
+    <select class="select" name="type" aria-label="Тип компонента">
+      <option value="">Все компоненты</option>
+      {% for value, title in placement_map.options.types %}
+      <option value="{{ value }}"{{ filters.type == value ? ' selected' : '' }}>{{ title }}</option>
+      {% endfor %}
+    </select>
+    <select class="select" name="state" aria-label="Состояние ссылки">
+      <option value="">Все состояния</option>
+      {% for value, title in placement_map.options.states %}
+      <option value="{{ value }}"{{ filters.state == value ? ' selected' : '' }}>{{ title }}</option>
+      {% endfor %}
+    </select>
+    <button class="btn btn-secondary" type="submit"><i class="ti ti-filter"></i>Показать</button>
+    {% if filters.q or filters.area or filters.type or filters.state %}
+    <a class="btn btn-ghost" href="{{ ADMINX_BASE }}/public-site/placements?view={{ placement_view }}"><i class="ti ti-x"></i>Сбросить</a>
+    {% endif %}
+  </form>
+</div>
+
+{% if placement_view == 'placements' %}
+  <div class="card public-site-card public-site-placement-card">
+    <div class="table-scroll public-site-placement-scroll">
+      <table class="table table-compact public-site-table public-site-placement-table">
+        <colgroup>
+          <col class="public-site-placement-col-area">
+          <col class="public-site-placement-col-source">
+          <col class="public-site-placement-col-component">
+          <col class="public-site-placement-col-state">
+          <col class="public-site-placement-col-action">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Область</th>
+            <th>Где подключено</th>
+            <th>Компонент</th>
+            <th>Состояние</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in placement_map.rows %}
+          <tr class="{{ item.component_status == 'broken' ? 'is-row-danger' : (item.component_status == 'disabled' ? 'is-row-disabled' : '') }}">
+            <td data-label="Область">
+              <div class="public-site-placement-area">
+                <span class="badge badge-blue">{{ item.area_title }}</span>
+                <small>{{ item.source_part_title }}</small>
+              </div>
+            </td>
+            <td data-label="Где подключено">
+              <div class="public-site-placement-source">
+                <b>{{ item.source_title ?: item.source_type_title ~ ' #' ~ item.source_id }}</b>
+                <span>{{ item.source_type_title }} · ID {{ item.source_id }}</span>
+              </div>
+            </td>
+            <td data-label="Компонент">
+              <div class="public-site-placement-component">
+                <b>{{ item.component_title }}</b>
+                <code>{{ item.tag }}</code>
+                {% if item.occurrences > 1 %}<small>Повторяется {{ item.occurrences }} раза</small>{% endif %}
+              </div>
+            </td>
+            <td data-label="Состояние">
+              {% set state_class = item.component_status == 'broken' ? 'badge-red' : (item.component_status == 'disabled' ? 'badge-gray' : (item.component_status == 'module' ? 'badge-violet' : 'badge-green')) %}
+              <span class="badge {{ state_class }}">{{ item.component_status_title }}</span>
+            </td>
+            <td data-label="Действия">
+              <div class="action-buttons public-site-placement-actions">
+                {% if item.source_url %}
+                <a class="btn btn-ghost btn-icon btn-sm" href="{{ ADMINX_BASE }}{{ item.source_url }}" data-tooltip-left="Открыть источник" aria-label="Открыть источник"><i class="ti ti-file-search"></i></a>
+                {% endif %}
+                {% if item.component_url %}
+                <a class="btn btn-ghost btn-icon btn-sm" href="{{ ADMINX_BASE }}{{ item.component_url }}" data-tooltip-left="Открыть компонент" aria-label="Открыть компонент"><i class="ti ti-arrow-up-right"></i></a>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <i class="ti ti-map-pin-off"></i>
+                <b>Размещений не найдено</b>
+                <span>Измените фильтры или добавьте компонент штатным тегом в шаблон.</span>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% include '@public_site/_placement_pagination.twig' %}
+  </div>
+{% else %}
+  <div class="card public-site-card public-site-usage-card">
+    <div class="table-scroll public-site-placement-scroll">
+      <table class="table table-compact public-site-table public-site-usage-table">
+        <thead>
+          <tr>
+            <th>Компонент</th>
+            <th>Тип</th>
+            <th>Подключений</th>
+            <th>Источников</th>
+            <th>Состояние</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in placement_map.usage %}
+          <tr class="{{ item.component_status == 'broken' ? 'is-row-danger' : (item.component_status == 'disabled' ? 'is-row-disabled' : '') }}">
+            <td data-label="Компонент">
+              <div class="public-site-placement-component">
+                <b>{{ item.component_title }}</b>
+                <code>{{ item.component_key }}</code>
+              </div>
+            </td>
+            <td data-label="Тип">{{ placement_map.options.types[item.component_type]|default(item.component_type) }}</td>
+            <td data-label="Подключений"><b>{{ item.placements }}</b></td>
+            <td data-label="Источников"><b>{{ item.sources }}</b></td>
+            <td data-label="Состояние">
+              {% set state_class = item.component_status == 'broken' ? 'badge-red' : (item.component_status == 'disabled' ? 'badge-gray' : (item.component_status == 'module' ? 'badge-violet' : 'badge-green')) %}
+              <span class="badge {{ state_class }}">{{ item.component_status_title }}</span>
+            </td>
+            <td data-label="Действия">
+              {% if item.component_url %}
+              <div class="action-buttons public-site-placement-actions">
+                <a class="btn btn-ghost btn-icon btn-sm" href="{{ ADMINX_BASE }}{{ item.component_url }}" data-tooltip-left="Открыть компонент" aria-label="Открыть компонент"><i class="ti ti-arrow-up-right"></i></a>
+              </div>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6"><div class="empty-state">Компонентов в текущей выборке нет.</div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% include '@public_site/_placement_pagination.twig' %}
+  </div>
+{% endif %}
+</section>
+{% endblock %}

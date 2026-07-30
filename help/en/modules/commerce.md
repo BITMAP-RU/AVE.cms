@@ -3,6 +3,55 @@
 The Commerce module manages the cart, checkout, delivery, payment,
 coupons, favorites, viewed products and customer order history.
 
+## Cart promotions
+
+Open `Store -> Settings -> Promotions` to create automatic rules that do not
+require a promo code. A rule can discount a related product or add a real
+catalog product as a free gift.
+
+1. Under **When to apply**, select products, catalog sections, or any cart
+   item. Set the required quantity and optional minimum cart amount.
+2. Under **Customer reward**, select a percentage discount, fixed discount,
+   fixed price, or gift.
+3. Select the discounted products or sections. For a gift, find one catalog
+   product.
+4. Optionally set a date range, priority, and maximum uses per cart.
+5. Enable **Allow coupon** only when a promo code may be combined with the
+   rule.
+
+Each complete condition set rewards the configured number of items. When rules
+overlap, a product line receives the best discount. A gift is stored as a real
+order item with a zero price, participates in shipment packaging, and
+automatically disappears when the condition is no longer met. Customers cannot
+change or remove a generated gift.
+
+The order snapshot stores original and final prices, the promotion name, and
+the gift marker. The usage journal keeps this information even when the rule is
+later changed or deleted.
+
+## Online payment journal
+
+The **Payment journal** tab shows the complete gateway sequence: payment
+creation, transaction assignment, callback validation, confirmation, errors
+and refunds. The same events are shown in the selected order under
+**Payment history**.
+
+If a callback was not delivered, open the order and click **Check payment**.
+The button is available only when an online transaction exists and the
+selected gateway supports status queries. Commerce asks the provider directly
+and verifies the transaction, amount, and currency before marking the order as
+paid. Repeated checks are safe and dispatch the completed-payment event only
+once.
+
+The journal is designed for investigating disputed payments without server-log
+access. It never stores API credentials, signatures, customer email or phone,
+complete callbacks, or complete bank responses. It stores only the order,
+gateway, transaction, stage, status, amount, currency, safe provider code and
+timestamp.
+
+Journal write failures do not interrupt a payment request. Apply the Commerce
+module migration after updating so that its journal table is created.
+
 ## Saved order filters
 
 Above the orders table is a list of **Saved Views**. He is needed
@@ -33,9 +82,12 @@ An employee with the right `manage_orders` can create an order without a public 
    characteristics of the option.
 4. Specify quantity. The price field can be changed: the new amount is valid only
    inside this order and does not change the price of the product in the catalog.
-5. If necessary, set the general discount, delivery, payment, status and attribute
-   payment. The total is recalculated directly in the form.
-6. After saving, the order card will open. It shows catalog and manual
+5. Active promotions are previewed automatically. A matching bed and mattress,
+   for example, can discount the mattress or add a configured gift.
+6. If necessary, set a separate manager discount, delivery, payment, status
+   and payment state. Promotions are applied first, then the manager discount,
+   followed by delivery and payment surcharges.
+7. After saving, the order card will open. It shows catalog and manual
    price, discount, author of creation and history of actions.
 
 The order stores a snapshot of the position at the time of creation: document ID, name,
@@ -43,6 +95,10 @@ article, image, option, catalog price, manager price, quantity and
 amount. Subsequent product changes do not overwrite this snapshot. Choice
 **Send Email** triggers regular Commerce notifications after successful
 creating an order; The payment transition does not open automatically.
+
+The server recalculates promotions during save, so the browser preview cannot
+be used to submit a forged total. Applied promotion and gift snapshots are
+stored exactly as they are for orders created from the public cart.
 
 ## Changing the composition of an order
 
@@ -87,7 +143,7 @@ public tags AVE.cms are processed:
 | `[mod_basket:fav]` | Compact link and favorites counter |
 | `[mod_basket:viewed]` | Compact link and counter of viewed products |
 
-The HTML of these elements is edited in `Orders -> Settings -> Templates`:
+The HTML of these elements is edited in `Store -> Settings -> Templates`:
 `mini.twig`, `favorites_mini.twig` and `viewed_mini.twig`. There are also
 templates for full cart, checkout, favorites and order history.
 
@@ -120,6 +176,7 @@ pages `cart`, `checkout`, `favorites`, `viewed` and `orders` have properties
 
 - `{{ basket.quantity }}` — total number of goods;
 - `{{ basket.total }}` — amount of goods.
+- `{{ basket.total_order }}` — total after promotions and coupon.
 
 ### Product added: `added.twig`
 
@@ -133,9 +190,14 @@ Example: `{{ product.name }}` and
 
 - `basket.products` — array of product items;
 - `basket.quantity` — total quantity;
+- `basket.gift_quantity` — generated gift quantity;
 - `basket.total` — amount without discount;
-- `basket.discount` — coupon discount;
-- `basket.total_order` - total after the discount.
+- `basket.promotion_discount` — automatic promotion discount;
+- `basket.coupon_discount` — coupon discount;
+- `basket.discount` — total discount;
+- `basket.total_order` - total after all discounts;
+- `basket.promotions` — applied promotion rules;
+- `basket.coupon_blocked` — the current promotion disallows coupons.
 
 Fields `product.*` are available inside the loop:
 
@@ -147,6 +209,9 @@ Fields `product.*` are available inside the loop:
 
 In addition to the values shown in the example, `product.hash` is available for changing and
 deleting a position and `product.price_field_id` for buttons to add a product.
+Promotion templates can also use `product.base_price`, `product.base_amount`,
+`product.final_price`, `product.final_amount`, `product.promotion_title`, and
+`product.is_gift`. Gift final price and amount are zero.
 
 ### Design: `checkout.twig`
 
@@ -262,7 +327,7 @@ Public `basket_urls.*` are not intentionally added to letters.
 
 ## Delivery services
 
-1. Open `Orders -> Settings -> Delivery`.
+1. Open `Store -> Settings -> Delivery`.
 2. In the “Payment Services” block, open the desired carrier and specify the API keys,
    sender's city or postal code.
 3. Enable calculation and save the service.
@@ -295,7 +360,7 @@ page of the corresponding module.
 
 To associate a service with a payment option:
 
-1. Open `Orders -> Settings -> Payment`.
+1. Open `Store -> Settings -> Payment`.
 2. Make sure the service is marked as connected. Arrow button opens
    his details.
 3. Open the payment method and select the payment service.
@@ -307,7 +372,7 @@ in cash, by card upon receipt or by bank transfer.
 ## Public pages
 
 Addresses for cart, checkout, favorites, viewed items and personal orders
-are configured in `Orders -> Settings -> Public pages`. For every page
+are configured in `Store -> Settings -> Public pages`. For every page
 You can choose a general site template. Commerce substitutes page content into
 its `[tag:maincontent]`.
 

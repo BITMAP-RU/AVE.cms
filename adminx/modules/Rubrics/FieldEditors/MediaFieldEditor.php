@@ -536,7 +536,7 @@
 				'image_mega' => array(
 					'title' => 'Расширенная галерея',
 					'icon' => 'photo-cog',
-					'summary' => 'Сложное поле изображений. Adminx-редактор будет развиваться поверх медиабраузера.',
+					'summary' => 'Сложное поле изображений. Редактор панели управления работает поверх медиабраузера.',
 					'default_label' => 'Настройки по умолчанию',
 					'default_kind' => 'media_list',
 					'entity_fields' => array('items[].url', 'items[].title', 'items[].description', 'items[].link'),

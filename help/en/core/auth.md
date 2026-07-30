@@ -4,9 +4,9 @@
 
 `App\Common\Auth` serves two related contexts of the same person:
 system role of the panel and public profile of the site. Methods without a prefix include
-access to Adminx, methods with the prefix `public*` - to profile, content, cart
+access to the control panel, methods with the prefix `public*` - to profile, content, cart
 and orders. The associated employee enters both circuits in one session; access
-public user in Adminx is configured in its editor.
+for a public user in the control panel is configured in its editor.
 
 ```php
 use App\Common\Auth;
@@ -14,7 +14,7 @@ use App\Common\Auth;
 
 ---
 
-## Administrator (panel `/adminx`)
+## Control panel administrator
 
 | Method | Return |
 | --- | --- |
@@ -58,7 +58,7 @@ if (Auth::attempt($login, $password, array('remember' => true))) {
 
 Standard public groups for a clean installation: `1` - administrators, `2` -
 guests, `3` - moderators, `4` - site users. Public
-the group determines access to the site content; Adminx rights are determined by the associated
+the group determines access to the site content; control panel rights are determined by the associated
 systemic role.
 
 | Method | Return |
@@ -124,9 +124,9 @@ Commerce, number of orders, paid orders, favorites and latest
 orders. Commerce remains optional: without it, the review does not crash and serves
 quickly jump to your profile.
 
-The page template can be stored in Adminx or in the active theme. Priority of sources:
+The page template can be stored in the control panel or in the active theme. Priority of sources:
 
-1. template saved in Adminx;
+1. template saved in the control panel;
 2.`templates/<theme>/views/system_auth/<page>.twig`;
 3. standard template `system/App/Frontend/Auth/view/<page>.twig`.
 
@@ -151,6 +151,9 @@ before saving the settings.
 
 ## Practice
 
+- In **System -> Users**, select several accounts to enable or disable their
+  access in one operation. The current administrator cannot be selected, so a
+  bulk action cannot disable the active administrator session.
 - In the panel controller, `Auth::id()` is usually sufficient for the “action author” and
   `Permission::check()` for access.
 - Don't confuse the identifiers: `Auth::user()` returns the RBAC system entry,

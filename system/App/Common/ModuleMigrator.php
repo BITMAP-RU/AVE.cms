@@ -24,7 +24,7 @@
 	 *
 	 * Модуль объявляет SQL- или PHP-файлы в module.php, а ModuleManager применяет
 	 * их только при явной установке/обновлении пакета или web-обновлении схемы
-	 * ядра. Обычная загрузка public/Adminx не выполняет миграции.
+	 * ядра. Обычная загрузка публичного сайта или панели не выполняет миграции.
 	 */
 	class ModuleMigrator
 	{
@@ -116,10 +116,13 @@
 
 				$attemptId = self::startAttempt($module, $item['id'], $item['file'], $context);
 				try {
+					DatabaseSchema::reset();
 					$result = self::applyFile($module, $item['id'], $item['file'], $item['legacy_checksums'], $context);
+					DatabaseSchema::reset();
 					self::finishAttempt($attemptId, $result['status'], isset($result['queries']) ? (int) $result['queries'] : 0);
 					$results[] = $result;
 				} catch (\Throwable $e) {
+					DatabaseSchema::reset();
 					self::finishAttempt($attemptId, 'failed', 0, $e->getMessage());
 					throw $e;
 				}

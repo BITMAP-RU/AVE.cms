@@ -301,7 +301,7 @@
 			$source = $this->root . '/adminx';
 			$target = $this->root . '/' . $directory;
 			if ($checkTarget && !is_dir($source)) {
-				throw new RuntimeException('В сборке отсутствует исходная папка панели adminx.');
+				throw new RuntimeException('В сборке отсутствует исходная папка панели управления.');
 			}
 
 			if ($checkTarget && $directory !== 'adminx' && file_exists($target)) {
@@ -309,7 +309,7 @@
 			}
 
 			if ($checkTarget && $directory !== 'adminx' && !is_writable($this->root)) {
-				throw new RuntimeException('Сервер не может переименовать папку adminx. Проверьте права на корень сайта.');
+				throw new RuntimeException('Сервер не может переименовать исходную папку панели. Проверьте права на корень сайта.');
 			}
 
 			return $directory;
@@ -336,7 +336,7 @@
 				'ssssisssss', array($site['admin_name'], $site['admin_email'], $password, 'admin', 1, $date, $date, $site['admin_login'], $site['admin_name'], ''));
 
 			$permissions = array(
-				array('admin_panel', 'core', 'Доступ в панель управления', 'Разрешает вход в Adminx.', 1),
+				array('admin_panel', 'core', 'Доступ в панель управления', 'Разрешает вход в панель управления.', 1),
 				array('all_permissions', 'core', 'Полный доступ', 'Даёт администратору доступ ко всем возможностям.', 2),
 				array('view_public_debug', 'core', 'Публичная панель отладки', 'Разрешает просмотр служебной панели публичного сайта.', 3),
 				array('view_development_site', 'core', 'Просмотр сайта в режиме разработки', 'Разрешает видеть публичный сайт, закрытый для посетителей и поисковых систем.', 4),

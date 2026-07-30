@@ -1,5 +1,5 @@
 {% extends '@adminx/main.twig' %}
-{% block title %}{{ catalog_mode ? 'Товар #' ~ document.Id : (is_new ? 'Новый документ' : 'Документ #' ~ document.Id) }}{% endblock %}
+{% block title %}{{ catalog_mode ? (is_new ? 'Новый товар' : 'Товар #' ~ document.Id) : (is_new ? 'Новый документ' : 'Документ #' ~ document.Id) }}{% endblock %}
 {% block content %}
 
 <nav class="breadcrumbs" aria-label="Хлебные крошки">
@@ -11,72 +11,61 @@
 <div class="page-header documents-edit-header">
   <div class="between">
     <div>
-      <h1 data-document-edit-heading>{{ is_new ? 'Новый документ' : document.document_title }}</h1>
-      <p class="text-secondary" style="margin-top:5px" data-document-edit-meta>{{ is_new ? 'Создание базовой карточки документа.' : 'ID ' ~ document.Id ~ ', ' ~ document.state_label ~ ', изменён: ' ~ document.changed_label }}</p>
+      <h1 data-document-edit-heading>{{ is_new ? (catalog_mode ? 'Новый товар' : 'Новый документ') : document.document_title }}</h1>
+      <p class="text-secondary" style="margin-top:5px" data-document-edit-meta>{{ is_new ? (catalog_mode ? 'Заполните основные данные. Характеристики, варианты и доставка откроются после первого сохранения.' : 'Создание базовой карточки документа.') : 'ID ' ~ document.Id ~ ', ' ~ (document.state_label|admin_trans) ~ ', изменён: ' ~ document.changed_label }}</p>
     </div>
     <div class="cluster">
-	  <div class="segmented documents-editor-modes" role="group" aria-label="Режим редактора">
-		<button class="segmented-item" type="button" data-document-editor-mode="quick" data-tooltip="Только основное и поля"><i class="ti ti-bolt"></i><span>Быстро</span></button>
-		<button class="segmented-item" type="button" data-document-editor-mode="normal" data-tooltip="Основное, поля и публикация"><i class="ti ti-layout-columns"></i><span>Обычно</span></button>
-		<button class="segmented-item" type="button" data-document-editor-mode="advanced" data-tooltip="Все настройки документа"><i class="ti ti-adjustments-horizontal"></i><span>Расширенно</span></button>
-	  </div>
       <a class="btn btn-ghost" href="{{ return_url|default(ADMINX_BASE ~ '/documents') }}"><i class="ti ti-arrow-left"></i>К списку</a>
     </div>
   </div>
 </div>
 
-{% if catalog_mode and not is_new %}<section class="card documents-card catalog-product-variant-bridge"><div class="documents-section-head"><h2>Варианты товара</h2>{% if variant_group %}<span class="badge badge-blue">Группа #{{ variant_group.id }}</span>{% endif %}</div><div class="documents-card-body between">{% if variant_group %}<div><b>{{ variant_group.title }}</b><p class="text-secondary">{{ variant_group.is_primary ? 'Основной вариант группы' : 'Вариант группы' }}</p></div><a class="btn btn-secondary" href="{{ ADMINX_BASE }}/catalog/variant-groups/{{ variant_group.id }}"><i class="ti ti-box-multiple"></i>Управление вариантами</a>{% else %}<div><b>Товар пока не объединён с вариантами</b><p class="text-secondary">Создайте группу на основе текущего товара.</p></div><form method="post" action="{{ ADMINX_BASE }}/catalog/products/{{ document.Id }}/variant-group" data-variant-action><input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="title" value="{{ document.document_title|e('html_attr') }}"><button class="btn btn-secondary" type="submit"><i class="ti ti-plus"></i>Создать группу вариантов</button></form>{% endif %}</div></section>{% endif %}
-
-{% if catalog_mode and not is_new and native_attributes.attributes_count %}
-<section class="card documents-card product-native-attributes"><form method="post" action="{{ ADMINX_BASE }}/catalog/products/{{ document.Id }}/attributes" data-attribute-ajax><input type="hidden" name="_csrf" value="{{ csrf_token }}">
-  <div class="documents-section-head"><div class="documents-head-left"><span class="icon-tile documents-head-icon" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-list-details"></i></span><div><h2>Нативные характеристики</h2><p class="text-secondary">Новый контур проверки. Публичная карточка пока использует старые поля.</p></div></div><span class="badge badge-violet">{{ native_attributes.attributes_count }}</span></div>
-  <div class="documents-card-body native-attribute-groups">{% for group in native_attributes.groups %}<section class="native-attribute-group"><div class="native-attribute-group-head"><div><b>{{ group.name }}</b><small>{{ group.set_name }}</small></div><span>{{ group.items|length }}</span></div><div class="native-attribute-grid">{% for item in group.items %}<label class="field native-attribute-field"><span class="field-label">{{ item.label_override ?: item.name }}{% if item.required %}<span class="ax-required">*</span>{% endif %}{% if item.unit %}<small>{{ item.unit }}</small>{% endif %}</span>
-    {% if item.value_type == 'boolean' %}<select class="select" name="attribute[{{ item.id }}]"><option value="">Не задано</option><option value="1" {{ item.value is same as(true) or item.value == '1' ? 'selected' : '' }}>Да</option><option value="0" {{ item.value is same as(false) and item.value_json != '' or item.value == '0' ? 'selected' : '' }}>Нет</option></select>
-    {% elseif item.value_type == 'choice' and item.option_items %}<span class="native-attribute-choice" data-native-attribute-choice><select class="select" name="attribute[{{ item.id }}]"><option value="" data-swatch="">Не задано</option>{% for option in item.option_items %}<option value="{{ option.value_key|e('html_attr') }}" data-swatch="{{ option.swatch|e('html_attr') }}" {{ item.value == option.value_key ? 'selected' : '' }}>{{ option.label }}{% if option.legacy %} · прежнее значение{% endif %}</option>{% endfor %}</select><span class="native-attribute-choice-swatch" data-native-attribute-choice-swatch hidden></span></span>
-    {% elseif item.value_type == 'number' %}<input class="input" type="number" step="any" name="attribute[{{ item.id }}]" value="{{ item.value }}">
-    {% elseif item.value_type == 'date' %}<input class="input" type="date" name="attribute[{{ item.id }}]" value="{{ item.value }}">
-    {% elseif item.value_type == 'multi_choice' and item.option_items %}<select class="select native-attribute-multi" name="attribute[{{ item.id }}][]" multiple size="{{ item.option_items|length > 6 ? 6 : item.option_items|length }}">{% for option in item.option_items %}<option value="{{ option.value_key|e('html_attr') }}" {{ item.value is iterable and option.value_key in item.value ? 'selected' : '' }}>{{ option.label }}{% if option.swatch %} · {{ option.swatch }}{% endif %}{% if option.legacy %} · прежнее значение{% endif %}</option>{% endfor %}</select>
-    {% elseif item.value_type == 'multi_choice' %}<textarea class="textarea" rows="3" name="attribute[{{ item.id }}]">{{ item.value is iterable ? item.value|join('\n') : item.value }}</textarea>
-    {% else %}<input class="input" type="text" name="attribute[{{ item.id }}]" value="{{ item.value is iterable ? item.value|join(', ') : item.value }}">{% endif %}
-    <span class="native-attribute-meta"><span class="mono">{{ item.code }}</span>{% if item.value_state %}<span class="badge {{ item.value_state == 'verified' ? 'badge-green' : 'badge-amber' }}">{{ item.value_state == 'verified' ? 'проверено' : 'черновик' }}</span>{% endif %}</span></label>{% endfor %}</div></section>{% endfor %}<div class="native-attribute-footer"><a class="btn btn-ghost" href="{{ ADMINX_BASE }}/catalog/attributes?view=sections"><i class="ti ti-settings"></i>Настроить наборы</a><button class="btn btn-primary" type="submit"><i class="ti ti-device-floppy"></i>Сохранить характеристики</button></div></div>
-</form></section>
-{% endif %}
-
-{% if catalog_mode and not is_new %}
-<section class="card documents-card product-shipping-card" data-product-shipping>
-  <form data-product-shipping-form action="{{ ADMINX_BASE }}/catalog/products/{{ document.Id }}/shipping" method="post">
-    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-    <input type="hidden" name="packages" value="">
-    <div class="documents-section-head product-shipping-head">
-      <div class="documents-head-left"><span class="icon-tile documents-head-icon" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-package-export"></i></span><div><h2>Доставка и упаковка</h2><p class="text-secondary">Физические грузовые места для расчёта перевозчиками.</p></div></div>
-      <label class="switch"><input type="checkbox" name="shipping_enabled" value="1"{{ shipping_profile.shipping_enabled ? ' checked' : '' }}><span></span><b>Рассчитывать доставку</b></label>
+<div class="documents-editor-workspace" data-document-workspace data-active-panel="main" data-catalog-mode="{{ catalog_mode ? '1' : '0' }}" data-is-new="{{ is_new ? '1' : '0' }}">
+  <div class="documents-workspace-navigation">
+    <div class="tabs documents-workspace-tabs" role="tablist" aria-label="{{ catalog_mode ? 'Разделы товара' : 'Разделы документа' }}">
+      <button class="tab is-active" type="button" role="tab" aria-selected="true" data-document-workspace-tab="main"><i class="ti ti-file-description"></i>Основное</button>
+      {% if catalog_mode %}
+      <button class="tab" type="button" role="tab" aria-selected="false" data-document-workspace-tab="promotions"{{ is_new ? ' aria-disabled="true" data-tooltip="Доступно после первого сохранения"' : '' }}><i class="ti ti-gift"></i>Акции</button>
+      <button class="tab" type="button" role="tab" aria-selected="false" data-document-workspace-tab="attributes"{{ is_new ? ' aria-disabled="true" data-tooltip="Доступно после первого сохранения"' : '' }}><i class="ti ti-list-details"></i>Характеристики</button>
+      <button class="tab" type="button" role="tab" aria-selected="false" data-document-workspace-tab="variants"{{ is_new ? ' aria-disabled="true" data-tooltip="Доступно после первого сохранения"' : '' }}><i class="ti ti-box-multiple"></i>Варианты</button>
+      <button class="tab" type="button" role="tab" aria-selected="false" data-document-workspace-tab="shipping"{{ is_new ? ' aria-disabled="true" data-tooltip="Доступно после первого сохранения"' : '' }}><i class="ti ti-truck-delivery"></i>Доставка</button>
+      {% endif %}
+      <button class="tab" type="button" role="tab" aria-selected="false" data-document-workspace-tab="additional"><i class="ti ti-adjustments-horizontal"></i>Дополнительно</button>
     </div>
-    <div class="documents-card-body product-shipping-body">
-      {% if shipping_profile.legacy %}<div class="product-shipping-legacy"><i class="ti ti-info-circle"></i><span>Найдены старые данные: {% for alias,value in shipping_profile.legacy %}<b>{{ alias }}</b> {{ value }}{% if not loop.last %}, {% endif %}{% endfor %}. Добавьте грузовое место, чтобы перейти на точный расчёт.</span></div>{% endif %}
-      <div class="product-package-template-picker"><select class="select" data-package-template-select><option value="">Добавить готовую упаковку</option>{% for template in package_templates %}<option value="{{ template.id }}" data-package="{{ template|json_encode|e('html_attr') }}">{{ template.title }} · {{ template.dimensions }} · {{ template.weight_label }}</option>{% endfor %}</select><button class="btn btn-secondary" type="button" data-package-template-apply disabled><i class="ti ti-plus"></i>Добавить</button><a class="btn btn-ghost btn-icon" href="{{ ADMINX_BASE }}/catalog/products/shipping" data-tooltip="Управление шаблонами" aria-label="Управление шаблонами упаковки"><i class="ti ti-settings"></i></a></div>
-      <div class="product-package-head" aria-hidden="true"><span>Грузовое место</span><span>Кол-во</span><span>Вес, кг</span><span>Длина, см</span><span>Ширина, см</span><span>Высота, см</span><span></span></div>
-      <div class="product-package-list" data-package-list>
-        {% for package in shipping_profile.packages %}
-        <div class="product-package-row" data-package-row>
-          <input class="input" name="title" value="{{ package.title|e('html_attr') }}" aria-label="Название грузового места">
-          <input class="input" type="number" name="quantity" min="1" max="999" step="1" value="{{ package.quantity }}" aria-label="Количество">
-          <input class="input" type="number" name="weight_kg" min="0" step="0.001" value="{{ package.weight_kg }}" aria-label="Вес в килограммах">
-          <input class="input" type="number" name="length_cm" min="0" step="0.1" value="{{ package.length_cm }}" aria-label="Длина в сантиметрах">
-          <input class="input" type="number" name="width_cm" min="0" step="0.1" value="{{ package.width_cm }}" aria-label="Ширина в сантиметрах">
-          <input class="input" type="number" name="height_cm" min="0" step="0.1" value="{{ package.height_cm }}" aria-label="Высота в сантиметрах">
-          <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-danger" type="button" data-package-remove data-tooltip="Удалить грузовое место" aria-label="Удалить грузовое место"><i class="ti ti-trash"></i></button>
-        </div>
-        {% endfor %}
-      </div>
-      <div class="product-shipping-empty" data-package-empty{{ shipping_profile.packages ? ' hidden' : '' }}><i class="ti ti-package-off"></i><span>Грузовые места ещё не добавлены</span></div>
-      <div class="product-shipping-footer"><div class="product-shipping-summary"><span><b data-package-places>{{ shipping_profile.summary.places }}</b> мест</span><span><b data-package-weight>{{ shipping_profile.summary.weight_kg|number_format(3, '.', ' ') }}</b> кг</span><span><b data-package-volume>{{ shipping_profile.summary.volume_m3|number_format(4, '.', ' ') }}</b> м³</span><span class="badge {{ shipping_profile.complete ? 'badge-green' : 'badge-amber' }}" data-package-state>{{ shipping_profile.complete ? 'данные заполнены' : 'нужны габариты' }}</span></div><div class="cluster">{% if variant_group %}<button class="btn btn-secondary" type="button" data-shipping-copy-variants data-url="{{ ADMINX_BASE }}/catalog/products/{{ document.Id }}/shipping/copy-to-variants" data-csrf="{{ csrf_token }}" data-tooltip="Заменить упаковку у всех вариантов"><i class="ti ti-copy"></i>Вариантам</button>{% endif %}<button class="btn btn-secondary" type="button" data-package-add><i class="ti ti-plus"></i>Добавить место</button><button class="btn btn-primary" type="submit"><i class="ti ti-device-floppy"></i>Сохранить упаковку</button></div></div>
-    </div>
-  </form>
-  <template data-package-template><div class="product-package-row" data-package-row><input class="input" name="title" value="" placeholder="Коробка 1" aria-label="Название грузового места"><input class="input" type="number" name="quantity" min="1" max="999" step="1" value="1" aria-label="Количество"><input class="input" type="number" name="weight_kg" min="0" step="0.001" value="" placeholder="0" aria-label="Вес в килограммах"><input class="input" type="number" name="length_cm" min="0" step="0.1" value="" placeholder="0" aria-label="Длина в сантиметрах"><input class="input" type="number" name="width_cm" min="0" step="0.1" value="" placeholder="0" aria-label="Ширина в сантиметрах"><input class="input" type="number" name="height_cm" min="0" step="0.1" value="" placeholder="0" aria-label="Высота в сантиметрах"><button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-danger" type="button" data-package-remove data-tooltip="Удалить грузовое место" aria-label="Удалить грузовое место"><i class="ti ti-trash"></i></button></div></template>
-</section>
-{% endif %}
+    <label class="field documents-workspace-mobile">
+      <span class="field-label">{{ catalog_mode ? 'Раздел товара' : 'Раздел документа' }}</span>
+      <select class="select" data-document-workspace-select>
+        <option value="main">Основное</option>
+        {% if catalog_mode %}
+        <option value="promotions"{{ is_new ? ' disabled' : '' }}>Акции{{ is_new ? ' · после сохранения' : '' }}</option>
+        <option value="attributes"{{ is_new ? ' disabled' : '' }}>Характеристики{{ is_new ? ' · после сохранения' : '' }}</option>
+        <option value="variants"{{ is_new ? ' disabled' : '' }}>Варианты{{ is_new ? ' · после сохранения' : '' }}</option>
+        <option value="shipping"{{ is_new ? ' disabled' : '' }}>Доставка{{ is_new ? ' · после сохранения' : '' }}</option>
+        {% endif %}
+        <option value="additional">Дополнительно</option>
+      </select>
+    </label>
+  </div>
 
-<form id="documentForm" class="documents-edit-form" data-base="{{ ADMINX_BASE }}" data-id="{{ document.Id }}" data-rubric-id="{{ document.rubric_id }}" data-actor-id="{{ actor_id|default(0) }}" data-submit-url="{{ submit_url|default('') }}" data-return-url="{{ return_url|default('') }}" data-stay-url-template="{{ stay_url_template|default('') }}" data-quick-edit="{{ quick_edit ? '1' : '0' }}" data-editor-mode="normal">
+  {% if catalog_mode and not is_new and product_readiness.items %}
+  <section class="product-readiness-strip" aria-label="Готовность товара">
+    <div class="product-readiness-summary">
+      <span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-checklist"></i></span>
+      <span><b>Готовность товара</b><small>{{ product_readiness.attention ? product_readiness.attention ~ ' раздела требуют внимания' : 'Обязательные данные заполнены' }}</small></span>
+    </div>
+    <div class="product-readiness-items">
+      {% for item in product_readiness.items %}
+      <button class="product-readiness-item is-{{ item.state }}" type="button" data-document-workspace-open="{{ item.panel }}">
+        <i class="ti {{ item.icon }}"></i>
+        <span><b>{{ item.title }}</b><small>{{ item.label }}</small></span>
+        <i class="ti {{ item.state == 'ready' ? 'ti-circle-check-filled' : (item.state == 'warning' ? 'ti-alert-circle-filled' : 'ti-chevron-right') }} product-readiness-state"></i>
+      </button>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+<form id="documentForm" class="documents-edit-form" data-base="{{ ADMINX_BASE }}" data-id="{{ document.Id }}" data-rubric-id="{{ document.rubric_id }}" data-actor-id="{{ actor_id|default(0) }}" data-submit-url="{{ submit_url|default('') }}" data-return-url="{{ return_url|default('') }}" data-stay-url-template="{{ stay_url_template|default('') }}" data-quick-edit="{{ quick_edit ? '1' : '0' }}">
   <input type="hidden" name="_csrf" value="{{ csrf_token }}">
   <input type="hidden" name="id" value="{{ document.Id }}">
   <input type="hidden" name="document_version" value="{{ document.document_version|default(1) }}">
@@ -101,7 +90,7 @@
 	  </section>
 	  {% endif %}
 
-  <div class="documents-edit-top" data-editor-level="advanced">
+  <div class="documents-edit-top" data-document-section="additional">
     <section class="card documents-card documents-edit-card" style="--sec:var(--amber-600);--sec-soft:var(--amber-100)">
       <div class="documents-section-head">
         <div class="documents-head-left">
@@ -172,7 +161,7 @@
 
   <div class="documents-edit-layout">
     <div class="stack documents-edit-main">
-      <section class="card documents-card documents-edit-card documents-section-main" style="--sec:var(--blue-600);--sec-soft:var(--blue-100)">
+      <section class="card documents-card documents-edit-card documents-section-main" data-document-section="main" style="--sec:var(--blue-600);--sec-soft:var(--blue-100)">
         <div class="documents-section-head">
           <div class="documents-head-left">
             <span class="icon-tile documents-head-icon" style="--tile-bg:var(--sec-soft);--tile-fg:var(--sec)"><i class="ti ti-file-text"></i></span>
@@ -231,7 +220,7 @@
         </div>
       </section>
 
-      <section class="card documents-card documents-edit-card documents-section-seo" data-editor-level="advanced" style="--sec:var(--green-600);--sec-soft:var(--green-100)">
+      <section class="card documents-card documents-edit-card documents-section-seo" data-document-section="additional" style="--sec:var(--green-600);--sec-soft:var(--green-100)">
         <div class="documents-section-head">
           <div class="documents-head-left">
             <span class="icon-tile documents-head-icon" style="--tile-bg:var(--sec-soft);--tile-fg:var(--sec)"><i class="ti ti-search"></i></span>
@@ -294,7 +283,7 @@
     </div>
 
     <aside class="stack documents-edit-side">
-      <section class="card documents-card documents-edit-card documents-section-publish" data-editor-level="normal" style="--sec:var(--green-600);--sec-soft:var(--green-100)">
+      <section class="card documents-card documents-edit-card documents-section-publish" data-document-section="main" style="--sec:var(--green-600);--sec-soft:var(--green-100)">
         <div class="documents-section-head">
           <div class="documents-head-left">
             <span class="icon-tile documents-head-icon" style="--tile-bg:var(--sec-soft);--tile-fg:var(--sec)"><i class="ti ti-rocket"></i></span>
@@ -321,7 +310,7 @@
         </div>
       </section>
 
-      <section class="card documents-card documents-edit-card documents-section-dates" data-editor-level="advanced" style="--sec:var(--teal-600);--sec-soft:var(--teal-100)">
+      <section class="card documents-card documents-edit-card documents-section-dates" data-document-section="additional" style="--sec:var(--teal-600);--sec-soft:var(--teal-100)">
         <div class="documents-section-head">
           <div class="documents-head-left">
             <span class="icon-tile documents-head-icon" style="--tile-bg:var(--sec-soft);--tile-fg:var(--sec)"><i class="ti ti-calendar-event"></i></span>
@@ -339,7 +328,7 @@
     </aside>
   </div>
 
-  <section class="documents-fields-section documents-section-fields" style="--sec:var(--violet-600);--sec-soft:var(--violet-100)">
+  <section class="documents-fields-section documents-section-fields" data-document-section="main" style="--sec:var(--violet-600);--sec-soft:var(--violet-100)">
     <div class="documents-fields-heading">
       <div class="documents-head-left">
         <span class="icon-tile documents-head-icon" style="--tile-bg:var(--sec-soft);--tile-fg:var(--sec)"><i class="ti ti-forms"></i></span>
@@ -394,6 +383,42 @@
     </div>
   </section>
 
+  {% if not is_new %}
+  <section class="card documents-card documents-edit-card documents-relations-section" data-document-section="additional" style="--sec:var(--cyan-600);--sec-soft:var(--cyan-100)">
+    <div class="documents-section-head">
+      <div class="documents-head-left">
+        <span class="icon-tile documents-head-icon" style="--tile-bg:var(--sec-soft);--tile-fg:var(--sec)"><i class="ti ti-arrows-exchange"></i></span>
+        <div><h2>Связи документов</h2><p>Прямые и обратные связи из полей документов.</p></div>
+      </div>
+      <span class="badge badge-cyan">{{ document_relations.outgoing|length + document_relations.incoming|length }}</span>
+    </div>
+    <div class="documents-card-body documents-relations-grid">
+      <div class="documents-relation-list">
+        <div class="documents-relation-title"><b>Этот документ ссылается</b><span>{{ document_relations.outgoing|length }}</span></div>
+        {% for relation in document_relations.outgoing %}
+        <a class="documents-relation-row" href="{{ ADMINX_BASE }}/documents/{{ relation.target_document_id }}/edit">
+          <span><b>{{ relation.target_title ?: 'Документ #' ~ relation.target_document_id }}</b><small>{{ relation.target_rubric_title }} · {{ relation.field_title ?: relation.field_alias }}</small></span>
+          <i class="ti ti-arrow-right"></i>
+        </a>
+        {% else %}
+        <p class="text-secondary text-sm">Исходящих связей нет.</p>
+        {% endfor %}
+      </div>
+      <div class="documents-relation-list">
+        <div class="documents-relation-title"><b>На этот документ ссылаются</b><span>{{ document_relations.incoming|length }}</span></div>
+        {% for relation in document_relations.incoming %}
+        <a class="documents-relation-row" href="{{ ADMINX_BASE }}/documents/{{ relation.source_document_id }}/edit">
+          <span><b>{{ relation.source_title ?: 'Документ #' ~ relation.source_document_id }}</b><small>{{ relation.source_rubric_title }} · {{ relation.field_title ?: relation.field_alias }}</small></span>
+          <i class="ti ti-arrow-right"></i>
+        </a>
+        {% else %}
+        <p class="text-secondary text-sm">Обратных связей нет.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
   <div class="sticky-actions documents-sticky-actions">
     <div class="documents-save-state" data-document-save-state data-state="saved" role="status" aria-live="polite">
       <span class="documents-save-state-icon"><i class="ti ti-circle-check" data-document-save-state-icon></i></span>
@@ -406,6 +431,9 @@
     </div>
   </div>
 </form>
+
+{% include '@documents/_product_panels.twig' %}
+</div>
 
 {% if can_manage %}
 <aside class="drawer drawer-right drawer-lg documents-preset-panel" id="documentPresetDrawer" role="dialog" aria-modal="true" aria-labelledby="documentPresetDrawerTitle" hidden>

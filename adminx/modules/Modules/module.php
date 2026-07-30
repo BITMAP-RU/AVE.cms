@@ -80,13 +80,11 @@
 				'code' => 'modules_registry',
 				'label' => 'Управление',
 				'url' => '/modules/',
+				'exact' => true,
 				'permission' => 'view_modules',
 				'group' => 'Система',
 				'parent' => 'modules',
 				'sort_order' => 1,
-				'match' => array(
-					'/modules',
-				),
 			),
 		),
 		'routes' => array(

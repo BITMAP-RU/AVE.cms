@@ -41,23 +41,23 @@
 
 		public function settingsSchema()
 		{
-			return array(
-				array('key' => 'options', 'type' => 'list', 'label' => 'Варианты'),
+			return $this->optionSettingsSchema(
+				array('key' => 'options', 'type' => 'list', 'label' => 'Варианты')
 			);
 		}
 
 		public function renderEdit(FieldContext $ctx)
 		{
-			$opts = $this->optionList($ctx);
-			if (empty($opts)) {
+			$map = $this->optionMap($ctx);
+			if (empty($map)) {
 				return '<input type="text" class="input" name="' . $this->attr($ctx->inputName())
 					. '" value="' . $this->attr($ctx->value) . '">';
 			}
 
 			$html = '<select class="select" name="' . $this->attr($ctx->inputName()) . '"><option value="">— не выбрано —</option>';
-			foreach ($opts as $opt) {
-				$sel = ((string) $opt === (string) $ctx->value) ? ' selected' : '';
-				$html .= '<option value="' . $this->attr($opt) . '"' . $sel . '>' . $this->e($opt) . '</option>';
+			foreach ($map as $value => $label) {
+				$sel = ((string) $value === (string) $ctx->value) ? ' selected' : '';
+				$html .= '<option value="' . $this->attr($value) . '"' . $sel . '>' . $this->e($label) . '</option>';
 			}
 
 			return $html . '</select>';
@@ -65,6 +65,8 @@
 
 		public function renderView(FieldContext $ctx)
 		{
-			return $this->e($ctx->value);
+			$value = (string) $ctx->value;
+			$map = $this->optionMap($ctx);
+			return $this->e(array_key_exists($value, $map) ? $map[$value] : $value);
 		}
 	}

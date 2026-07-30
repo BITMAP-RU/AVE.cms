@@ -33,7 +33,8 @@
 		public static function run()
 		{
 			$checks = array();
-			self::checkRuntime($checks);
+			$database = self::databaseInfo();
+			self::checkRuntime($checks, $database);
 			self::checkPaths($checks);
 			self::checkMail($checks);
 			self::checkContacts($checks);
@@ -49,14 +50,31 @@
 				$summary[$state]++;
 			}
 
-			return array('checks' => $checks, 'summary' => $summary, 'ready' => $summary['error'] === 0);
+			$ready = $summary['error'] === 0;
+			return array(
+				'checks' => $checks,
+				'groups' => self::groupChecks($checks),
+				'summary' => $summary,
+				'ready' => $ready,
+				'database' => $database,
+				'overview' => self::overview($summary, $database, $ready),
+			);
 		}
 
-		protected static function checkRuntime(array &$checks)
+		protected static function checkRuntime(array &$checks, array $database)
 		{
-			self::add($checks, 'PHP', PHP_VERSION_ID >= 70300 && PHP_VERSION_ID < 80000 ? 'ok' : 'warning', PHP_VERSION);
+			self::add($checks, 'PHP', PHP_VERSION_ID >= 70300 && PHP_VERSION_ID < 80000 ? 'ok' : 'warning', PHP_VERSION, 'environment');
+			self::add(
+				$checks,
+				'Сервер базы данных',
+				$database['connected'] ? 'ok' : 'error',
+				$database['connected']
+					? $database['product'] . ' ' . $database['version'] . ' · ' . $database['charset'] . ' · ' . $database['collation']
+					: 'не удалось получить версию сервера',
+				'environment'
+			);
 			foreach (array('mysqli', 'mbstring', 'json', 'gd', 'xmlwriter', 'curl', 'zip') as $extension) {
-				self::add($checks, 'Расширение ' . $extension, extension_loaded($extension) ? 'ok' : 'error', extension_loaded($extension) ? 'доступно' : 'не установлено');
+				self::add($checks, 'Расширение ' . $extension, extension_loaded($extension) ? 'ok' : 'error', extension_loaded($extension) ? 'доступно' : 'не установлено', 'environment');
 			}
 		}
 
@@ -64,7 +82,7 @@
 		{
 			foreach (array('tmp/cache' => BASEPATH . '/tmp/cache', 'tmp/backup' => BASEPATH . '/tmp/backup', 'uploads' => BASEPATH . '/uploads') as $label => $path) {
 				$ok = is_dir($path) && is_writable($path);
-				self::add($checks, 'Запись ' . $label, $ok ? 'ok' : 'error', $ok ? 'доступна' : 'каталог отсутствует или недоступен');
+				self::add($checks, 'Запись ' . $label, $ok ? 'ok' : 'error', $ok ? 'доступна' : 'каталог отсутствует или недоступен', 'filesystem');
 			}
 		}
 
@@ -72,15 +90,15 @@
 		{
 			$settings = PublicSettings::all();
 			$type = isset($settings['mail_type']) ? strtolower(trim((string) $settings['mail_type'])) : '';
-			self::add($checks, 'Почтовый транспорт', in_array($type, array('mail', 'smtp', 'sendmail'), true) ? 'ok' : 'error', $type !== '' ? $type : 'не задан');
+			self::add($checks, 'Почтовый транспорт', in_array($type, array('mail', 'smtp', 'sendmail'), true) ? 'ok' : 'error', $type !== '' ? $type : 'не задан', 'integrations');
 			$from = isset($settings['mail_from']) ? trim((string) $settings['mail_from']) : '';
-			self::add($checks, 'Email отправителя', filter_var($from, FILTER_VALIDATE_EMAIL) ? 'ok' : 'error', $from !== '' ? $from : 'не задан');
+			self::add($checks, 'Email отправителя', filter_var($from, FILTER_VALIDATE_EMAIL) ? 'ok' : 'error', $from !== '' ? $from : 'не задан', 'integrations');
 			if ($type === 'smtp') {
 				$host = isset($settings['mail_host']) ? trim((string) $settings['mail_host']) : '';
 				$port = isset($settings['mail_port']) ? (int) $settings['mail_port'] : 0;
-				self::add($checks, 'SMTP endpoint', $host !== '' && $port > 0 ? 'ok' : 'error', $host . ($port ? ':' . $port : ''));
+				self::add($checks, 'SMTP endpoint', $host !== '' && $port > 0 ? 'ok' : 'error', $host . ($port ? ':' . $port : ''), 'integrations');
 				$login = isset($settings['mail_smtp_login']) ? trim((string) $settings['mail_smtp_login']) : '';
-				self::add($checks, 'SMTP авторизация', $login !== '' ? 'ok' : 'warning', $login !== '' ? 'логин задан' : 'логин не задан');
+				self::add($checks, 'SMTP авторизация', $login !== '' ? 'ok' : 'warning', $login !== '' ? 'логин задан' : 'логин не задан', 'integrations');
 			}
 		}
 
@@ -92,7 +110,7 @@
 			}
 
 			$table = ContactsTables::table('module_contacts_forms');
-			if (!self::tableExists($table)) { self::add($checks, 'Contacts', 'warning', 'таблица форм отсутствует'); return; }
+			if (!self::tableExists($table)) { self::add($checks, 'Contacts', 'warning', 'таблица форм отсутствует', 'integrations'); return; }
 			$rows = DB::query('SELECT id, title, mail_set FROM `' . $table . '`')->getAll();
 			$forms = 0; $recipients = 0; $invalid = 0;
 			foreach ($rows ?: array() as $row) {
@@ -104,7 +122,7 @@
 				}
 			}
 
-			self::add($checks, 'Contacts', $forms > 0 && $recipients > 0 && $invalid === 0 ? 'ok' : ($invalid ? 'error' : 'warning'), $forms . ' форм, ' . $recipients . ' получателей' . ($invalid ? ', некорректных: ' . $invalid : ''));
+			self::add($checks, 'Contacts', $forms > 0 && $recipients > 0 && $invalid === 0 ? 'ok' : ($invalid ? 'error' : 'warning'), $forms . ' форм, ' . $recipients . ' получателей' . ($invalid ? ', некорректных: ' . $invalid : ''), 'integrations');
 		}
 
 		protected static function checkBasket(array &$checks)
@@ -112,7 +130,7 @@
 			$module = ModuleManager::get('commerce');
 			if (!$module || empty($module['enabled'])) { return; }
 			$table = BasketTables::table('module_basket_settings');
-			if (!self::tableExists($table)) { self::add($checks, 'Уведомления заказов', 'error', 'настройки корзины отсутствуют'); return; }
+			if (!self::tableExists($table)) { self::add($checks, 'Уведомления заказов', 'error', 'настройки корзины отсутствуют', 'integrations'); return; }
 			$row = DB::query('SELECT receivers, from_email FROM `' . $table . '` ORDER BY id LIMIT 1')->getAssoc();
 			$from = $row ? trim((string) $row['from_email']) : '';
 			$valid = 0; $invalid = 0;
@@ -121,7 +139,7 @@
 				if (filter_var($email, FILTER_VALIDATE_EMAIL)) { $valid++; } else { $invalid++; }
 			}
 
-			self::add($checks, 'Уведомления заказов', $valid > 0 && !$invalid && filter_var($from, FILTER_VALIDATE_EMAIL) ? 'ok' : 'error', $valid . ' получателей, отправитель ' . ($from ?: 'не задан'));
+			self::add($checks, 'Уведомления заказов', $valid > 0 && !$invalid && filter_var($from, FILTER_VALIDATE_EMAIL) ? 'ok' : 'error', $valid . ' получателей, отправитель ' . ($from ?: 'не задан'), 'integrations');
 		}
 
 		protected static function checkPublicRuntime(array &$checks)
@@ -135,8 +153,8 @@
 			}
 
 			sort($native, SORT_NATURAL | SORT_FLAG_CASE);
-			self::add($checks, 'Native-модули', $native ? 'ok' : 'warning', $native ? implode(', ', $native) : 'нет');
-			self::add($checks, 'Публичный runtime', 'ok', 'native без fallback-переключателей');
+			self::add($checks, 'Native-модули', $native ? 'ok' : 'warning', $native ? implode(', ', $native) : 'нет', 'runtime');
+			self::add($checks, 'Публичный runtime', 'ok', 'native без fallback-переключателей', 'runtime');
 		}
 
 		protected static function checkNativeDataTables(array &$checks)
@@ -146,6 +164,8 @@
 				'documents', 'rubrics', 'rubric_fields', 'rubric_templates', 'templates',
 				'request', 'request_conditions', 'navigation', 'navigation_items',
 				'sysblocks', 'sysblocks_groups', 'view_count', 'document_relation_edges',
+				'presentations', 'presentation_revisions', 'presentation_assignments',
+				'directories', 'directory_items',
 			) as $suffix) {
 				$tables[] = ContentTables::table($suffix);
 			}
@@ -188,15 +208,15 @@
 				}
 			}
 
-			self::add($checks, 'Target-таблицы native', $missing ? 'error' : 'ok', $missing ? 'отсутствуют: ' . implode(', ', $missing) : 'все критичные владельцы данных доступны');
+			self::add($checks, 'Target-таблицы native', $missing ? 'error' : 'ok', $missing ? 'отсутствуют: ' . implode(', ', $missing) : 'все критичные владельцы данных доступны', 'data');
 		}
 
 		protected static function checkHosting(array &$checks)
 		{
-			self::add($checks, 'Маршрутизация панели', is_file(ADMINX_PATH . '/.htaccess') ? 'ok' : 'error', is_file(ADMINX_PATH . '/.htaccess') ? '.htaccess присутствует' : '.htaccess отсутствует');
+			self::add($checks, 'Маршрутизация панели', is_file(ADMINX_PATH . '/.htaccess') ? 'ok' : 'error', is_file(ADMINX_PATH . '/.htaccess') ? '.htaccess присутствует' : '.htaccess отсутствует', 'environment');
 			$layout = @file_get_contents(ADMINX_PATH . '/view/main.twig');
 			$cdn = $layout !== false && preg_match('#https?://#', $layout);
-			self::add($checks, 'UI-ассеты', $cdn ? 'warning' : 'ok', $cdn ? 'есть внешние CDN-зависимости' : 'локальные');
+			self::add($checks, 'UI-ассеты', $cdn ? 'warning' : 'ok', $cdn ? 'есть внешние CDN-зависимости' : 'локальные', 'environment');
 		}
 
 		protected static function checkStoredCodePrefixes(array &$checks)
@@ -221,9 +241,9 @@
 					}
 				}
 
-				self::add($checks, 'Префиксы DB-шаблонов', 'ok', $count . ' вхождений нормализуются при рендере шаблонов');
+				self::add($checks, 'Префиксы DB-шаблонов', 'ok', $count . ' вхождений нормализуются при рендере шаблонов', 'data');
 			} catch (\Throwable $e) {
-				self::add($checks, 'Префиксы DB-шаблонов', 'warning', 'аудит не выполнен: ' . $e->getMessage());
+				self::add($checks, 'Префиксы DB-шаблонов', 'warning', 'аудит не выполнен: ' . $e->getMessage(), 'data');
 			}
 		}
 
@@ -276,7 +296,124 @@
 			$state = $result['missing'] > 0 && $production ? 'warning' : 'ok';
 			$detail = $result['references'] . ' ссылок, отсутствуют исходники: ' . $result['missing'] . ', превью создадутся: ' . $result['recoverable'];
 			if (!$production && $result['missing'] > 0) { $detail .= ' · локальная медиатека помечена как неполная'; }
-			self::add($checks, 'Медиа-ссылки', $state, $detail);
+			self::add($checks, 'Медиа-ссылки', $state, $detail, 'filesystem');
+		}
+
+		protected static function databaseInfo()
+		{
+			$info = array(
+				'connected' => false,
+				'product' => 'База данных',
+				'version' => 'Недоступно',
+				'raw_version' => '',
+				'comment' => '',
+				'charset' => 'неизвестно',
+				'collation' => 'неизвестно',
+			);
+
+			try {
+				$row = DB::query(
+					'SELECT VERSION() AS server_version, @@version_comment AS server_comment,'
+						. ' @@character_set_database AS database_charset, @@collation_database AS database_collation'
+				)->getAssoc();
+				$rawVersion = isset($row['server_version']) ? trim((string) $row['server_version']) : '';
+				$comment = isset($row['server_comment']) ? trim((string) $row['server_comment']) : '';
+				$identity = strtolower($rawVersion . ' ' . $comment);
+				$product = strpos($identity, 'mariadb') !== false
+					? 'MariaDB'
+					: (strpos($identity, 'percona') !== false ? 'Percona Server' : 'MySQL');
+				$version = $rawVersion;
+				if (preg_match('/^\d+(?:\.\d+){1,2}/', $rawVersion, $match)) {
+					$version = $match[0];
+				}
+
+				$info = array(
+					'connected' => $rawVersion !== '',
+					'product' => $product,
+					'version' => $version !== '' ? $version : 'Недоступно',
+					'raw_version' => $rawVersion,
+					'comment' => $comment,
+					'charset' => isset($row['database_charset']) ? (string) $row['database_charset'] : 'неизвестно',
+					'collation' => isset($row['database_collation']) ? (string) $row['database_collation'] : 'неизвестно',
+				);
+			} catch (\Throwable $e) {
+				$info['comment'] = $e->getMessage();
+			}
+
+			return $info;
+		}
+
+		protected static function overview(array $summary, array $database, $ready)
+		{
+			$databaseDetail = array();
+			if ($database['comment'] !== '') {
+				$databaseDetail[] = $database['comment'];
+			}
+
+			if ($database['raw_version'] !== '' && $database['raw_version'] !== $database['version']) {
+				$databaseDetail[] = $database['raw_version'];
+			}
+
+			$databaseDetail[] = $database['charset'] . ' / ' . $database['collation'];
+
+			return array(
+				array(
+					'label' => 'База данных',
+					'value' => $database['connected'] ? $database['product'] . ' ' . $database['version'] : 'Недоступно',
+					'detail' => $database['connected']
+						? implode(' · ', $databaseDetail)
+						: 'Соединение не установлено',
+					'icon' => 'ti-database',
+					'state' => $database['connected'] ? 'ok' : 'error',
+				),
+				array(
+					'label' => 'PHP',
+					'value' => PHP_VERSION,
+					'detail' => PHP_SAPI . ' · ' . PHP_OS,
+					'icon' => 'ti-brand-php',
+					'state' => PHP_VERSION_ID >= 70300 && PHP_VERSION_ID < 80000 ? 'ok' : 'warning',
+				),
+				array(
+					'label' => 'Проверки',
+					'value' => (string) array_sum($summary),
+					'detail' => $summary['ok'] . ' успешно · ' . $summary['warning'] . ' внимания · ' . $summary['error'] . ' ошибок',
+					'icon' => 'ti-list-check',
+					'state' => $summary['error'] > 0 ? 'error' : ($summary['warning'] > 0 ? 'warning' : 'ok'),
+				),
+				array(
+					'label' => 'Готовность',
+					'value' => $ready ? 'Готово' : 'Нужны исправления',
+					'detail' => $ready ? 'Критических ошибок не найдено' : 'Устраните красные проверки',
+					'icon' => $ready ? 'ti-shield-check' : 'ti-shield-exclamation',
+					'state' => $ready ? 'ok' : 'error',
+				),
+			);
+		}
+
+		protected static function groupChecks(array $checks)
+		{
+			$definitions = array(
+				'environment' => array('title' => 'Окружение', 'description' => 'Версии runtime, расширения и конфигурация веб-сервера.', 'icon' => 'ti-server'),
+				'filesystem' => array('title' => 'Файлы и медиа', 'description' => 'Доступность рабочих каталогов и целостность медиа-ссылок.', 'icon' => 'ti-folders'),
+				'data' => array('title' => 'Структура данных', 'description' => 'Критичные таблицы и совместимость хранимых шаблонов.', 'icon' => 'ti-database-check'),
+				'integrations' => array('title' => 'Почта и интеграции', 'description' => 'Настройки отправки и включённых прикладных модулей.', 'icon' => 'ti-plug-connected'),
+				'runtime' => array('title' => 'Публичный runtime', 'description' => 'Готовность публичного ядра и подключённых native-модулей.', 'icon' => 'ti-world'),
+			);
+			$groups = array();
+			foreach ($definitions as $code => $definition) {
+				$definition['code'] = $code;
+				$definition['checks'] = array();
+				$groups[$code] = $definition;
+			}
+
+			foreach ($checks as $check) {
+				$code = isset($check['group']) && isset($groups[$check['group']]) ? $check['group'] : 'environment';
+				$groups[$code]['checks'][] = $check;
+			}
+
+			return array_values(array_filter($groups, function ($group) {
+				return !empty($group['checks']);
+			}));
 		}
 
 		protected static function decode(array $row, $key)
@@ -290,5 +427,13 @@
 		}
 
 		protected static function tableExists($table) { return (bool) DB::query('SHOW TABLES LIKE %s', $table)->getValue(); }
-		protected static function add(array &$checks, $label, $state, $detail) { $checks[] = array('label' => $label, 'state' => $state, 'detail' => trim((string) $detail)); }
+		protected static function add(array &$checks, $label, $state, $detail, $group = 'environment')
+		{
+			$checks[] = array(
+				'label' => $label,
+				'state' => $state,
+				'detail' => trim((string) $detail),
+				'group' => $group,
+			);
+		}
 	}

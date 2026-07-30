@@ -10,7 +10,7 @@
 	<phrase data="auto_311e51e90722c580">Прав</phrase>
 	<phrase data="auto_12c7f4e4dc957223">Прав всего</phrase>
 	<phrase data="auto_5b19b10f7cfa9da2">Права</phrase>
-	<phrase data="auto_f55f990ad542ffbd">Права не синхронизированы. Запустите</phrase>
+	<phrase data="auto_f55f990ad542ffbd">Права не синхронизированы. Обновите схему в разделе «База данных → Миграции».</phrase>
 	<phrase data="auto_a5cd7a935114cdd8">Ролей</phrase>
 	<phrase data="auto_1ada279ae1fdd9f0">ролей · назначение прав доступа по разделам</phrase>
 	<phrase data="auto_afb1d0899bb631ca">Ролей нет — запустите setup-rbac</phrase>

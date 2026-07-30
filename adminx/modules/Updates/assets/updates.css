@@ -1,9 +1,6 @@
 .updates-tabs {
   margin-bottom: var(--space-5);
 }
-.updates-summary .stat-val {
-  font-variant-numeric: tabular-nums;
-}
 .updates-job,
 .updates-settings {
   padding: var(--space-5);

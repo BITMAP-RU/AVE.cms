@@ -20,6 +20,7 @@
 	use App\Helpers\Debug;
 	use App\Common\Lifecycle;
 	use App\Common\StoredPhpRuntime;
+	use App\Content\Presentation\DocumentPresentationBridge;
 
 	/** Renders a request template for an explicit, already selected document list. */
 	class RequestListRenderer
@@ -71,37 +72,60 @@
 
 			Debug::startTime('ELEMENTS_ALL');
 			$itemRenderer = new RequestItemRenderer();
-			$rows = (new RequestListReadModel())->prepare(
+			$presentation = DocumentPresentationBridge::renderList(
+				'content_list',
 				$rows,
-				(string) $request->request_template_item,
-				$itemContext
+				array(
+					'request' => (string) $requestId,
+					'rubric' => (string) (int) $request->rubric_id,
+					'module' => 'requests',
+				),
+				array(
+					'source' => 'request',
+					'request_id' => $requestId,
+					'total' => $numItems,
+					'page' => $currentPage,
+					'pages' => $numPages,
+					'pagination_html' => $pagination,
+				)
 			);
 
-			foreach ($rows as $row) {
-				$documentId = is_object($row) && isset($row->Id) ? (int) $row->Id : (int) $row;
-				if ($documentId <= 0) {
-					continue;
-				}
-
-				$itemNumber++;
-				$lastItem = $itemNumber === $itemCount;
-				Debug::startTime('ELEMENT_' . $itemNumber);
-
-				$renderSource = is_object($row) && isset($row->rubric_id, $row->document_title) ? $row : $documentId;
-				$item = $itemRenderer->render(
-					$renderSource,
-					$request->request_template_item,
-					'',
-					$itemContext->forItem($itemNumber)
+			if ($presentation !== null) {
+				$items = $presentation;
+				$itemNumber = $itemCount;
+			} else {
+				$rows = (new RequestListReadModel())->prepare(
+					$rows,
+					(string) $request->request_template_item,
+					$itemContext
 				);
-				PublicProfiler::record(array('REQUESTS', $requestId, 'ELEMENTS', $itemNumber), Debug::endTime('ELEMENT_' . $itemNumber));
-				$item = RequestItemRenderer::decorateSequence($item, $documentId, $itemNumber, $lastItem);
-				$items .= $item;
+
+				foreach ($rows as $row) {
+					$documentId = is_object($row) && isset($row->Id) ? (int) $row->Id : (int) $row;
+					if ($documentId <= 0) {
+						continue;
+					}
+
+					$itemNumber++;
+					$lastItem = $itemNumber === $itemCount;
+					Debug::startTime('ELEMENT_' . $itemNumber);
+
+					$renderSource = is_object($row) && isset($row->rubric_id, $row->document_title) ? $row : $documentId;
+					$item = $itemRenderer->render(
+						$renderSource,
+						$request->request_template_item,
+						'',
+						$itemContext->forItem($itemNumber)
+					);
+					PublicProfiler::record(array('REQUESTS', $requestId, 'ELEMENTS', $itemNumber), Debug::endTime('ELEMENT_' . $itemNumber));
+					$item = RequestItemRenderer::decorateSequence($item, $documentId, $itemNumber, $lastItem);
+					$items .= $item;
+				}
 			}
 
 			PublicProfiler::record(array('REQUESTS', $requestId, 'ELEMENTS', 'ALL'), Debug::endTime('ELEMENTS_ALL'));
 
-			$mainTemplate = (string) $request->request_template_main;
+			$mainTemplate = $presentation !== null ? '[tag:content]' : (string) $request->request_template_main;
 			$blockRenderer = new BlockRenderer();
 			$mainTemplate = preg_replace_callback('/\[tag:block:([A-Za-z0-9-_]{1,20}+)\]/', function ($match) use ($blockRenderer) {
 				return $blockRenderer->visual($match[1]);

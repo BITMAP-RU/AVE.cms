@@ -35,6 +35,11 @@ Reindexing is performed in chunks through the panel and does not require a comma
 After the first construction, regular saving and deleting of documents is supported
 index automatically.
 
+When the **Scheduler** is installed, it exposes a disabled-by-default
+**Search reindex** chunked task. It can be started manually or enabled on a
+schedule. Its cursor and progress survive between ticks, so closing the panel
+does not interrupt that rebuild.
+
 ## Basic settings
 
 ### Public page

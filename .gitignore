@@ -5,9 +5,11 @@
 /.vscode/
 /.claude/
 /.agents/
+/.playwright-mcp/
 
 # Node dependencies
 /node_modules/
+/modules/mcp/transport/node_modules/
 
 # Composer dev dependencies (тесты). composer.json/composer.lock — в гите.
 /vendor/
@@ -20,9 +22,13 @@
 /tmp/
 /uploads/
 /storage/backups/
+/storage/importprice/
+/storage/imports/
+/storage/logs/
 /storage/releases/
 /storage/runtime/
 /storage/secrets/
+/storage/tmp/
 /storage/updates/
 /storage/installed.lock
 /sample/

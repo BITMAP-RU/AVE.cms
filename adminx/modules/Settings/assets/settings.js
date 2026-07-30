@@ -413,7 +413,9 @@
 
     clearMaintenance: function (target) {
       var self = this;
-      var label = target === 'revisions' ? 'все ревизии документов' : 'всю подневную статистику просмотров';
+      var label = target === 'revisions'
+        ? 'все ревизии документов, блоков, шаблонов, рубрик, тем, представлений и оформления каталога'
+        : 'всю подневную статистику просмотров';
       Adminx.Confirm.open({
         kind: 'danger',
         title: 'Очистить служебные данные?',

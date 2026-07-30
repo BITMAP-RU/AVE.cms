@@ -16,7 +16,7 @@
 
 	defined('BASEPATH') || die('Direct access to this location is not allowed.');
 
-	/** Mutable module event shared by Adminx, API and background document writers. */
+	/** Mutable module event shared by the panel, API and background document writers. */
 	class DocumentSaveEvent
 	{
 		protected $phase;

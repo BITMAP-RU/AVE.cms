@@ -165,6 +165,14 @@
 			return (int) DB::query('SELECT is_active FROM ' . self::table() . ' WHERE id = %i', (int) $id)->getValue();
 		}
 
+		public static function setActive($id, $active)
+		{
+			DB::Update(self::table(), array(
+				'is_active' => $active ? 1 : 0,
+				'updated_at' => date('Y-m-d H:i:s'),
+			), 'id = %i', (int) $id);
+		}
+
 		public static function delete($id)
 		{
 			DB::Delete(self::table(), 'id = %i', (int) $id);

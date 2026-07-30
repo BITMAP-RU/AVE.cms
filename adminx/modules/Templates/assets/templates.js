@@ -100,10 +100,20 @@
           }
         }
       });
+      this.openFromLocation();
     },
 
     base: function () { return (this.form && this.form.getAttribute('data-base')) || Adminx.base(); },
     field: function (name) { return this.form.querySelector('[name="' + name + '"]'); },
+
+    openFromLocation: function () {
+      var id = parseInt(new URLSearchParams(window.location.search).get('edit'), 10) || 0;
+      if (!id) { return; }
+      var row = document.querySelector('[data-template-row][data-id="' + id + '"]');
+      if (!row) { return; }
+      if (Adminx.Drawer) { Adminx.Drawer.open('templateDrawer'); }
+      this.fillEdit(row);
+    },
 
     filterUrl: function (form) {
       var params = new URLSearchParams(new FormData(form));

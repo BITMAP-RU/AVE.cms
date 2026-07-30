@@ -25,7 +25,7 @@
 	/**
 	 * Несколько изображений (AVE image_multi). Legacy value = serialize([путь|описание]).
 	 *
-	 * Adminx дополняет тип галереей, загрузкой, медиапикером и DnD-сортировкой.
+	 * Панель управления дополняет тип галереей, загрузкой, медиапикером и DnD-сортировкой.
 	 */
 	class ImageMulti extends SerialFieldType implements DocumentMediaFieldType
 	{

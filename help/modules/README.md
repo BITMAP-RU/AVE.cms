@@ -114,6 +114,8 @@ Manifest с вычисляемым runtime-содержимым объявляе
 | [Источники трафика](traffic-analytics.md) | UTM-кампании, внешние переходы, посадочные страницы и CSV. |
 | [Поисковые запросы](search-analytics.md) | Спрос посетителей, нулевая выдача и рабочие заметки. |
 | [A/B-тесты](experiments.md) | Варианты блоков и элементов, стабильное распределение и конверсии. |
+| [Надёжные исходящие события](reliable-events.md) | Webhook-очередь, подписи, повторы и журнал доставок. |
+| [Автоматический прогрев кеша](cache-warmup.md) | Пакетный прогрев опубликованных страниц после сброса кеша. |
 | [Пошагово: свой модуль](tutorial.md) | Мини-модуль с нуля до рабочего экрана. |
 
 ## Устанавливаемые модули AVE.cms
@@ -157,6 +159,8 @@ Manifest с вычисляемым runtime-содержимым объявляе
 | `traffic_analytics` | Паблик + панель | `view_traffic_analytics`, `manage_traffic_analytics` | [Источники трафика](traffic-analytics.md) |
 | `search_analytics` | Паблик + панель | `view_search_analytics`, `manage_search_analytics` | [Поисковые запросы](search-analytics.md) |
 | `experiments` | Паблик + панель | `view_experiments`, `manage_experiments` | [A/B-тесты](experiments.md) |
+| `reliable_events` | Паблик + панель | `view_reliable_events`, `manage_reliable_events` | [Исходящие события](reliable-events.md) |
+| `cache_warmup` | Паблик + панель | `view_cache_warmup`, `manage_cache_warmup` | [Прогрев кеша](cache-warmup.md) |
 | `todo` | Панель | `view_todos`, `manage_todos` | [Личные инструменты](personal-tools.md#todo) |
 | `vk_oauth` | Паблик + панель | `view_vk_oauth`, `manage_vk_oauth` | [Вход через VK ID](oauth-providers.md#vk-id) |
 | `yandex_oauth` | Паблик + панель | `view_yandex_oauth`, `manage_yandex_oauth` | [Вход через Яндекс](oauth-providers.md#яндекс) |

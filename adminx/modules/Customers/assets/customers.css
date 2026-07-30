@@ -33,9 +33,6 @@
 .customers-table td:last-child {
   text-align: right;
 }
-.customers-table td:first-child {
-  font-variant-numeric: tabular-nums;
-}
 .customer-editor-drawer {
   width: min(66.666vw, 1240px);
   max-width: none;
@@ -83,7 +80,6 @@
   min-width: 0;
   overflow: hidden;
   font-size: 13px;
-  font-variant-numeric: tabular-nums;
   text-overflow: ellipsis;
   white-space: nowrap;
 }

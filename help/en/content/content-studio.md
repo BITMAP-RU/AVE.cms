@@ -257,7 +257,7 @@ Auto actions are only available for simple safe values: text in one
 string, number, date, single list, single selection, radio button and color.
 They are intentionally unavailable for rich/code content, media, links, catalog and
 compound fields: such data cannot be reliably replaced with a single short value.
-Adminx and JSON API repeat the rule on the server, so submitting the modified form
+The control panel and JSON API repeat the rule on the server, so submitting the modified form
 manually does not bypass the condition. Preview of the diagram shows how many forms
 The action is potentially active, but does not change the saved documents.The preview is linked to the current schema and documents with a security fingerprint. If
 Between check and confirmation, another editor changed a group, field, or

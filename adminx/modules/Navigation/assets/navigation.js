@@ -15,6 +15,7 @@
     currentNavigationId: 0,
     currentNavigationFlat: [],
     currentItemId: 0,
+    pendingItemId: 0,
     dragItem: null,
     dragGroup: [],
     dragPlaceholder: null,
@@ -96,6 +97,8 @@
           if (e.target && e.target.matches('[data-navigation-image-input]')) { self.renderPickedImage(e.target.value); }
         });
       }
+
+      this.openDeepLink();
 
       document.addEventListener('submit', function (e) {
         var filter = e.target.closest('.navigation-filter');
@@ -567,6 +570,18 @@
       this.loadItems();
     },
 
+    openDeepLink: function () {
+      var params = new URLSearchParams(window.location.search || '');
+      var navigationId = parseInt(params.get('navigation'), 10) || 0;
+      var itemId = parseInt(params.get('item'), 10) || 0;
+      if (!navigationId) { return; }
+      var row = document.querySelector('[data-navigation-row][data-id="' + navigationId + '"]');
+      if (!row) { return; }
+      this.pendingItemId = itemId;
+      this.openItems(row);
+      if (Adminx.Drawer) { Adminx.Drawer.open('navigationItemsDrawer'); }
+    },
+
     loadItems: function () {
       var self = this;
       if (!this.currentNavigationId) { return; }
@@ -584,6 +599,11 @@
         if (subtitle) { subtitle.textContent = data.navigation ? data.navigation.tag : 'Структура меню'; }
         if (count) { count.textContent = String(self.currentNavigationFlat.length); }
         self.renderItems(data.items || []);
+        if (self.pendingItemId) {
+          var pendingItemId = self.pendingItemId;
+          self.pendingItemId = 0;
+          self.fillItemEdit(pendingItemId);
+        }
         if (self.currentItemId) {
           self.markSelectedItem(self.currentItemId);
         }

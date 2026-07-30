@@ -88,7 +88,6 @@
 			$perPage = max(12, min(60, $perPage));
 
 			$listing = Model::listing($dir, $q, $listingType, $page, $perPage);
-			$folderListing = Model::listing($dir, $q, '', 1, 1);
 
 			return $this->success('', array(
 				'data' => array(
@@ -96,7 +95,7 @@
 					'type' => $type,
 					'parent_dir' => Model::parentDir($listing['dir']),
 					'breadcrumbs' => Model::breadcrumbs($listing['dir']),
-					'folders' => $this->pickerFolders($folderListing['folders']),
+					'folders' => $this->pickerFolders($listing['folders']),
 					'files' => $this->pickerFiles($listing['files']),
 					'page' => $listing['page'],
 					'pages' => $listing['pages'],
@@ -238,8 +237,8 @@
 				return $this->error($e->getMessage(), array(), 422);
 			}
 
-			$message = $result['files'] > 0
-				? 'Удалено превью: ' . $result['files']
+			$message = $result['roots'] > 0
+				? 'Удалено папок превью: ' . $result['roots'] . ', файлов: ' . $result['files']
 				: 'В этой папке превью не найдены';
 
 			return $this->success($message, array(
@@ -352,6 +351,7 @@
 				$out[] = array(
 					'name' => isset($folder['name']) ? $folder['name'] : '',
 					'path' => isset($folder['path']) ? $folder['path'] : '',
+					'parent' => isset($folder['parent']) ? $folder['parent'] : '',
 					'count' => isset($folder['count']) ? (int) $folder['count'] : 0,
 				);
 			}

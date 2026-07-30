@@ -63,36 +63,63 @@
 			$currentMethod = $method;
 			$currentBody = $body;
 			$currentHeaders = $options['headers'];
-			for ($redirect = 0; $redirect <= $options['max_redirects']; $redirect++) {
-				$target = self::resolve($currentUrl, $options);
-				$response = self::execute($currentMethod, $target, $currentBody, $currentHeaders, $options);
-				if ($response['status'] < 300 || $response['status'] >= 400) {
-					if ($response['status'] < 200 || $response['status'] >= 300) {
-						throw new \RuntimeException('Удалённый сервер вернул HTTP ' . $response['status']);
+			$started = microtime(true);
+			$requestId = substr(hash('sha256', $method . '|' . $currentUrl . '|' . microtime(true)), 0, 24);
+			self::observe('http.outbound.requesting', 'requesting', $requestId, array(
+				'method' => $method,
+				'url' => self::safeUrl($currentUrl),
+				'body_bytes' => $body === null ? 0 : strlen((string) $body),
+				'max_bytes' => $options['max_bytes'],
+			), null, $options['source']);
+			try {
+				for ($redirect = 0; $redirect <= $options['max_redirects']; $redirect++) {
+					$target = self::resolve($currentUrl, $options);
+					$response = self::execute($currentMethod, $target, $currentBody, $currentHeaders, $options);
+					if ($response['status'] < 300 || $response['status'] >= 400) {
+						if ($response['status'] < 200 || $response['status'] >= 300) {
+							throw new \RuntimeException('Удалённый сервер вернул HTTP ' . $response['status']);
+						}
+
+						$response['url'] = $target['url'];
+						self::observe('http.outbound.responded', 'responded', $requestId, array(
+							'method' => $currentMethod,
+							'url' => self::safeUrl($target['url']),
+							'status' => (int) $response['status'],
+							'bytes' => (int) $response['bytes'],
+							'redirects' => $redirect,
+							'duration_ms' => (int) round((microtime(true) - $started) * 1000),
+						), array('status' => (int) $response['status'], 'bytes' => (int) $response['bytes']), $options['source']);
+						return $response;
 					}
 
-					$response['url'] = $target['url'];
-					return $response;
+					if ($redirect >= $options['max_redirects'] || empty($response['headers']['location'])) {
+						throw new \RuntimeException('Удалённый сервер вернул запрещённое перенаправление');
+					}
+
+					$nextUrl = self::redirectUrl($target['url'], (string) $response['headers']['location']);
+					$nextTarget = self::resolve($nextUrl, $options);
+					if (self::origin($target) !== self::origin($nextTarget)) {
+						$currentHeaders = self::withoutSensitiveHeaders($currentHeaders);
+					}
+
+					$currentUrl = $nextTarget['url'];
+					if ($response['status'] === 303 || (($response['status'] === 301 || $response['status'] === 302) && $currentMethod === 'POST')) {
+						$currentMethod = 'GET';
+						$currentBody = null;
+					}
 				}
 
-				if ($redirect >= $options['max_redirects'] || empty($response['headers']['location'])) {
-					throw new \RuntimeException('Удалённый сервер вернул запрещённое перенаправление');
-				}
-
-				$nextUrl = self::redirectUrl($target['url'], (string) $response['headers']['location']);
-				$nextTarget = self::resolve($nextUrl, $options);
-				if (self::origin($target) !== self::origin($nextTarget)) {
-					$currentHeaders = self::withoutSensitiveHeaders($currentHeaders);
-				}
-
-				$currentUrl = $nextTarget['url'];
-				if ($response['status'] === 303 || (($response['status'] === 301 || $response['status'] === 302) && $currentMethod === 'POST')) {
-					$currentMethod = 'GET';
-					$currentBody = null;
-				}
+				throw new \RuntimeException('Превышен лимит перенаправлений');
+			} catch (\Throwable $e) {
+				self::observe('http.outbound.failed', 'failed', $requestId, array(
+					'method' => $currentMethod,
+					'url' => self::safeUrl($currentUrl),
+					'error' => get_class($e),
+					'message' => self::safeMessage($e->getMessage()),
+					'duration_ms' => (int) round((microtime(true) - $started) * 1000),
+				), null, $options['source']);
+				throw $e;
 			}
-
-			throw new \RuntimeException('Превышен лимит перенаправлений');
 		}
 
 		protected static function execute($method, array $target, $body, array $headers, array $options)
@@ -346,6 +373,7 @@
 				'max_bytes' => self::DEFAULT_MAX_BYTES,
 				'headers' => array(),
 				'user_agent' => 'AVE.cms/' . (defined('APP_VERSION') ? APP_VERSION : '3.3') . ' OutboundHttpClient',
+				'source' => 'runtime',
 			), $options);
 			$options['allowed_schemes'] = array_values(array_intersect(array('http', 'https'), array_map('strtolower', (array) $options['allowed_schemes'])));
 			$options['allowed_ports'] = array_values(array_unique(array_map('intval', (array) $options['allowed_ports'])));
@@ -354,11 +382,54 @@
 			$options['max_redirects'] = max(0, min(5, (int) $options['max_redirects']));
 			$options['max_bytes'] = max(1, min(52428800, (int) $options['max_bytes']));
 			$options['headers'] = self::headers((array) $options['headers']);
+			$options['source'] = substr(
+				preg_replace('/[^a-z0-9_.-]+/', '_', strtolower(trim((string) $options['source']))),
+				0,
+				64
+			);
+			if ($options['source'] === '') { $options['source'] = 'runtime'; }
 			if (!$options['allowed_schemes'] || !$options['allowed_ports']) {
 				throw new \InvalidArgumentException('Не заданы разрешённые схемы или порты исходящего запроса');
 			}
 
 			return $options;
+		}
+
+		protected static function safeUrl($url)
+		{
+			$parts = parse_url((string) $url);
+			if (!is_array($parts) || empty($parts['scheme']) || empty($parts['host'])) {
+				return '';
+			}
+
+			$port = isset($parts['port']) ? ':' . (int) $parts['port'] : '';
+			return strtolower((string) $parts['scheme']) . '://' . strtolower((string) $parts['host']) . $port;
+		}
+
+		protected static function safeMessage($message)
+		{
+			$message = preg_replace('#https?://[^\s]+#i', '[remote-url]', (string) $message);
+			return function_exists('mb_substr')
+				? mb_substr(trim($message), 0, 300, 'UTF-8')
+				: substr(trim($message), 0, 300);
+		}
+
+		protected static function observe($name, $operation, $identifier, array $data, $result, $source)
+		{
+			try {
+				Lifecycle::event(
+					$name,
+					'outbound_http',
+					$operation,
+					$identifier,
+					$data,
+					$result,
+					array('sensitive_data_stored' => false),
+					$source
+				);
+			} catch (\Throwable $e) {
+				error_log('Outbound HTTP observer: ' . self::safeMessage($e->getMessage()));
+			}
 		}
 
 		protected static function headers(array $headers)

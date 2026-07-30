@@ -591,7 +591,7 @@
       overlay.className = 'overlay';
 
       var modal = document.createElement('div');
-      modal.className = 'modal';
+      modal.className = 'modal confirm-modal';
       modal.setAttribute('role', 'dialog');
       modal.setAttribute('aria-modal', 'true');
 
@@ -600,10 +600,10 @@
           '<span class="dialog-icon ' + ic[0] + '"><i class="ti ' + ic[1] + '"></i></span>' +
           '<div style="flex:1">' +
             '<h3>' + esc(Adminx.tr(cfg.title || Adminx.t('confirm_title', 'Подтвердите действие'))) + '</h3>' +
-            (cfg.message ? '<p class="text-secondary" style="margin-top:4px">' + esc(Adminx.tr(cfg.message)) + '</p>' : '') +
           '</div>' +
           '<button class="modal-close" type="button" data-cancel aria-label="' + esc(Adminx.t('btn_close', 'Закрыть')) + '"><i class="ti ti-x"></i></button>' +
         '</div>' +
+        (cfg.message ? '<div class="modal-body confirm-modal-body"><p class="text-secondary">' + esc(Adminx.tr(cfg.message)) + '</p></div>' : '') +
         '<div class="modal-footer">' +
           '<button class="btn btn-ghost" type="button" data-cancel>' + esc(Adminx.tr(cfg.cancelLabel || Adminx.t('btn_cancel', 'Отмена'))) + '</button>' +
           '<button class="btn ' + (cfg.confirmClass || 'btn-primary') + '" type="button" data-ok style="margin-left:auto">' + esc(Adminx.tr(cfg.confirmLabel || Adminx.t('confirm_action', 'Подтвердить'))) + '</button>' +

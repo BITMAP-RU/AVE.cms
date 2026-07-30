@@ -124,28 +124,29 @@
 
 			$folders = array();
 			$files = array();
-			$items = @scandir($abs);
-			if ($items === false) {
-				$items = array();
-			}
-
-			foreach ($items as $name) {
-				if (!self::isVisibleEntry($name)) {
-					continue;
+			if ($q !== '') {
+				self::searchTree($dir, $abs, $q, $type, $folders, $files);
+			} else {
+				$items = @scandir($abs);
+				if ($items === false) {
+					$items = array();
 				}
 
-				$path = rtrim($dir, '/') . '/' . $name;
-				$itemAbs = $abs . DIRECTORY_SEPARATOR . $name;
-				if (is_dir($itemAbs)) {
-					if (self::matches($name, $q, $type, true)) {
-						$folders[] = self::folderRow($path, $itemAbs);
+				foreach ($items as $name) {
+					if (!self::isVisibleEntry($name)) {
+						continue;
 					}
 
-					continue;
-				}
+					$path = rtrim($dir, '/') . '/' . $name;
+					$itemAbs = $abs . DIRECTORY_SEPARATOR . $name;
+					if (is_dir($itemAbs)) {
+						$folders[] = self::folderRow($path, $itemAbs);
+						continue;
+					}
 
-				if (is_file($itemAbs) && self::matches($name, $q, $type, false)) {
-					$files[] = self::fileRow($path, $itemAbs);
+					if (is_file($itemAbs) && self::matches($name, '', $type, false)) {
+						$files[] = self::fileRow($path, $itemAbs);
+					}
 				}
 			}
 
@@ -422,25 +423,60 @@
 				throw new \RuntimeException('Папка не найдена');
 			}
 
-			$thumbDir = self::thumbnailDirName();
-			$target = rtrim($abs, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $thumbDir;
-			if (!is_dir($target)) {
-				return array('files' => 0, 'dirs' => 0, 'path' => rtrim($dir, '/') . '/' . $thumbDir);
-			}
-
 			$base = realpath($abs);
-			$real = realpath($target);
-			if (!$base || !$real || basename($real) !== $thumbDir || strpos($real, $base . DIRECTORY_SEPARATOR) !== 0) {
-				throw new \RuntimeException('Некорректная папка превью');
+			if (!$base) {
+				throw new \RuntimeException('Некорректная папка');
 			}
 
+			$thumbDir = self::thumbnailDirName();
+			$targets = array();
+			$iterator = new \RecursiveIteratorIterator(
+				new \RecursiveDirectoryIterator($base, \FilesystemIterator::SKIP_DOTS),
+				\RecursiveIteratorIterator::CHILD_FIRST
+			);
+			foreach ($iterator as $item) {
+				if (!$item->isDir() || $item->isLink() || $item->getFilename() !== $thumbDir) {
+					continue;
+				}
+
+				$real = $item->getRealPath();
+				if ($real && strpos($real, $base . DIRECTORY_SEPARATOR) === 0) {
+					$targets[$real] = $real;
+				}
+			}
+
+			$direct = rtrim($base, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $thumbDir;
+			if (is_dir($direct)) {
+				$real = realpath($direct);
+				if ($real && strpos($real, $base . DIRECTORY_SEPARATOR) === 0) {
+					$targets[$real] = $real;
+				}
+			}
+
+			uksort($targets, function ($left, $right) {
+				return strlen($right) - strlen($left);
+			});
 			$files = 0;
 			$dirs = 0;
-			if (!self::removeDirWithCount($real, $files, $dirs)) {
-				throw new \RuntimeException('Не удалось удалить превью');
+			$roots = 0;
+			foreach ($targets as $target) {
+				if (!is_dir($target)) {
+					continue;
+				}
+
+				if (!self::removeDirWithCount($target, $files, $dirs)) {
+					throw new \RuntimeException('Не удалось удалить превью');
+				}
+
+				$roots++;
 			}
 
-			return array('files' => $files, 'dirs' => $dirs, 'path' => rtrim($dir, '/') . '/' . $thumbDir);
+			return array(
+				'files' => $files,
+				'dirs' => $dirs,
+				'roots' => $roots,
+				'path' => $dir,
+			);
 		}
 
 		/**
@@ -708,7 +744,42 @@
 				}
 			}
 
-			return array('name' => basename($path), 'path' => $path, 'count' => $count);
+			return array(
+				'name' => basename($path),
+				'path' => $path,
+				'parent' => self::parentDir($path),
+				'count' => $count,
+			);
+		}
+
+		protected static function searchTree($dir, $abs, $q, $type, array &$folders, array &$files)
+		{
+			$rootLength = strlen(rtrim($abs, DIRECTORY_SEPARATOR));
+			$directory = new \RecursiveDirectoryIterator($abs, \FilesystemIterator::SKIP_DOTS);
+			$visible = new \RecursiveCallbackFilterIterator($directory, function ($item) {
+				return !$item->isLink() && self::isVisibleEntry($item->getFilename());
+			});
+			$iterator = new \RecursiveIteratorIterator(
+				$visible,
+				\RecursiveIteratorIterator::SELF_FIRST
+			);
+
+			foreach ($iterator as $item) {
+				$name = $item->getFilename();
+				$relative = ltrim(str_replace('\\', '/', substr($item->getPathname(), $rootLength)), '/');
+				$path = rtrim($dir, '/') . '/' . $relative;
+				if ($item->isDir()) {
+					if (self::matches($name, $q, '', true)) {
+						$folders[] = self::folderRow($path, $item->getPathname());
+					}
+
+					continue;
+				}
+
+				if ($item->isFile() && self::matches($name, $q, $type, false)) {
+					$files[] = self::fileRow($path, $item->getPathname());
+				}
+			}
 		}
 
 		protected static function stats($absRoot)

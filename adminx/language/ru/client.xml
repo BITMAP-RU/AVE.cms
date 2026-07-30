@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <language>
+	<phrase data="action_done">Готово</phrase>
 	<phrase data="auto_1cc70f8e0fc03e82">Удалить представление</phrase>
 	<phrase data="auto_86433d57abc272e9">Сохранённые представления</phrase>
 	<phrase data="btn_apply">Применить</phrase>
@@ -37,6 +38,7 @@
 	<phrase data="ui_remove">Убрать</phrase>
 	<phrase data="ui_search">Поиск</phrase>
 	<phrase data="ui_select">Выбрать</phrase>
+	<phrase data="ui_selected">Выбрано</phrase>
 	<phrase data="ui_size">Размер</phrase>
 	<phrase data="ui_source">Источник</phrase>
 	<phrase data="ui_title">Заголовок</phrase>

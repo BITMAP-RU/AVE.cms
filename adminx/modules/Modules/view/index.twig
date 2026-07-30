@@ -80,7 +80,7 @@
       <tbody>
       {% for module in modules %}
 		{% set state = module.error ? 'error' : (module.recoverable ? 'recovery' : (not module.installed ? 'available' : (module.needs_update ? 'update' : (module.enabled ? 'active' : 'inactive')))) %}
-        <tr class="modules-scope-{{ module.scope }}" data-module-row data-code="{{ module.code }}" data-name="{{ module.name|lower|e('html_attr') }}" data-state="{{ state }}" data-scope="{{ module.scope }}" data-search="{{ (module.name ~ ' ' ~ module.code ~ ' ' ~ module.function ~ ' ' ~ module.scope)|lower }}">
+        <tr class="modules-scope-{{ module.scope }}{{ focus_code == module.code ? ' is-focused' : '' }}" data-module-row data-code="{{ module.code }}" data-name="{{ module.name|lower|e('html_attr') }}" data-state="{{ state }}" data-scope="{{ module.scope }}" data-search="{{ (module.name ~ ' ' ~ module.code ~ ' ' ~ module.function ~ ' ' ~ module.scope)|lower }}">
           <td>
             <div class="modules-identity">
               <span class="modules-icon"><i class="{{ module.icon|default('ti ti-puzzle') }}"></i></span>
@@ -97,7 +97,7 @@
             {% if module.error %}<span class="badge badge-red badge-dot">Ошибка</span>
             {% elseif module.recoverable %}<span class="badge badge-red badge-dot">Восстановление</span>
             {% elseif not module.installed %}<span class="badge badge-gray badge-dot">Не установлен</span>
-	            {% elseif module.needs_update %}<span class="badge badge-orange badge-dot">{{ module.migration_pending ? 'Миграции' : 'Обновление' }}</span>
+	            {% elseif module.needs_update %}<span class="badge badge-orange badge-dot">Миграции</span>
             {% elseif module.enabled %}<span class="badge badge-green badge-dot">Активен</span>
             {% else %}<span class="badge badge-gray badge-dot">Отключён</span>{% endif %}
           </td>
@@ -108,7 +108,7 @@
           </td>
           <td class="modules-version">
 	            <b class="mono" data-tooltip="Версия файлов">Файлы: {{ module.file_version ?: '—' }}</b>
-	            {% if module.installed and module.db_version != module.file_version %}<span class="text-muted text-xs mono">БД: {{ module.db_version ?: '—' }}</span>{% endif %}
+	            {% if module.migration_pending %}<span class="text-muted text-xs mono">Установлено: {{ module.db_version ?: '—' }}</span>{% endif %}
           </td>
           <td>
             {% if module.admin_url or can_manage %}
@@ -127,7 +127,7 @@
               {% if module.removable %}<button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-danger" type="button" data-module-action="remove" data-tooltip="Удалить файлы" aria-label="Удалить файлы"><i class="ti ti-folder-x"></i></button>{% endif %}
               {% elseif module.installed %}
                 <label class="switch modules-switch" data-tooltip="{{ module.enabled ? 'Отключить' : 'Включить' }}"><input type="checkbox" data-module-toggle{{ module.enabled ? ' checked' : '' }}><span></span></label>
-	                {% if module.needs_update %}<button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-ok" type="button" data-module-action="update" data-tooltip="{{ module.migration_pending ? 'Применить миграции' : 'Обновить модуль' }}" aria-label="{{ module.migration_pending ? 'Применить миграции' : 'Обновить модуль' }}"><i class="ti {{ module.migration_pending ? 'ti-database-import' : 'ti-refresh' }}"></i></button>{% endif %}
+	                {% if module.needs_update %}<button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-ok" type="button" data-module-action="update" data-tooltip="Применить миграции" aria-label="Применить миграции"><i class="ti ti-database-import"></i></button>{% endif %}
                 <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-view" type="button" data-module-action="reinstall" data-tooltip="Переустановить" aria-label="Переустановить"><i class="ti ti-reload"></i></button>
                 <button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-danger" type="button" data-module-action="uninstall" data-tooltip="Деинсталлировать" aria-label="Деинсталлировать"><i class="ti ti-trash"></i></button>
               {% endif %}
@@ -191,7 +191,7 @@
       <thead><tr><th>Модуль</th><th style="width:154px">Область</th><th style="width:170px">Версия</th><th style="width:150px">Состояние</th><th style="width:76px"></th></tr></thead>
       <tbody>
       {% for module in repository.items %}
-        <tr data-repository-row data-code="{{ module.code }}" data-name="{{ module.name|lower|e('html_attr') }}">
+        <tr class="{{ focus_code == module.code ? 'is-focused' : '' }}" data-repository-row data-code="{{ module.code }}" data-name="{{ module.name|lower|e('html_attr') }}">
           <td><div class="modules-identity"><span class="modules-icon"><i class="ti ti-package"></i></span><span class="modules-copy"><span class="modules-title">{{ module.name }}</span><span class="modules-meta"><span class="mono">{{ module.code }}</span>{% if module.author %}<span>{{ module.author }}</span>{% endif %}</span>{% if module.description %}<span class="modules-description">{{ module.description }}</span>{% endif %}</span></div></td>
           <td>{% if module.kind == 'admin' %}<span class="badge modules-scope-badge is-admin"><i class="ti ti-settings"></i>Админка</span>{% else %}<span class="badge modules-scope-badge is-mixed"><i class="ti ti-arrows-exchange"></i>Паблик + админка</span>{% endif %}</td>
 	          <td class="modules-version"><b class="mono">Каталог: {{ module.version }}</b>{% if module.local_version %}<span class="text-muted text-xs mono">Файлы: {{ module.local_version }}</span>{% endif %}{% if module.migration_pending %}<span class="text-muted text-xs mono">БД: {{ module.database_version ?: '—' }}</span>{% endif %}</td>

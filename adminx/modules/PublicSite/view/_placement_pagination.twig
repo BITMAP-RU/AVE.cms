@@ -1,0 +1,22 @@
+{% set pagination = placement_map.pagination %}
+<div class="public-site-placement-footer">
+  <span class="text-secondary">{{ pagination.from }}-{{ pagination.to }} из {{ pagination.total }}</span>
+  {% if pagination.pages > 1 %}
+  {% set page_url = ADMINX_BASE ~ '/public-site/placements?view=' ~ placement_view ~ filter_suffix ~ '&page=' %}
+  <nav class="pagination" aria-label="Страницы карты размещений">
+    {% if pagination.page > 1 %}
+    <a class="page-link" href="{{ page_url ~ (pagination.page - 1) }}" aria-label="Предыдущая страница"><i class="ti ti-chevron-left"></i></a>
+    {% endif %}
+    {% for page in 1..pagination.pages %}
+      {% if page == 1 or page == pagination.pages or (page >= pagination.page - 2 and page <= pagination.page + 2) %}
+      <a class="page-link {{ page == pagination.page ? 'active' : '' }}" href="{{ page_url ~ page }}"{{ page == pagination.page ? ' aria-current="page"' : '' }}>{{ page }}</a>
+      {% elseif (page == 2 and pagination.page > 4) or (page == pagination.pages - 1 and pagination.page < pagination.pages - 3) %}
+      <span class="page gap" aria-hidden="true">…</span>
+      {% endif %}
+    {% endfor %}
+    {% if pagination.page < pagination.pages %}
+    <a class="page-link" href="{{ page_url ~ (pagination.page + 1) }}" aria-label="Следующая страница"><i class="ti ti-chevron-right"></i></a>
+    {% endif %}
+  </nav>
+  {% endif %}
+</div>

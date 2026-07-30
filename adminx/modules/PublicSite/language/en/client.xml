@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="public_site_catalog_filters">Catalog filters</phrase>
+	<phrase data="public_site_choose_material">Choose a material</phrase>
+	<phrase data="public_site_choose_snapshot">Choose a snapshot above.</phrase>
+	<phrase data="public_site_compact_content_list">Compact list</phrase>
+	<phrase data="public_site_compact_list">Compact list</phrase>
+	<phrase data="public_site_content_list">Material list</phrase>
+	<phrase data="public_site_diag_failed_state">failed</phrase>
+	<phrase data="public_site_diag_passed">passed</phrase>
+	<phrase data="public_site_diag_results">Inspection results</phrase>
+	<phrase data="public_site_document_page">Material page</phrase>
+	<phrase data="public_site_favorite">Favorites</phrase>
+	<phrase data="public_site_items_lower">materials</phrase>
+	<phrase data="public_site_new_presentation">New presentation</phrase>
+	<phrase data="public_site_no_snapshots">No snapshots yet.</phrase>
+	<phrase data="public_site_preview_data_hint">Data available to the template will appear here after preview.</phrase>
+	<phrase data="public_site_related_items">Related materials</phrase>
+	<phrase data="public_site_search_results">Search results</phrase>
+	<phrase data="public_site_version_lower">version</phrase>
+</language>

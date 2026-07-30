@@ -407,7 +407,6 @@
   margin-top: 8px;
   color: var(--blue-700);
   font-size: 12px;
-  font-variant-numeric: tabular-nums;
 }
 .constant-bool-control {
   margin-top: 8px;
@@ -476,47 +475,134 @@
   grid-column: 2;
   grid-row: 1 / span 2;
 }
-.settings-production-summary {
+.settings-maintenance-breakdown {
+  grid-column: 1 / -1;
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
   gap: 6px;
+  margin-top: 7px;
 }
-.settings-production-list {
+.settings-maintenance-breakdown span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 7px;
+  border-radius: var(--radius-xs);
+  background: var(--background-muted);
+  color: var(--text-secondary);
+  line-height: 1.25;
+}
+.settings-maintenance-breakdown span b {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.settings-diagnostics-overview {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  border-top: 1px solid var(--border-default);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 24px;
 }
-.settings-production-check {
+.settings-diagnostics-overview-card {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+  padding: 16px;
+}
+.settings-diagnostics-overview-card > div {
   display: grid;
-  grid-template-columns: 20px minmax(0, 1fr);
-  gap: 3px 8px;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--border-default);
+  gap: 2px;
+  min-width: 0;
 }
-.settings-production-check:nth-child(odd) {
-  border-right: 1px solid var(--border-default);
+.settings-diagnostics-overview-card span:not(.icon-tile) {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
 }
-.settings-production-check i {
-  grid-row: 1 / span 2;
-  margin-top: 2px;
+.settings-diagnostics-overview-card b {
+  overflow-wrap: anywhere;
+  font-size: 18px;
+  line-height: 1.2;
 }
-.settings-production-check i.is-ok {
-  color: var(--green-600);
+.settings-diagnostics-overview-card small {
+  overflow-wrap: anywhere;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  line-height: 1.35;
 }
-.settings-production-check i.is-warning {
-  color: var(--amber-600);
+.settings-diagnostics-groups {
+  display: grid;
+  gap: 26px;
 }
-.settings-production-check i.is-error {
-  color: var(--red-600);
+.settings-diagnostics-group {
+  min-width: 0;
 }
-.settings-production-check b {
+.settings-diagnostics-group-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.settings-diagnostics-group-head h2 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+.settings-diagnostics-group-head p {
+  margin: 0;
   font-size: 13px;
+  line-height: 1.4;
 }
-.settings-production-check span {
+.settings-diagnostics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.settings-diagnostic-card {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: start;
+  gap: 11px;
+  min-height: 88px;
+  padding: 14px;
+}
+.settings-diagnostic-icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: var(--radius-md);
+  font-size: 17px;
+}
+.settings-diagnostic-card.is-ok .settings-diagnostic-icon {
+  color: var(--green-700);
+  background: var(--green-100);
+}
+.settings-diagnostic-card.is-warning .settings-diagnostic-icon {
+  color: var(--amber-700);
+  background: var(--amber-100);
+}
+.settings-diagnostic-card.is-error .settings-diagnostic-icon {
+  color: var(--red-700);
+  background: var(--red-100);
+}
+.settings-diagnostic-card > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.settings-diagnostic-card b {
+  font-size: 13.5px;
+  line-height: 1.3;
+}
+.settings-diagnostic-card span {
+  overflow-wrap: anywhere;
   color: var(--text-secondary);
   font-size: 12px;
-  overflow-wrap: anywhere;
+  line-height: 1.45;
 }
 .settings-file-meta {
   display: flex;
@@ -565,11 +651,9 @@
   .settings-maintenance-actions {
     grid-template-columns: 1fr;
   }
-  .settings-production-list {
+  .settings-diagnostics-overview,
+  .settings-diagnostics-grid {
     grid-template-columns: 1fr;
-  }
-  .settings-production-check:nth-child(odd) {
-    border-right: 0;
   }
   .settings-file-drawer {
     width: 100%;
@@ -578,6 +662,12 @@
     left: 12px;
     right: 12px;
     bottom: 12px;
+  }
+}
+@media (min-width: 761px) and (max-width: 1120px) {
+  .settings-diagnostics-overview,
+  .settings-diagnostics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 @media (max-width: 680px) {

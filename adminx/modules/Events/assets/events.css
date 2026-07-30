@@ -169,7 +169,6 @@
 .events-hit-count {
   min-width: 40px;
   justify-content: center;
-  font-variant-numeric: tabular-nums;
 }
 .events-message {
   font-weight: 600;
@@ -233,6 +232,19 @@
 .events-empty {
   border: none;
   min-height: 260px;
+}
+.events-table-day td {
+  padding: 9px 14px;
+  background: var(--background-muted);
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.events-table-day span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 @media (max-width: 760px) {
   .events-table-wrap {

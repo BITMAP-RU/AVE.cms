@@ -20,6 +20,7 @@
 	use App\Content\DocumentTerms;
 	use App\Content\Fields\FieldContext;
 	use App\Content\Fields\FieldConditionEvaluator;
+	use App\Content\Fields\ComputedFieldEvaluator;
 	use App\Content\Fields\FieldLifecycle;
 	use App\Content\Fields\FieldRegistry;
 	use App\Content\Fields\FieldValidator;
@@ -69,9 +70,11 @@
 			}
 
 			$data = $this->normalizeData($payload, $existing, $rubric);
+			$fields = ComputedFieldEvaluator::apply($definitions, $fields, $data);
 			DocumentSaveEvents::before($operation, $source, $documentId, $rubricId, $actorId, $data, $fields, $existing ?: array());
 			DocumentRubricCodeRunner::before($rubricId, $data, $fields, $documentId, $actorId, !$existing, $source);
 			$data = $this->normalizeData($data, $existing, $rubric, true);
+			$fields = ComputedFieldEvaluator::apply($definitions, $fields, $data);
 			$errors = array_merge(
 				$fieldErrors,
 				$this->validate($data, $documentId, $rubricId),
@@ -93,6 +96,7 @@
 				$this->writeDocument($documentId, $data, $rubric, $actorId, $identityState ?: array(), false);
 				$this->writeFields($documentId, $data, $definitions, $fields);
 				DocumentTerms::sync($documentId, $rubricId, $data['document_meta_keywords'], $data['document_tags']);
+				DocumentSaveEvents::persisted($operation, $source, $documentId, $rubricId, $actorId, $data, $fields, $existing ?: array());
 				if ($ownsTransaction) { DB::commit(); }
 			} catch (\Throwable $e) {
 				if ($ownsTransaction) { DB::rollback(); }

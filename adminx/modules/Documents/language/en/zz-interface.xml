@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="documents_catalog_empty">No sections selected.</phrase>
+	<phrase data="documents_catalog_add">Add section</phrase>
+	<phrase data="documents_catalog_search">Find section</phrase>
+	<phrase data="documents_catalog_remove">Remove section</phrase>
+	<phrase data="documents_catalog_document_prefix">document #</phrase>
+	<phrase data="documents_catalog_hidden">hidden</phrase>
+</language>

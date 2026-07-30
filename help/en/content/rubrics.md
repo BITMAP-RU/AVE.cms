@@ -58,6 +58,10 @@ Frequently used parameters:
 
 Detailed contract types: [Document fields](../fields/README.md).
 
+Do not create a category with documents for a simple reusable value list. Use
+lightweight [dictionaries](directories.md). A document relation is appropriate
+only when the selected entity needs its own page and fields.
+
 ## Category templates
 
 The main template collects `[tag:maincontent]` of the current document. Additional

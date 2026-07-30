@@ -22,38 +22,60 @@
 	/** Portable schema checks for MySQL/MariaDB versions without ALTER IF NOT EXISTS. */
 	class DatabaseSchema
 	{
+		protected static $tables = array();
+		protected static $columns = array();
+		protected static $indexes = array();
+
 		public static function columnExists($table, $column)
 		{
 			self::assertIdentifier($table, 'table');
 			self::assertIdentifier($column, 'column');
-			return (bool) DB::query(
+			$key = (string) $table . '.' . (string) $column;
+			if (!empty(self::$columns[$key])) { return true; }
+			$exists = (bool) DB::query(
 				'SELECT 1 FROM information_schema.COLUMNS'
-				. ' WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = %s AND COLUMN_NAME = %s LIMIT 1',
+					. ' WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = %s AND COLUMN_NAME = %s LIMIT 1',
 				$table,
 				$column
 			)->getValue();
+			if ($exists) { self::$columns[$key] = true; }
+			return $exists;
 		}
 
 		public static function indexExists($table, $index)
 		{
 			self::assertIdentifier($table, 'table');
 			self::assertIdentifier($index, 'index');
-			return (bool) DB::query(
+			$key = (string) $table . '.' . (string) $index;
+			if (!empty(self::$indexes[$key])) { return true; }
+			$exists = (bool) DB::query(
 				'SELECT 1 FROM information_schema.STATISTICS'
-				. ' WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = %s AND INDEX_NAME = %s LIMIT 1',
+					. ' WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = %s AND INDEX_NAME = %s LIMIT 1',
 				$table,
 				$index
 			)->getValue();
+			if ($exists) { self::$indexes[$key] = true; }
+			return $exists;
 		}
 
 		public static function tableExists($table)
 		{
 			self::assertIdentifier($table, 'table');
-			return (bool) DB::query(
+			if (!empty(self::$tables[$table])) { return true; }
+			$exists = (bool) DB::query(
 				'SELECT 1 FROM information_schema.TABLES'
 					. ' WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = %s LIMIT 1',
 				$table
 			)->getValue();
+			if ($exists) { self::$tables[$table] = true; }
+			return $exists;
+		}
+
+		public static function reset()
+		{
+			self::$tables = array();
+			self::$columns = array();
+			self::$indexes = array();
 		}
 
 		public static function alter($statement)
@@ -64,6 +86,7 @@
 			}
 
 			DB::query($statement);
+			self::reset();
 			return true;
 		}
 

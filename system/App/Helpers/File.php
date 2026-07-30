@@ -111,6 +111,34 @@
 
 
 		/**
+		 * Проверяет локальный публичный путь. Внешние HTTP(S)-адреса считаются доступными.
+		 *
+		 * @param string $path URL или путь относительно корня сайта
+		 * @return bool
+		 */
+		public static function publicExists ($path)
+		{
+			$path = trim((string) $path);
+			if ($path === '') {
+				return false;
+			}
+
+			if (preg_match('#^https?://#i', $path)) {
+				return true;
+			}
+
+			$urlPath = parse_url($path, PHP_URL_PATH);
+			$urlPath = is_string($urlPath) ? rawurldecode($urlPath) : '';
+			$urlPath = ltrim(str_replace('\\', '/', $urlPath), '/');
+			if ($urlPath === '' || strpos('/' . $urlPath . '/', '/../') !== false) {
+				return false;
+			}
+
+			return self::exists(rtrim(BASEPATH, '/\\') . '/' . $urlPath);
+		}
+
+
+		/**
 		 * Удаляет файл или массив файлов.
 		 *
 		 * @param string|array $filename Полный путь к файлу или массив путей к файлам

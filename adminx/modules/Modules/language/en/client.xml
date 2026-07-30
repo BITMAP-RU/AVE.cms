@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <language>
+	<phrase data="auto_093a3bc2fa9b4629">Update module</phrase>
 	<phrase data="auto_0a5577462b8be085">The module, its data, settings, menus and rights will be deleted. This action is irreversible.</phrase>
 	<phrase data="auto_0aca097f8e8b02be">Restore module operation?</phrase>
 	<phrase data="auto_0bff2559ed01357f">Successful migrations will be skipped and the aborted step will be re-executed. Please check the given error before proceeding.</phrase>

@@ -18,7 +18,7 @@
 
 	use App\Common\Loader\Load;
 
-	/** Discovers installable modules that own separate public and Adminx parts. */
+	/** Discovers installable modules that own separate public and control-panel parts. */
 	class PackageModuleRuntime
 	{
 		protected static $adminLoaded = false;

@@ -33,12 +33,13 @@
 			$q = Request::getStr('q', '');
 			$limit = Request::getInt('limit', 300);
 			$sourceDef = Model::source($source);
+			$rows = Model::rows($sourceDef['code'], $q, $limit);
 
 			return $this->render('@events/index.twig', array(
 				'sources' => Model::summaries(),
 				'active_source' => $sourceDef['code'],
 				'active_source_def' => $sourceDef,
-				'rows' => Model::rows($sourceDef['code'], $q, $limit),
+				'rows' => $rows,
 				'q' => $q,
 				'limit' => $limit,
 				'can_manage' => Permission::check('manage_events'),
@@ -56,7 +57,7 @@
 				return $this->error('Этот источник нельзя очистить', array(), 422);
 			}
 
-			return $this->success('Журнал очищен', array(
+			return $this->success($source === 'audit' ? 'Аудит очищен' : 'Журнал очищен', array(
 				'redirect' => $this->base() . '/events?source=' . rawurlencode($source),
 			));
 		}

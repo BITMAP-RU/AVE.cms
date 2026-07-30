@@ -25,7 +25,7 @@
 	/** Explains why a document is included in or excluded from a saved request. */
 	class RequestMatchExplainer
 	{
-		public function explain($requestId, $documentId)
+		public function explain($requestId, $documentId, array $parameters = array())
 		{
 			$request = $this->request((int) $requestId);
 			$document = $this->document((int) $documentId);
@@ -33,26 +33,80 @@
 				throw new \InvalidArgumentException(!$request ? 'Запрос не найден' : 'Документ не найден');
 			}
 
-			$matched = $this->matchesExecutor((int) $request['Id'], (int) $document['Id']);
-			$base = $this->baseChecks($request, $document);
-			$fields = $this->fieldDefinitions((int) $request['rubric_id']);
-			$values = $this->documentValues((int) $document['Id']);
-			$groups = $this->conditionTree((int) $request['Id'], $request, $document, $fields, $values);
+			$parameters = $this->normalizeParameters($parameters);
+			$previousRequest = $_REQUEST;
+			$previousGet = $_GET;
+			$_REQUEST = $parameters;
+			$_GET = $parameters;
 
-			return array(
-				'matched' => $matched,
-				'document' => array(
-					'id' => (int) $document['Id'],
-					'title' => htmlspecialchars_decode((string) $document['document_title'], ENT_QUOTES),
-					'alias' => (string) $document['document_alias'],
-					'rubric_id' => (int) $document['rubric_id'],
-				),
-				'base' => $base,
-				'groups' => $groups ? array($groups) : array(),
-				'notes' => array(
-					'Итог всегда определяется текущим публичным executor.',
-					'Пояснение выполняется в контексте Adminx без параметров публичной страницы.',
-				),
+			try {
+				$matched = $this->matchesExecutor((int) $request['Id'], (int) $document['Id']);
+				$base = $this->baseChecks($request, $document);
+				$fields = $this->fieldDefinitions((int) $request['rubric_id']);
+				$values = $this->documentValues((int) $document['Id']);
+				$groups = $this->conditionTree((int) $request['Id'], $request, $document, $fields, $values);
+
+				return array(
+					'matched' => $matched,
+					'request' => array(
+						'id' => (int) $request['Id'],
+						'title' => htmlspecialchars_decode((string) $request['request_title'], ENT_QUOTES),
+						'alias' => (string) $request['request_alias'],
+						'rubric_id' => (int) $request['rubric_id'],
+					),
+					'document' => array(
+						'id' => (int) $document['Id'],
+						'title' => htmlspecialchars_decode((string) $document['document_title'], ENT_QUOTES),
+						'alias' => (string) $document['document_alias'],
+						'rubric_id' => (int) $document['rubric_id'],
+					),
+					'parameters' => $parameters,
+					'base' => $base,
+					'groups' => $groups ? array($groups) : array(),
+					'notes' => array(
+						'Итог всегда определяется текущим публичным executor.',
+						$parameters
+							? 'Условия проверены с указанными параметрами публичной страницы.'
+							: 'Параметры публичной страницы не переданы.',
+					),
+				);
+			} finally {
+				$_REQUEST = $previousRequest;
+				$_GET = $previousGet;
+			}
+		}
+
+		protected function normalizeParameters(array $parameters)
+		{
+			$result = array();
+			foreach ($parameters as $key => $value) {
+				$key = preg_replace('/[^a-z0-9_.-]+/i', '', (string) $key);
+				if ($key === '' || $this->sensitiveKey($key)) {
+					continue;
+				}
+
+				if (is_array($value)) {
+					$items = array();
+					foreach (array_slice($value, 0, 50) as $item) {
+						if (is_scalar($item) || $item === null) {
+							$items[] = mb_substr((string) $item, 0, 500);
+						}
+					}
+
+					$result[$key] = $items;
+				} elseif (is_scalar($value) || $value === null) {
+					$result[$key] = mb_substr((string) $value, 0, 500);
+				}
+			}
+
+			return $result;
+		}
+
+		protected function sensitiveKey($key)
+		{
+			return (bool) preg_match(
+				'/(?:pass|secret|token|cookie|session|authorization|credential|api[_-]?key|парол|секрет|токен|ключ[_ -]?api)/iu',
+				(string) $key
 			);
 		}
 

@@ -244,6 +244,15 @@
 				$kind = $mode === 'code' ? 'code' : ($mode === 'plain' ? 'textarea' : 'rich');
 			}
 
+			if ($type === 'computed') {
+				$value = is_array($parsed) ? '' : (string) $parsed;
+				$name = $this->e($this->fname($field, '[raw]'));
+				return '<input type="hidden" name="' . $name . '" value="' . $this->e($value) . '">'
+					. '<input class="input" type="text" value="' . $this->e($value) . '" readonly'
+					. ' aria-label="Вычисляемое значение">'
+					. '<span class="field-hint">Значение пересчитывается при сохранении документа.</span>';
+			}
+
 			if ($type === 'date_time') {
 				$mode = isset($settings['mode']) ? (string) $settings['mode'] : 'date';
 				$timestamp = isset($field['field_value']) ? (int) $field['field_value'] : 0;
@@ -613,6 +622,15 @@
 					'summary' => 'Редактор исходного кода.',
 					'default_label' => 'Код по умолчанию',
 					'default_kind' => 'code',
+					'entity_fields' => array('value'),
+				),
+				'computed' => array(
+					'title' => 'Вычисляемое поле',
+					'icon' => 'math-function',
+					'summary' => 'Значение автоматически рассчитывается по формуле из других полей документа.',
+					'default_label' => 'Резервное значение',
+					'default_hint' => 'Используется только когда формулу невозможно вычислить.',
+					'default_kind' => 'text',
 					'entity_fields' => array('value'),
 				),
 			);

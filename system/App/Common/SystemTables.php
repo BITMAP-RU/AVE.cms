@@ -16,7 +16,7 @@
 
 	defined('BASEPATH') || die('Direct access to this location is not allowed.');
 
-	/** Resolves framework-owned tables shared by Adminx and the public runtime. */
+	/** Resolves framework-owned tables shared by the control panel and public runtime. */
 	class SystemTables
 	{
 		protected static $allowed = array(

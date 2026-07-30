@@ -41,13 +41,13 @@
 
 		public function settingsSchema()
 		{
-			return array(
+			return $this->optionSettingsSchema(
 				array(
 					'key' => 'options',
 					'type' => 'map',
 					'label' => 'Список значений',
 					'hint' => 'Ключ хранится в документе, подпись показывается пользователю.',
-				),
+				)
 			);
 		}
 
@@ -74,6 +74,10 @@
 			// Legacy AVE casts an empty value to key 0 and returns an empty string
 			// for an unknown key. Public templates rely on both behaviours.
 			$key = trim((string) $ctx->value) === '' ? '0' : (string) $ctx->value;
-			return array_key_exists($key, $map) ? $this->e($map[$key]) : '';
+			if (array_key_exists($key, $map)) {
+				return $this->e($map[$key]);
+			}
+
+			return (string) $ctx->setting('option_source', 'local') === 'directory' ? $this->e($key) : '';
 		}
 	}

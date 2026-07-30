@@ -17,6 +17,7 @@
 	defined('BASEPATH') || die('Direct access to this location is not allowed.');
 
 	use App\Content\Fields\FieldContext;
+	use App\Content\Directories\DirectoryRepository;
 	use App\Helpers\Json;
 
 	/**
@@ -29,12 +30,46 @@
 	{
 		protected function optionList(FieldContext $ctx)
 		{
+			if ($this->usesDirectory($ctx)) {
+				return array_values($this->directoryOptionMap($ctx));
+			}
+
 			return $this->normalizeOptionList($ctx->setting('options', array()));
 		}
 
 		protected function optionMap(FieldContext $ctx)
 		{
+			if ($this->usesDirectory($ctx)) {
+				$options = $this->directoryOptionMap($ctx);
+				if (!empty($options)) {
+					return $options;
+				}
+			}
+
 			return $this->normalizeOptionMap($ctx->setting('options', array()));
+		}
+
+		protected function optionSettingsSchema(array $options)
+		{
+			return array(
+				array(
+					'key' => 'option_source',
+					'type' => 'select',
+					'label' => 'Источник значений',
+					'options' => array(
+						'local' => 'Список только для этого поля',
+						'directory' => 'Общий справочник',
+					),
+					'default' => 'local',
+				),
+				array(
+					'key' => 'directory_id',
+					'type' => 'directory',
+					'label' => 'Справочник',
+					'hint' => 'Изменения значений сразу применяются ко всем полям, использующим этот справочник.',
+				),
+				$options,
+			);
 		}
 
 		protected function selectedList($value)
@@ -85,6 +120,29 @@
 			}
 
 			return false;
+		}
+
+		private function usesDirectory(FieldContext $ctx)
+		{
+			return (string) $ctx->setting('option_source', 'local') === 'directory'
+				&& (int) $ctx->setting('directory_id', 0) > 0;
+		}
+
+		private function directoryOptionMap(FieldContext $ctx)
+		{
+			$directoryId = (int) $ctx->setting('directory_id', 0);
+			$includeInactive = $ctx->mode !== 'edit' && $ctx->mode !== 'filter';
+			$options = DirectoryRepository::optionMap($directoryId, $includeInactive);
+			if (!$includeInactive) {
+				$all = DirectoryRepository::optionMap($directoryId, true);
+				foreach ($this->selectedList($ctx->value) as $selected) {
+					if (isset($all[$selected])) {
+						$options[$selected] = $all[$selected];
+					}
+				}
+			}
+
+			return $options;
 		}
 
 		private function normalizeOptionList($raw)

@@ -1,0 +1,212 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}Справочники{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i>
+  <a href="{{ ADMINX_BASE }}/rubrics">Рубрики и поля</a><i class="ti ti-chevron-right"></i>
+  <span>Справочники</span>
+</nav>
+
+<div class="page-header">
+  <div class="between">
+    <div>
+      <h1>Справочники</h1>
+      <p class="text-secondary">Общие списки значений, которые можно подключать к нескольким полям.</p>
+    </div>
+    {% if can_manage and schema_ready %}
+    <button class="btn btn-primary" type="button" data-directory-new><i class="ti ti-plus"></i>Создать справочник</button>
+    {% endif %}
+  </div>
+</div>
+
+{% if not schema_ready %}
+<div class="alert alert-warning">
+  <i class="ti ti-database-exclamation alert-ic"></i>
+  <div>
+    <b>Схема справочников ещё не готова</b>
+    <p>Примените миграции ядра в разделе «База данных → Миграции».</p>
+  </div>
+</div>
+{% endif %}
+
+<div class="directories-summary">
+  <div class="card directories-stat"><span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-books"></i></span><div><b>{{ stats.total }}</b><span>Справочников</span></div></div>
+  <div class="card directories-stat"><span class="icon-tile" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-list-check"></i></span><div><b>{{ stats.values }}</b><span>Значений</span></div></div>
+</div>
+
+{% set content_model_section = 'directories' %}
+{% include '@rubrics/_content_tabs.twig' %}
+
+<section class="rubrics-panel directories-panel" data-directories-page data-base="{{ ADMINX_BASE }}">
+  <div class="section-header rubrics-panel-header">
+    <div class="section-icon"><i class="ti ti-books"></i></div>
+    <div>
+      <div class="section-eyebrow">Поля рубрик</div>
+      <h2>Общие справочники</h2>
+      <p class="section-desc">Один список можно подключить к нескольким полям и менять централизованно.</p>
+    </div>
+  </div>
+
+  <div class="card rubrics-card rubrics-filter-card">
+    <div class="rubrics-section-head">
+      <div class="rubrics-section-title">
+        <span class="icon-tile rubrics-head-icon" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-table"></i></span>
+        <div>
+          <h2>Справочники</h2>
+          <p class="text-secondary">{{ directories|length }} в текущем фильтре, {{ stats.total }} всего.</p>
+        </div>
+      </div>
+      <span class="badge badge-blue">{{ directories|length }}</span>
+    </div>
+    <div class="table-toolbar rubrics-toolbar">
+      <form class="rubrics-filter directories-filter" method="get" action="{{ ADMINX_BASE }}/directories">
+        <div class="input-wrap"><i class="ti ti-search"></i><input class="input" type="search" name="q" value="{{ filters.q }}" placeholder="Название или код"></div>
+        <button class="btn btn-secondary" type="submit"><i class="ti ti-search"></i>Найти</button>
+        {% if filters.q %}<a class="btn btn-ghost" href="{{ ADMINX_BASE }}/directories"><i class="ti ti-x"></i>Сбросить</a>{% endif %}
+      </form>
+    </div>
+  </div>
+
+  <div class="card rubrics-card">
+    <div class="rubrics-section-head">
+      <div class="rubrics-section-title">
+        <span class="icon-tile rubrics-head-icon" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-list-details"></i></span>
+        <div>
+          <h2>Список справочников</h2>
+          <p class="text-secondary">Ключ хранится в документе, подпись можно менять без перезаписи документов.</p>
+        </div>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table class="table table-compact rubrics-table directories-table">
+        <colgroup>
+          <col class="directories-col-name">
+          <col class="directories-col-code">
+          <col class="directories-col-values">
+          <col class="directories-col-usage">
+          <col class="directories-col-state">
+          <col class="directories-col-actions">
+        </colgroup>
+        <thead><tr><th>Название</th><th>Код</th><th>Значения</th><th>Используется</th><th>Состояние</th><th></th></tr></thead>
+        <tbody>
+          {% for item in directories %}
+          <tr{{ selected and selected.id == item.id ? ' class="is-selected"' : '' }}>
+            <td class="directories-cell-name">
+              <div class="directories-name">
+                <b>{{ item.name }}</b>
+                {% if item.description %}<small>{{ item.description }}</small>{% endif %}
+              </div>
+            </td>
+            <td class="directories-cell-code" data-label="Код"><code>{{ item.code }}</code></td>
+            <td class="directories-cell-values" data-label="Значения">{{ item.items_count }}</td>
+            <td class="directories-cell-usage" data-label="Используется">{% if item.usage_count %}<span class="badge badge-blue">{{ item.usage_count }} полей</span>{% else %}<span class="text-secondary">Не подключён</span>{% endif %}</td>
+            <td class="directories-cell-state" data-label="Состояние">{% if item.is_active %}<span class="badge badge-green">активен</span>{% else %}<span class="badge badge-gray">выключен</span>{% endif %}</td>
+            <td class="directories-cell-actions">
+              <div class="cluster directories-actions">
+                <a class="btn btn-ghost btn-icon btn-sm directories-action-values" href="{% if selected and selected.id == item.id %}#directory-values{% else %}{{ ADMINX_BASE }}/directories?id={{ item.id }}{% if filters.q %}&q={{ filters.q|url_encode }}{% endif %}#directory-values{% endif %}" data-tooltip="Открыть значения" aria-label="Открыть значения"><i class="ti ti-list-details"></i></a>
+                {% if can_manage %}
+                <button class="btn btn-ghost btn-icon btn-sm directories-action-edit" type="button" data-directory-edit
+                  data-id="{{ item.id }}" data-name="{{ item.name|e('html_attr') }}" data-code="{{ item.code|e('html_attr') }}"
+                  data-description="{{ item.description|e('html_attr') }}" data-active="{{ item.is_active ? '1' : '0' }}" data-usage="{{ item.usage_count }}"
+                  data-tooltip="Настроить" aria-label="Настроить"><i class="ti ti-settings"></i></button>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td class="empty-state-cell" colspan="6"><div class="empty-state"><i class="ti ti-books"></i><b>Справочников пока нет</b><span>Создайте общий список значений для полей.</span></div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if selected %}
+  <div class="card rubrics-card directories-values-card" id="directory-values">
+    <div class="rubrics-section-head">
+      <div class="rubrics-section-title">
+        <span class="icon-tile rubrics-head-icon" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-list-check"></i></span>
+        <div>
+          <h2>Значения: {{ selected.name }}</h2>
+          <p class="text-secondary"><code>{{ selected.code }}</code> · {{ selected.usage_count }} полей · {{ items|length }} значений</p>
+        </div>
+      </div>
+      {% if can_manage %}
+      <div class="cluster directories-head-actions">
+        <button class="btn btn-secondary btn-icon" type="button" data-directory-edit
+          data-id="{{ selected.id }}" data-name="{{ selected.name|e('html_attr') }}" data-code="{{ selected.code|e('html_attr') }}"
+          data-description="{{ selected.description|e('html_attr') }}" data-active="{{ selected.is_active ? '1' : '0' }}" data-usage="{{ selected.usage_count }}"
+          data-tooltip="Настроить справочник" aria-label="Настроить справочник"><i class="ti ti-settings"></i></button>
+        <button class="btn btn-primary" type="button" data-directory-item-new><i class="ti ti-plus"></i>Добавить значение</button>
+      </div>
+      {% endif %}
+    </div>
+    <div class="table-scroll">
+      <table class="table table-compact directories-items-table">
+        <colgroup><col class="directories-item-order"><col class="directories-item-key"><col><col class="directories-item-state"><col class="directories-item-actions"></colgroup>
+        <thead><tr><th>Порядок</th><th>Ключ</th><th>Подпись</th><th>Состояние</th><th></th></tr></thead>
+        <tbody>
+          {% for value in items %}
+          <tr{{ value.is_active ? '' : ' class="is-muted"' }}>
+            <td class="mono text-muted">{{ value.sort_order }}</td>
+            <td><code>{{ value.item_key }}</code></td>
+            <td><b>{{ value.label }}</b></td>
+            <td>{% if value.is_active %}<span class="badge badge-green">активно</span>{% else %}<span class="badge badge-gray">выключено</span>{% endif %}</td>
+            <td><div class="cluster directories-actions">
+              {% if can_manage %}
+              <button class="btn btn-ghost btn-icon btn-sm directories-action-edit" type="button" data-directory-item-edit
+                data-id="{{ value.id }}" data-key="{{ value.item_key|e('html_attr') }}" data-label="{{ value.label|e('html_attr') }}"
+                data-order="{{ value.sort_order }}" data-active="{{ value.is_active ? '1' : '0' }}"
+                data-tooltip="Изменить" aria-label="Изменить"><i class="ti ti-pencil"></i></button>
+              <button class="btn btn-danger-soft btn-icon btn-sm" type="button" data-directory-item-delete="{{ value.id }}" data-label="{{ value.label|e('html_attr') }}" data-tooltip="Удалить" aria-label="Удалить"><i class="ti ti-trash"></i></button>
+              {% endif %}
+            </div></td>
+          </tr>
+          {% else %}
+          <tr><td class="empty-state-cell" colspan="5"><div class="empty-state"><i class="ti ti-list"></i><b>Значений пока нет</b><span>Добавьте первую пару «ключ → подпись».</span></div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+</section>
+
+{% if can_manage %}
+<aside class="drawer drawer-right" id="directoryDrawer" role="dialog" aria-modal="true" aria-labelledby="directoryDrawerTitle" hidden>
+  <form data-directory-form>
+    <div class="drawer-header"><div><h3 id="directoryDrawerTitle" data-directory-form-title>Новый справочник</h3><p class="text-secondary text-sm">Общий источник значений для полей.</p></div><button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button></div>
+    <div class="drawer-body">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="id" value="">
+      <div class="form-grid">
+        <label class="field col-12"><span class="field-label">Название</span><div class="input-wrap"><i class="ti ti-book-2"></i><input class="input" name="name" required maxlength="190" placeholder="Например, Производители"></div></label>
+        <label class="field col-12"><span class="field-label">Код</span><div class="input-wrap"><i class="ti ti-code"></i><input class="input mono" name="code" maxlength="64" pattern="[a-z0-9][a-z0-9_-]{1,63}" placeholder="manufacturers"></div><span class="field-hint">Стабильный технический код. Если оставить пустым, сформируется из названия.</span></label>
+        <label class="field col-12"><span class="field-label">Описание</span><textarea class="textarea" name="description" rows="4" placeholder="Где и для чего используется список"></textarea></label>
+        <div class="field col-12"><span class="field-label">Состояние</span><label class="switch"><input type="checkbox" name="is_active" value="1" checked><span class="switch-track"></span><span class="switch-label">Доступен для выбора в полях</span></label></div>
+      </div>
+    </div>
+    <div class="drawer-footer"><button class="btn btn-danger-soft" type="button" data-directory-delete hidden><i class="ti ti-trash"></i>Удалить</button><button class="btn btn-secondary" type="button" data-close-drawer>Закрыть</button><button class="btn btn-primary" type="submit" style="margin-left:auto"><i class="ti ti-device-floppy"></i>Сохранить</button></div>
+  </form>
+</aside>
+
+{% if selected %}
+<aside class="drawer drawer-right" id="directoryItemDrawer" role="dialog" aria-modal="true" aria-labelledby="directoryItemDrawerTitle" hidden>
+  <form data-directory-item-form data-directory="{{ selected.id }}">
+    <div class="drawer-header"><div><h3 id="directoryItemDrawerTitle" data-directory-item-title>Новое значение</h3><p class="text-secondary text-sm">{{ selected.name }}</p></div><button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button></div>
+    <div class="drawer-body">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="id" value="">
+      <div class="form-grid">
+        <label class="field col-12"><span class="field-label">Подпись</span><div class="input-wrap"><i class="ti ti-forms"></i><input class="input" name="label" required maxlength="255" placeholder="Например, Россия"></div><span class="field-hint">Эту подпись увидят редактор и посетитель сайта.</span></label>
+        <label class="field col-8"><span class="field-label">Стабильный ключ</span><div class="input-wrap"><i class="ti ti-key"></i><input class="input mono" name="item_key" maxlength="120" pattern="[a-zA-Z0-9][a-zA-Z0-9_.:-]{0,119}" placeholder="russia"></div><span class="field-hint">Хранится в документе. После начала использования ключ лучше не менять.</span></label>
+        <label class="field col-4"><span class="field-label">Порядок</span><input class="input" type="number" min="0" name="sort_order" value="0"></label>
+        <div class="field col-12"><span class="field-label">Состояние</span><label class="switch"><input type="checkbox" name="is_active" value="1" checked><span class="switch-track"></span><span class="switch-label">Показывать в полях</span></label></div>
+      </div>
+    </div>
+    <div class="drawer-footer"><button class="btn btn-secondary" type="button" data-close-drawer>Закрыть</button><button class="btn btn-primary" type="submit" style="margin-left:auto"><i class="ti ti-device-floppy"></i>Сохранить</button></div>
+  </form>
+</aside>
+{% endif %}
+{% endif %}
+
+{% endblock %}

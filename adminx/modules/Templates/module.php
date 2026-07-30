@@ -49,7 +49,7 @@
 				'icon' => 'ti ti-template',
 				'permission' => 'view_templates',
 				'group' => 'Контент',
-				'sort_order' => 24,
+				'sort_order' => 25,
 				'match' => array(
 					'/templates',
 				),

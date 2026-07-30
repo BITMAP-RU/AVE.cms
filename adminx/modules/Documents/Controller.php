@@ -21,6 +21,7 @@
 	use App\Common\AuditLog;
 	use App\Common\Auth;
 	use App\Common\Controller as BaseController;
+	use App\Adminx\Support\BulkActionExecutor;
 	use App\Common\ErrorReport;
 	use App\Common\Permission;
 	use App\Adminx\Support\CodeEditor;
@@ -36,6 +37,7 @@
 	use App\Content\Documents\DocumentSnapshotStore;
 	use App\Content\Documents\FieldTemplateManifest;
 	use App\Content\Documents\RubricSchemaBuilder;
+	use App\Content\Fields\DocumentRelationIndex;
 	use App\Frontend\DocumentRevisionPreview;
 	use App\Helpers\Request;
 	use DB;
@@ -174,7 +176,11 @@
 
 			AdminAssets::addStyle($this->base() . '/modules/Documents/assets/documents.css', 50);
 			AdminAssets::addScript($this->base() . '/modules/Documents/assets/documents.js', 50);
-			return $this->render('@documents/api.twig', array('tokens' => ApiTokenRepository::all(), 'can_manage_api' => true));
+			$tokens = array_values(array_filter(ApiTokenRepository::all(), function ($token) {
+				return ApiTokenRepository::hasScope($token, 'documents:read')
+					|| ApiTokenRepository::hasScope($token, 'documents:write');
+			}));
+			return $this->render('@documents/api.twig', array('tokens' => $tokens, 'can_manage_api' => true));
 		}
 
 		public function issueApiToken(array $params = array())
@@ -240,6 +246,7 @@
 				'can_manage' => true,
 				'quick_edit' => Request::getBool('quick_edit', false),
 				'actor_id' => Auth::id(),
+				'document_relations' => DocumentRelationIndex::describe((int) $item['Id']),
 			));
 		}
 
@@ -357,27 +364,31 @@
 		public function bulk(array $params = array())
 		{
 			if (($err = $this->guard()) !== null) { return $err; }
-			$postedIds = Request::post('ids', array());
-			$ids = is_array($postedIds) ? array_values(array_unique(array_map('intval', $postedIds))) : array();
-			$ids = array_values(array_filter($ids, function ($id) { return $id > 0; }));
-			if (empty($ids) || count($ids) > 200) { return $this->error('Выберите от 1 до 200 документов', array(), 422); }
 			$action = Request::postStr('action', '');
-			if (!in_array($action, array('publish', 'unpublish', 'delete', 'restore', 'purge'), true)) { return $this->error('Неизвестное пакетное действие', array(), 422); }
-			$done = 0; $errors = array();
-			foreach ($ids as $id) {
-				try {
+			$handler = function ($id) use ($action) {
 					$doc = Model::one($id);
-					if (!$doc) { continue; }
+					if (!$doc) { return false; }
 					if ($action === 'publish' && empty($doc['document_status'])) { Model::toggleStatus($id); }
 					elseif ($action === 'unpublish' && !empty($doc['document_status'])) { Model::toggleStatus($id); }
 					elseif ($action === 'delete') { Model::delete($id); }
 					elseif ($action === 'restore') { Model::restore($id); }
 					elseif ($action === 'purge') { Model::purge($id); }
-					$done++;
-				} catch (\Throwable $e) { $errors[] = '#' . $id . ': ' . $e->getMessage(); }
+					return true;
+			};
+
+			try {
+				$result = BulkActionExecutor::execute($action, Request::post('ids', array()), array(
+					'publish' => $handler,
+					'unpublish' => $handler,
+					'delete' => $handler,
+					'restore' => $handler,
+					'purge' => $handler,
+				), 200);
+			} catch (\InvalidArgumentException $e) {
+				return $this->error($e->getMessage(), array(), 422);
 			}
 
-			return $this->success('Пакетное действие выполнено', array('data' => array('done' => $done, 'errors' => $errors)));
+			return $this->success('Пакетное действие выполнено', array('data' => $result));
 		}
 
 		public function store(array $params = array())
@@ -389,7 +400,9 @@
 			$input = Model::prepareAliasInput(Request::postAll(), 0);
 			$fieldValues = isset($input['fields']) && is_array($input['fields']) ? $input['fields'] : array();
 			$rubricId = isset($input['rubric_id']) ? (int) $input['rubric_id'] : 0;
-			$fieldValues = Model::conditionalFieldValues($rubricId, $fieldValues, 0);
+			$fieldGroups = Model::fieldsForRubric($rubricId, 0);
+			$fieldValues = Model::conditionalFieldValues($rubricId, $fieldValues, 0, $fieldGroups);
+			$fieldValues = Model::computedFieldValues($rubricId, $fieldValues, $input, 0, $fieldGroups);
 			$input['fields'] = $fieldValues;
 			try {
 				DocumentSaveEvents::before('create', 'adminx', 0, $rubricId, Auth::id(), $input, $fieldValues);
@@ -400,11 +413,12 @@
 				return $this->error('Код рубрики остановил создание документа', array('rubric_code_start' => $e->getMessage()), 422);
 			}
 
-			$fieldValues = Model::conditionalFieldValues($rubricId, $fieldValues, 0);
+			$fieldValues = Model::conditionalFieldValues($rubricId, $fieldValues, 0, $fieldGroups);
+			$fieldValues = Model::computedFieldValues($rubricId, $fieldValues, $input, 0, $fieldGroups);
 			$input['fields'] = $fieldValues;
 			$input = Model::prepareAliasInput($input, 0);
 			$errors = $this->validate($input, 0);
-			$errors = array_merge($errors, Model::validateFieldValues($rubricId, $fieldValues, 0));
+			$errors = array_merge($errors, Model::validateFieldValues($rubricId, $fieldValues, 0, $fieldGroups));
 			if (!empty($errors)) {
 				return $this->error('Проверьте поля документа', $errors, 422);
 			}
@@ -428,7 +442,8 @@
 					Model::save($id, $input, Auth::id());
 				}
 
-				Model::saveFields($id, $fieldValues);
+				Model::saveFields($id, $fieldValues, $fieldGroups);
+				DocumentSaveEvents::persisted('create', 'adminx', $id, $rubricId, Auth::id(), $input, $fieldValues);
 				DB::commit();
 				$mediaFinalization->commit();
 			} catch (DocumentHookException $e) {
@@ -490,13 +505,15 @@
 			$input = Model::prepareAliasInput(Request::postAll(), $id);
 			$rubricId = $document ? (int) $document['rubric_id'] : (isset($input['rubric_id']) ? (int) $input['rubric_id'] : 0);
 			$fieldValues = isset($input['fields']) && is_array($input['fields']) ? $input['fields'] : array();
-			$fieldValues = Model::conditionalFieldValues($rubricId, $fieldValues, $id);
+			$fieldGroups = Model::fieldsForRubric($rubricId, $id);
+			$fieldValues = Model::conditionalFieldValues($rubricId, $fieldValues, $id, $fieldGroups);
+			$fieldValues = Model::computedFieldValues($rubricId, $fieldValues, $input, $id, $fieldGroups);
 			$input['fields'] = $fieldValues;
 			$errors = $this->validate($input, $id);
-			$errors = array_merge($errors, Model::validateFieldValues($rubricId, $fieldValues, $id));
+			$errors = array_merge($errors, Model::validateFieldValues($rubricId, $fieldValues, $id, $fieldGroups));
 
 			return $this->success('Данные сформированы без сохранения', array('data' => array(
-				'payload' => Model::previewPayload($id, $input, $fieldValues, Auth::id()),
+				'payload' => Model::previewPayload($id, $input, $fieldValues, Auth::id(), $fieldGroups),
 				'validation_errors' => $errors,
 			)));
 		}
@@ -520,7 +537,9 @@
 			}
 
 			$fieldValues = isset($input['fields']) && is_array($input['fields']) ? $input['fields'] : array();
-			$fieldValues = Model::conditionalFieldValues((int) $doc['rubric_id'], $fieldValues, $id);
+			$fieldGroups = Model::fieldsForRubric((int) $doc['rubric_id'], $id);
+			$fieldValues = Model::conditionalFieldValues((int) $doc['rubric_id'], $fieldValues, $id, $fieldGroups);
+			$fieldValues = Model::computedFieldValues((int) $doc['rubric_id'], $fieldValues, $input, $id, $fieldGroups);
 			$input['fields'] = $fieldValues;
 			try {
 				DocumentSaveEvents::before('update', 'adminx', $id, (int) $doc['rubric_id'], Auth::id(), $input, $fieldValues, $doc);
@@ -531,10 +550,11 @@
 				return $this->error('Код рубрики остановил сохранение документа', array('rubric_code_start' => $e->getMessage()), 422);
 			}
 
-			$fieldValues = Model::conditionalFieldValues((int) $doc['rubric_id'], $fieldValues, $id);
+			$fieldValues = Model::conditionalFieldValues((int) $doc['rubric_id'], $fieldValues, $id, $fieldGroups);
+			$fieldValues = Model::computedFieldValues((int) $doc['rubric_id'], $fieldValues, $input, $id, $fieldGroups);
 			$input['fields'] = $fieldValues;
 			$errors = $this->validate($input, $id);
-			$errors = array_merge($errors, Model::validateFieldValues((int) $doc['rubric_id'], $fieldValues, $id));
+			$errors = array_merge($errors, Model::validateFieldValues((int) $doc['rubric_id'], $fieldValues, $id, $fieldGroups));
 			if (!empty($errors)) {
 				return $this->error('Проверьте поля документа', $errors, 422);
 			}
@@ -559,7 +579,8 @@
 					Model::save($id, $input, Auth::id());
 				}
 
-				Model::saveFields($id, $fieldValues);
+				Model::saveFields($id, $fieldValues, $fieldGroups);
+				DocumentSaveEvents::persisted('update', 'adminx', $id, (int) $doc['rubric_id'], Auth::id(), $input, $fieldValues, $doc);
 				DB::commit();
 				$mediaFinalization->commit();
 			} catch (EditConflict $e) {

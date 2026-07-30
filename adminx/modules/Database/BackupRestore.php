@@ -32,7 +32,7 @@
 		public static function inspect($name, $includeToken = true)
 		{
 			$path = Backup::path($name);
-			if ($path === null || strpos(basename($path), 'adminx_') !== 0) {
+			if ($path === null || !Backup::isManagedName($path)) {
 				throw new \RuntimeException('Для восстановления выберите полный дамп, созданный AVE.cms');
 			}
 

@@ -49,7 +49,7 @@
 				'icon' => 'ti ti-palette',
 				'permission' => 'view_themes',
 				'group' => 'Контент',
-				'sort_order' => 23,
+				'sort_order' => 28,
 				'match' => array('/themes'),
 			),
 		),

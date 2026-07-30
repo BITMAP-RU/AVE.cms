@@ -33,8 +33,8 @@
 
 		public function settingsSchema()
 		{
-			return array(
-				array('key' => 'options', 'type' => 'list', 'label' => 'Варианты'),
+			return $this->optionSettingsSchema(
+				array('key' => 'options', 'type' => 'list', 'label' => 'Варианты')
 			);
 		}
 

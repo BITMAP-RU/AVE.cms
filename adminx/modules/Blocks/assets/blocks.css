@@ -19,7 +19,6 @@
   font-size: 20px;
   line-height: 1.1;
   font-weight: 800;
-  font-variant-numeric: tabular-nums;
 }
 .blocks-stat span {
   font-size: 13px;
@@ -212,7 +211,6 @@
   gap: 2px;
   color: var(--text-secondary);
   font-size: 12px;
-  font-variant-numeric: tabular-nums;
 }
 .blocks-actions {
   gap: 4px;

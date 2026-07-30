@@ -28,7 +28,6 @@
 }
 .db-tables-count {
   flex: 0 0 auto;
-  font-variant-numeric: tabular-nums;
 }
 /* Размеры/отступы заголовка/сводки — общие (.ax-panel-header/.ax-summary). Здесь только акцент. */
 .database-panel-header {
@@ -98,7 +97,6 @@
 .database-restore-head strong {
   color: var(--blue-600);
   font-size: 22px;
-  font-variant-numeric: tabular-nums;
 }
 .database-restore-track {
   height: 6px;
@@ -132,7 +130,6 @@
 .database-restore-current small {
   margin-top: 3px;
   color: var(--text-secondary);
-  font-variant-numeric: tabular-nums;
 }
 .database-restore-pulse {
   width: 10px;

@@ -49,6 +49,7 @@
     currentSchemaRevisionRubricId: 0,
     currentSchemaRevisionId: 0,
     currentSchemaRevisionFingerprint: '',
+    pendingExtraTemplateId: 0,
 
     init: function () {
       this.form = document.getElementById('rubricForm');
@@ -60,10 +61,38 @@
       this.adminViewForm = document.getElementById('rubricAdminViewForm');
       this.syncFieldTypeOptions('');
       this.bind();
+      this.openFromLocation();
     },
 
     base: function () {
       return (this.form && this.form.getAttribute('data-base')) || Adminx.base();
+    },
+
+    openFromLocation: function () {
+      var params = new URLSearchParams(window.location.search);
+      var rubricId = parseInt(params.get('templates'), 10) || 0;
+      var editId = parseInt(params.get('edit'), 10) || 0;
+      var create = params.get('create') === '1';
+      var row;
+      if (rubricId) {
+        row = document.querySelector('[data-rubric-row][data-id="' + rubricId + '"]');
+        if (!row) { return; }
+        this.pendingExtraTemplateId = parseInt(params.get('template'), 10) || 0;
+        if (Adminx.Drawer) { Adminx.Drawer.open('rubricTemplatesDrawer'); }
+        this.openTemplates(row);
+        return;
+      }
+      if (editId) {
+        row = document.querySelector('[data-rubric-row][data-id="' + editId + '"]');
+        if (!row) { return; }
+        if (Adminx.Drawer) { Adminx.Drawer.open('rubricDrawer'); }
+        this.fillRubricEdit(row);
+        return;
+      }
+      if (create) {
+        if (Adminx.Drawer) { Adminx.Drawer.open('rubricDrawer'); }
+        this.fillRubricNew(params.get('purpose'));
+      }
     },
 
     bind: function () {
@@ -75,7 +104,7 @@
         var mainTab = e.target.closest('[data-rubrics-main-tab]');
         if (mainTab) { self.activateMainTab(mainTab.getAttribute('data-rubrics-main-tab')); }
         if (e.target.closest('[data-rubrics-filter-reset]')) { self.resetFilters(); }
-        if (e.target.closest('[data-rubric-new]')) { self.fillRubricNew(); }
+        if (e.target.closest('[data-rubric-new]')) { self.fillRubricNew('content'); }
         var edit = e.target.closest('[data-rubric-edit]');
         if (edit) { self.fillRubricEdit(edit.closest('[data-rubric-row]')); }
         var del = e.target.closest('[data-rubric-delete]');
@@ -279,6 +308,9 @@
         }
         if (e.target.matches('[data-settings-map-key], [data-settings-map-label]')) {
           self.syncSettingsMap(e.target.closest('[data-settings-map]'));
+        }
+        if (e.target.matches('[name="rubric_field_settings[option_source]"]')) {
+          self.syncOptionSourceFields(e.target.closest('[data-field-settings]'));
         }
         if (e.target.matches('[data-builder-conditions-enabled]')) {
           self.syncBuilderRuntime();
@@ -594,11 +626,15 @@
         .finally(function () { Adminx.Loader.hide(); });
     },
 
-    fillRubricNew: function () {
+    fillRubricNew: function (purpose) {
       this.clearErrors(this.form);
       this.form.reset();
       this.form.elements.id.value = '';
       this.form.elements.rubric_template_id.value = '1';
+      var isDirectory = purpose === 'directory';
+      if (this.form.elements.rubric_purpose) {
+        this.form.elements.rubric_purpose.value = isDirectory ? 'directory' : 'content';
+      }
       var presetWrap = this.form.querySelector('[data-rubric-preset-wrap]');
       if (presetWrap) { presetWrap.hidden = false; }
       if (this.form.elements.rubric_preset) { this.form.elements.rubric_preset.value = ''; }
@@ -607,7 +643,15 @@
       this.setCodeValue(this.form.elements.rubric_code_end, '');
       this.setCodeValue(this.form.elements.rubric_start_code, '');
       if (this.form.elements.rubric_template_id.selectedIndex < 0) { this.form.elements.rubric_template_id.selectedIndex = 0; }
-      document.getElementById('rubricDrawerTitle').textContent = 'Новая рубрика';
+      document.getElementById('rubricDrawerTitle').textContent = isDirectory ? 'Новый справочник' : 'Новая рубрика';
+      var subtitle = this.form.closest('.drawer').querySelector('[data-rubric-drawer-subtitle]');
+      if (subtitle) {
+        subtitle.textContent = isDirectory
+          ? 'Настройте структуру записей справочника.'
+          : 'Базовые параметры рубрики.';
+      }
+      var submitLabel = this.form.querySelector('[data-rubric-submit-label]');
+      if (submitLabel) { submitLabel.textContent = isDirectory ? 'Создать справочник' : 'Сохранить'; }
       this.setHint('[data-rubric-alias-state]', '');
       this.updateRubricAliasPreview();
       this.refreshEditors();
@@ -624,6 +668,9 @@
           self.form.elements.id.value = item.Id || '';
           self.form.elements.rubric_title.value = item.rubric_title || '';
           self.form.elements.rubric_alias.value = item.rubric_alias || '';
+          if (self.form.elements.rubric_purpose) {
+            self.form.elements.rubric_purpose.value = item.rubric_purpose === 'directory' ? 'directory' : 'content';
+          }
           var presetWrap = self.form.querySelector('[data-rubric-preset-wrap]');
           if (presetWrap) { presetWrap.hidden = true; }
           self.form.elements.rubric_template_id.value = item.rubric_template_id || 1;
@@ -635,7 +682,17 @@
           self.setCodeValue(self.form.elements.rubric_code_start, item.rubric_code_start || '');
           self.setCodeValue(self.form.elements.rubric_code_end, item.rubric_code_end || '');
           self.setCodeValue(self.form.elements.rubric_start_code, item.rubric_start_code || '');
-          document.getElementById('rubricDrawerTitle').textContent = 'Редактирование рубрики #' + item.Id;
+          document.getElementById('rubricDrawerTitle').textContent = (item.rubric_purpose === 'directory'
+            ? 'Редактирование справочника #'
+            : 'Редактирование рубрики #') + item.Id;
+          var subtitle = self.form.closest('.drawer').querySelector('[data-rubric-drawer-subtitle]');
+          if (subtitle) {
+            subtitle.textContent = item.rubric_purpose === 'directory'
+              ? 'Настройка структуры записей справочника.'
+              : 'Базовые параметры рубрики.';
+          }
+          var submitLabel = self.form.querySelector('[data-rubric-submit-label]');
+          if (submitLabel) { submitLabel.textContent = 'Сохранить'; }
           self.setHint('[data-rubric-alias-state]', '');
           self.updateRubricAliasPreview();
           self.refreshEditors();
@@ -645,6 +702,8 @@
     submitRubric: function () {
       var self = this;
       var id = this.form.elements.id.value;
+      var isDirectory = this.form.elements.rubric_purpose
+        && this.form.elements.rubric_purpose.value === 'directory';
       this.saveEditors();
       this.clearErrors(this.form);
       this.checkRubricAlias(true, function (ok) {
@@ -652,6 +711,10 @@
         self.ajax(self.base() + '/rubrics' + (id ? '/' + id : ''), new FormData(self.form), function (json) {
           Adminx.Toast.show(json.message || 'Рубрика сохранена', 'success');
           if (Adminx.Drawer) { Adminx.Drawer.close(); }
+          if (isDirectory) {
+            window.location.href = self.base() + '/directories';
+            return;
+          }
           self.applyFilterUrl(window.location.href, false);
         }, function (json) { self.showErrors(self.form, json); });
       });
@@ -741,7 +804,7 @@
         self.adminViewForm.elements.template.value = self.adminViewState.template;
         document.getElementById('rubricAdminViewTitle').textContent = 'Вид документов: ' + (rubric.rubric_title || '');
         var subtitle = document.querySelector('[data-admin-view-subtitle]');
-        if (subtitle) { subtitle.textContent = 'Рубрика #' + self.currentRubricId + ' · настройка действует только в Adminx.'; }
+        if (subtitle) { subtitle.textContent = 'Рубрика #' + self.currentRubricId + ' · настройка действует только в панели управления.'; }
         var documentsLink = document.querySelector('[data-admin-view-documents]');
         if (documentsLink) { documentsLink.href = self.base() + '/documents?rubric_id=' + self.currentRubricId; }
         self.renderAdminView();
@@ -1069,6 +1132,14 @@
           self.renderTemplateTags(data.fields || []);
           self.renderExtraTemplates(data.templates || []);
           self.refreshEditors();
+          if (self.pendingExtraTemplateId) {
+            var row = document.querySelector('[data-extra-template-row][data-id="' + self.pendingExtraTemplateId + '"]');
+            self.pendingExtraTemplateId = 0;
+            if (row) {
+              if (Adminx.Drawer) { Adminx.Drawer.open('rubricExtraTemplateDrawer'); }
+              self.fillExtraTemplateEdit(row);
+            }
+          }
         })
         .catch(function () { Adminx.Toast.show('Не удалось загрузить шаблоны рубрики', 'error'); });
     },
@@ -2087,6 +2158,7 @@
             : '<p class="rubrics-plugin-empty">У этого типа нет дополнительных настроек.</p>';
           if (draftSettings !== null) { self.applyBuilderSettingsDraft(root, draftSettings); }
           self.hydrateSettingsMaps(root);
+          self.syncOptionSourceFields(root);
           self.toggleBuilderDefaultField(type.admin_editor || {});
           self.builderSettingsReady = true;
         })
@@ -2487,6 +2559,17 @@
           return self.settingsMapRowMarkup(key.trim(), label.trim().replace(/\|\s*$/, ''));
         }).join('') || self.settingsMapRowMarkup('', '');
       });
+    },
+
+    syncOptionSourceFields: function (root) {
+      root = root || document;
+      var source = root.querySelector('[name="rubric_field_settings[option_source]"]');
+      if (!source) { return; }
+      var shared = source.value === 'directory';
+      var directory = root.querySelector('[data-field-setting-key="directory_id"]');
+      var options = root.querySelector('[data-field-setting-key="options"]');
+      if (directory) { directory.hidden = !shared; }
+      if (options) { options.hidden = shared; }
     },
 
     addSettingsMapRow: function (map) {
@@ -2917,6 +3000,8 @@
         + '</div>'
         + (settings || '<p class="rubrics-plugin-empty">У этого типа нет дополнительных настроек.</p>')
         + issues;
+      this.hydrateSettingsMaps(root);
+      this.syncOptionSourceFields(root);
     },
 
     renderAdminEditor: function (editor) {

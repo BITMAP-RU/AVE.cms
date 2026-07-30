@@ -195,9 +195,10 @@
 		protected static function normalizePath($path)
 		{
 			$path = '/' . trim((string) $path, '/');
+			$adminDirectory = preg_quote(strtolower(AdminLocation::directory()), '#');
 			if (!preg_match('#^/[a-z0-9][a-z0-9/_-]{0,119}$#', $path)
 				|| strpos($path, '//') !== false
-				|| preg_match('#^/(adminx|api|system|basket|checkout)(/|$)#', $path)
+				|| preg_match('#^/(' . $adminDirectory . '|api|system|basket|checkout)(/|$)#i', $path)
 				|| preg_match('#^/personal/(orders|favorites|viewed)(/|$)#', $path)) {
 				throw new \InvalidArgumentException('URL должен начинаться с / и содержать только латиницу, цифры, дефис и подчёркивание.');
 			}

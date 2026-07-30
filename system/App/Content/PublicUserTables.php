@@ -18,7 +18,7 @@
 
 	use App\Common\PublicConfiguration;
 
-	/** Resolves public profiles; Adminx access is linked through system users.legacy_id. */
+	/** Resolves public profiles; panel access is linked through system users.legacy_id. */
 	class PublicUserTables
 	{
 		protected static $allowed = array(

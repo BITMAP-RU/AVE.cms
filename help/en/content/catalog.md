@@ -19,6 +19,27 @@ with tree sections.
 If the product module is not installed, the interface should not offer products
 entities or an empty list of “product catalogs”.
 
+## Product catalog overview
+
+**Catalog → Attributes → Overview** is the starting point for the product
+subsystem. It does not create a second catalog or switch public output. It
+connects the existing editors in one workflow:
+
+1. **Attributes** define reusable product properties.
+2. **Section sets** decide which properties are relevant in each branch.
+3. **Colors and configurations** group separate product documents as variants.
+4. **Shipping** stores one or more cargo places per product.
+5. **Cards** and **Filters** control Twig markup and CSS.
+
+The status area shows which sections have an active set and which runtime modes
+are enabled. Sections without a working set are listed with a direct editor
+link.
+
+Product and variant attributes are intentionally separate. A **Product
+variant** attribute cannot be added to a section set or mapped to a legacy
+rubric field. Its scope cannot be changed after use. This prevents a color or
+configuration axis from becoming a property of every product in a section.
+
 ## Saved product filters
 
 You can save the current set of filters in the product list and in the quality center.
@@ -33,6 +54,38 @@ updates the set, the trash button deletes it.
 Sets belong to the current employee and do not change the catalog, documents or
 public site. Product list and quality center store their views
 separately.
+
+## Quick fill table builder
+
+The **Products → Quick fill** page is no longer tied to one fixed group of
+columns. Select **Configure table** to prepare a table for a particular task:
+updating prices, checking stock, filling attributes, or preparing products for
+publication.
+
+The builder has three areas:
+
+1. **Available data** contains core product data, product rubric fields, and
+   native attributes. A column disappears from this list after it is selected.
+2. **Table columns** contains the current columns and their order. Drag columns
+   to reorder them or return an unused column to the available list.
+3. **Column settings** controls the visible title, width, and inline editing.
+
+A profile may contain up to 24 columns. Complex fields, images, and structured
+values are read-only because they are safer to change in the full product
+editor. Single-line fields, numbers, switches, and lists are saved one cell at
+a time without reloading the page. If a field is not assigned to a particular
+product rubric or attribute set, the table shows a dash and does not create an
+unrelated value.
+
+A saved profile can be:
+
+- **personal**, visible only to its owner;
+- **shared**, available to other administrators;
+- **the default profile**, opened automatically for the current administrator.
+
+A shared profile owned by another administrator cannot be overwritten
+accidentally: editing it creates a personal copy. Filters, sections, and
+pagination do not change the selected profile.
 
 ## Tree sections
 
@@ -300,7 +353,7 @@ handmade text. Manual mode is reserved for old groups and gradual transition.
 
 The matrix does not create a copy of the product: the regular editor, import and API work with those
 the same prices, balances and articles. Public appearance also does not change from appearance
-this table in Adminx.
+this table in the control panel.
 
 After consciously switching the section filters to **Native** mode, their options
 also taken from the directory. A custom Twig filter template gets

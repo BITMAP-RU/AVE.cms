@@ -63,26 +63,83 @@
 			return DB::Update(self::table(), array('revoked_at' => date('Y-m-d H:i:s')), 'id=%i AND revoked_at IS NULL', (int) $id);
 		}
 
+		public static function find($id)
+		{
+			$row = DB::query('SELECT * FROM %b WHERE id=%i LIMIT 1', self::table(), (int) $id)->getAssoc();
+			if (!$row) { return null; }
+			$row['id'] = (int) $row['id'];
+			$row['scopes_list'] = self::normalizeScopes(explode(',', (string) $row['scopes']));
+			return $row;
+		}
+
+		public static function deleteByScope($scope)
+		{
+			$scope = trim((string) $scope);
+			if (!in_array($scope, self::allowedScopes(), true)) { return 0; }
+			return DB::Delete(self::table(), 'FIND_IN_SET(%s,scopes)>0', $scope);
+		}
+
+		public static function hasScope(array $token, $scope)
+		{
+			$scopes = isset($token['scopes_list']) && is_array($token['scopes_list'])
+				? $token['scopes_list']
+				: self::normalizeScopes(explode(',', isset($token['scopes']) ? (string) $token['scopes'] : ''));
+
+			return self::scopeGranted((string) $scope, $scopes);
+		}
+
 		public static function authenticate($requiredScope)
 		{
+			return self::authenticateScopes(
+				array((string) $requiredScope),
+				array(self::permissionForScope((string) $requiredScope))
+			);
+		}
+
+		public static function authenticateScopes(array $requiredScopes, array $requiredPermissions = array())
+		{
+			$result = self::authenticateScopesResult($requiredScopes, $requiredPermissions);
+			return isset($result['token']) ? $result['token'] : null;
+		}
+
+		public static function authenticateScopesResult(array $requiredScopes, array $requiredPermissions = array())
+		{
 			$raw = self::bearerToken();
-			if ($raw === '' || strpos($raw, 'ave_') !== 0 || strlen($raw) < 40) { return null; }
+			if ($raw === '' || strpos($raw, 'ave_') !== 0 || strlen($raw) < 40) {
+				return array('token' => null, 'error' => 'authentication_required');
+			}
+
 			$row = DB::query('SELECT t.*,u.name,u.email,u.role,u.is_active FROM ' . self::table() . ' t'
 				. ' JOIN ' . SystemTables::table('users') . ' u ON u.id=t.user_id'
 				. ' WHERE t.token_hash=%s AND t.revoked_at IS NULL AND (t.expires_at IS NULL OR t.expires_at>=%s) LIMIT 1',
 				hash('sha256', $raw), date('Y-m-d H:i:s'))->getAssoc();
-			if (!$row || (int) $row['is_active'] !== 1) { return null; }
+			if (!$row || (int) $row['is_active'] !== 1) {
+				return array('token' => null, 'error' => 'authentication_required');
+			}
+
 			$scopes = self::normalizeScopes(explode(',', (string) $row['scopes']));
-			if (!in_array((string) $requiredScope, $scopes, true) && !in_array('documents:*', $scopes, true)) { return null; }
-			$permission = $requiredScope === 'documents:write' ? 'manage_documents' : 'view_documents';
+			foreach (array_unique(array_map('strval', $requiredScopes)) as $requiredScope) {
+				if (!self::scopeGranted($requiredScope, $scopes)) {
+					return array('token' => null, 'error' => 'scope_denied');
+				}
+			}
+
+			$requiredPermissions = array_values(array_filter(array_unique(array_map('strval', $requiredPermissions))));
 			$permissions = Permission::forRole((string) $row['role']);
-			if ((string) $row['role'] !== 'admin' && !in_array('all_permissions', $permissions, true) && !in_array($permission, $permissions, true)) { return null; }
+			if ((string) $row['role'] !== 'admin' && !in_array('all_permissions', $permissions, true)) {
+				foreach ($requiredPermissions as $permission) {
+					if (!in_array($permission, $permissions, true)) {
+						return array('token' => null, 'error' => 'permission_denied');
+					}
+				}
+			}
+
 			if (empty($row['last_used_at']) || strtotime((string) $row['last_used_at']) < time() - 300) {
 				DB::Update(self::table(), array('last_used_at' => date('Y-m-d H:i:s')), 'id=%i', (int) $row['id']);
 			}
 
 			$row['scopes_list'] = $scopes;
-			return $row;
+			return array('token' => $row, 'error' => '');
 		}
 
 		protected static function bearerToken()
@@ -96,10 +153,35 @@
 			return preg_match('/^Bearer\s+(.+)$/i', trim($header), $matches) ? trim($matches[1]) : '';
 		}
 
+		protected static function allowedScopes()
+		{
+			return array(
+				'documents:read',
+				'documents:write',
+				'documents:*',
+				'mcp.bridge',
+				'content.read',
+				'structure.read',
+			);
+		}
+
 		protected static function normalizeScopes(array $scopes)
 		{
-			$allowed = array('documents:read', 'documents:write', 'documents:*');
-			return array_values(array_unique(array_intersect($allowed, array_map('trim', array_map('strval', $scopes)))));
+			return array_values(array_unique(array_intersect(
+				self::allowedScopes(),
+				array_map('trim', array_map('strval', $scopes))
+			)));
+		}
+
+		protected static function scopeGranted($requiredScope, array $scopes)
+		{
+			if (in_array($requiredScope, $scopes, true)) { return true; }
+			return strpos($requiredScope, 'documents:') === 0 && in_array('documents:*', $scopes, true);
+		}
+
+		protected static function permissionForScope($scope)
+		{
+			return (string) $scope === 'documents:write' ? 'manage_documents' : 'view_documents';
 		}
 
 		protected static function dateValue($value)

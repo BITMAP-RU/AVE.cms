@@ -80,11 +80,16 @@
 			}
 
 			$user = self::findUser($identifier);
-			if (!$user || (string) $user['status'] !== '1' || (string) $user['deleted'] === '1') {
-				return false;
-			}
-
-			if (!self::verifyPassword((string) $password, (string) $user['password'], (string) $user['salt'])) {
+			$available = $user
+				&& (string) $user['status'] === '1'
+				&& (string) $user['deleted'] !== '1';
+			$passwordValid = self::verifyAttemptPassword(
+				(string) $password,
+				$available ? (string) $user['password'] : '',
+				$available ? (string) $user['salt'] : '',
+				$available
+			);
+			if (!$available || !$passwordValid) {
 				return false;
 			}
 
@@ -239,6 +244,21 @@
 
 			$info = password_get_info($hash);
 			return !empty($info['algo']) && password_verify($plain, $hash);
+		}
+
+		protected static function verifyAttemptPassword($plain, $hash, $salt, $available)
+		{
+			if (!$available) {
+				password_verify((string) $plain, \App\Common\Auth::DUMMY_PASSWORD_HASH);
+				return false;
+			}
+
+			$valid = self::verifyPassword((string) $plain, (string) $hash, (string) $salt);
+			if (strlen((string) $hash) === 32) {
+				password_verify((string) $plain, \App\Common\Auth::DUMMY_PASSWORD_HASH);
+			}
+
+			return $valid;
 		}
 
 		protected static function passwordNeedsUpgrade($hash)

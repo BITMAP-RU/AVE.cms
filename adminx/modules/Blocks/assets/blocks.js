@@ -151,6 +151,8 @@
 
     applyFilters: function (form, push) {
       if (!form) { return; }
+      clearTimeout(this.filterTimer);
+      this.filterTimer = null;
       var url = this.filterUrl(form);
       this.applyFilterUrl(url, push);
     },

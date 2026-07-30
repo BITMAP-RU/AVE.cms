@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="public_site_catalog_filters">Фильтры каталога</phrase>
+	<phrase data="public_site_choose_material">Выберите материал</phrase>
+	<phrase data="public_site_choose_snapshot">Выберите снимок выше.</phrase>
+	<phrase data="public_site_compact_content_list">Компактный список</phrase>
+	<phrase data="public_site_compact_list">Компактный список</phrase>
+	<phrase data="public_site_content_list">Список материалов</phrase>
+	<phrase data="public_site_diag_failed_state">не выполнена</phrase>
+	<phrase data="public_site_diag_passed">выполнена</phrase>
+	<phrase data="public_site_diag_results">Результатов проверки</phrase>
+	<phrase data="public_site_document_page">Страница материала</phrase>
+	<phrase data="public_site_favorite">Избранное</phrase>
+	<phrase data="public_site_items_lower">материалов</phrase>
+	<phrase data="public_site_new_presentation">Новое представление</phrase>
+	<phrase data="public_site_no_snapshots">Снимков пока нет.</phrase>
+	<phrase data="public_site_preview_data_hint">После запуска здесь появятся данные, доступные шаблону.</phrase>
+	<phrase data="public_site_related_items">Похожие материалы</phrase>
+	<phrase data="public_site_search_results">Результаты поиска</phrase>
+	<phrase data="public_site_version_lower">версия</phrase>
+</language>

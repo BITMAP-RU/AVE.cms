@@ -1,0 +1,200 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}Представления{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i>
+  <a href="{{ ADMINX_BASE }}/public-site">Публичный сайт</a><i class="ti ti-chevron-right"></i>
+  <span>Представления</span>
+</nav>
+
+<div class="page-header">
+  <div class="between public-presentations-page-head">
+    <div><h1>Представления</h1><p class="text-secondary">Повторно используемое оформление материалов, подборок и каталогов.</p></div>
+    {% if can_manage and available %}<button class="btn btn-primary" type="button" data-presentation-new><i class="ti ti-plus"></i>Новое представление</button>{% endif %}
+  </div>
+</div>
+
+{% set public_site_tab = 'presentations' %}
+{% include '@public_site/_tabs.twig' %}
+
+{% if not available %}
+<div class="alert alert-warning public-presentations-schema"><i class="ti ti-database-exclamation"></i><div><b>Хранилище ещё не создано</b><p>Примените миграцию раздела «Публичный сайт».</p></div></div>
+{% endif %}
+
+<div class="public-presentations-summary">
+  <div class="card public-presentation-stat"><span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-layout-cards"></i></span><div><b>{{ stats.total }}</b><span>Представлений</span></div></div>
+  <div class="card public-presentation-stat"><span class="icon-tile" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-world-upload"></i></span><div><b>{{ stats.published }}</b><span>Опубликовано</span></div></div>
+  <div class="card public-presentation-stat"><span class="icon-tile" style="--tile-bg:var(--amber-100);--tile-fg:var(--amber-600)"><i class="ti ti-pencil"></i></span><div><b>{{ stats.changed }}</b><span>Есть изменения</span></div></div>
+  <div class="card public-presentation-stat"><span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-link"></i></span><div><b>{{ stats.used }}</b><span>Назначено</span></div></div>
+</div>
+
+<section class="public-presentations-panel">
+  <div class="section-header public-presentations-section-head">
+    <div class="section-icon"><i class="ti ti-template"></i></div>
+    <div><div class="section-eyebrow">Оформление контента</div><h2>Общие представления</h2><p class="section-desc">Черновик и предпросмотр не меняют действующий публичный сайт.</p></div>
+  </div>
+
+  <div class="card public-presentations-card">
+    <form class="public-presentations-filter" method="get" action="{{ ADMINX_BASE }}/public-site/presentations">
+      <div class="input-wrap"><i class="ti ti-search"></i><input class="input" type="search" name="q" value="{{ filters.q }}" placeholder="Название или код"></div>
+      <select class="select" name="kind" aria-label="Вид представления">
+        <option value="">Все виды</option>
+        {% for code,label in kinds %}<option value="{{ code }}"{{ filters.kind == code ? ' selected' : '' }}>{{ label }}</option>{% endfor %}
+      </select>
+      <select class="select" name="state" aria-label="Состояние">
+        <option value="">Все состояния</option>
+        <option value="published"{{ filters.state == 'published' ? ' selected' : '' }}>Опубликованные</option>
+        <option value="draft"{{ filters.state == 'draft' ? ' selected' : '' }}>Не опубликованные</option>
+        <option value="changed"{{ filters.state == 'changed' ? ' selected' : '' }}>Есть изменения</option>
+      </select>
+      <button class="btn btn-secondary" type="submit"><i class="ti ti-filter"></i>Показать</button>
+      {% if filters.q or filters.kind or filters.state %}<a class="btn btn-ghost" href="{{ ADMINX_BASE }}/public-site/presentations"><i class="ti ti-x"></i>Сбросить</a>{% endif %}
+    </form>
+    <div class="table-scroll">
+      <table class="table table-compact public-presentations-table">
+        <colgroup><col class="presentation-col-id"><col><col class="presentation-col-kind"><col class="presentation-col-state"><col class="presentation-col-date"><col class="presentation-col-actions"></colgroup>
+        <thead><tr><th>ID</th><th>Название</th><th>Вид</th><th>Состояние</th><th>Изменено</th><th></th></tr></thead>
+        <tbody>
+          {% for item in presentations %}
+          <tr>
+            <td class="mono text-muted" data-label="ID">{{ item.id }}</td>
+            <td data-label="Название"><div class="public-presentation-name"><b>{{ item.title }}</b><small><code>{{ item.code }}</code>{% if item.usage_count %} · назначений: {{ item.usage_count }}{% endif %}</small></div></td>
+            <td data-label="Вид"><span class="badge badge-gray">{{ item.kind_label }}</span></td>
+            <td data-label="Состояние">
+              {% if item.is_published %}
+                <span class="badge {{ item.has_changes ? 'badge-amber' : 'badge-green' }}">{{ item.has_changes ? 'Изменён черновик' : 'Опубликовано' }}</span>
+                <small class="public-presentation-version">версия {{ item.version }}</small>
+              {% else %}<span class="badge badge-gray">Черновик</span>{% endif %}
+            </td>
+            <td class="mono text-muted" data-label="Изменено">{{ item.updated_label }}</td>
+            <td data-label="Действия"><div class="cluster public-presentation-actions">
+              <button class="btn btn-ghost btn-icon btn-sm is-edit" type="button" data-presentation-edit="{{ item.id }}" data-tooltip-left="Редактировать" aria-label="Редактировать"><i class="ti ti-pencil"></i></button>
+              <button class="btn btn-ghost btn-icon btn-sm is-history" type="button" data-presentation-revisions="{{ item.id }}" data-tooltip-left="Ревизии" aria-label="Ревизии"><i class="ti ti-history"></i></button>
+              {% if can_manage %}
+              <button class="btn btn-ghost btn-icon btn-sm is-copy" type="button" data-presentation-copy="{{ item.id }}" data-tooltip-left="Создать копию" aria-label="Создать копию"><i class="ti ti-copy"></i></button>
+              <button class="btn btn-ghost btn-icon btn-sm is-danger" type="button" data-presentation-delete="{{ item.id }}" data-tooltip-left="Удалить" aria-label="Удалить"><i class="ti ti-trash"></i></button>
+              {% endif %}
+            </div></td>
+          </tr>
+          {% else %}<tr class="public-presentation-empty-row"><td colspan="6"><div class="empty-state"><i class="ti ti-layout-cards"></i><span>Представлений пока нет.</span></div></td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+{% if legacy_sources %}
+<section class="public-presentations-panel">
+  <div class="section-header public-presentations-section-head">
+    <div class="section-icon"><i class="ti ti-plug-connected"></i></div>
+    <div><div class="section-eyebrow">Совместимость</div><h2>Действующие редакторы</h2><p class="section-desc">Они продолжают управлять текущим выводом и не копируются автоматически.</p></div>
+  </div>
+  <div class="public-presentation-legacy-grid">
+    {% for source in legacy_sources %}
+    <a class="card public-presentation-legacy" href="{{ ADMINX_BASE }}{{ source.url }}"><span class="icon-tile"><i class="ti {{ source.icon }}"></i></span><span><b>{{ source.title }}</b><small>{{ source.count }} представлений</small></span><i class="ti ti-arrow-up-right"></i></a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if can_manage and available %}
+<textarea data-presentation-default="item" hidden>{{ defaults.item }}</textarea>
+<textarea data-presentation-default="wrapper" hidden>{{ defaults.wrapper }}</textarea>
+<textarea data-presentation-default="empty" hidden>{{ defaults.empty }}</textarea>
+<script type="application/json" data-presentation-targets>{{ assignment_targets|json_encode|raw }}</script>
+
+<aside class="drawer drawer-right drawer-lg public-presentation-drawer" id="publicPresentationDrawer" role="dialog" aria-modal="true" aria-labelledby="publicPresentationDrawerTitle" hidden>
+  <div class="drawer-header">
+    <div><div class="cluster"><h3 id="publicPresentationDrawerTitle" data-presentation-title>Новое представление</h3><span class="badge badge-gray" data-presentation-status>Черновик</span></div><p class="text-secondary text-sm">Ctrl/Cmd+S сохраняет черновик и оставляет редактор открытым.</p></div>
+    <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <form id="publicPresentationForm" class="public-presentation-form" data-base="{{ ADMINX_BASE }}">
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="id">
+    <div class="drawer-body">
+      <div class="form-grid public-presentation-basics">
+        <label class="field col-5"><span class="field-label">Название</span><input class="input" name="title" required></label>
+        <label class="field col-4"><span class="field-label">Код</span><input class="input mono" name="code" pattern="[a-z][a-z0-9_-]{1,79}" required><span class="field-hint">Стабильное имя для назначений.</span></label>
+        <label class="field col-3"><span class="field-label">Вид</span><select class="select" name="kind">{% for code,label in kinds %}<option value="{{ code }}">{{ label }}</option>{% endfor %}</select></label>
+        <label class="field col-12"><span class="field-label">Назначение</span><input class="input" name="description" placeholder="Например: карточка материала в списке новостей"></label>
+        <input type="hidden" name="draft_settings_json" value="{}">
+      </div>
+
+      <nav class="tabs public-presentation-editor-tabs" aria-label="Редактор представления">
+        <button class="tab is-active" type="button" data-presentation-tab="item">Элемент</button>
+        <button class="tab" type="button" data-presentation-tab="wrapper">Обёртка</button>
+        <button class="tab" type="button" data-presentation-tab="empty">Пустой результат</button>
+        <button class="tab" type="button" data-presentation-tab="css">CSS</button>
+        <button class="tab" type="button" data-presentation-tab="data">Данные</button>
+        <button class="tab" type="button" data-presentation-tab="preview">Предпросмотр</button>
+        <button class="tab" type="button" data-presentation-tab="assignments">Назначения</button>
+        <button class="tab" type="button" data-presentation-tab="diagnostics">Диагностика</button>
+        <button class="tab" type="button" data-presentation-tab="revisions">Ревизии</button>
+      </nav>
+
+      {% for editor in [
+        ['item','draft_item_markup','Шаблон элемента','Один материал доступен как item.','htmlmixed'],
+        ['wrapper','draft_wrapper_markup','Обёртка списка','Готовые элементы доступны в content, исходные данные — в items.','htmlmixed'],
+        ['empty','draft_empty_markup','Пустой результат','Показывается, когда подборка не вернула материалов.','htmlmixed'],
+        ['css','draft_css','CSS представления','Стили относятся только к этому представлению.','css']
+      ] %}
+      {% set tab = editor[0] %}{% set name = editor[1] %}{% set label = editor[2] %}{% set hint = editor[3] %}{% set mode = editor[4] %}
+      <section class="public-presentation-editor" data-presentation-panel="{{ tab }}"{{ not loop.first ? ' hidden' : '' }}>
+        <div class="public-presentation-editor-head"><div><b>{{ label }}</b><small>{{ hint }}</small></div><div class="cluster">{% if tab != 'css' %}<button class="btn btn-ghost btn-icon" type="button" data-presentation-lint data-tooltip-left="Проверить Twig" aria-label="Проверить Twig"><i class="ti ti-bug"></i></button>{% endif %}<button class="btn btn-ghost btn-icon" type="button" data-presentation-fullscreen="{{ name }}" data-tooltip-left="На весь экран" aria-label="На весь экран"><i class="ti ti-arrows-maximize"></i></button></div></div>
+        <textarea class="textarea mono" name="{{ name }}" data-code-editor data-mode="{{ mode }}" data-height="520"></textarea>
+        {% if tab != 'css' %}<span class="field-hint" data-presentation-lint-result></span>{% endif %}
+      </section>
+      {% endfor %}
+
+      <section class="public-presentation-data" data-presentation-panel="data" hidden>
+        <div class="public-presentation-panel-head"><div><b>Доступные данные</b><small>Нажмите значение, чтобы вставить его в шаблон элемента.</small></div></div>
+        <div class="public-presentation-data-groups">
+          {% for group in data_groups %}
+          <section><header><span>{{ group.title }}</span><span class="badge badge-gray">{{ group.items|length }}</span></header><div>
+            {% for item in group.items %}<button type="button" data-presentation-variable="{{ '{{ ' ~ item.path ~ ' }}'|e('html_attr') }}"{{ not item.available ? ' disabled' : '' }}><code>{{ item.path }}</code><span>{{ item.title }}</span></button>{% endfor %}
+          </div></section>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section class="public-presentation-preview" data-presentation-panel="preview" hidden>
+        <div class="public-presentation-panel-head"><div><b>Предпросмотр на реальном материале</b><small>Используется только черновик, публичный сайт не меняется.</small></div><button class="btn btn-primary" type="button" data-presentation-preview><i class="ti ti-player-play"></i>Показать</button></div>
+        <label class="field"><span class="field-label">Материал</span><select class="select" name="preview_document_id"><option value="">Выберите материал</option>{% for item in documents %}<option value="{{ item.id }}">{{ item.title }} · {{ item.rubric_title }} · ID {{ item.id }}</option>{% endfor %}</select></label>
+        <div class="public-presentation-preview-state" data-presentation-preview-state><i class="ti ti-eye"></i><span>Выберите материал и запустите предпросмотр.</span></div>
+        <div class="public-presentation-preview-grid"><iframe title="Предпросмотр" sandbox data-presentation-preview-frame></iframe><pre data-presentation-preview-json>После запуска здесь появятся данные, доступные шаблону.</pre></div>
+      </section>
+
+      <section class="public-presentation-assignments" data-presentation-panel="assignments" hidden>
+        <div class="public-presentation-panel-head"><div><b>Где использовать</b><small>Режим «Текущий вывод» только фиксирует связь и ничего не переключает.</small></div></div>
+        <div class="public-presentation-assignment-list" data-presentation-assignment-list><div class="empty-state">Сначала сохраните представление.</div></div>
+        <div class="public-presentation-assignment-form">
+          <label class="field"><span class="field-label">Место</span><select class="select" name="assignment_context"><option value="content_list">Список материалов</option><option value="compact_list">Компактный список</option><option value="slider">Слайдер</option><option value="search_results">Результаты поиска</option><option value="related">Похожие материалы</option><option value="favorites">Избранное</option><option value="viewed">Просмотренные материалы</option><option value="catalog_filters">Фильтры каталога</option><option value="document_page">Страница материала</option></select></label>
+          <label class="field"><span class="field-label">Применить к</span><select class="select" name="assignment_target_type"><option value="global">Везде</option><option value="rubric">Типу контента</option><option value="request">Подборке</option><option value="catalog">Каталогу</option><option value="module">Модулю</option></select></label>
+          <label class="field"><span class="field-label">Конкретная цель</span><select class="select" name="assignment_target_key"></select><span class="field-hint" data-presentation-target-hint>Общее назначение для всех подходящих мест.</span></label>
+          <label class="field"><span class="field-label">Режим</span><select class="select" name="assignment_mode"><option value="legacy">Текущий вывод</option><option value="preview">Подготовка</option><option value="native">Новое представление</option></select></label>
+          <button class="btn btn-secondary" type="button" data-presentation-assignment-save><i class="ti ti-link-plus"></i>Назначить</button>
+        </div>
+      </section>
+
+      <section class="public-presentation-diagnostics" data-presentation-panel="diagnostics" hidden>
+        <div class="public-presentation-panel-head"><div><b>Проверка перед публикацией</b><small>Проверяются Twig, назначенные цели и предпросмотр на выбранном материале.</small></div><button class="btn btn-secondary" type="button" data-presentation-diagnose><i class="ti ti-stethoscope"></i>Проверить</button></div>
+        <div class="public-presentation-diagnostic-summary" data-presentation-diagnostic-summary><span class="badge badge-gray">Проверка ещё не запускалась</span></div>
+        <div class="public-presentation-diagnostic-list" data-presentation-diagnostic-list><div class="empty-state">Сохраните представление и запустите диагностику.</div></div>
+      </section>
+
+      <section class="public-presentation-revisions" data-presentation-panel="revisions" hidden>
+        <div class="public-presentation-panel-head"><div><b>История изменений</b><small data-presentation-revisions-count>Снимков пока нет.</small></div><button class="btn btn-danger btn-sm" type="button" data-presentation-revisions-clear disabled><i class="ti ti-trash"></i>Удалить все</button></div>
+        <div class="public-presentation-revision-list" data-presentation-revision-list><div class="empty-state">Сначала сохраните представление.</div></div>
+        <div class="public-presentation-revision-detail"><div data-presentation-revision-meta>Выберите снимок выше.</div><pre data-presentation-revision-code></pre><div class="cluster"><button class="btn btn-secondary" type="button" data-presentation-revision-restore disabled><i class="ti ti-restore"></i>Восстановить</button><button class="btn btn-danger" type="button" data-presentation-revision-delete disabled><i class="ti ti-trash"></i>Удалить</button></div></div>
+      </section>
+    </div>
+    <div class="drawer-footer public-presentation-footer">
+      <button class="btn btn-ghost" type="button" data-close-drawer>Закрыть</button>
+      <span class="public-presentation-save-state" data-presentation-save-state></span>
+      <button class="btn btn-secondary" type="button" data-presentation-save data-code-save-stay><i class="ti ti-device-floppy"></i>Сохранить черновик</button>
+      <button class="btn btn-primary" type="button" data-presentation-publish><i class="ti ti-world-upload"></i>Опубликовать</button>
+    </div>
+  </form>
+</aside>
+{% endif %}
+{% endblock %}

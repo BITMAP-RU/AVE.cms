@@ -17,9 +17,11 @@
 	defined('BASEPATH') || die('Direct access to this location is not allowed.');
 
 	use App\Common\AdminAssets;
+	use App\Common\AuditLog;
 	use App\Common\Auth;
 	use App\Common\Controller as BaseController;
 	use App\Common\Permission;
+	use App\Adminx\Support\BulkActionExecutor;
 	use App\Adminx\Support\Roles;
 	use App\Helpers\Request;
 
@@ -155,6 +157,46 @@
 
 			Model::delete($id);
 			return $this->success('Пользователь удалён', ['redirect' => $this->base() . '/users']);
+		}
+
+		public function bulk(array $params = array())
+		{
+			if (($response = $this->guard()) !== null) {
+				return $response;
+			}
+
+			$action = Request::postStr('action', '');
+			$currentId = (int) Auth::id();
+			$handler = function ($id) use ($action, $currentId) {
+				if ((int) $id === $currentId || !Model::find($id)) {
+					return false;
+				}
+
+				Model::setActive($id, $action === 'activate');
+				return true;
+			};
+
+			try {
+				$result = BulkActionExecutor::execute($action, Request::post('ids', array()), array(
+					'activate' => $handler,
+					'deactivate' => $handler,
+				), 200);
+			} catch (\InvalidArgumentException $e) {
+				return $this->error($e->getMessage(), array(), 422);
+			}
+
+			AuditLog::record('user.bulk_status_updated', array(
+				'actor_id' => Auth::id(),
+				'target_type' => 'user',
+				'meta' => array(
+					'action' => $action,
+					'requested' => $result['requested'],
+					'done' => $result['done'],
+					'skipped' => $result['skipped'],
+				),
+			));
+
+			return $this->success('Состояние пользователей изменено', array('data' => $result));
 		}
 
 		// ------------------------------------------------------------------ //

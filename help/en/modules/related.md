@@ -26,6 +26,10 @@ After the initial build, the index is updated automatically when you save and
 deleting a document. Repeated full indexing is needed after bulk import
 directly into the database or changes to the rules of a large number of documents.
 
+When the **Scheduler** is installed, it exposes a disabled-by-default
+**Related content reindex** chunked task. It can be run manually or enabled on
+a schedule, and its progress is preserved between ticks.
+
 ## Strategies
 
 | Strategy | How documents are selected |

@@ -16,9 +16,11 @@
 
 	defined('BASEPATH') || die('Direct access to this location is not allowed.');
 
+	use App\Common\Cache;
 	use App\Common\Settings;
 	use App\Common\FileCacheInvalidator;
 	use App\Common\SystemTables;
+	use App\Content\CatalogTables;
 	use App\Content\ContentTables;
 	use App\Content\PublicShellTables;
 	use App\Frontend\PublicSettings;
@@ -269,6 +271,7 @@
 			}
 
 			self::removeDirContents($sources[$code]['path']);
+			Cache::forget('adminx.cache.sizes.' . md5((string) ADMINX_BASE));
 			return array(
 				'code' => $code,
 				'size' => self::formatBytes(self::dirSize($sources[$code]['path'])),
@@ -277,8 +280,21 @@
 
 		public static function maintenanceCounts()
 		{
+			$revisionSources = self::revisionSources();
+			$revisionCount = 0;
+			$revisionSummary = array();
+			foreach ($revisionSources as $source) {
+				$revisionCount += $source['count'];
+				$revisionSummary[] = array(
+					'code' => $source['code'],
+					'label' => $source['label'],
+					'count' => $source['count'],
+				);
+			}
+
 			return array(
-				'revisions' => self::tableCount(ContentTables::table('document_rev')),
+				'revisions' => $revisionCount,
+				'revision_sources' => $revisionSummary,
 				'views' => self::tableCount(ContentTables::table('view_count')),
 			);
 		}
@@ -286,10 +302,25 @@
 		public static function clearMaintenance($target)
 		{
 			$tables = array(
-				'revisions' => ContentTables::table('document_rev'),
 				'views' => ContentTables::table('view_count'),
 			);
 			$target = (string) $target;
+			if ($target === 'revisions') {
+				$count = 0;
+				$cleared = array();
+				foreach (self::revisionSources() as $source) {
+					$count += $source['count'];
+					DB::query('TRUNCATE TABLE ' . $source['table']);
+					$cleared[] = array(
+						'code' => $source['code'],
+						'label' => $source['label'],
+						'count' => $source['count'],
+					);
+				}
+
+				return array('target' => $target, 'count' => $count, 'sources' => $cleared);
+			}
+
 			if (!isset($tables[$target])) {
 				return false;
 			}
@@ -297,6 +328,44 @@
 			$count = self::tableCount($tables[$target]);
 			DB::query('TRUNCATE TABLE ' . $tables[$target]);
 			return array('target' => $target, 'count' => $count);
+		}
+
+		protected static function revisionSources()
+		{
+			$definitions = array(
+				array('code' => 'documents', 'label' => 'Документы', 'table' => ContentTables::table('document_rev')),
+				array('code' => 'blocks', 'label' => 'Блоки', 'table' => ContentTables::table('sysblock_revisions')),
+				array('code' => 'templates', 'label' => 'Шаблоны', 'table' => ContentTables::table('template_revisions')),
+				array('code' => 'rubrics', 'label' => 'Рубрики', 'table' => ContentTables::table('rubric_schema_revisions')),
+				array('code' => 'themes', 'label' => 'Темы', 'table' => SystemTables::table('theme_asset_revisions')),
+				array('code' => 'presentations', 'label' => 'Представления', 'table' => ContentTables::table('presentation_revisions')),
+				array('code' => 'catalog_cards', 'label' => 'Карточки товаров', 'table' => CatalogTables::table('catalog_card_template_revisions')),
+				array('code' => 'catalog_filters', 'label' => 'Фильтры каталога', 'table' => CatalogTables::table('catalog_filter_template_revisions')),
+			);
+
+			$sources = array();
+			foreach ($definitions as $definition) {
+				if (!self::tableExists($definition['table'])) {
+					continue;
+				}
+
+				$definition['count'] = self::tableCount($definition['table']);
+				$sources[] = $definition;
+			}
+
+			return $sources;
+		}
+
+		protected static function tableExists($table)
+		{
+			try {
+				return (int) DB::query(
+					'SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=%s',
+					(string) $table
+				)->getValue() > 0;
+			} catch (\Throwable $e) {
+				return false;
+			}
 		}
 
 		public static function systemFiles()

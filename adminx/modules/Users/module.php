@@ -21,7 +21,7 @@
 	return [
 		'code'    => 'users',
 		'name'    => 'Пользователи',
-		'version' => '0.1.1',
+		'version' => '0.2.0',
 
 		'permissions' => [
 			'key'      => 'users',
@@ -62,6 +62,7 @@
 
 		'routes' => array(
 			array('GET', '/users', array(\App\Adminx\Users\Controller::class, 'index')),
+			array('POST', '/users/bulk', array(\App\Adminx\Users\Controller::class, 'bulk')),
 			array('GET', '/users/{id}', array(\App\Adminx\Users\Controller::class, 'show')),
 			array('POST', '/users', array(\App\Adminx\Users\Controller::class, 'store')),
 			array('POST', '/users/{id}', array(\App\Adminx\Users\Controller::class, 'update')),

@@ -1,0 +1,14 @@
+{% set section = content_model_section|default('rubrics') %}
+{% set interactive = content_model_interactive|default(false) %}
+
+<nav class="tabs content-model-tabs" role="tablist" aria-label="Структура контента">
+  {% if interactive %}
+  <button class="tab" type="button" role="tab" aria-selected="{{ section == 'rubrics' ? 'true' : 'false' }}" data-rubrics-main-tab="rubrics"><i class="ti ti-forms"></i>Рубрики</button>
+  <button class="tab" type="button" role="tab" aria-selected="{{ section == 'types' ? 'true' : 'false' }}" data-rubrics-main-tab="types"><i class="ti ti-plug-connected"></i>Типы полей<span class="tab-count">{{ field_type_summary.types }}</span></button>
+  {% else %}
+  <a class="tab{{ section == 'rubrics' ? ' is-active' : '' }}" href="{{ ADMINX_BASE }}/rubrics" role="tab" aria-selected="{{ section == 'rubrics' ? 'true' : 'false' }}"><i class="ti ti-forms"></i>Рубрики</a>
+  <a class="tab{{ section == 'types' ? ' is-active' : '' }}" href="{{ ADMINX_BASE }}/rubrics?tab=types" role="tab" aria-selected="{{ section == 'types' ? 'true' : 'false' }}"><i class="ti ti-plug-connected"></i>Типы полей</a>
+  {% endif %}
+  <a class="tab{{ section == 'field_sets' ? ' is-active' : '' }}" href="{{ ADMINX_BASE }}/rubrics/field-sets" role="tab" aria-selected="{{ section == 'field_sets' ? 'true' : 'false' }}"><i class="ti ti-library"></i>Наборы полей</a>
+  <a class="tab{{ section == 'directories' ? ' is-active' : '' }}" href="{{ ADMINX_BASE }}/directories" role="tab" aria-selected="{{ section == 'directories' ? 'true' : 'false' }}"><i class="ti ti-books"></i>Справочники</a>
+</nav>

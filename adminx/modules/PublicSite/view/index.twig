@@ -1,0 +1,204 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}Публичный сайт{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i>
+  <span>Публичный сайт</span>
+</nav>
+
+<div class="page-header">
+  <div class="between public-site-page-head">
+    <div>
+      <h1>Публичный сайт</h1>
+      <p class="text-secondary">Карта связей контента, подборок, каталогов и оформления.</p>
+    </div>
+    <div class="cluster public-site-page-actions">
+      <a class="btn btn-secondary" href="{{ ADMINX_BASE }}/templates"><i class="ti ti-template"></i>Шаблоны</a>
+      <a class="btn btn-primary" href="{{ ADMINX_BASE }}/documents"><i class="ti ti-file-text"></i>Материалы</a>
+    </div>
+  </div>
+</div>
+
+{% set public_site_tab = 'structure' %}
+{% include '@public_site/_tabs.twig' %}
+
+<div class="public-site-summary public-site-structure-summary">
+  <div class="card public-site-stat">
+    <span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-folders"></i></span>
+    <div><b>{{ stats.rubrics }}</b><span>Типов контента</span></div>
+  </div>
+  <div class="card public-site-stat">
+    <span class="icon-tile" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-files"></i></span>
+    <div><b>{{ stats.documents }}</b><span>Материалов</span></div>
+  </div>
+  <div class="card public-site-stat">
+    <span class="icon-tile" style="--tile-bg:var(--amber-100);--tile-fg:var(--amber-600)"><i class="ti ti-list-search"></i></span>
+    <div><b>{{ stats.requests }}</b><span>Подборок</span></div>
+  </div>
+  <div class="card public-site-stat">
+    <span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-category-2"></i></span>
+    <div><b>{{ stats.catalogs }}</b><span>Каталогов</span></div>
+  </div>
+  <div class="card public-site-stat">
+    <span class="icon-tile" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-components"></i></span>
+    <div><b>{{ stats.components }}</b><span>Блоков и меню</span></div>
+  </div>
+  <div class="card public-site-stat">
+    <span class="icon-tile" style="--tile-bg:var(--red-100);--tile-fg:var(--red-600)"><i class="ti ti-layout-cards"></i></span>
+    <div><b>{{ stats.presentations }}</b><span>Представлений</span></div>
+  </div>
+</div>
+
+<section class="public-site-panel">
+  <div class="section-header public-site-panel-header">
+    <div class="section-icon"><i class="ti ti-route-square"></i></div>
+    <div>
+      <div class="section-eyebrow">Первый этап</div>
+      <h2>Карта структуры</h2>
+      <p class="section-desc">Ничего не переключает в паблике: здесь видны существующие сущности и быстрые переходы в их штатные редакторы.</p>
+    </div>
+  </div>
+
+  <div class="public-site-structure">
+    <div class="card public-site-card public-site-main-card">
+      <div class="public-site-card-head">
+        <div class="public-site-card-title">
+          <span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-sitemap"></i></span>
+          <div>
+            <h2>Типы контента</h2>
+            <p class="text-secondary">{{ structure|length }} в текущем списке</p>
+          </div>
+        </div>
+        <a class="btn btn-ghost btn-icon" href="{{ ADMINX_BASE }}/rubrics" data-tooltip-left="Открыть рубрики" aria-label="Открыть рубрики"><i class="ti ti-arrow-up-right"></i></a>
+      </div>
+
+      <form class="public-site-filter" method="get" action="{{ ADMINX_BASE }}/public-site">
+        <div class="input-wrap">
+          <i class="ti ti-search"></i>
+          <input class="input" type="search" name="q" value="{{ filters.q }}" placeholder="Название, alias или ID">
+        </div>
+        <button class="btn btn-secondary" type="submit"><i class="ti ti-filter"></i>Показать</button>
+        {% if filters.q %}<a class="btn btn-ghost" href="{{ ADMINX_BASE }}/public-site"><i class="ti ti-x"></i>Сбросить</a>{% endif %}
+      </form>
+
+      <div class="table-scroll">
+        <table class="table table-compact public-site-table">
+          <colgroup>
+            <col class="public-site-col-type">
+            <col class="public-site-col-template">
+            <col class="public-site-col-numbers">
+            <col class="public-site-col-state">
+            <col class="public-site-col-actions">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Тип контента</th>
+              <th>Шаблон сайта</th>
+              <th>Состав</th>
+              <th>Состояние</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in structure %}
+            <tr>
+              <td data-label="Тип контента">
+                <div class="public-site-name">
+                  <b>{{ item.title }}</b>
+                  <span><span class="mono">{{ item.alias ?: 'alias не задан' }}</span> · ID {{ item.id }}</span>
+                </div>
+              </td>
+              <td data-label="Шаблон сайта">
+                {% if item.template_title %}
+                <div class="public-site-template"><b>{{ item.template_title }}</b><span>ID {{ item.template_id }}</span></div>
+                {% else %}
+                <span class="badge badge-red">не назначен</span>
+                {% endif %}
+              </td>
+              <td data-label="Состав">
+                <div class="public-site-counts">
+                  <span><b>{{ item.documents_count }}</b> материалов</span>
+                  <span><b>{{ item.fields_count }}</b> полей</span>
+                  <span><b>{{ item.requests_count }}</b> подборок</span>
+                  {% if item.catalogs_count %}<span><b>{{ item.catalogs_count }}</b> каталогов</span>{% endif %}
+                </div>
+              </td>
+              <td data-label="Состояние">
+                <div class="public-site-state">
+                  {% if not item.documents_enabled %}<span class="badge badge-gray">создание выключено</span>{% endif %}
+                  {% if item.issues %}
+                    {% for issue in item.issues %}
+                    <span class="badge {{ issue.level == 'error' ? 'badge-red' : 'badge-amber' }}">{{ issue.message|admin_trans }}</span>
+                    {% endfor %}
+                  {% else %}
+                  <span class="badge badge-green">настроено</span>
+                  {% endif %}
+                </div>
+              </td>
+              <td data-label="Действия">
+                <div class="cluster public-site-actions">
+                  <a class="btn btn-ghost btn-icon btn-sm" href="{{ ADMINX_BASE }}/documents?rubric_id={{ item.id }}" data-tooltip-left="Материалы" aria-label="Материалы"><i class="ti ti-files"></i></a>
+                  <a class="btn btn-ghost btn-icon btn-sm" href="{{ ADMINX_BASE }}/rubrics?q={{ item.title|url_encode }}" data-tooltip-left="Настройки типа" aria-label="Настройки типа"><i class="ti ti-settings"></i></a>
+                </div>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5"><div class="empty-state">Типы контента не найдены.</div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section class="public-site-panel public-site-support-panel">
+  <div class="section-header public-site-panel-header">
+    <div class="section-icon"><i class="ti ti-stethoscope"></i></div>
+    <div>
+      <div class="section-eyebrow">Проверка структуры</div>
+      <h2>Диагностика</h2>
+      <p class="section-desc">Подсказки ведут в штатные редакторы и ничего не исправляют автоматически.</p>
+    </div>
+  </div>
+  <div class="card public-site-card">
+    <div class="public-site-card-head">
+      <div class="public-site-card-title">
+        <span class="icon-tile" style="--tile-bg:var(--amber-100);--tile-fg:var(--amber-600)"><i class="ti ti-alert-triangle"></i></span>
+        <div><h2>Найденные замечания</h2><p class="text-secondary">Показаны проблемы текущей карты структуры</p></div>
+      </div>
+      <span class="badge {{ diagnostics.errors ? 'badge-red' : (diagnostics.warnings ? 'badge-amber' : 'badge-green') }}">{{ diagnostics.items|length }}</span>
+    </div>
+    <div class="public-site-diagnostics">
+      {% for issue in diagnostics.items %}
+      <a href="{{ ADMINX_BASE }}{{ issue.url }}" class="public-site-diagnostic public-site-diagnostic-{{ issue.level }}">
+        <i class="ti {{ issue.level == 'error' ? 'ti-alert-circle' : 'ti-alert-triangle' }}"></i>
+        <span><b>{{ issue.title }}</b><small>{{ issue.message|admin_trans }}</small></span>
+        <i class="ti ti-arrow-up-right"></i>
+      </a>
+      {% else %}
+      <div class="empty-state public-site-empty"><i class="ti ti-circle-check"></i><span>Явных проблем в текущей карте нет.</span></div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="public-site-panel public-site-editors-panel">
+  <div class="section-header public-site-panel-header">
+    <div class="section-icon"><i class="ti ti-edit"></i></div>
+    <div>
+      <div class="section-eyebrow">Штатные инструменты</div>
+      <h2>Редакторы компонентов</h2>
+      <p class="section-desc">Структура показывает связи, а содержимое меняется в привычных разделах.</p>
+    </div>
+  </div>
+  <div class="card public-site-editor-links">
+    <a href="{{ ADMINX_BASE }}/requests"><i class="ti ti-list-search"></i><span><b>Подборки</b><small>Запросы и условия</small></span><i class="ti ti-chevron-right"></i></a>
+    <a href="{{ ADMINX_BASE }}/blocks"><i class="ti ti-box"></i><span><b>Блоки</b><small>Повторяемые фрагменты</small></span><i class="ti ti-chevron-right"></i></a>
+    <a href="{{ ADMINX_BASE }}/navigation"><i class="ti ti-navigation"></i><span><b>Навигация</b><small>Меню и дерево пунктов</small></span><i class="ti ti-chevron-right"></i></a>
+    <a href="{{ ADMINX_BASE }}/catalog"><i class="ti ti-category-2"></i><span><b>Каталоги</b><small>Разделы и фильтры</small></span><i class="ti ti-chevron-right"></i></a>
+  </div>
+</section>
+{% endblock %}

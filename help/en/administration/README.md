@@ -23,6 +23,7 @@ to [modular system](../modules/README.md).
 | Settings | Site parameters, interface, security, cache and diagnostics. | [Settings](settings.md) |
 | Database | Schema, InnoDB, backups and migrations. | [Database and Events](operations.md) |
 | Events | Audit, runtime, 404, SQL errors and transitions. | [Database and Events](operations.md) |
+| Search and activity | Command palette, global object search, and readable action history. | [Search, commands, and activity](search-and-activity.md) |
 | Updates | Signed kernel patches, backup and rollback. | [AVE.cms updates](updates.md) |
 | PHP console | Manual administrative diagnostics of PHP code. | [PHP console](console.md) |
 | Modules | Installing, updating, disabling and removing extensions. | [Modules](../modules/README.md) |

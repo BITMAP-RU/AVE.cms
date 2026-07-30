@@ -147,7 +147,7 @@
 	<phrase data="auto_7f58a008a3f32807">доступна</phrase>
 	<phrase data="auto_d82140192401cdea">доступно</phrase>
 	<phrase data="auto_173d9134a50dd8aa">есть внешние CDN-зависимости</phrase>
-	<phrase data="auto_58d8bdc9b4ac5be3">Есть обращения из текущего framework, Adminx или публичного runtime.</phrase>
+	<phrase data="auto_58d8bdc9b4ac5be3">Есть обращения из текущего фреймворка, панели управления или публичной части.</phrase>
 	<phrase data="auto_1e07fd3579bd6b70">Заголовок закрытой страницы</phrase>
 	<phrase data="auto_fbcda4694fbfd8f4">Запись</phrase>
 	<phrase data="auto_7a7e9f66a26eedcf">Заполните поле</phrase>

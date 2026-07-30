@@ -17,7 +17,7 @@
 	return array(
 		'code' => 'rubrics',
 		'name' => 'Рубрики и поля',
-		'version' => '0.1.0',
+		'version' => '0.2.0',
 		'field_sets' => \App\Adminx\Rubrics\RubricFieldPresets::definitions(),
 		'hook_definitions' => array(
 			array(
@@ -61,6 +61,8 @@
 				'sort_order' => 23,
 				'match' => array(
 					'/rubrics',
+					'/rubrics/field-sets',
+					'/directories',
 				),
 			),
 		),
@@ -79,10 +81,13 @@
 			array('id' => '011_schema_revisions', 'file' => 'migrations/011_schema_revisions.sql'),
 			array('id' => '012_linked_field_sets', 'file' => 'migrations/012_linked_field_sets.sql'),
 			array('id' => '013_group_form_conditions', 'file' => 'migrations/013_group_form_conditions.php'),
+			array('id' => '014_rubric_purpose', 'file' => 'migrations/014_rubric_purpose.php'),
+			array('id' => '015_merge_directory_permissions', 'file' => 'migrations/015_merge_directory_permissions.php'),
 		),
 
 		'routes' => array(
 			array('GET', '/rubrics', array(\App\Adminx\Rubrics\Controller::class, 'index')),
+			array('GET', '/rubrics/field-sets', array(\App\Adminx\Rubrics\Controller::class, 'fieldSets')),
 			array('GET', '/rubrics/template-tags', array(\App\Adminx\Rubrics\Controller::class, 'templateTags')),
 			array('GET', '/rubrics/alias-check', array(\App\Adminx\Rubrics\Controller::class, 'rubricAliasCheck')),
 			array('GET', '/rubrics/fields/alias-check', array(\App\Adminx\Rubrics\Controller::class, 'fieldAliasCheck')),

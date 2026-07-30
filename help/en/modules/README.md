@@ -111,6 +111,8 @@ administrative extensions are physically located in
 | [Traffic sources](traffic-analytics.md) | UTM campaigns, external transitions, landing pages and CSV. |
 | [Search terms](search-analytics.md) | Visitor demand, zero output and work notes. |
 | [A/B tests](experiments.md) | Variants of blocks and elements, stable distribution and conversions. |
+| [Reliable events](reliable-events.md) | Signed webhook outbox, retries, and delivery history. |
+| [Cache warmup](cache-warmup.md) | Controlled background warming of published pages. |
 | [Step by step: your module](tutorial.md) | Mini-module from scratch to working screen. |
 
 ## Installable AVE.cms modules
@@ -151,6 +153,8 @@ widgets and “Document Operations” are deliberately not included in this list
 | `traffic_analytics` | Public + panel | `view_traffic_analytics`, `manage_traffic_analytics` | [Traffic sources](traffic-analytics.md) |
 | `search_analytics` | Public + panel | `view_search_analytics`, `manage_search_analytics` | [Search queries](search-analytics.md) |
 | `experiments` | Public + panel | `view_experiments`, `manage_experiments` | [A/B tests](experiments.md) |
+| `reliable_events` | Public + panel | `view_reliable_events`, `manage_reliable_events` | [Reliable events](reliable-events.md) |
+| `cache_warmup` | Public + panel | `view_cache_warmup`, `manage_cache_warmup` | [Cache warmup](cache-warmup.md) |
 | `todo` | Panel | `view_todos`, `manage_todos` | [Personal Tools](personal-tools.md#todo) |
 | `vk_oauth` | Public + panel | `view_vk_oauth`, `manage_vk_oauth` | [Login via VK ID](oauth-providers.md#vk-id) |
 | `yandex_oauth` | Public + panel | `view_yandex_oauth`, `manage_yandex_oauth` | [Login via Yandex](oauth-providers.md#яндекс) |

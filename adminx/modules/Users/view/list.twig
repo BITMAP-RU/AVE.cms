@@ -48,11 +48,24 @@
 </div>
 
 <div class="card ax-list-card">
-  <div class="ax-list-head"><div class="ax-list-title"><span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-users"></i></span><div><h2>Администраторы</h2><p class="text-secondary">Учётные записи, роли и состояние доступа к Adminx.</p></div></div><span class="badge badge-blue">{{ users|length }}</span></div>
+  <div class="ax-list-head"><div class="ax-list-title"><span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-users"></i></span><div><h2>Администраторы</h2><p class="text-secondary">Учётные записи, роли и состояние доступа к панели управления.</p></div></div><span class="badge badge-blue">{{ users|length }}</span></div>
+  {% if can_manage %}
+  <div class="bulk-bar users-bulk" data-bulk-actions data-bulk-target="users" data-bulk-endpoint="{{ ADMINX_BASE }}/users/bulk" hidden>
+    <span>Выбрано: <b data-bulk-count>0</b></span>
+    <select class="select select-sm" data-bulk-action>
+      <option value="">Выберите действие</option>
+      <option value="activate" data-label="включить">Включить</option>
+      <option value="deactivate" data-label="отключить">Отключить</option>
+    </select>
+    <button class="btn btn-primary btn-sm" type="button" data-bulk-apply>Применить</button>
+    <button class="btn btn-ghost btn-icon btn-sm" type="button" data-bulk-clear data-tooltip="Снять выделение" aria-label="Снять выделение"><i class="ti ti-x"></i></button>
+  </div>
+  {% endif %}
   <div class="table-scroll">
     <table class="table">
       <thead>
         <tr>
+          {% if can_manage %}<th style="width:42px"><input type="checkbox" data-bulk-all="users" aria-label="Выбрать всех на странице"></th>{% endif %}
           <th style="width:48px">ID</th>
           <th>Имя</th>
           <th>Email</th>
@@ -66,6 +79,7 @@
         {% for u in users %}
         {% set is_self = u.id == current_id %}
         <tr data-id="{{ u.id }}" data-name="{{ u.name }}" data-email="{{ u.email }}" data-login="{{ u.login }}" data-phone="{{ u.phone }}" data-role="{{ u.role }}" data-role-label="{{ roles[u.role]|default(u.role) }}" data-active="{{ u.is_active }}" data-created="{{ u.created_at }}" data-updated="{{ u.updated_at }}"{{ is_self ? ' data-self' : '' }}>
+          {% if can_manage %}<td><input type="checkbox" value="{{ u.id }}" data-bulk-item="users" aria-label="Выбрать пользователя {{ u.name|e('html_attr') }}"{{ is_self ? ' disabled' : '' }}></td>{% endif %}
           <td class="mono text-muted">{{ u.id }}</td>
           <td>
             <span class="cluster" style="gap:8px">
@@ -100,7 +114,7 @@
           {% endif %}
         </tr>
         {% else %}
-        <tr><td colspan="{{ can_manage ? 7 : 6 }}"><div class="empty-state">Ничего не найдено</div></td></tr>
+        <tr><td colspan="{{ can_manage ? 8 : 6 }}"><div class="empty-state">Ничего не найдено</div></td></tr>
         {% endfor %}
       </tbody>
     </table>
@@ -110,7 +124,7 @@
 {% if can_manage %}
 <aside class="drawer drawer-right users-drawer" id="userDrawer" role="dialog" aria-modal="true" aria-labelledby="userDrawerTitle" hidden>
   <div class="drawer-header">
-    <div><h3 id="userDrawerTitle">Новый пользователь</h3><p>Учётная запись сотрудника и доступ к Adminx</p></div>
+    <div><h3 id="userDrawerTitle">Новый пользователь</h3><p>Учётная запись сотрудника и доступ к панели управления</p></div>
     <button class="btn btn-ghost btn-icon" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
   </div>
   <form id="userForm" data-base="{{ ADMINX_BASE }}">

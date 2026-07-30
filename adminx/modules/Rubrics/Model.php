@@ -23,6 +23,7 @@
 	use App\Common\AuditLog;
 	use App\Common\FileCacheInvalidator;
 	use App\Content\Fields\FieldConditionEvaluator;
+	use App\Content\Fields\FieldRegistry;
 	use App\Content\Fields\FieldSettings;
 	use App\Content\Fields\FieldSettingsForm;
 	use App\Helpers\Json;
@@ -185,7 +186,7 @@
 
 			$fields = DB::query('SELECT Id FROM ' . self::fieldsTable() . ' WHERE rubric_id = %i', $id)->getAll() ?: array();
 			foreach ($fields as $field) {
-				$fieldDependencies = self::fieldDependencies((int) $field['Id']);
+				$fieldDependencies = self::fieldDependencies((int) $field['Id'], false);
 				if (!empty($fieldDependencies)) {
 					throw new \RuntimeException(
 						'Поле #' . (int) $field['Id'] . ' используется: ' . implode(', ', $fieldDependencies)
@@ -527,6 +528,7 @@
 				DB::Delete(self::docFieldsTextTable(), 'rubric_field_id = %i', (int) $id);
 			}
 
+			\App\Content\Fields\DocumentRelationIndex::removeField((int) $id);
 			self::deleteDerivedFieldData((int) $id);
 			self::touchFields((int) $field['rubric_id']);
 			return true;
@@ -766,7 +768,7 @@
 							? (string) $draft['description']
 							: (string) $field['rubric_field_description'];
 						$data['rubric_field_search'] = !empty($draft['search']) ? '1' : '0';
-						$nativeNumeric = in_array((string) $field['rubric_field_type'], array('number', 'date_time', 'period'), true);
+						$nativeNumeric = self::fieldTypeIsNumeric((string) $field['rubric_field_type']);
 						$data['rubric_field_numeric'] = $nativeNumeric || !empty($draft['numeric']) ? '1' : '0';
 					}
 
@@ -929,45 +931,17 @@
 
 		public static function documentPicker($q = '', $rubricId = 0, $limit = 20)
 		{
-			$limit = max(5, min(50, (int) $limit));
-			$sql = 'SELECT d.Id, d.rubric_id, d.document_title, d.document_alias, d.document_status, d.document_deleted, r.rubric_title'
-				. ' FROM ' . self::docsTable() . ' d'
-				. ' LEFT JOIN ' . self::rubricsTable() . ' r ON r.Id = d.rubric_id'
-				. ' WHERE d.document_deleted != 1';
-			$args = array();
-			if ((int) $rubricId > 0) {
-				$sql .= ' AND d.rubric_id = %i';
-				$args[] = (int) $rubricId;
-			}
-
-			$q = trim((string) $q);
-			if ($q !== '') {
-				$sql .= ' AND (d.document_title LIKE %ss OR d.document_alias LIKE %ss OR d.Id = %i)';
-				$args[] = $q;
-				$args[] = $q;
-				$args[] = (int) $q;
-			}
-
-			$sql .= ' ORDER BY d.Id DESC LIMIT ' . (int) $limit;
-			$rows = call_user_func_array(array('DB', 'query'), array_merge(array($sql), $args))->getAll();
-			$out = array();
-			foreach ($rows as $row) {
-				$out[] = array(
-					'id' => (int) $row['Id'],
-					'rubric_id' => (int) $row['rubric_id'],
-					'title' => (string) $row['document_title'],
-					'alias' => (string) $row['document_alias'],
-					'status' => (int) $row['document_status'],
-					'rubric_title' => isset($row['rubric_title']) ? (string) $row['rubric_title'] : '',
-				);
-			}
-
-			return $out;
+			return (new \App\Content\Documents\DocumentPickerRepository())->search($q, $rubricId, $limit);
 		}
 
 		protected static function rubricInput(array $input)
 		{
-			return array(
+			$purpose = isset($input['rubric_purpose']) ? trim((string) $input['rubric_purpose']) : 'content';
+			if (!in_array($purpose, array('content', 'directory'), true)) {
+				$purpose = 'content';
+			}
+
+			$data = array(
 				'rubric_title' => trim(isset($input['rubric_title']) ? (string) $input['rubric_title'] : ''),
 				'rubric_alias' => trim(isset($input['rubric_alias']) ? (string) $input['rubric_alias'] : ''),
 				'rubric_template_id' => max(1, (int) (isset($input['rubric_template_id']) ? $input['rubric_template_id'] : 1)),
@@ -979,6 +953,11 @@
 				'rubric_code_end' => isset($input['rubric_code_end']) ? (string) $input['rubric_code_end'] : '',
 				'rubric_start_code' => isset($input['rubric_start_code']) ? (string) $input['rubric_start_code'] : '',
 			);
+			if (self::hasRubricPurposeColumn()) {
+				$data['rubric_purpose'] = $purpose;
+			}
+
+			return $data;
 		}
 
 		protected static function fieldInput(array $input)
@@ -990,7 +969,7 @@
 				'rubric_field_title' => trim(isset($input['rubric_field_title']) ? (string) $input['rubric_field_title'] : ''),
 				'rubric_field_alias' => trim(isset($input['rubric_field_alias']) ? (string) $input['rubric_field_alias'] : ''),
 				'rubric_field_type' => $type,
-				'rubric_field_numeric' => in_array($type, array('number', 'date_time', 'period'), true) || !empty($input['rubric_field_numeric']) ? '1' : '0',
+				'rubric_field_numeric' => self::fieldTypeIsNumeric($type) || !empty($input['rubric_field_numeric']) ? '1' : '0',
 				'rubric_field_search' => !empty($input['rubric_field_search']) ? '1' : '0',
 				'rubric_field_default' => $normalizedDefault,
 				'rubric_field_template' => isset($input['rubric_field_template']) ? (string) $input['rubric_field_template'] : '',
@@ -1013,6 +992,12 @@
 			}
 
 			return $data;
+		}
+
+		protected static function fieldTypeIsNumeric($type)
+		{
+			$fieldType = FieldRegistry::get((string) $type);
+			return $fieldType ? $fieldType->isNumeric() : false;
 		}
 
 		protected static function normalizeFieldDefault($type, $value)
@@ -1088,8 +1073,15 @@
 			return self::fieldHasValues((int) $fieldId);
 		}
 
-		protected static function fieldDependencies($fieldId)
+		protected static function fieldDependencies($fieldId, $includeLocalSchema = true)
 		{
+			$field = DB::query(
+				'SELECT Id,rubric_id,rubric_field_alias,rubric_field_title FROM ' . self::fieldsTable()
+					. ' WHERE Id=%i LIMIT 1',
+				(int) $fieldId
+			)->getAssoc();
+			if (!$field) { return array(); }
+
 			$checks = array(
 				array(ContentTables::table('request_conditions'), 'condition_field_id', 'условия запросов'),
 				array(CatalogTables::table('module_catalog_settings'), 'field_id', 'настройки каталога'),
@@ -1138,7 +1130,118 @@
 				$out[] = 'параметры товарных фидов';
 			}
 
+			$out = array_merge($out, self::requestFieldDependencies($field));
+			if ($includeLocalSchema) {
+				$out = array_merge($out, self::localFieldDependencies($field));
+			}
+
 			return array_values(array_unique($out));
+		}
+
+		protected static function requestFieldDependencies(array $field)
+		{
+			$table = ContentTables::table('request');
+			if (!self::tableExists($table)) { return array(); }
+			$rows = DB::query(
+				'SELECT Id,request_order_by_nat,request_sort_rules,request_template_item,request_template_main,request_result_contract'
+					. ' FROM ' . $table . ' WHERE rubric_id=%i',
+				(int) $field['rubric_id']
+			)->getAll() ?: array();
+			$reference = self::fieldReference($field);
+			$out = array();
+			foreach ($rows as $request) {
+				foreach (\App\Frontend\RequestSort::rulesForRequest($request) as $rule) {
+					if ((string) $rule['source'] === 'field' && (int) $rule['key'] === (int) $field['Id']) {
+						$out[] = 'сортировка запросов';
+						break;
+					}
+				}
+
+				if (RubricSchemaImpact::templateReferences(
+					(string) $request['request_template_item'] . "\n" . (string) $request['request_template_main'],
+					array($reference)
+				)) {
+					$out[] = 'шаблоны запросов';
+				}
+
+				$contract = \App\Content\Requests\RequestResultContract::decode((string) $request['request_result_contract']);
+				if (in_array((int) $field['Id'], array_map('intval', $contract['fields']), true)) {
+					$out[] = 'контракты результатов запросов';
+				}
+			}
+
+			return array_values(array_unique($out));
+		}
+
+		protected static function localFieldDependencies(array $field)
+		{
+			$rubricId = (int) $field['rubric_id'];
+			$fieldId = (int) $field['Id'];
+			$alias = strtolower(trim((string) $field['rubric_field_alias']));
+			$out = array();
+			foreach (self::fieldsForRubric($rubricId) as $candidate) {
+				if ((int) $candidate['Id'] !== $fieldId
+					&& self::conditionUsesField(FieldConditionEvaluator::condition($candidate), $fieldId, $alias)) {
+					$out[] = 'условия видимости полей';
+				}
+
+				if (self::conditionUsesField(FieldConditionEvaluator::groupCondition($candidate), $fieldId, $alias)) {
+					$out[] = 'условия видимости групп';
+				}
+			}
+
+			$reference = self::fieldReference($field);
+			$rubric = DB::query(
+				'SELECT rubric_template,rubric_teaser_template,rubric_header_template,rubric_og_template,rubric_footer_template'
+					. ' FROM ' . self::rubricsTable() . ' WHERE Id=%i LIMIT 1',
+				$rubricId
+			)->getAssoc();
+			if ($rubric && RubricSchemaImpact::templateReferences(implode("\n", $rubric), array($reference))) {
+				$out[] = 'шаблоны рубрики';
+			}
+
+			if (self::tableExists(self::templatesTable())) {
+				foreach (DB::query(
+					'SELECT template FROM ' . self::templatesTable() . ' WHERE rubric_id=%i',
+					$rubricId
+				)->getAll() ?: array() as $template) {
+					if (RubricSchemaImpact::templateReferences((string) $template['template'], array($reference))) {
+						$out[] = 'дополнительные шаблоны рубрики';
+						break;
+					}
+				}
+			}
+
+			return array_values(array_unique($out));
+		}
+
+		protected static function conditionUsesField(array $condition, $fieldId, $alias)
+		{
+			$walk = function (array $node) use (&$walk, $fieldId, $alias) {
+				if (isset($node['items']) && is_array($node['items'])) {
+					foreach ($node['items'] as $item) {
+						if (is_array($item) && $walk($item)) { return true; }
+					}
+
+					return false;
+				}
+
+				$reference = strtolower(trim(isset($node['field']) ? (string) $node['field'] : ''));
+				return $reference === 'id:' . (int) $fieldId
+					|| $reference === (string) (int) $fieldId
+					|| ($alias !== '' && ($reference === 'alias:' . $alias || $reference === $alias));
+			};
+
+			return !empty($condition['tree']) && $walk($condition['tree']);
+		}
+
+		protected static function fieldReference(array $field)
+		{
+			return array(
+				'id' => (int) $field['Id'],
+				'title' => isset($field['rubric_field_title']) ? (string) $field['rubric_field_title'] : '',
+				'alias' => isset($field['rubric_field_alias']) ? (string) $field['rubric_field_alias'] : '',
+			);
 		}
 
 		protected static function rubricDependencies($rubricId)
@@ -1255,6 +1358,10 @@
 			$row['templates_count'] = isset($row['templates_count']) ? (int) $row['templates_count'] : 0;
 			$row['site_template_title'] = isset($row['site_template_title']) ? trim((string) $row['site_template_title']) : '';
 			$row['form_conditions_enabled'] = !empty($row['rubric_form_conditions']);
+			$row['rubric_purpose'] = isset($row['rubric_purpose']) && (string) $row['rubric_purpose'] === 'directory'
+				? 'directory'
+				: 'content';
+			$row['purpose_label'] = $row['rubric_purpose'] === 'directory' ? 'справочник' : 'контент';
 			$row['can_delete'] = $row['Id'] > 1 && $row['docs_count'] === 0;
 			$row['status_label'] = (string) $row['rubric_docs_active'] === '1' ? 'активна' : 'выкл';
 			return $row;
@@ -1432,6 +1539,16 @@
 			static $has = null;
 			if ($has === null) {
 				$has = (bool) DB::query('SHOW COLUMNS FROM ' . self::rubricsTable() . ' LIKE %s', 'rubric_form_conditions')->getValue();
+			}
+
+			return $has;
+		}
+
+		public static function hasRubricPurposeColumn()
+		{
+			static $has = null;
+			if ($has === null) {
+				$has = (bool) DB::query('SHOW COLUMNS FROM ' . self::rubricsTable() . ' LIKE %s', 'rubric_purpose')->getValue();
 			}
 
 			return $has;

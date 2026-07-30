@@ -79,7 +79,7 @@
 .system-public-auth-phone-message.is-error { color: #b42318; }
 .system-public-auth-phone-links { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 18px; margin-top: 4px; }
 .system-public-auth-phone-back, .system-public-auth-phone-resend { min-height: 40px; padding: 6px 0; border: 0; background: transparent; color: #5c3f87; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
-.system-public-auth-phone-resend { font-variant-numeric: tabular-nums; }
+.system-public-auth-phone-resend {  }
 .system-public-auth-phone-back:hover, .system-public-auth-phone-back:focus, .system-public-auth-phone-resend:hover, .system-public-auth-phone-resend:focus { text-decoration: none; }
 .system-public-auth-phone-resend:disabled { color: #87909c; cursor: default; }
 .system-public-auth-phone .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; white-space: nowrap; }

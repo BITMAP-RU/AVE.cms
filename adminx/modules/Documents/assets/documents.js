@@ -22,7 +22,7 @@
     currentRemarkDocumentId: 0,
 	draftTimer: null,
 	draftCandidate: null,
-	editorMode: 'normal',
+	workspacePanel: 'main',
 		errorTargets: [],
 		conditionsInitialized: false,
 
@@ -67,8 +67,10 @@
         var fieldTab = e.target.closest('[data-document-field-tab]');
         if (fieldTab) { self.activateFieldGroup(fieldTab.getAttribute('data-document-field-tab')); }
 
-		var editorMode = e.target.closest('[data-document-editor-mode]');
-		if (editorMode) { self.setEditorMode(editorMode.getAttribute('data-document-editor-mode'), true); }
+		var workspaceTab = e.target.closest('[data-document-workspace-tab]');
+		if (workspaceTab && workspaceTab.getAttribute('aria-disabled') !== 'true') { self.setWorkspacePanel(workspaceTab.getAttribute('data-document-workspace-tab'), true); }
+		var workspaceOpen = e.target.closest('[data-document-workspace-open]');
+		if (workspaceOpen) { self.setWorkspacePanel(workspaceOpen.getAttribute('data-document-workspace-open'), true); }
 		if (e.target.closest('[data-document-draft-restore]')) { self.restoreLocalDraft(); }
 		if (e.target.closest('[data-document-draft-discard]')) { self.discardLocalDraft(); }
 		var errorJump = e.target.closest('[data-document-error-jump]');
@@ -201,7 +203,7 @@
         this.updateAliasTemplateHint();
         this.initTermInputs();
         this.applyFieldConditions();
-		this.initEditorMode();
+		this.initWorkspace();
         this.setDirty(false);
 		window.setTimeout(function () { self.checkLocalDraft(); }, 180);
         window.addEventListener('beforeunload', function (e) {
@@ -210,6 +212,28 @@
           e.returnValue = '';
         });
       }
+
+		document.addEventListener('change', function (e) {
+		  if (e.target.matches('[data-document-workspace-select]')) {
+			self.setWorkspacePanel(e.target.value, true);
+		  }
+		});
+
+		document.addEventListener('keydown', function (e) {
+		  var current = e.target.closest('[data-document-workspace-tab]');
+		  if (!current || ['ArrowLeft', 'ArrowRight', 'Home', 'End'].indexOf(e.key) === -1) { return; }
+		  var tabs = Array.prototype.slice.call(document.querySelectorAll('[data-document-workspace-tab]')).filter(function (tab) {
+			return tab.getAttribute('aria-disabled') !== 'true';
+		  });
+		  if (!tabs.length) { return; }
+		  e.preventDefault();
+		  var index = tabs.indexOf(current);
+		  if (e.key === 'Home') { index = 0; }
+		  else if (e.key === 'End') { index = tabs.length - 1; }
+		  else if (e.key === 'ArrowLeft') { index = (index - 1 + tabs.length) % tabs.length; }
+		  else { index = (index + 1) % tabs.length; }
+		  self.setWorkspacePanel(tabs[index].getAttribute('data-document-workspace-tab'), true);
+		});
 
 		document.addEventListener('submit', function (e) {
 		  var presetForm = e.target.closest('[data-document-preset-form]');
@@ -376,7 +400,7 @@
       document.addEventListener('keydown', function (e) {
         if ((e.ctrlKey || e.metaKey) && String(e.key || '').toLowerCase() === 's' && self.form) {
           e.preventDefault();
-          self.submit(true);
+		  self.saveActiveWorkspace();
         }
       });
 
@@ -736,6 +760,8 @@
 
     applyFilters: function (form, push) {
       if (!form) { return; }
+      clearTimeout(this.filterTimer);
+      this.filterTimer = null;
       this.applyFilterUrl(this.filterUrl(form), push);
     },
 
@@ -1399,33 +1425,76 @@
       this.setSaveState(this.submitting ? 'saving' : (this.dirty ? 'dirty' : 'saved'));
     },
 
-	initEditorMode: function () {
-	  if (!this.form) { return; }
-	  var mode = this.form.getAttribute('data-quick-edit') === '1' ? 'quick' : 'normal';
-	  try { mode = window.localStorage.getItem(this.editorModeKey()) || mode; } catch (e) {}
-	  this.setEditorMode(mode, false);
+	initWorkspace: function () {
+	  if (!this.form || !document.querySelector('[data-document-workspace]')) { return; }
+	  var panel = 'main';
+	  try { panel = window.localStorage.getItem(this.workspaceKey()) || panel; } catch (e) {}
+	  this.setWorkspacePanel(panel, false);
 	},
 
-	editorModeKey: function () {
+	workspaceKey: function () {
 	  var actor = this.form ? this.form.getAttribute('data-actor-id') || '0' : '0';
 	  var rubric = this.form ? this.form.getAttribute('data-rubric-id') || '0' : '0';
-	  return 'ave.adminx.document-editor-mode:' + actor + ':' + rubric;
+	  var workspace = document.querySelector('[data-document-workspace]');
+	  var kind = workspace && workspace.getAttribute('data-catalog-mode') === '1' ? 'product' : 'document';
+	  return 'ave.adminx.document-workspace:' + actor + ':' + rubric + ':' + kind;
 	},
 
-	setEditorMode: function (mode, persist) {
-	  if (!this.form) { return; }
-	  if (['quick', 'normal', 'advanced'].indexOf(mode) === -1) { mode = 'normal'; }
-	  this.editorMode = mode;
-	  this.form.setAttribute('data-editor-mode', mode);
-	  document.querySelectorAll('[data-document-editor-mode]').forEach(function (button) {
-		var active = button.getAttribute('data-document-editor-mode') === mode;
-		button.classList.toggle('is-active', active);
-		button.setAttribute('aria-pressed', active ? 'true' : 'false');
-	  });
-	  if (persist) {
-		try { window.localStorage.setItem(this.editorModeKey(), mode); } catch (e) {}
+	setWorkspacePanel: function (panel, persist) {
+	  var workspace = document.querySelector('[data-document-workspace]');
+	  if (!workspace) { return; }
+	  var button = workspace.querySelector('[data-document-workspace-tab="' + panel + '"]');
+	  if (!button || button.getAttribute('aria-disabled') === 'true') {
+		panel = 'main';
+		button = workspace.querySelector('[data-document-workspace-tab="main"]');
 	  }
-	  window.setTimeout(function () { if (Adminx.CodeEditor) { Adminx.CodeEditor.refreshAll(); } }, 40);
+	  this.workspacePanel = panel;
+	  workspace.setAttribute('data-active-panel', panel);
+	  workspace.querySelectorAll('[data-document-workspace-tab]').forEach(function (tab) {
+		var active = tab.getAttribute('data-document-workspace-tab') === panel;
+		tab.classList.toggle('is-active', active);
+		tab.setAttribute('aria-selected', active ? 'true' : 'false');
+		tab.setAttribute('tabindex', active ? '0' : '-1');
+	  });
+	  var select = workspace.querySelector('[data-document-workspace-select]');
+	  if (select) { select.value = panel; }
+	  if (persist) {
+		try { window.localStorage.setItem(this.workspaceKey(), panel); } catch (e) {}
+	  }
+	  window.setTimeout(function () {
+		if (Adminx.CodeEditor) { Adminx.CodeEditor.refreshAll(); }
+		if (persist && button && typeof button.focus === 'function' && document.activeElement !== select) {
+		  button.focus({ preventScroll: true });
+		}
+	  }, 40);
+	},
+
+	workspaceForTarget: function (target) {
+	  if (!target) { return 'main'; }
+	  var productPanel = target.closest('[data-document-workspace-panel]');
+	  if (productPanel) { return productPanel.getAttribute('data-document-workspace-panel') || 'main'; }
+	  var section = target.closest('[data-document-section]');
+	  return section ? section.getAttribute('data-document-section') || 'main' : 'main';
+	},
+
+	setWorkspaceForTarget: function (target) {
+	  this.setWorkspacePanel(this.workspaceForTarget(target), true);
+	},
+
+	saveActiveWorkspace: function () {
+	  var workspace = document.querySelector('[data-document-workspace]');
+	  var panel = workspace ? workspace.getAttribute('data-active-panel') || 'main' : 'main';
+	  if (panel === 'attributes' || panel === 'shipping' || panel === 'promotions') {
+		var form = workspace.querySelector('[data-document-workspace-panel="' + panel + '"] form');
+		if (form && typeof form.requestSubmit === 'function') { form.requestSubmit(); }
+		else if (form) { form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); }
+		return;
+	  }
+	  if (panel === 'variants') {
+		if (Adminx.Toast) { Adminx.Toast.show('В этом разделе нет несохранённых полей', 'info'); }
+		return;
+	  }
+	  this.submit(true);
 	},
 
 	draftKey: function () {
@@ -1556,6 +1625,11 @@
     promoteCreatedDocument: function (id, stayUrl) {
       id = parseInt(id, 10) || 0;
       if (!id) { return; }
+	  var workspace = document.querySelector('[data-document-workspace]');
+	  if (workspace && workspace.getAttribute('data-catalog-mode') === '1') {
+		window.location.href = stayUrl;
+		return;
+	  }
       window.history.replaceState({ adminxDocumentEdit: true }, '', stayUrl);
 	  document.querySelectorAll('[data-document-remarks], [data-document-aliases], [data-document-revisions], [data-document-snapshot], [data-open-drawer="documentPresetDrawer"]').forEach(function (button) {
 		button.disabled = false;
@@ -2079,6 +2153,7 @@
       if (jumpPanel !== null) { self.activateFieldGroup(jumpPanel); }
       var firstInvalid = self.form.querySelector('.is-invalid');
       if (firstInvalid) {
+		self.setWorkspaceForTarget(firstInvalid);
         window.setTimeout(function () {
           firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
           var input = firstInvalid.matches('input,select,textarea') ? firstInvalid : firstInvalid.querySelector('input,select,textarea,[contenteditable="true"]');
@@ -2118,12 +2193,7 @@
 	jumpToError: function (index) {
 	  var target = this.errorTargets[parseInt(index, 10) || 0];
 	  if (!target) { return; }
-	  var level = target.closest('[data-editor-level]');
-	  if (level) {
-		var required = level.getAttribute('data-editor-level');
-		if (required === 'advanced') { this.setEditorMode('advanced', true); }
-		else if (required === 'normal' && this.editorMode === 'quick') { this.setEditorMode('normal', true); }
-	  }
+	  this.setWorkspaceForTarget(target);
 	  var panel = target.closest('[data-document-field-panel]');
 	  if (panel) { this.activateFieldGroup(panel.getAttribute('data-document-field-panel')); }
 	  window.setTimeout(function () {

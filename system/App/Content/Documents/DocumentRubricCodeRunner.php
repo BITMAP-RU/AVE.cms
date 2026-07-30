@@ -19,7 +19,7 @@
 	use App\Content\ContentTables;
 	use DB;
 
-	/** Executes editable rubric before/after code for non-Adminx writers. */
+	/** Executes editable rubric before/after code for writers outside the control panel. */
 	class DocumentRubricCodeRunner
 	{
 		protected $documentId;

@@ -3,7 +3,8 @@
 ← [To the “Modules” section](README.md)
 
 An installed and enabled module can declaratively add a menu item,
-action in the header, dashboard widget and lines in the general notification bell.
+header action, dashboard widget, notification-bell entries and results to the
+control panel global search.
 All contributions belong to `admin_extension` to `module.php`:
 
 ```php
@@ -18,6 +19,12 @@ All contributions belong to `admin_extension` to `module.php`:
     'header' => array(/* действие в шапке */),
     'dashboard' => array(/* виджет главной */),
     'notifications' => array(/* строки колокольчика */),
+    'search' => array(
+        'provider' => array(GlobalSearchProvider::class, 'search'),
+        'permission' => 'view_example',
+        'priority' => 60,
+        'limit' => 8,
+    ),
 ),
 ```
 
@@ -29,6 +36,34 @@ All contributions belong to `admin_extension` to `module.php`:
 | Hat | [Button, dropdown and modal action](header-actions.md) |
 | Bell | [Notification Provider](notifications.md) |
 | Left menu | [Descriptor `module.php`](files.md) |
+| Global search | Section below |
+
+## Global search results
+
+The `search($query, $limit)` provider connects module entities to the `Ctrl+K`
+palette. It returns a list:
+
+```php
+return array(array(
+    'type' => 'example',
+    'group' => 'Examples',
+    'title' => 'Record #15',
+    'subtitle' => 'Additional information',
+    'url' => '/example/15/edit',
+    'icon' => 'ti ti-box',
+    'score' => 100,
+));
+```
+
+`title` and a local `url` are required. Start the URL with `/` and omit the
+physical control-panel directory; AVE.cms adds it automatically. `group`
+collects related rows, `subtitle` distinguishes similar records, `icon` accepts
+a Tabler Icons class, and `score` raises exact matches inside one provider.
+
+Search runs while a user types, so query an index or execute one bounded SQL
+query with a strict `LIMIT`. Permission is checked before the provider runs. A
+disabled or removed module contributes nothing. Failure of one module does not
+break the rest of the palette.
 
 ## General description of the contribution
 

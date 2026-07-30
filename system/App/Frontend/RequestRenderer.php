@@ -24,6 +24,7 @@
 	use App\Common\Session;
 	use App\Common\StoredPhpRuntime;
 	use App\Content\ContentTables;
+	use App\Content\Presentation\DocumentPresentationBridge;
 	use App\Frontend\Debug\PublicLayoutInspector;
 	use DB;
 
@@ -633,32 +634,59 @@
 				$items_count = count($rows);
 			}
 
-			$rows = (new RequestListReadModel())->prepare(
+			$presentation = DocumentPresentationBridge::renderList(
+				'content_list',
 				$rows,
-				(string) $request->request_template_item,
-				$itemContext
+				array(
+					'request' => (string) (int) $request->Id,
+					'rubric' => (string) (int) $request->rubric_id,
+					'module' => 'requests',
+				),
+				array(
+					'source' => 'request',
+					'request_id' => (int) $request->Id,
+					'total' => (int) $num_items,
+					'page' => PaginationRenderer::currentPage('page'),
+					'pages' => (int) $num_pages,
+					'pagination_html' => (string) $pagination,
+				)
 			);
 
-		//if (UID == 1) Debug::_echo($rows, true);
-			foreach ($rows AS $row)
+			if ($presentation !== null)
 			{
-				$x++;
-				$last_item = ($x == $items_count ? true : false);
-				$item_num = $x;
-				Debug::startTime('ELEMENT_' . $item_num);
+				$items = $presentation;
+				$x = $items_count;
+				$main_template = '[tag:content]';
+			}
+			else
+			{
+				$rows = (new RequestListReadModel())->prepare(
+					$rows,
+					(string) $request->request_template_item,
+					$itemContext
+				);
 
-				$rowId = is_object($row)
-					? (isset($row->Id) ? (int) $row->Id : 0)
-					: (isset($row['Id']) ? (int) $row['Id'] : 0);
-				$renderSource = is_object($row) && isset($row->rubric_id, $row->document_title)
-					? $row
-					: $rowId;
-				$item = $itemRenderer->render($renderSource, $request->request_template_item, '', $itemContext->forItem($item_num));
+				//if (UID == 1) Debug::_echo($rows, true);
+				foreach ($rows AS $row)
+				{
+					$x++;
+					$last_item = ($x == $items_count ? true : false);
+					$item_num = $x;
+					Debug::startTime('ELEMENT_' . $item_num);
 
-				PublicProfiler::record(array('REQUESTS', $id, 'ELEMENTS', $item_num), Debug::endTime('ELEMENT_' . $item_num));
+					$rowId = is_object($row)
+						? (isset($row->Id) ? (int) $row->Id : 0)
+						: (isset($row['Id']) ? (int) $row['Id'] : 0);
+					$renderSource = is_object($row) && isset($row->rubric_id, $row->document_title)
+						? $row
+						: $rowId;
+					$item = $itemRenderer->render($renderSource, $request->request_template_item, '', $itemContext->forItem($item_num));
 
-				$item = RequestItemRenderer::decorateSequence($item, $rowId, $item_num, $last_item);
-				$items .= $item;
+					PublicProfiler::record(array('REQUESTS', $id, 'ELEMENTS', $item_num), Debug::endTime('ELEMENT_' . $item_num));
+
+					$item = RequestItemRenderer::decorateSequence($item, $rowId, $item_num, $last_item);
+					$items .= $item;
+				}
 			}
 
 			PublicProfiler::record(array('REQUESTS', $id, 'ELEMENTS', 'ALL'), Debug::endTime('ELEMENTS_ALL'));

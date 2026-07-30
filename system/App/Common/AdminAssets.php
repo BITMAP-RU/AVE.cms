@@ -44,7 +44,7 @@
 
 		protected static function add(array &$bucket, $url, $priority)
 		{
-			$url = trim((string) $url);
+			$url = self::normalizeUrl($url);
 			if ($url === '') {
 				return;
 			}
@@ -53,6 +53,46 @@
 				'url' => $url,
 				'priority' => (int) $priority,
 			);
+		}
+
+		/**
+		 * Package manifests can be compiled with a CLI-relative ABS_PATH or with
+		 * the control panel mount path. Resolve their public assets at request time.
+		 */
+		protected static function normalizeUrl($url)
+		{
+			$url = trim((string) $url);
+			if ($url === '' || preg_match('#^(?:https?:)?//#i', $url)) {
+				return $url;
+			}
+
+			$path = (string) parse_url($url, PHP_URL_PATH);
+			$modulePosition = strpos('/' . ltrim($path, './'), '/modules/');
+			$modulePath = $modulePosition !== false
+				? substr('/' . ltrim($path, './'), $modulePosition)
+				: '';
+			if ($modulePath === ''
+				|| !preg_match('#^/modules/[a-z][a-z0-9_-]*/admin/assets/#', $modulePath)) {
+				return $url;
+			}
+
+			$base = '';
+			if (defined('ADMINX_BASE')) {
+				$base = str_replace('\\', '/', dirname(ADMINX_BASE));
+			} elseif (defined('ABS_PATH')) {
+				$base = rtrim(str_replace('\\', '/', ABS_PATH), '/');
+			}
+
+			if ($base === '.' || $base === '/') {
+				$base = '';
+			}
+
+			$query = parse_url($url, PHP_URL_QUERY);
+			$fragment = parse_url($url, PHP_URL_FRAGMENT);
+
+			return $base . $modulePath
+				. ($query !== null && $query !== false ? '?' . $query : '')
+				. ($fragment !== null && $fragment !== false ? '#' . $fragment : '');
 		}
 
 		protected static function sorted(array $items)

@@ -65,7 +65,7 @@ A theme can declare its own editable settings in `theme.json`. For
 Each theme they automatically appear in the **Themes -> Settings** tab.
 
 This way you can edit contacts, signatures and collection limits without changing the files.
-The composition of the fields belongs to the theme: after switching the theme, Adminx will show the settings
+The field set belongs to the theme: after switching the theme, the control panel will show the settings
 new design, and the meanings of the previous theme will be saved under its own
 keys.
 

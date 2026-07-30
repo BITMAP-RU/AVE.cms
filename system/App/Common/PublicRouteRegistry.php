@@ -143,6 +143,8 @@
 		protected static function coreDefinitions()
 		{
 			$items = array();
+			$adminPath = '/' . trim(AdminLocation::directory(), '/');
+			self::append($items, 'Панель управления', 'control-panel', array($adminPath), array($adminPath . '/'));
 			self::append($items, 'API документов', 'document-api', array('/api/v1/documents/by-alias', '/api/v1/documents/{id}', '/api/v1/documents'), array('/api/'));
 			self::append($items, 'Системные файлы', 'system', array('/inc/captcha.php', '/inc/thumb.php'), array('/inc/'));
 			self::append($items, 'Карта сайта', 'sitemap', array('/sitemap.xml', '/sitemap-{part}.xml'));

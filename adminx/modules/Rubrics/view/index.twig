@@ -30,11 +30,11 @@
       <h1>Рубрики и поля</h1>
       <p class="text-secondary" style="margin-top:5px">Типы материалов, их поля и оформление.</p>
     </div>
-    {% if can_manage %}
     <div class="cluster">
+      {% if can_manage %}
       <button class="btn btn-primary" type="button" data-rubric-new data-open-drawer="rubricDrawer"><i class="ti ti-plus"></i>Создать рубрику</button>
+      {% endif %}
     </div>
-    {% endif %}
   </div>
 </div>
 
@@ -57,12 +57,11 @@
   </div>
 </div>
 
-<div class="tabs rubrics-main-tabs" role="tablist" aria-label="Разделы рубрик">
-  <button class="tab" type="button" role="tab" aria-selected="true" data-rubrics-main-tab="rubrics"><i class="ti ti-forms"></i>Рубрики</button>
-  <button class="tab" type="button" role="tab" aria-selected="false" data-rubrics-main-tab="types"><i class="ti ti-plug-connected"></i>Типы полей<span class="tab-count">{{ field_type_summary.types }}</span></button>
-</div>
+{% set content_model_section = active_tab %}
+{% set content_model_interactive = true %}
+{% include '@rubrics/_content_tabs.twig' %}
 
-<section class="rubrics-panel" data-rubrics-main-panel="rubrics">
+<section class="rubrics-panel" data-rubrics-main-panel="rubrics"{{ active_tab == 'rubrics' ? '' : ' hidden' }}>
   <div class="section-header rubrics-panel-header">
     <div class="section-icon"><i class="ti ti-forms"></i></div>
     <div>
@@ -159,6 +158,7 @@
                 {% if rubric.rubric_docs_active == 1 %}<span class="badge badge-green">активна</span>{% else %}<span class="badge badge-gray">выкл</span>{% endif %}
                 {% if rubric.rubric_meta_gen == '1' %}<span class="badge badge-cyan">meta</span>{% endif %}
                 {% if rubric.rubric_alias_history == '1' %}<span class="badge badge-violet">history</span>{% endif %}
+                {% if rubric.rubric_purpose == 'directory' %}<span class="badge badge-cyan">справочник</span>{% endif %}
                 {% if rubric.Id == 1 %}<span class="badge badge-amber">system</span>{% endif %}
               </div>
             </td>
@@ -212,23 +212,13 @@
   </div>
 </section>
 
-<section class="rubrics-panel rubrics-types-panel" data-rubrics-main-panel="types" hidden>
+<section class="rubrics-panel rubrics-types-panel" data-rubrics-main-panel="types"{{ active_tab == 'types' ? '' : ' hidden' }}>
   <div class="section-header rubrics-panel-header">
     <div class="section-icon"><i class="ti ti-plug-connected"></i></div>
     <div>
-      <div class="section-eyebrow">Field registry</div>
+      <div class="section-eyebrow">Поля рубрик</div>
       <h2>Типы полей</h2>
       <p class="section-desc">Настройте рабочий набор для новых рубрик. Отключение не влияет на уже созданные поля.</p>
-    </div>
-  </div>
-
-  <div class="alert {{ field_installation_audit.safe_to_remove ? 'alert-success' : 'alert-warning' }}">
-    <i class="ti {{ field_installation_audit.safe_to_remove ? 'ti-circle-check' : 'ti-alert-triangle' }} alert-ic"></i>
-    <div>
-      <b class="alert-title">{{ field_installation_audit.safe_to_remove ? 'Нативный реестр покрывает рабочую базу' : 'Legacy fields пока нельзя удалять' }}</b>
-      <span>В БД используется {{ field_installation_audit.database_usage|length }} типов; зарегистрировано {{ field_installation_audit.registered_types|length }}. {% if field_installation_audit.legacy_exists %}Корневая папка содержит {{ field_installation_audit.legacy_file_count }} архивных файлов и не входит в чистую установку.{% else %}Корневая legacy-папка удалена; public и Adminx используют только нативные обработчики.{% endif %}</span>
-      {% if field_installation_audit.missing_handlers %}<span>Нет обработчиков: <code>{{ field_installation_audit.missing_handlers|join(', ') }}</code>.</span>{% endif %}
-      {% if field_installation_audit.runtime_references %}<span>Прямые подключения: <code>{{ field_installation_audit.runtime_references|join(', ') }}</code>.</span>{% endif %}
     </div>
   </div>
 
@@ -256,8 +246,8 @@
       <div class="rubrics-section-title">
         <span class="icon-tile rubrics-head-icon" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-list-check"></i></span>
         <div>
-          <h2>Плагины полей</h2>
-          <p class="text-secondary">Описание, использование и доступность каждого типа при создании поля.</p>
+          <h2>Доступные типы полей</h2>
+          <p class="text-secondary">Выберите, какие поля будут доступны при настройке рубрик.</p>
         </div>
       </div>
       <span class="badge badge-blue"><span data-field-types-enabled>{{ field_type_summary.enabled }}</span> / {{ field_types|length }}</span>
@@ -340,7 +330,7 @@
   <div class="drawer-header">
     <div>
       <h3 id="rubricDrawerTitle">Новая рубрика</h3>
-      <p class="text-secondary text-sm">Базовые параметры рубрики.</p>
+      <p class="text-secondary text-sm" data-rubric-drawer-subtitle>Базовые параметры рубрики.</p>
     </div>
     <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
   </div>
@@ -368,6 +358,14 @@
               </div>
             </div>
             <label class="field col-12"><span class="field-label">Описание</span><textarea class="textarea" name="rubric_description" rows="5"></textarea></label>
+            <label class="field col-6">
+              <span class="field-label">Назначение</span>
+              <select class="select" name="rubric_purpose">
+                <option value="content">Контент</option>
+                <option value="directory">Справочник на документах (старый формат)</option>
+              </select>
+              <span class="field-hint">Для обычных списков используйте вкладку «Справочники». Старый формат оставлен только для совместимости.</span>
+            </label>
             <label class="field col-12" data-rubric-preset-wrap>
               <span class="field-label">Стартовый набор полей</span>
               <select class="select" name="rubric_preset" data-rubric-preset>
@@ -453,7 +451,7 @@
     </div>
     <div class="drawer-footer">
       <button class="btn btn-ghost" type="button" data-close-drawer><i class="ti ti-x"></i>Закрыть</button>
-      <button class="btn btn-primary" type="submit"><i class="ti ti-device-floppy"></i>Сохранить</button>
+      <button class="btn btn-primary" type="submit"><i class="ti ti-device-floppy"></i><span data-rubric-submit-label>Сохранить</span></button>
     </div>
   </form>
 </aside>
@@ -805,7 +803,7 @@
   <div class="drawer-header">
     <div>
       <h3 id="rubricFieldTitle">Новое поле</h3>
-      <p class="text-secondary text-sm">Тип поля хранится в формате рубрик, админский редактор строит adminx.</p>
+      <p class="text-secondary text-sm">Тип хранится в схеме рубрики; панель управления подбирает для него подходящий редактор.</p>
     </div>
     <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
   </div>

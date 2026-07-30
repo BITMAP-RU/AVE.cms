@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="documents_catalog_empty">Разделы не выбраны.</phrase>
+	<phrase data="documents_catalog_add">Добавить раздел</phrase>
+	<phrase data="documents_catalog_search">Найти раздел</phrase>
+	<phrase data="documents_catalog_remove">Убрать раздел</phrase>
+	<phrase data="documents_catalog_document_prefix">документ #</phrase>
+	<phrase data="documents_catalog_hidden">скрыт</phrase>
+</language>

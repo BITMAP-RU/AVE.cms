@@ -44,6 +44,7 @@ Supported types of controls:
 | `list` | An array of strings, one per line. |
 | `map` | List of stable pairs `key → signature`. |
 | `rubric` | Array of category IDs. |
+| `directory` | Select a shared value directory. |
 
 There is no need to read settings manually from JSON:
 

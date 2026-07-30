@@ -119,6 +119,8 @@
 	AdminAssets::addScript(ADMINX_BASE . '/assets/js/adminx.js', 1);
 	AdminAssets::addScript(ADMINX_BASE . '/assets/js/media-picker.js', 2);
 	AdminAssets::addScript(ADMINX_BASE . '/assets/js/saved-views.js', 3);
+	AdminAssets::addScript(ADMINX_BASE . '/assets/js/command-palette.js', 4);
+	AdminAssets::addScript(ADMINX_BASE . '/assets/js/bulk-actions.js', 5);
 
 	//-- Cache-busting ассетов: ?v=<filemtime>. На время разработки браузер не держит
 	//-- устаревший CSS/JS — при правке файла (или пересборке CSS) меняется mtime и URL.
@@ -147,9 +149,13 @@
 	}
 
 	$requestPath = '/' . ltrim($requestPath, '/');
+	$requestQuery = parse_url(isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '', PHP_URL_QUERY);
+	$requestUri = $requestPath . (is_string($requestQuery) && $requestQuery !== '' ? '?' . $requestQuery : '');
 
 	Twig::addGlobal('current_path', $requestPath);
+	Twig::addGlobal('current_uri', $requestUri);
 	Twig::addGlobal('section_help', \App\Adminx\Support\SectionHelp::forPath($requestPath));
+	Twig::addGlobal('module_dependency_notices', \App\Adminx\Support\ModuleExtensions::dependencyNotices($requestPath));
 
 	//-- Доступ: публичные роуты (логин) открыты; всё прочее требует admin_panel.
 	//-- Современный Auth API (SystemTables users: email/password_hash/role);
@@ -189,6 +195,17 @@
 		}
 	}
 
+	$commandPaletteItems = array();
+	foreach ($navigationItems as $navItem) {
+		if (!isset($navItem['url']) || (string) $navItem['url'] === '#') { continue; }
+		$commandPaletteItems[] = array(
+			'title' => isset($navItem['label']) ? (string) $navItem['label'] : '',
+			'subtitle' => isset($navItem['group']) ? (string) $navItem['group'] : '',
+			'url' => ADMINX_BASE . (string) $navItem['url'],
+			'icon' => isset($navItem['icon']) ? (string) $navItem['icon'] : 'ti-arrow-right',
+		);
+	}
+
 	$canClearCache = Permission::check('manage_settings');
 	$cacheSizes = array();
 	if ($canClearCache) {
@@ -204,6 +221,7 @@
 
 	Twig::addGlobals([
 		'nav_items'  => $navItems,
+		'command_palette_items' => $commandPaletteItems,
 		'user_name'  => $authUser['name'] ?? '',
 		'user_email' => $authUser['email'] ?? '',
 		'user_role'  => $authUser['role'] ?? '',

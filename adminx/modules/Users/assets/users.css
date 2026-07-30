@@ -16,6 +16,9 @@
 .users-filter .select {
   width: 150px;
 }
+.users-bulk .select {
+  width: min(220px, 100%);
+}
 .users-drawer {
   width: min(66.666vw, 1120px);
   max-width: none;
@@ -138,6 +141,10 @@
   .users-filter .input-wrap {
     flex: 1;
     width: auto;
+  }
+  .users-bulk {
+    align-items: stretch;
+    flex-direction: column;
   }
   .users-drawer {
     width: 100%;

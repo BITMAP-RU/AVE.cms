@@ -19,7 +19,6 @@
 	<phrase data="auto_54e9da895b7cce36">HTML templates for displaying fields and requests.</phrase>
 	<phrase data="auto_6754497b3d9b60b3">ID is already available. Changed document properties are automatically written again without re-running hooks; field values ​​are saved after the handler.</phrase>
 	<phrase data="auto_31134f61f351a5a9">ID, title, alias or description</phrase>
-	<phrase data="auto_978de461f93f231f">Legacy fields cannot be deleted yet</phrase>
 	<phrase data="auto_b782057ce20ccef2">OG markup</phrase>
 	<phrase data="auto_8ea1e889fe3b118e">PHP and JavaScript are prohibited. Document and added field tags are available.</phrase>
 	<phrase data="auto_00bcaade5f17e1d2">{{ type.enabled ? 'Disable' : 'Enable' }} type {{ type.name }}</phrase>
@@ -35,13 +34,11 @@
 	<phrase data="auto_735d5b6d6c735a9f">field alias</phrase>
 	<phrase data="auto_ed175b28d11da55a">Announcement</phrase>
 	<phrase data="auto_2f258806b7ad2100">Announcements</phrase>
-	<phrase data="auto_ca45b3d4b2524c12">archive files and is not included in a clean installation.</phrase>
 	<phrase data="auto_36a115ca2e90d494">Basic markup</phrase>
 	<phrase data="auto_e8ade67af65fb8ca">Basic parameters of the category.</phrase>
 	<phrase data="auto_b11f29cdb631ad91">without alias</phrase>
 	<phrase data="auto_94921ebedb12dd57">Without a group</phrase>
 	<phrase data="auto_284355addd46a03f">Secure HTML Markup</phrase>
-	<phrase data="auto_a52c8b9c21c73d13">The database uses</phrase>
 	<phrase data="auto_13d02127fcff628c">in the current filter,</phrase>
 	<phrase data="auto_b0918da1c276f001">Template option for category documents.</phrase>
 	<phrase data="auto_2ee0510046cd11ff">Type of documents</phrase>
@@ -126,14 +123,13 @@
 	<phrase data="auto_5fadb71981cff17e">Context and system APIs</phrase>
 	<phrase data="auto_7ff5bc3f5e8101a1">Public Output Context</phrase>
 	<phrase data="auto_065edae6bacea0cf">Copy</phrase>
-	<phrase data="auto_8e90af342894dab7">The root legacy folder has been deleted; public and Adminx use only native handlers.</phrase>
-	<phrase data="auto_b7bf7b110b5aecf1">The root folder contains</phrase>
 	<phrase data="auto_5e30f01694b5d357">Materials</phrase>
 	<phrase data="auto_37efe2aa9ea48229">Meta tags for social networks and instant messengers on the pages of this section.</phrase>
 	<phrase data="auto_8358572fd682c744">Label</phrase>
 	<phrase data="auto_9cb0080487eebb5d">thumbnail: c-crop/r-resize/f-fit</phrase>
 	<phrase data="auto_512dca2759a79e5d">You can hide a group or prevent changes to all its fields.</phrase>
 	<phrase data="auto_59512661c8359d90">Field set</phrase>
+	<phrase data="auto_1f3b9642e8ccdd9c">Field sets</phrase>
 	<phrase data="auto_72cb3245f1f630fb">field name</phrase>
 	<phrase data="auto_d8003257d294b3b2">Site name</phrase>
 	<phrase data="auto_923497eb520a69e2">Title, URL alias and description of the category.</phrase>
@@ -146,12 +142,10 @@
 	<phrase data="auto_c9856e041cbc0e86">Settings depending on the selected field type.</phrase>
 	<phrase data="auto_208518c5823f0535">Set up a workspace for new rubrics. Disabling does not affect already created fields.</phrase>
 	<phrase data="auto_2e149b44fcc4eb4e">Set up the composition of the form, then immediately go to the materials of the selected category.</phrase>
-	<phrase data="auto_33f0d86f638140a7">The native registry covers the working base</phrase>
 	<phrase data="auto_92250813ceb742a9">Not selected</phrase>
 	<phrase data="auto_681d01462e5f184c">Do not change</phrase>
 	<phrase data="auto_8b3b73811a10a8ef">Don't index</phrase>
 	<phrase data="auto_8976fe0108ce3e2e">Not saved</phrase>
-	<phrase data="auto_278f69be66b25911">No handlers:</phrase>
 	<phrase data="auto_55c6879c603672d7">New group</phrase>
 	<phrase data="auto_789159f7e27adb92">New section</phrase>
 	<phrase data="auto_1d29cbf2f275c548">New meaning</phrase>
@@ -164,7 +158,7 @@
 	<phrase data="auto_7db6d80e63cfbc36">Required when showing</phrase>
 	<phrase data="auto_344ca01189f66d08">Mandatoryness is configured in the “Type Editor” → Validation.</phrase>
 	<phrase data="auto_849e4069148c24ae">Limit options</phrase>
-	<phrase data="auto_9f9afbfd53d56c42">Description, use, and availability of each type when creating a field.</phrase>
+	<phrase data="auto_0846f363dcaf14ac">Choose which fields are available when configuring rubrics.</phrase>
 	<phrase data="auto_6659789552679ba5">Main</phrase>
 	<phrase data="auto_24fd76d0e81f5b31">Main conclusion</phrase>
 	<phrase data="auto_eb63e84eea0d7d50">Basic template</phrase>
@@ -183,7 +177,7 @@
 	<phrase data="auto_1efb20307a13fe38">The first documents in the category, without saving settings.</phrase>
 	<phrase data="auto_e36a97696325f42f">Drag fields by the handle.</phrase>
 	<phrase data="auto_993f3350e395f3de">Drag the rows by the handle to change the order.</phrase>
-	<phrase data="auto_289fb7333d7ee50c">Field plugins</phrase>
+	<phrase data="auto_1320b6b3f91d3ddc">Available field types</phrase>
 	<phrase data="auto_c602f690739149cd">No types were found for the selected conditions.</phrase>
 	<phrase data="auto_a5dcf372a249c770">Signature</phrase>
 	<phrase data="auto_2a812c1383643855">Search tags</phrase>
@@ -198,6 +192,7 @@
 	<phrase data="auto_6ec8d1bd9f42005f">Half</phrase>
 	<phrase data="auto_e3d30019ea18523a">Fields in a compact grid</phrase>
 	<phrase data="auto_ae157a71ef815099">Category fields</phrase>
+	<phrase data="auto_4a59b40b766f4154">Rubric fields</phrase>
 	<phrase data="auto_2885cf71c3504eb2">Once added, the field disappears from this list.</phrase>
 	<phrase data="auto_463a2ab3a738a261">After saving the document</phrase>
 	<phrase data="auto_15ed6e53b6a5c8ba">Consequences of recovery</phrase>
@@ -210,7 +205,6 @@
 	<phrase data="auto_4008c5920a67da7e">Also checked on the server</phrase>
 	<phrase data="auto_0267dc0e672c1ddd">continue to work.</phrase>
 	<phrase data="auto_45da03e555267bd0">View the structure of categories.</phrase>
-	<phrase data="auto_83271b3977462982">Direct connections:</phrase>
 	<phrase data="auto_aa0daec4094f7259">Publishing and output</phrase>
 	<phrase data="auto_20d71efb793e60ef">Public teaser template for site lists and requests.</phrase>
 	<phrase data="auto_8ab91ce27aa298c7">Empty category</phrase>
@@ -225,6 +219,8 @@
 	<phrase data="auto_c205d1bc5da200e8">Rubrik</phrase>
 	<phrase data="auto_df748fb44738407e">The category will be created without additional fields.</phrase>
 	<phrase data="auto_9a325c17d34e5017">Categories</phrase>
+	<phrase data="auto_a23b3610d1692f30">Directories</phrase>
+	<phrase data="auto_1ac46e5c9423b358">Content structure</phrase>
 	<phrase data="auto_d2df1095539213a5">No categories found.</phrase>
 	<phrase data="auto_e7c3b4c1c8133062">Your own template</phrase>
 	<phrase data="auto_c8d3e9321109a45c">Properties of the selected field.</phrase>
@@ -258,8 +254,7 @@
 	<phrase data="auto_f2729fd738c7bd47">Table</phrase>
 	<phrase data="auto_00fa87f0c54b1087">Current document:</phrase>
 	<phrase data="auto_c22457c431288230">Field type</phrase>
-	<phrase data="auto_90c2a0d370e9452d">The field type is stored in the category format, the admin editor builds adminx.</phrase>
-	<phrase data="auto_efbde855efcb7d93">types; registered</phrase>
+	<phrase data="auto_90c2a0d370e9452d">The type is stored in the rubric schema; the control panel selects the appropriate editor.</phrase>
 	<phrase data="auto_7f3560429f01c34f">Types of materials, their fields and design.</phrase>
 	<phrase data="auto_10144e7fa309567f">Field types</phrase>
 	<phrase data="auto_043acf41e5172e0b">No field types found.</phrase>

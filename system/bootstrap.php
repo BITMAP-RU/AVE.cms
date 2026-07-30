@@ -52,7 +52,7 @@
 			//-- Load classes - Content (контент-ядро: подсистема полей и т.д.)
 			Load::regNamespace('App\Content', BASEPATH . DS . 'system' . DS . 'App' . DS . 'Content' . DS);
 
-			//-- Native public services are shared by Adminx where their contracts match.
+			//-- Native public services are shared by the control panel where their contracts match.
 			Load::regNamespace('App\Frontend', BASEPATH . DS . 'system' . DS . 'App' . DS . 'Frontend' . DS);
 
 			$config = App\Common\DatabaseConfiguration::all();

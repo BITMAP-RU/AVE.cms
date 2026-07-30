@@ -21,7 +21,7 @@
 	return [
 		'code'    => 'groups',
 		'name'    => 'Роли и права',
-		'version' => '0.1.0',
+		'version' => '0.1.1',
 
 		'permissions' => [
 			'key'      => 'groups',
@@ -88,6 +88,10 @@
 			[
 				'id' => '005_register_development_site_permission',
 				'file' => 'migrations/005_register_development_site_permission.sql',
+			],
+			[
+				'id' => '006_normalize_control_panel_permission',
+				'file' => 'migrations/006_normalize_control_panel_permission.sql',
 			],
 		],
 

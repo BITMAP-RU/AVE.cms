@@ -32,10 +32,12 @@
 	use App\Content\Documents\DocumentAliasTemplate;
 	use App\Content\Documents\DocumentMediaDraft;
 	use App\Content\Documents\DocumentMediaPath;
+	use App\Content\Documents\DocumentSearch;
 	use App\Common\Settings;
 	use App\Common\SystemTables;
 	use App\Common\Lifecycle;
 	use App\Common\DatabaseSchema;
+	use App\Adminx\Support\AdminLocale;
 	use App\Adminx\Rubrics\FieldAdminEditors;
 	use App\Adminx\Catalog\Model as CatalogModel;
 
@@ -63,26 +65,29 @@
 			$offset = ($page - 1) * $limit;
 			$where = ' WHERE 1=1';
 			$args = array();
+			$score = '0';
+			$scoreArgs = array();
 
 			$rubricId = isset($filters['rubric_id']) ? (int) $filters['rubric_id'] : 0;
 			$q = trim(isset($filters['q']) ? (string) $filters['q'] : '');
 			$field = self::normalizeSearchField(isset($filters['field']) ? (string) $filters['field'] : '', $rubricId);
 			if ($q !== '') {
 				if ($field !== '') {
+					$criteria = DocumentSearch::valueCriteria($q, array('df.field_value', 'dft.field_value'));
 					// Поиск по значению выбранного поля рубрики (напр. «Артикул»).
 					$where .= ' AND EXISTS (SELECT 1 FROM ' . self::docFieldsTable() . ' df'
 						. ' INNER JOIN ' . self::fieldsTable() . ' rf ON rf.Id = df.rubric_field_id'
 						. ' LEFT JOIN ' . self::docFieldsTextTable() . ' dft ON dft.document_id = df.document_id AND dft.rubric_field_id = df.rubric_field_id'
 						. ' WHERE df.document_id = d.Id AND rf.rubric_field_title = %s'
-						. ' AND (df.field_value LIKE %ss OR dft.field_value LIKE %ss))';
+						. ' AND ' . $criteria['where'] . ')';
 					$args[] = $field;
-					$args[] = $q;
-					$args[] = $q;
+					$args = array_merge($args, $criteria['where_args']);
 				} else {
-					$where .= ' AND (d.document_title LIKE %ss OR d.document_alias LIKE %ss OR d.Id = %i)';
-					$args[] = $q;
-					$args[] = $q;
-					$args[] = (int) $q;
+					$criteria = DocumentSearch::criteria($q, 'd');
+					$where .= ' AND ' . $criteria['where'];
+					$args = array_merge($args, $criteria['where_args']);
+					$score = $criteria['score'];
+					$scoreArgs = $criteria['score_args'];
 				}
 			}
 
@@ -105,12 +110,16 @@
 			$countArgs = array_merge(array('SELECT COUNT(*) FROM ' . self::documentsTable() . ' d' . $where), $args);
 			$total = (int) call_user_func_array(array('DB', 'query'), $countArgs)->getValue();
 
-			$sql = 'SELECT d.*, r.rubric_title, r.rubric_alias'
+			$sql = 'SELECT d.*, r.rubric_title, r.rubric_alias,(' . $score . ') AS search_relevance'
 				. ' FROM ' . self::documentsTable() . ' d'
 				. ' LEFT JOIN ' . self::rubricsTable() . ' r ON r.Id = d.rubric_id'
 				. $where
-				. ' ORDER BY d.document_changed DESC, d.Id DESC LIMIT ' . (int) $limit . ' OFFSET ' . (int) $offset;
-			$rows = call_user_func_array(array('DB', 'query'), array_merge(array($sql), $args))->getAll();
+				. ' ORDER BY search_relevance DESC,d.document_changed DESC,d.Id DESC'
+				. ' LIMIT ' . (int) $limit . ' OFFSET ' . (int) $offset;
+			$rows = call_user_func_array(
+				array('DB', 'query'),
+				array_merge(array($sql), $scoreArgs, $args)
+			)->getAll();
 
 			$items = array();
 			foreach ($rows as $row) {
@@ -321,7 +330,7 @@
 		 * Валидация значений полей документа по JSON-настройкам (rubric_field_settings.rules).
 		 * Возвращает ошибки в формате ['fields[<Id>]' => сообщение]. Пусто, если правил нет.
 		 */
-		public static function validateFieldValues($rubricId, array $values, $documentId = 0)
+		public static function validateFieldValues($rubricId, array $values, $documentId = 0, $fieldGroups = null)
 		{
 			$rubricId = (int) $rubricId;
 			if ($rubricId <= 0) {
@@ -330,7 +339,7 @@
 
 			$fields = array();
 			$effectiveValues = array();
-			foreach (self::fieldsForRubric($rubricId, (int) $documentId) as $group) {
+			foreach (self::resolveFieldGroups($rubricId, (int) $documentId, $fieldGroups) as $group) {
 				foreach ($group['items'] as $field) {
 					$fields[] = $field;
 					$effectiveValues[(int) $field['Id']] = isset($field['field_value']) ? $field['field_value'] : '';
@@ -344,8 +353,34 @@
 			return FieldValidator::validateValues($fields, $effectiveValues, self::rubricConditionsEnabled($rubricId));
 		}
 
+		public static function computedFieldValues($rubricId, array $values, array $document = array(), $documentId = 0, $fieldGroups = null)
+		{
+			$definitions = array();
+			$effectiveValues = array();
+			foreach (self::resolveFieldGroups((int) $rubricId, (int) $documentId, $fieldGroups) as $group) {
+				foreach ($group['items'] as $field) {
+					$fieldId = (int) $field['Id'];
+					$definitions[$fieldId] = $field;
+					$effectiveValues[$fieldId] = isset($field['field_value']) ? $field['field_value'] : '';
+				}
+			}
+
+			foreach ($values as $fieldId => $value) {
+				$effectiveValues[(int) $fieldId] = $value;
+			}
+
+			$computedValues = \App\Content\Fields\ComputedFieldEvaluator::apply($definitions, $effectiveValues, $document);
+			foreach ($definitions as $fieldId => $field) {
+				if ((string) $field['rubric_field_type'] === 'computed' && array_key_exists($fieldId, $computedValues)) {
+					$values[$fieldId] = $computedValues[$fieldId];
+				}
+			}
+
+			return $values;
+		}
+
 		/** Remove values of fields hidden or locked by rubric form conditions. */
-		public static function conditionalFieldValues($rubricId, array $values, $documentId = 0)
+		public static function conditionalFieldValues($rubricId, array $values, $documentId = 0, $fieldGroups = null)
 		{
 			if (!self::rubricConditionsEnabled((int) $rubricId)) {
 				return $values;
@@ -355,7 +390,7 @@
 			$fieldMap = array();
 			$storedValues = array();
 			$effectiveValues = array();
-			foreach (self::fieldsForRubric((int) $rubricId, (int) $documentId) as $group) {
+			foreach (self::resolveFieldGroups((int) $rubricId, (int) $documentId, $fieldGroups) as $group) {
 				foreach ($group['items'] as $field) {
 					$fields[] = $field;
 					$fieldId = (int) $field['Id'];
@@ -406,7 +441,7 @@
 			return array('raw' => $value);
 		}
 
-		public static function saveFields($documentId, array $values)
+		public static function saveFields($documentId, array $values, $fieldGroups = null)
 		{
 			$documentId = (int) $documentId;
 			$doc = self::one($documentId);
@@ -414,8 +449,9 @@
 				throw new \RuntimeException('Документ не найден');
 			}
 
-			$values = self::conditionalFieldValues((int) $doc['rubric_id'], $values, $documentId);
-			$fields = self::fieldsForRubric((int) $doc['rubric_id'], $documentId);
+			$fields = self::resolveFieldGroups((int) $doc['rubric_id'], $documentId, $fieldGroups);
+			$values = self::conditionalFieldValues((int) $doc['rubric_id'], $values, $documentId, $fields);
+			$values = self::computedFieldValues((int) $doc['rubric_id'], $values, $doc, $documentId, $fields);
 			$catalogAllowed = array();
 			$catalogFields = array();
 			foreach ($fields as $group) {
@@ -492,14 +528,16 @@
 				throw new \RuntimeException('Документ не найден');
 			}
 
-			$values = self::conditionalFieldValues((int) $doc['rubric_id'], $values, $documentId);
-			$errors = self::validateFieldValues((int) $doc['rubric_id'], $values, $documentId);
+			$fieldGroups = self::fieldsForRubric((int) $doc['rubric_id'], $documentId);
+			$values = self::conditionalFieldValues((int) $doc['rubric_id'], $values, $documentId, $fieldGroups);
+			$values = self::computedFieldValues((int) $doc['rubric_id'], $values, $doc, $documentId, $fieldGroups);
+			$errors = self::validateFieldValues((int) $doc['rubric_id'], $values, $documentId, $fieldGroups);
 			if ($errors) {
 				throw new \RuntimeException('Поля документа не прошли проверку: ' . implode('; ', array_values($errors)));
 			}
 
 			$fieldMap = array();
-			foreach (self::fieldsForRubric((int) $doc['rubric_id'], $documentId) as $group) {
+			foreach ($fieldGroups as $group) {
 				foreach ($group['items'] as $field) {
 					$fieldMap[(int) $field['Id']] = $field;
 				}
@@ -683,7 +721,7 @@
 			);
 		}
 
-		public static function previewPayload($id, array $input, array $values, $authorId)
+		public static function previewPayload($id, array $input, array $values, $authorId, $fieldGroups = null)
 		{
 			$id = (int) $id;
 			$existing = $id > 0 ? self::one($id) : null;
@@ -716,7 +754,7 @@
 
 			$fields = array();
 			$skippedFields = array();
-			$fieldRows = self::fieldsForRubric($rubricId, $id);
+			$fieldRows = self::resolveFieldGroups($rubricId, $id, $fieldGroups);
 			$flatFields = array();
 			foreach ($fieldRows as $group) {
 				foreach ($group['items'] as $field) {
@@ -773,6 +811,13 @@
 				'skipped_fields' => $skippedFields,
 				'lifecycle_hooks_executed' => false,
 			);
+		}
+
+		protected static function resolveFieldGroups($rubricId, $documentId, $fieldGroups)
+		{
+			return is_array($fieldGroups)
+				? $fieldGroups
+				: self::fieldsForRubric((int) $rubricId, (int) $documentId);
 		}
 
 		public static function delete($id)
@@ -903,17 +948,37 @@
 				throw new \RuntimeException('Сначала переместите документ в корзину');
 			}
 
-			DB::Delete(self::docFieldsTextTable(), 'document_id = %i', $id);
-			DB::Delete(self::docFieldsTable(), 'document_id = %i', $id);
-			DB::Delete(self::revisionsTable(), 'doc_id = %i', $id);
-			DB::Delete(self::aliasHistoryTable(), 'document_id = %i', $id);
-			DB::Delete(self::keywordsTable(), 'document_id = %i', $id);
-			DB::Delete(self::tagsTable(), 'document_id = %i', $id);
-			DB::Delete(self::remarksTable(), 'document_id = %i', $id);
-			DB::Delete(self::viewCountTable(), 'document_id = %i', $id);
-			DB::Delete(self::documentsTable(), 'Id = %i', $id);
+			$ownsTransaction = !DB::$transaction_in_progress;
+			if ($ownsTransaction) { DB::startTransaction(); }
+			try {
+				DB::Delete(self::docFieldsTextTable(), 'document_id = %i', $id);
+				DB::Delete(self::docFieldsTable(), 'document_id = %i', $id);
+				DB::Delete(self::revisionsTable(), 'doc_id = %i', $id);
+				DB::Delete(self::aliasHistoryTable(), 'document_id = %i', $id);
+				DB::Delete(self::keywordsTable(), 'document_id = %i', $id);
+				DB::Delete(self::tagsTable(), 'document_id = %i', $id);
+				DB::Delete(self::remarksTable(), 'document_id = %i', $id);
+				DB::Delete(self::viewCountTable(), 'document_id = %i', $id);
+				\App\Content\Fields\DocumentRelationIndex::removeDocument($id);
+				DB::Delete(self::documentsTable(), 'Id = %i', $id);
+				if ($ownsTransaction) { DB::commit(); }
+			} catch (\Throwable $e) {
+				if ($ownsTransaction) { DB::rollback(); }
+				throw $e;
+			}
+
 			self::clearDocumentCache($id);
 			CatalogModel::reindexDocument($id);
+			Lifecycle::event(
+				'content.document.deleted',
+				'document',
+				'deleted',
+				$id,
+				array(),
+				true,
+				array('hard_delete' => true),
+				'adminx_documents'
+			);
 			return true;
 		}
 
@@ -1262,45 +1327,7 @@
 
 		public static function documentPicker($q, $rubricId = 0, $limit = 20)
 		{
-			$limit = max(1, min(50, (int) $limit));
-			$sql = 'SELECT d.Id, d.rubric_id, d.document_title, d.document_alias, r.rubric_title'
-				. ' FROM ' . self::documentsTable() . ' d'
-				. ' LEFT JOIN ' . self::rubricsTable() . ' r ON r.Id = d.rubric_id'
-				. " WHERE d.document_deleted != '1'";
-			$args = array();
-			$q = trim((string) $q);
-			if ($q !== '') {
-				$sql .= ' AND (d.document_title LIKE %ss OR d.document_alias LIKE %ss OR d.Id = %i)';
-				$args[] = $q;
-				$args[] = $q;
-				$args[] = (int) $q;
-			}
-
-			$rubricIds = array();
-			foreach (explode(',', (string) $rubricId) as $r) {
-				$r = (int) trim($r);
-				if ($r > 0) { $rubricIds[] = $r; }
-			}
-
-			if (!empty($rubricIds)) {
-				$rubricIds = array_values(array_unique($rubricIds));
-				$sql .= ' AND d.rubric_id IN (' . implode(',', array_map('intval', $rubricIds)) . ')';
-			}
-
-			$sql .= ' ORDER BY d.document_changed DESC, d.Id DESC LIMIT ' . (int) $limit;
-			$rows = call_user_func_array(array('DB', 'query'), array_merge(array($sql), $args))->getAll();
-			$out = array();
-			foreach ($rows as $row) {
-				$out[] = array(
-					'id' => (int) $row['Id'],
-					'rubric_id' => (int) $row['rubric_id'],
-					'title' => self::decode($row['document_title']),
-					'alias' => (string) $row['document_alias'],
-					'rubric_title' => self::decode(isset($row['rubric_title']) ? $row['rubric_title'] : ''),
-				);
-			}
-
-			return $out;
+			return (new \App\Content\Documents\DocumentPickerRepository())->search($q, $rubricId, $limit);
 		}
 
 		/** Existing keywords/tags for the searchable tag inputs in document editor. */
@@ -2185,14 +2212,17 @@
 				}
 			}
 
+			$emptyLabel = AdminLocale::translateMarkup('Разделы не выбраны.');
+			$addLabel = AdminLocale::translateMarkup('Добавить раздел');
+			$searchLabel = AdminLocale::translateMarkup('Найти раздел');
 			$html = '<div class="documents-catalog-field" data-document-catalog-field="' . $id . '" data-catalog-limits-fields="' . ((int) $settings['doc_fileds'] === 1 ? '1' : '0') . '">'
 				. '<input type="hidden" name="fields[' . $id . '][catalog_ids][]" value="">'
 				. '<div class="documents-catalog-tokens" data-document-catalog-tokens>' . $tokens . '</div>'
-				. '<p class="documents-catalog-empty"' . (!empty($selectedIds) ? ' hidden' : '') . ' data-document-catalog-empty>Разделы не выбраны.</p>'
+				. '<p class="documents-catalog-empty"' . (!empty($selectedIds) ? ' hidden' : '') . ' data-document-catalog-empty>' . $emptyLabel . '</p>'
 				. '<div class="dropdown documents-catalog-dropdown">'
-				. '<button class="btn btn-secondary btn-sm" type="button" data-dropdown data-document-catalog-add><i class="ti ti-plus"></i>Добавить раздел</button>'
+				. '<button class="btn btn-secondary btn-sm" type="button" data-dropdown data-document-catalog-add><i class="ti ti-plus"></i>' . $addLabel . '</button>'
 				. '<div class="dropdown-menu documents-catalog-menu">'
-				. '<label class="input-wrap documents-catalog-search"><i class="ti ti-search"></i><input class="input" type="search" placeholder="Найти раздел" data-document-catalog-search></label>'
+				. '<label class="input-wrap documents-catalog-search"><i class="ti ti-search"></i><input class="input" type="search" placeholder="' . $searchLabel . '" data-document-catalog-search></label>'
 				. '<ol class="documents-catalog-tree">' . self::renderCatalogNodes($tree, $id, $selected) . '</ol>'
 				. '</div></div></div>';
 			return $html;
@@ -2213,18 +2243,21 @@
 
 		protected static function catalogTokenHtml($fieldId, $catalogId, $name, $fields)
 		{
+			$removeLabel = AdminLocale::translateMarkup('Убрать раздел');
 			return '<span class="documents-catalog-token" data-document-catalog-token data-catalog-id="' . (int) $catalogId
 				. '" data-catalog-fields="' . self::e($fields) . '">'
 				. '<i class="ti ti-folder documents-catalog-token-icon" aria-hidden="true"></i>'
 				. '<span class="documents-catalog-token-name">' . self::e($name) . '</span>'
 				. '<input type="hidden" name="fields[' . (int) $fieldId . '][catalog_ids][]" value="' . (int) $catalogId . '">'
-				. '<button class="documents-catalog-token-remove" type="button" data-document-catalog-remove aria-label="Убрать раздел"><i class="ti ti-x"></i></button>'
+				. '<button class="documents-catalog-token-remove" type="button" data-document-catalog-remove aria-label="' . $removeLabel . '"><i class="ti ti-x"></i></button>'
 				. '</span>';
 		}
 
 		protected static function renderCatalogNodes(array $items, $fieldId, array $selected)
 		{
 			$html = '';
+			$documentLabel = AdminLocale::translateMarkup('документ #');
+			$hiddenLabel = AdminLocale::translateMarkup('скрыт');
 			foreach ($items as $item) {
 				$fields = implode(',', isset($item['fields_use']) ? $item['fields_use'] : array());
 				$isSelected = isset($selected[$item['id']]);
@@ -2232,8 +2265,8 @@
 					. '<button class="documents-catalog-option' . ($isSelected ? ' is-picked' : '') . '" type="button" data-document-catalog-option'
 					. ' data-catalog-id="' . (int) $item['id'] . '" data-catalog-name="' . self::e($item['name']) . '" data-catalog-fields="' . self::e($fields) . '">'
 					. '<span class="documents-catalog-option-main"><b>' . self::e($item['name']) . '</b><small>#' . (int) $item['id']
-					. ($item['document_id'] > 0 ? ' · документ #' . (int) $item['document_id'] : '') . '</small></span>'
-					. ((int) $item['status'] === 1 ? '' : '<span class="badge badge-gray">скрыт</span>') . '</button>';
+					. ($item['document_id'] > 0 ? ' · ' . $documentLabel . (int) $item['document_id'] : '') . '</small></span>'
+					. ((int) $item['status'] === 1 ? '' : '<span class="badge badge-gray">' . $hiddenLabel . '</span>') . '</button>';
 				if (!empty($item['children'])) { $html .= '<ol>' . self::renderCatalogNodes($item['children'], $fieldId, $selected) . '</ol>'; }
 				$html .= '</li>';
 			}

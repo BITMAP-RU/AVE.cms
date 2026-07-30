@@ -21,7 +21,6 @@
   font-size: 20px;
   line-height: 1.1;
   font-weight: 800;
-  font-variant-numeric: tabular-nums;
 }
 .rubrics-stat span {
   font-size: 13px;
@@ -42,7 +41,8 @@
 .rubrics-panel-header {
   margin-bottom: 18px;
 }
-.rubrics-main-tabs {
+.rubrics-main-tabs,
+.content-model-tabs {
   margin-bottom: 16px;
 }
 .rubrics-panel-header h2 {
@@ -196,7 +196,8 @@
   display: grid;
   grid-template-columns: minmax(260px, 1fr) minmax(180px, 240px);
   gap: 12px;
-  padding: 0 16px 14px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-default);
 }
 .rubrics-type-tools .input-wrap,
 .rubrics-type-tools .select {
@@ -311,7 +312,6 @@
 .rubrics-materials-link b,
 .rubrics-materials-count b {
   font-size: 12px;
-  font-variant-numeric: tabular-nums;
 }
 .rubrics-materials-link small,
 .rubrics-materials-count small,
@@ -675,7 +675,6 @@
 .rubrics-revision-metric b {
   font-size: 18px;
   line-height: 1;
-  font-variant-numeric: tabular-nums;
 }
 .rubrics-revision-metric span {
   margin-top: 3px;
@@ -746,7 +745,6 @@
   color: var(--text-secondary);
   font-size: 11px;
   font-weight: 800;
-  font-variant-numeric: tabular-nums;
   box-shadow: inset 0 0 0 1px var(--border-subtle);
 }
 .rubrics-revision-dependency-summary {
@@ -773,7 +771,6 @@
 }
 .rubrics-revision-dependency-summary b {
   color: var(--text-primary);
-  font-variant-numeric: tabular-nums;
 }
 .rubrics-revision-dependency-group {
   margin-top: 8px;
@@ -812,7 +809,6 @@
   color: var(--text-secondary);
   font-size: 10.5px;
   text-align: right;
-  font-variant-numeric: tabular-nums;
 }
 .rubrics-revision-dependency-group[open] > summary {
   box-shadow: inset 0 -1px 0 var(--border-subtle);
@@ -1500,7 +1496,6 @@
   color: var(--text-secondary);
   font-size: 12px;
   font-weight: 700;
-  font-variant-numeric: tabular-nums;
   box-shadow: inset 0 0 0 1px var(--border-subtle);
 }
 .rubrics-default-list-row .input {
@@ -1679,7 +1674,6 @@
   color: var(--text-secondary);
   font-size: 12px;
   font-weight: 800;
-  font-variant-numeric: tabular-nums;
 }
 .rubrics-relation-main {
   display: grid;
@@ -2112,7 +2106,6 @@
 }
 .rubrics-field-set-preview-grid b {
   font-size: 20px;
-  font-variant-numeric: tabular-nums;
 }
 .rubrics-field-set-preview-grid small {
   color: var(--text-secondary);
@@ -2377,7 +2370,6 @@
   color: var(--text-tertiary);
   font-size: 10.5px;
   font-weight: 700;
-  font-variant-numeric: tabular-nums;
 }
 .rubrics-builder-field-condition {
   display: grid;
@@ -2592,7 +2584,6 @@
   color: var(--text-secondary);
   font-size: 10.5px;
   font-weight: 700;
-  font-variant-numeric: tabular-nums;
   cursor: pointer;
   box-shadow: inset 0 0 0 1px var(--border-subtle);
   transition-property: background-color, color, box-shadow, transform;
@@ -3179,7 +3170,6 @@
 }
 .rubrics-impact-summary b {
   font-size: 20px;
-  font-variant-numeric: tabular-nums;
 }
 .rubrics-impact-summary small {
   margin-top: 2px;
@@ -3559,7 +3549,6 @@
 .rubrics-template-tag-nav b {
   color: var(--text-muted);
   font-size: 10.5px;
-  font-variant-numeric: tabular-nums;
 }
 .rubrics-template-tag-nav button.is-active b {
   color: var(--color-primary);
@@ -3654,7 +3643,6 @@
   gap: 3px;
   color: var(--text-secondary);
   font-size: 12px;
-  font-variant-numeric: tabular-nums;
 }
 .rubrics-fields-list,
 .rubrics-fields-side {
@@ -4317,7 +4305,6 @@
 .rubrics-admin-view-item-order {
   color: var(--text-muted);
   font: 12px var(--font-mono);
-  font-variant-numeric: tabular-nums;
 }
 .rubrics-admin-view-item-main {
   min-width: 0;

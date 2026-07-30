@@ -51,6 +51,7 @@
 				);
 				if (!empty($module['installed']) && !empty($module['enabled'])) {
 					self::registerMenu($module['admin_extension']);
+					self::registerSearch($module['code'], $module['admin_extension']);
 				}
 			}
 
@@ -168,6 +169,64 @@
 			return $items;
 		}
 
+		/**
+		 * Missing hard and recommended dependencies for the module owning a route.
+		 */
+		public static function dependencyNotices($path)
+		{
+			$module = self::moduleForPath($path);
+			if (!$module) {
+				return array();
+			}
+
+			$descriptor = ModuleManager::descriptor($module['code']);
+			$required = is_array($descriptor) && isset($descriptor['requires'])
+				? self::dependencyDefinitions($descriptor['requires'])
+				: array();
+			$recommended = is_array($descriptor) && isset($descriptor['recommends'])
+				? self::dependencyDefinitions($descriptor['recommends'])
+				: array();
+			$requiredCodes = array();
+			$recommendedReasons = array();
+			foreach ($required as $definition) {
+				$requiredCodes[] = $definition['code'];
+			}
+
+			foreach ($recommended as $definition) {
+				$recommendedReasons[$definition['code']] = $definition['reason'];
+			}
+
+			$notices = array();
+			foreach (array(
+				'required' => $requiredCodes,
+				'recommended' => array_keys($recommendedReasons),
+			) as $level => $codes) {
+				foreach ($codes as $code) {
+					$dependency = ModuleManager::get($code);
+					if ($dependency && !empty($dependency['installed']) && !empty($dependency['enabled'])) {
+						continue;
+					}
+
+					$name = $dependency && !empty($dependency['name']) ? (string) $dependency['name'] : (string) $code;
+					$state = !$dependency ? 'missing' : (empty($dependency['installed']) ? 'available' : 'disabled');
+					$reason = $level === 'recommended' && isset($recommendedReasons[$code])
+						? $recommendedReasons[$code]
+						: '';
+					$notices[] = array(
+						'level' => $level,
+						'code' => (string) $code,
+						'name' => $name,
+						'state' => $state,
+						'reason' => $reason,
+						'action' => $state === 'disabled' ? 'Включить модуль' : ($state === 'missing' ? 'Найти в каталоге' : 'Установить модуль'),
+						'url' => '/modules?' . ($state === 'missing' ? 'tab=catalog&' : '') . 'focus=' . rawurlencode((string) $code),
+					);
+				}
+			}
+
+			return $notices;
+		}
+
 		protected static function contributions($type, array $visibleCodes = null)
 		{
 			self::boot();
@@ -250,6 +309,24 @@
 			}
 		}
 
+		protected static function registerSearch($moduleCode, array $config)
+		{
+			if (empty($config['search'])) {
+				return;
+			}
+
+			foreach (self::normalizeItems($config['search']) as $index => $definition) {
+				if (!is_array($definition)) {
+					continue;
+				}
+
+				$code = isset($definition['code']) && trim((string) $definition['code']) !== ''
+					? (string) $definition['code']
+					: (string) ((int) $index + 1);
+				GlobalSearchRegistry::register($moduleCode . '.' . $code, $definition);
+			}
+		}
+
 		protected static function normalizeItems($items)
 		{
 			if (!is_array($items)) {
@@ -283,6 +360,49 @@
 			}
 
 			return $fallback;
+		}
+
+		protected static function moduleForPath($path)
+		{
+			$path = '/' . trim((string) $path, '/');
+			$match = null;
+			$matchLength = -1;
+			foreach (ModuleManager::all() as $module) {
+				$extension = isset($module['admin_extension']) && is_array($module['admin_extension'])
+					? $module['admin_extension']
+					: array();
+				$url = isset($extension['url']) ? '/' . trim((string) $extension['url'], '/') : '';
+				if ($url === '' || ($path !== $url && strpos($path, $url . '/') !== 0) || strlen($url) <= $matchLength) {
+					continue;
+				}
+
+				$match = $module;
+				$matchLength = strlen($url);
+			}
+
+			return $match;
+		}
+
+		protected static function dependencyDefinitions($dependencies)
+		{
+			$result = array();
+			foreach (is_array($dependencies) ? $dependencies : array() as $dependency) {
+				$code = is_array($dependency) && isset($dependency['code'])
+					? strtolower(trim((string) $dependency['code']))
+					: strtolower(trim((string) $dependency));
+				if ($code === '') {
+					continue;
+				}
+
+				$result[] = array(
+					'code' => $code,
+					'reason' => is_array($dependency) && isset($dependency['reason'])
+						? trim((string) $dependency['reason'])
+						: '',
+				);
+			}
+
+			return $result;
 		}
 
 		/** Управляемая администратором видимость UI-вклада модуля. */

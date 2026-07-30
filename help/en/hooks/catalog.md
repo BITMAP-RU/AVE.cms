@@ -96,6 +96,18 @@ Commerce events are available when the appropriate package is installed.
 | `commerce.payment.completed` | Payment confirmed. |
 | `commerce.delivery.quoted` | Delivery estimate received. |
 
+## Outbound HTTP requests
+
+| Event | Purpose |
+| --- | --- |
+| `http.outbound.requesting` | The shared client prepared an outbound request. |
+| `http.outbound.responded` | The remote service returned a successful response. |
+| `http.outbound.failed` | Address validation, connection or response processing failed. |
+
+Events expose the method, remote origin without path or query, byte counts, HTTP
+status, duration and source code. Bodies, headers, credentials, signatures and
+personal data are never included.
+
 ## Product catalog
 
 | Filter | Destination |

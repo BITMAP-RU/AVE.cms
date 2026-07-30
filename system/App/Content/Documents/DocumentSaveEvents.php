@@ -51,6 +51,17 @@
 			return $event;
 		}
 
+		/**
+		 * Dispatch integrations which must commit atomically with the document.
+		 * A handler error intentionally aborts the surrounding transaction.
+		 */
+		public static function persisted($operation, $source, $documentId, $rubricId, $actorId, array &$data, array &$fields, array $previous = array())
+		{
+			$event = new DocumentSaveEvent('persisted', $operation, $source, $documentId, $rubricId, $actorId, $data, $fields, self::fieldAliases($rubricId), $previous);
+			$result = Hooks::action('content.document.persisted', $event);
+			return $result instanceof DocumentSaveEvent ? $result : $event;
+		}
+
 		protected static function dispatchAfter($name, DocumentSaveEvent $event)
 		{
 			try {
