@@ -1,18 +1,19 @@
 {% extends '@adminx/main.twig' %}
 {% block title %}{{ catalog.rubric_title }} · Каталог{% endblock %}
-{% macro rows(items, can_manage) %}
+{% macro rows(items, can_manage, level) %}
+  {% set level = level|default(0) %}
   {% for item in items %}
-  <li class="catalog-tree-item{{ item.status ? '' : ' is-inactive' }}" data-catalog-item data-id="{{ item.id }}" data-parent-id="{{ item.parent_id }}" data-filter-count="{{ item.filters_use|length }}">
-    <div class="catalog-tree-row">
-      <button class="catalog-drag" type="button" draggable="{{ can_manage ? 'true' : 'false' }}" aria-label="Перетащить" data-tooltip="Изменить порядок"><i class="ti ti-grip-vertical"></i></button>
-      <span class="catalog-tree-branch"><i class="ti ti-corner-down-right"></i></span>
+  <li class="catalog-tree-item{{ item.status ? '' : ' is-inactive' }}" data-catalog-item data-id="{{ item.id }}" data-parent-id="{{ item.parent_id }}" data-position="{{ item.position }}" data-level="{{ level }}" data-filter-count="{{ item.filters_use|length }}" style="--catalog-indent:{{ level > 10 ? 280 : level * 28 }}px">
+    <div class="catalog-tree-row" data-catalog-builder-item="{{ item.id }}">
+      <button class="catalog-drag" type="button" aria-label="Перетащить раздел" data-tooltip="Перетащить раздел вместе с подразделами" data-catalog-drag-handle{{ can_manage ? '' : ' disabled' }}><i class="ti ti-grip-vertical"></i></button>
+      <span class="catalog-tree-position" data-tooltip="Позиция внутри уровня">{{ item.position + 1 }}</span>
       <div class="catalog-tree-name"><b>{{ item.name }}</b><small>#{{ item.id }}{% if item.document_id %} · документ #{{ item.document_id }}{% endif %}</small></div>
+      <div class="catalog-tree-meta"><span class="badge badge-gray" data-catalog-level-badge>уровень {{ level + 1 }}</span><span class="catalog-tree-count" data-tooltip="Поля / фильтры">{{ item.fields_use|length }} / {{ item.filters_use|length }}</span></div>
       <div class="catalog-tree-status"><span data-catalog-item-status-label>{{ item.status ? 'активен' : 'скрыт' }}</span><label class="switch" data-tooltip="{{ item.status ? 'Скрыть раздел' : 'Включить раздел' }}"><input type="checkbox" data-catalog-item-status="{{ item.id }}"{{ item.status ? ' checked' : '' }} aria-label="{{ item.status ? 'Скрыть раздел' : 'Включить раздел' }}"></label></div>
-      <span class="catalog-tree-count" data-tooltip="Поля / фильтры">{{ item.fields_use|length }} / {{ item.filters_use|length }}</span>
-      {% if can_manage %}<div class="catalog-tree-actions"><button class="btn btn-ghost btn-icon btn-sm catalog-action-edit" type="button" data-catalog-item-edit="{{ item.id }}" data-tooltip="Редактировать"><i class="ti ti-edit"></i></button><button class="btn btn-ghost btn-icon btn-sm catalog-action-delete" type="button" data-catalog-item-delete="{{ item.id }}" data-tooltip="Удалить"><i class="ti ti-trash"></i></button></div>{% endif %}
+      {% if can_manage %}<div class="catalog-tree-actions"><button class="btn btn-ghost btn-icon btn-sm catalog-action-level" type="button" data-catalog-item-indent="-1" data-tooltip="Поднять на уровень выше"{{ level == 0 ? ' disabled' : '' }}><i class="ti ti-arrow-left"></i></button><button class="btn btn-ghost btn-icon btn-sm catalog-action-level" type="button" data-catalog-item-indent="1" data-tooltip="Сделать подразделом"><i class="ti ti-arrow-right"></i></button><button class="btn btn-ghost btn-icon btn-sm catalog-action-sibling" type="button" data-catalog-item-sibling="{{ item.id }}" data-tooltip="Добавить рядом"><i class="ti ti-row-insert-bottom"></i></button><button class="btn btn-ghost btn-icon btn-sm catalog-action-child" type="button" data-catalog-item-child="{{ item.id }}" data-tooltip="Добавить подраздел"><i class="ti ti-subtask"></i></button><button class="btn btn-ghost btn-icon btn-sm catalog-action-edit" type="button" data-catalog-item-edit="{{ item.id }}" data-tooltip="Редактировать"><i class="ti ti-edit"></i></button><button class="btn btn-ghost btn-icon btn-sm catalog-action-delete" type="button" data-catalog-item-delete="{{ item.id }}" data-tooltip="Удалить"><i class="ti ti-trash"></i></button></div>{% endif %}
     </div>
-    {% if item.children %}<ol class="catalog-tree-children">{{ _self.rows(item.children, can_manage) }}</ol>{% endif %}
   </li>
+  {% if item.children %}{{ _self.rows(item.children, can_manage, level + 1) }}{% endif %}
   {% endfor %}
 {% endmacro %}
 {% block content %}
@@ -25,7 +26,7 @@
   <div class="section-header catalog-panel-header"><div class="section-icon"><i class="ti ti-list-tree"></i></div><div><div class="section-eyebrow">Структура</div><h2>Разделы каталога</h2><p class="section-desc">Порядок и вложенность используются в каталожном поле документа.</p></div></div>
   <div class="card catalog-card">
     <div class="catalog-section-head"><div class="catalog-section-title"><span class="icon-tile catalog-head-icon" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-list-tree"></i></span><div><h2>Дерево разделов</h2><p class="text-secondary">Перетаскивайте строки за маркер слева.</p></div></div><div class="catalog-tree-tools"><label class="input-wrap catalog-tree-search"><i class="ti ti-search"></i><input class="input" type="search" placeholder="Найти раздел" data-catalog-tree-search></label>{% if can_manage %}<button class="btn btn-secondary" type="button" data-catalog-recompile-all><i class="ti ti-refresh"></i>Пересобрать фильтры</button>{% endif %}</div></div>
-    <ol class="catalog-tree" data-catalog-tree>{{ _self.rows(tree, can_manage) }}</ol>
+    <ol class="catalog-tree" data-catalog-tree>{{ _self.rows(tree, can_manage, 0) }}</ol>
     {% if not tree %}<div class="empty-state">Разделов пока нет.</div>{% endif %}
   </div>
 </section>

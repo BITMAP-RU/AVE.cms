@@ -126,6 +126,11 @@
         if (e.target.closest('[data-schema-revision-delete]')) { self.deleteSchemaRevision(); }
         if (e.target.closest('[data-schema-revisions-clear]')) { self.clearSchemaRevisions(); }
         if (e.target.closest('[data-schema-revision-restore]')) { self.restoreSchemaRevision(); }
+        if (e.target.closest('[data-rubric-trash-open]')) { self.openTrash(); }
+        var trashRestore = e.target.closest('[data-rubric-trash-restore]');
+        if (trashRestore) { self.restoreTrash(trashRestore.getAttribute('data-rubric-trash-restore')); }
+        var trashPurge = e.target.closest('[data-rubric-trash-purge]');
+        if (trashPurge) { self.purgeTrash(trashPurge.getAttribute('data-rubric-trash-purge')); }
         var adminViewMode = e.target.closest('[data-admin-view-mode]');
         if (adminViewMode) { self.setAdminViewMode(adminViewMode.getAttribute('data-admin-view-mode')); }
         var adminViewAdd = e.target.closest('[data-admin-view-add]');
@@ -3580,6 +3585,95 @@
         Adminx.Toast.show('Поле удалено', 'success');
         self.loadFields();
         self.applyFilterUrl(window.location.href, false);
+      });
+    },
+
+    openTrash: function () {
+      if (Adminx.Drawer) { Adminx.Drawer.open('rubricTrashDrawer'); }
+      this.refreshTrash();
+    },
+
+    refreshTrash: function () {
+      var self = this;
+      Adminx.Loader.show();
+      Adminx.Ajax.request(this.base() + '/rubrics/trash').then(function (payload) {
+        Adminx.Loader.hide();
+        var response = payload.data || {};
+        if (!response.success || !response.data) {
+          Adminx.Toast.show(response.message || 'Не удалось загрузить корзину', 'error');
+          return;
+        }
+        self.renderTrash(response.data.items || []);
+      }).catch(function () {
+        Adminx.Loader.hide();
+        Adminx.Toast.show('Ошибка сети при загрузке корзины', 'error');
+      });
+    },
+
+    renderTrash: function (items) {
+      var list = document.querySelector('[data-rubric-trash-list]');
+      var count = document.querySelector('[data-rubric-trash-count]');
+      if (count) { count.textContent = items.length ? (items.length + ' в корзине') : 'Корзина пуста'; }
+      if (!list) { return; }
+      if (!items.length) {
+        list.innerHTML = '<div class="empty-state">Корзина пуста. Удалённые рубрики появятся здесь.</div>';
+        return;
+      }
+      list.innerHTML = items.map(function (item) {
+        return '<div class="rubrics-revision-row">'
+          + '<span class="icon-tile rubrics-revision-row-icon"><i class="ti ti-trash"></i></span>'
+          + '<div class="rubrics-revision-row-main"><div><b>' + esc(item.rubric_title || ('Рубрика #' + item.rubric_id)) + '</b>'
+          + (item.rubric_alias ? '<span class="badge badge-gray">' + esc(item.rubric_alias) + '</span>' : '') + '</div>'
+          + '<small>Удалена ' + esc(item.deleted_label || '-') + (item.author_name ? ' · ' + esc(item.author_name) : '') + '</small></div>'
+          + '<div class="rubrics-revision-row-counts"><span>' + item.fields_count + ' полей</span><span>' + item.groups_count + ' групп</span></div>'
+          + '<div class="cluster">'
+          + '<button class="btn btn-ghost btn-icon btn-sm" type="button" data-rubric-trash-restore="' + item.id + '" data-tooltip="Восстановить" aria-label="Восстановить"><i class="ti ti-restore"></i></button>'
+          + '<button class="btn btn-ghost btn-icon btn-sm rubrics-action-danger" type="button" data-rubric-trash-purge="' + item.id + '" data-tooltip="Удалить окончательно" aria-label="Удалить окончательно"><i class="ti ti-trash-x"></i></button>'
+          + '</div></div>';
+      }).join('');
+    },
+
+    restoreTrash: function (id) {
+      id = parseInt(id, 10) || 0;
+      if (!id) { return; }
+      var self = this;
+      Adminx.Confirm.open({
+        kind: 'warning',
+        title: 'Восстановить рубрику?',
+        message: 'Рубрика вернётся со всей схемой и прежними идентификаторами.',
+        confirmLabel: 'Восстановить',
+        onConfirm: function () {
+          Adminx.Loader.show();
+          Adminx.Ajax.post(self.base() + '/rubrics/trash/' + id + '/restore').then(function (payload) {
+            Adminx.Loader.hide();
+            var response = payload.data || {};
+            if (!response.success) { Adminx.Toast.show(response.message || 'Не удалось восстановить', 'error'); return; }
+            Adminx.Toast.show(response.message || 'Рубрика восстановлена', 'success');
+            window.location.reload();
+          }).catch(function () { Adminx.Loader.hide(); Adminx.Toast.show('Ошибка сети', 'error'); });
+        }
+      });
+    },
+
+    purgeTrash: function (id) {
+      id = parseInt(id, 10) || 0;
+      if (!id) { return; }
+      var self = this;
+      Adminx.Confirm.open({
+        kind: 'danger',
+        title: 'Удалить рубрику окончательно?',
+        message: 'Слепок будет стёрт без возможности восстановления.',
+        confirmLabel: 'Удалить окончательно',
+        onConfirm: function () {
+          Adminx.Loader.show();
+          Adminx.Ajax.post(self.base() + '/rubrics/trash/' + id + '/purge').then(function (payload) {
+            Adminx.Loader.hide();
+            var response = payload.data || {};
+            if (!response.success) { Adminx.Toast.show(response.message || 'Не удалось удалить', 'error'); return; }
+            Adminx.Toast.show(response.message || 'Удалено окончательно', 'success');
+            self.refreshTrash();
+          }).catch(function () { Adminx.Loader.hide(); Adminx.Toast.show('Ошибка сети', 'error'); });
+        }
       });
     },
 

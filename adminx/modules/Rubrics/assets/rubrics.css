@@ -1850,7 +1850,7 @@
 }
 .rubrics-builder {
   display: grid;
-  grid-template-columns: minmax(210px, 240px) minmax(520px, 1fr) minmax(290px, 330px);
+  grid-template-columns: minmax(220px, 230px) minmax(560px, 1fr) minmax(270px, 280px);
   gap: 14px;
   align-items: start;
   min-width: 0;
@@ -2406,6 +2406,17 @@
 .rubrics-builder-field-main code {
   color: var(--text-tertiary);
   font-size: 10.5px;
+}
+.rubrics-builder-field.is-third .rubrics-builder-field-main,
+.rubrics-builder-field.is-quarter .rubrics-builder-field-main {
+  display: grid;
+  justify-content: stretch;
+  gap: 3px;
+}
+.rubrics-builder-field.is-third .rubrics-builder-field-main code,
+.rubrics-builder-field.is-quarter .rubrics-builder-field-main code {
+  justify-self: start;
+  max-width: 100%;
 }
 .rubrics-builder-field-preview {
   display: flex;
@@ -3825,7 +3836,7 @@
 }
 @media (max-width: 1100px) {
   .rubrics-builder {
-    grid-template-columns: minmax(210px, 240px) minmax(0, 1fr);
+    grid-template-columns: minmax(220px, 230px) minmax(0, 1fr);
   }
   .rubrics-builder-inspector {
     position: static;

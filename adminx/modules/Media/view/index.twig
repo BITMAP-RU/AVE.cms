@@ -15,6 +15,7 @@
     </div>
     {% if can_manage %}
     <div class="cluster">
+      <button class="btn btn-secondary" type="button" data-media-presets-open data-open-drawer="mediaPresetsDrawer"><i class="ti ti-aspect-ratio"></i>Виды изображений</button>
       <button class="btn btn-secondary" type="button" data-media-folder><i class="ti ti-folder-plus"></i>Папка</button>
       <button class="btn btn-danger-soft" type="button" data-media-clear-thumbs data-path="{{ dir }}" data-name="{{ dir }}" data-tooltip="Удалить превью в текущей и вложенных папках"><i class="ti ti-photo-off"></i>Очистить превью</button>
       <button class="btn btn-primary" type="button" data-media-upload-trigger><i class="ti ti-upload"></i>Загрузить</button>
@@ -22,6 +23,39 @@
     {% endif %}
   </div>
 </div>
+
+<aside class="drawer drawer-right drawer-lg" id="mediaPresetsDrawer" role="dialog" aria-modal="true" aria-labelledby="mediaPresetsTitle" hidden>
+  <div class="drawer-header">
+    <div>
+      <h3 id="mediaPresetsTitle">Виды изображений</h3>
+      <p class="text-secondary text-sm">Готовые размеры для подгонки картинок — новости, баннеры, галерея. Выбираются в редакторе изображения.</p>
+    </div>
+    <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="drawer-body">
+    <div class="media-presets-list" data-preset-list><div class="empty-state">Загрузка...</div></div>
+    {% if can_manage %}
+    <form id="mediaPresetForm" class="form-grid media-presets-form" style="margin-top:16px">
+      <input type="hidden" name="id" value="">
+      <label class="field col-12"><span class="field-label">Название</span><input class="input" name="title" placeholder="Баннер шапки" required><span class="field-error" data-error="title"></span></label>
+      <label class="field col-12"><span class="field-label">Раздел (необязательно)</span><input class="input" name="group_label" placeholder="Новости, Баннеры, Галерея"></label>
+      <label class="field col-6"><span class="field-label">Режим</span><select class="select" name="mode" data-preset-modes></select><span class="field-error" data-error="mode"></span></label>
+      <label class="field col-6"><span class="field-label">Формат</span><select class="select" name="format" data-preset-formats></select><span class="field-error" data-error="format"></span></label>
+      <label class="field col-4"><span class="field-label">Ширина, px</span><input class="input" type="number" name="width" min="0" max="2400" value="0"><span class="field-error" data-error="width"></span></label>
+      <label class="field col-4"><span class="field-label">Высота, px</span><input class="input" type="number" name="height" min="0" max="2400" value="0"><span class="field-error" data-error="height"></span></label>
+      <label class="field col-4"><span class="field-label">Качество</span><input class="input" type="number" name="quality" min="1" max="100" value="82"><span class="field-error" data-error="quality"></span></label>
+      <label class="field col-12 media-preset-check"><input type="checkbox" name="webp_twin" value="1" checked> <span>Создавать WebP рядом с результатом (webp + исходный формат для fallback)</span></label>
+    </form>
+    {% endif %}
+  </div>
+  {% if can_manage %}
+  <div class="drawer-footer">
+    <button class="btn btn-ghost" type="button" data-close-drawer><i class="ti ti-x"></i>Закрыть</button>
+    <button class="btn btn-ghost" type="button" data-preset-reset style="margin-left:auto"><i class="ti ti-plus"></i>Новый</button>
+    <button class="btn btn-primary" type="button" data-preset-save><i class="ti ti-check"></i>Сохранить</button>
+  </div>
+  {% endif %}
+</aside>
 
 <div class="media-summary">
   <div class="card media-stat">

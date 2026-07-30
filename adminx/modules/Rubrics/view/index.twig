@@ -32,6 +32,7 @@
     </div>
     <div class="cluster">
       {% if can_manage %}
+      <button class="btn btn-secondary" type="button" data-rubric-trash-open><i class="ti ti-trash"></i>Корзина{% if trash_count %} <span class="badge badge-gray" data-rubric-trash-badge>{{ trash_count }}</span>{% endif %}</button>
       <button class="btn btn-primary" type="button" data-rubric-new data-open-drawer="rubricDrawer"><i class="ti ti-plus"></i>Создать рубрику</button>
       {% endif %}
     </div>
@@ -942,6 +943,30 @@
     <button class="btn btn-danger-soft" type="button" data-schema-revisions-clear disabled><i class="ti ti-trash"></i>Удалить все</button>
     <button class="btn btn-secondary" type="button" data-schema-revision-delete disabled style="margin-left:auto"><i class="ti ti-trash"></i>Удалить снимок</button>
     <button class="btn btn-primary" type="button" data-schema-revision-restore disabled><i class="ti ti-restore"></i>Восстановить</button>
+  </div>
+</aside>
+
+<aside class="drawer drawer-right rubrics-revisions-panel" id="rubricTrashDrawer" role="dialog" aria-modal="true" aria-labelledby="rubricTrashTitle" hidden>
+  <div class="drawer-header">
+    <div>
+      <h3 id="rubricTrashTitle">Корзина рубрик</h3>
+      <p class="text-secondary text-sm">Удалённые рубрики со всей схемой. Можно восстановить или удалить окончательно.</p>
+    </div>
+    <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="drawer-body rubrics-revisions-body">
+    <section class="rubrics-revisions-section" aria-label="Удалённые рубрики">
+      <div class="rubrics-revisions-head">
+        <span class="icon-tile" style="--tile-bg:var(--red-100);--tile-fg:var(--red-600)"><i class="ti ti-trash"></i></span>
+        <div><h4>Удалённые рубрики</h4><p class="text-secondary" data-rubric-trash-count>Загрузка...</p></div>
+      </div>
+      <div class="rubrics-revisions-list" data-rubric-trash-list>
+        <div class="empty-state">Загрузка...</div>
+      </div>
+    </section>
+  </div>
+  <div class="drawer-footer">
+    <button class="btn btn-ghost" type="button" data-close-drawer><i class="ti ti-x"></i>Закрыть</button>
   </div>
 </aside>
 

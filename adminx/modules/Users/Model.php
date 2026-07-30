@@ -47,12 +47,15 @@
 		/** Список с фильтром по поиску (имя/email/логин) и роли. */
 		public static function all($search = '', $role = '')
 		{
-			$sql  = 'SELECT id, name, email, login, phone, role, is_active, created_at, updated_at FROM ' . self::table() . ' WHERE 1=1';
+			$sql  = 'SELECT id, name, email, login, phone, role, is_active, created_at, updated_at, last_login_at FROM ' . self::table() . ' WHERE 1=1';
 			$args = [];
 
 			$search = trim((string) $search);
 			if ($search !== '') {
-				$sql .= ' AND (name LIKE %ss OR email LIKE %ss OR login LIKE %ss)';
+				// email обычно ascii, name/login — utf8mb4: без приведения к
+				// charset соединения (utf8) кириллический запрос падает на
+				// «illegal mix of collations». Ведущий % и так гасит индекс.
+				$sql .= ' AND (CONVERT(name USING utf8) LIKE %ss OR CONVERT(email USING utf8) LIKE %ss OR CONVERT(login USING utf8) LIKE %ss)';
 				$args[] = $search;
 				$args[] = $search;
 				$args[] = $search;

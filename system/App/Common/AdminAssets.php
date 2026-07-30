@@ -71,6 +71,16 @@
 			$modulePath = $modulePosition !== false
 				? substr('/' . ltrim($path, './'), $modulePosition)
 				: '';
+			if ($modulePath !== ''
+				&& preg_match('#^/modules/[A-Z][A-Za-z0-9_-]*/assets/#', $modulePath)
+				&& defined('ADMINX_BASE')) {
+				$query = parse_url($url, PHP_URL_QUERY);
+				$fragment = parse_url($url, PHP_URL_FRAGMENT);
+				return rtrim((string) ADMINX_BASE, '/') . $modulePath
+					. ($query !== null && $query !== false ? '?' . $query : '')
+					. ($fragment !== null && $fragment !== false ? '#' . $fragment : '');
+			}
+
 			if ($modulePath === ''
 				|| !preg_match('#^/modules/[a-z][a-z0-9_-]*/admin/assets/#', $modulePath)) {
 				return $url;

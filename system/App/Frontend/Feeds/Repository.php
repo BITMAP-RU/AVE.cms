@@ -44,7 +44,28 @@
 
 		public function categoryTree($rubricId = 0, $fieldId = 0)
 		{
-			$where=" WHERE s.purpose='commerce'";$args=array();if((int)$rubricId>0){$where.=' AND i.rubric_id=%i';$args[]=(int)$rubricId;}if((int)$fieldId>0){$where.=' AND i.field_id=%i';$args[]=(int)$fieldId;}$sql="SELECT i.id,i.parent_id,i.name,i.status,i.position FROM ".CatalogTables::table('module_catalog_items')." i INNER JOIN ".CatalogTables::table('module_catalog_settings')." s ON s.rubric_id=i.rubric_id AND s.field_id=i.field_id".$where." ORDER BY i.parent_id,i.position,i.id";return call_user_func_array(array('DB','query'),array_merge(array($sql),$args))->getAll()?:array();
+			$where = " WHERE s.purpose='commerce'";
+			$args = array();
+			if ((int) $rubricId > 0) {
+				$where .= ' AND i.rubric_id=%i';
+				$args[] = (int) $rubricId;
+			}
+
+			if ((int) $fieldId > 0) {
+				$where .= ' AND i.field_id=%i';
+				$args[] = (int) $fieldId;
+			}
+
+			$sql = 'SELECT i.id,i.parent_id,i.name,i.status,i.position,i.level'
+				. ' FROM ' . CatalogTables::table('module_catalog_items') . ' i'
+				. ' INNER JOIN ' . CatalogTables::table('module_catalog_settings') . ' s'
+					. ' ON s.rubric_id=i.rubric_id AND s.field_id=i.field_id'
+				. $where
+				. ' ORDER BY i.parent_id,i.position,i.id';
+			return call_user_func_array(
+				array('DB', 'query'),
+				array_merge(array($sql), $args)
+			)->getAll() ?: array();
 		}
 
 		public function products(array $feed, $limit = 0)
@@ -75,18 +96,43 @@
 		protected function selectedCategoryIds(array $feed)
 		{
 			$selection = $this->categories($feed['id']);
-			$tree = $this->categoryTree(isset($feed['rubric_id'])?$feed['rubric_id']:0,isset($feed['catalog_field_id'])?$feed['catalog_field_id']:0); $children = array();
-			if (!$selection['include']) {
-				$ids = array();
-				foreach ($tree as $row) { if ((int) $row['status'] === 1) { $ids[] = (int) $row['id']; } }
-				return array_values(array_diff($ids, $selection['exclude']));
+			$tree = $this->categoryTree(
+				isset($feed['rubric_id']) ? $feed['rubric_id'] : 0,
+				isset($feed['catalog_field_id']) ? $feed['catalog_field_id'] : 0
+			);
+			$children = array();
+			$active = array();
+			foreach ($tree as $row) {
+				if ((int) $row['status'] === 1) {
+					$active[(int) $row['id']] = true;
+				}
 			}
 
-			foreach ($tree as $row) { $children[(int) $row['parent_id']][] = (int) $row['id']; }
-			$ids = $selection['include'];
+			if (!$selection['include']) {
+				return array_values(array_diff(array_keys($active), $selection['exclude']));
+			}
+
+			foreach ($tree as $row) {
+				if (isset($active[(int) $row['id']])) {
+					$children[(int) $row['parent_id']][] = (int) $row['id'];
+				}
+			}
+
+			$ids = array_values(array_filter(
+				$selection['include'],
+				function ($id) use ($active) { return isset($active[(int) $id]); }
+			));
 			if (!empty($feed['include_descendants'])) {
 				$queue = $ids;
-				while ($queue) { $parent = array_shift($queue); foreach (isset($children[$parent]) ? $children[$parent] : array() as $child) { if (!in_array($child, $ids, true)) { $ids[] = $child; $queue[] = $child; } } }
+				while ($queue) {
+					$parent = array_shift($queue);
+					foreach (isset($children[$parent]) ? $children[$parent] : array() as $child) {
+						if (!in_array($child, $ids, true)) {
+							$ids[] = $child;
+							$queue[] = $child;
+						}
+					}
+				}
 			}
 
 			return array_values(array_diff(array_unique(array_map('intval', $ids)), $selection['exclude']));

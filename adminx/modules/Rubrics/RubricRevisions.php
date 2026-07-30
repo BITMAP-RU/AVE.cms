@@ -16,14 +16,16 @@
 
 	defined('BASEPATH') || die('Direct access to this location is not allowed.');
 
-	use App\Common\SystemTables;
 	use App\Content\ContentTables;
 	use App\Content\Fields\FieldRegistry;
+	use App\Content\Revisions\JsonRevisionStore;
 	use App\Helpers\Json;
 	use DB;
 
 	class RubricRevisions
 	{
+		protected static $store;
+
 		public static function table()
 		{
 			return ContentTables::table('rubric_schema_revisions');
@@ -56,13 +58,10 @@
 		public static function listForRubric($rubricId, $limit = 80)
 		{
 			if (!self::available()) { return array(); }
-			$rows = DB::query(
-				'SELECT * FROM ' . self::table() . ' WHERE rubric_id=%i ORDER BY created_at DESC,id DESC LIMIT %i',
-				(int) $rubricId,
-				max(1, min(200, (int) $limit))
-			)->getAll() ?: array();
 			$out = array();
-			foreach ($rows as $row) { $out[] = self::format($row, false); }
+			foreach (self::store()->listing($rubricId, $limit) as $row) {
+				$out[] = self::format($row, false);
+			}
 
 			return $out;
 		}
@@ -70,7 +69,7 @@
 		public static function one($id)
 		{
 			if (!self::available()) { return null; }
-			$row = DB::query('SELECT * FROM ' . self::table() . ' WHERE id=%i LIMIT 1', (int) $id)->getAssoc();
+			$row = self::store()->one($id);
 			return $row ? self::format($row, true) : null;
 		}
 
@@ -81,27 +80,15 @@
 			$snapshot = $snapshot === null ? Model::schemaSnapshot($rubricId) : Model::normalizeSchemaSnapshot($snapshot);
 			if (!$snapshot) { return 0; }
 
-			$json = Json::encode($snapshot, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-			$hash = sha1((string) $json);
-			$last = DB::query(
-				'SELECT snapshot_hash FROM ' . self::table() . ' WHERE rubric_id=%i ORDER BY created_at DESC,id DESC LIMIT 1',
-				$rubricId
-			)->getValue();
-			if ($last && hash_equals((string) $last, $hash)) { return 0; }
-
-			DB::Insert(self::table(), array(
-				'rubric_id' => $rubricId,
-				'action' => (string) $action,
-				'snapshot_hash' => $hash,
-				'snapshot_json' => $json,
-				'comment' => mb_substr(trim((string) $comment), 0, 500, 'UTF-8'),
-				'author_id' => (int) $authorId,
-				'author_name' => self::authorName((int) $authorId),
-				'source_revision_id' => (int) $sourceRevisionId,
-				'created_at' => time(),
-			));
-
-			return (int) DB::insertId();
+			return self::store()->capture(
+				$rubricId,
+				$action,
+				$snapshot,
+				(int) $authorId,
+				mb_substr(trim((string) $comment), 0, 500, 'UTF-8'),
+				array('source_revision_id' => (int) $sourceRevisionId),
+				true
+			);
 		}
 
 		public static function previewRestore($revisionId)
@@ -185,20 +172,17 @@
 
 		public static function delete($revisionId)
 		{
-			$revision = self::one((int) $revisionId);
-			if (!$revision) { return 0; }
-			DB::Delete(self::table(), 'id=%i', (int) $revisionId);
+			if (!self::available()) { return 0; }
+			$owner = self::store()->delete($revisionId);
 
-			return (int) $revision['rubric_id'];
+			return $owner === false ? 0 : (int) $owner;
 		}
 
 		public static function deleteForRubric($rubricId)
 		{
 			if (!self::available()) { return 0; }
-			$count = (int) DB::query('SELECT COUNT(*) FROM ' . self::table() . ' WHERE rubric_id=%i', (int) $rubricId)->getValue();
-			DB::Delete(self::table(), 'rubric_id=%i', (int) $rubricId);
 
-			return $count;
+			return self::store()->deleteFor($rubricId);
 		}
 
 		public static function compareSnapshots(array $current, array $target)
@@ -680,42 +664,34 @@
 
 		protected static function format(array $row, $withSnapshot)
 		{
-			$labels = self::labels();
-			$action = (string) $row['action'];
-			$meta = isset($labels[$action]) ? $labels[$action] : array('label' => $action, 'badge' => 'badge-gray');
-			$decoded = Json::toArray((string) $row['snapshot_json']);
-			$snapshot = $withSnapshot ? $decoded : null;
-			$created = (int) $row['created_at'];
-			$groups = isset($decoded['groups']) ? count($decoded['groups']) : 0;
-			$fields = isset($decoded['fields']) ? count($decoded['fields']) : 0;
+			$base = self::store()->formatRow($row, $withSnapshot);
+			$decoded = Json::toArray(isset($row['snapshot_json']) ? (string) $row['snapshot_json'] : '');
 
 			return array(
-				'id' => (int) $row['id'],
-				'rubric_id' => (int) $row['rubric_id'],
-				'action' => $action,
-				'action_label' => $meta['label'],
-				'badge' => $meta['badge'],
-				'comment' => (string) $row['comment'],
-				'author_id' => (int) $row['author_id'],
-				'author_name' => (string) $row['author_name'],
-				'source_revision_id' => (int) $row['source_revision_id'],
-				'created_at' => $created,
-				'created_label' => $created ? date('d.m.Y H:i:s', $created) : '-',
-				'snapshot_hash' => (string) $row['snapshot_hash'],
-				'groups_count' => $groups,
-				'fields_count' => $fields,
-				'snapshot' => $snapshot,
+				'id' => (int) $base['id'],
+				'rubric_id' => (int) $base['rubric_id'],
+				'action' => $base['action'],
+				'action_label' => $base['action_label'],
+				'badge' => $base['badge'],
+				'comment' => (string) (isset($row['comment']) ? $row['comment'] : ''),
+				'author_id' => (int) $base['author_id'],
+				'author_name' => (string) $base['author_name'],
+				'source_revision_id' => (int) (isset($row['source_revision_id']) ? $row['source_revision_id'] : 0),
+				'created_at' => $base['created_at'],
+				'created_label' => $base['created_label'],
+				'snapshot_hash' => (string) (isset($row['snapshot_hash']) ? $row['snapshot_hash'] : ''),
+				'groups_count' => isset($decoded['groups']) ? count($decoded['groups']) : 0,
+				'fields_count' => isset($decoded['fields']) ? count($decoded['fields']) : 0,
+				'snapshot' => $withSnapshot ? $decoded : null,
 			);
 		}
 
-		protected static function authorName($id)
+		protected static function store()
 		{
-			if ((int) $id <= 0) { return ''; }
-			$row = DB::query('SELECT name,login,email FROM ' . SystemTables::table('users') . ' WHERE id=%i LIMIT 1', (int) $id)->getAssoc();
-			if (!$row) { return '#' . (int) $id; }
-			if (!empty($row['name'])) { return (string) $row['name']; }
-			if (!empty($row['login'])) { return '@' . (string) $row['login']; }
+			if (!self::$store) {
+				self::$store = new JsonRevisionStore(self::table(), 'rubric_id', self::labels());
+			}
 
-			return !empty($row['email']) ? (string) $row['email'] : '#' . (int) $id;
+			return self::$store;
 		}
 	}

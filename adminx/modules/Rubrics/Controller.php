@@ -56,6 +56,7 @@
 				'rubric_alias_tokens' => DocumentAliasTemplate::tokens(),
 				'filters' => array('q' => $q, 'state' => $state),
 				'active_tab' => $activeTab,
+				'trash_count' => RubricTrash::count(),
 				'can_manage' => Permission::check('manage_rubrics'),
 				'can_view_documents' => Permission::check('view_documents'),
 				'can_manage_documents' => Permission::check('manage_documents'),
@@ -542,12 +543,12 @@
 			}
 
 			try {
-				Model::deleteRubric(isset($params['id']) ? (int) $params['id'] : 0);
+				Model::deleteRubric(isset($params['id']) ? (int) $params['id'] : 0, Auth::id());
 			} catch (\Throwable $e) {
 				return $this->error($e->getMessage(), array(), 422);
 			}
 
-			return $this->success('Рубрика удалена');
+			return $this->success('Рубрика перемещена в корзину');
 		}
 
 		public function storeField(array $params = array())
@@ -1001,6 +1002,47 @@
 			$count = RubricRevisions::deleteForRubric($rubricId);
 
 			return $this->success('Ревизии удалены', array('data' => array('id' => $rubricId, 'count' => $count)));
+		}
+
+		public function trash(array $params = array())
+		{
+			return $this->success('', array('data' => array(
+				'items' => RubricTrash::listing(),
+				'count' => RubricTrash::count(),
+			)));
+		}
+
+		public function restoreTrash(array $params = array())
+		{
+			if (($err = $this->guard()) !== null) { return $err; }
+			try {
+				$rubricId = RubricTrash::restore(isset($params['id']) ? (int) $params['id'] : 0);
+			} catch (\Throwable $e) {
+				return $this->error($e->getMessage(), array(), 422);
+			}
+
+			AuditLog::record('rubric.restored_from_trash', array(
+				'actor_id' => Auth::id(),
+				'target_type' => 'rubric',
+				'target_id' => (int) $rubricId,
+			));
+			return $this->success('Рубрика восстановлена', array('data' => array('id' => (int) $rubricId)));
+		}
+
+		public function purgeTrash(array $params = array())
+		{
+			if (($err = $this->guard()) !== null) { return $err; }
+			$trashId = isset($params['id']) ? (int) $params['id'] : 0;
+			if (!RubricTrash::purge($trashId)) {
+				return $this->error('Запись корзины не найдена', array(), 404);
+			}
+
+			AuditLog::record('rubric.purged', array(
+				'actor_id' => Auth::id(),
+				'target_type' => 'rubric_trash',
+				'target_id' => $trashId,
+			));
+			return $this->success('Рубрика удалена окончательно', array('data' => array('id' => $trashId)));
 		}
 
 		protected function captureSchemaBefore($rubricId, $comment)

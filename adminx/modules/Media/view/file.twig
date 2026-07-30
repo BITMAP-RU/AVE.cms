@@ -79,6 +79,7 @@
       <input type="hidden" name="_csrf" value="{{ csrf_token }}">
       <input type="hidden" name="path" value="{{ file.path }}">
       <input type="hidden" name="crop_enabled" value="0" data-crop-enabled>
+      <input type="hidden" name="webp_twin" value="0" data-webp-twin>
       <input type="hidden" name="crop_x" value="0" data-crop-input="x">
       <input type="hidden" name="crop_y" value="0" data-crop-input="y">
       <input type="hidden" name="crop_w" value="{{ file.width ?: 1 }}" data-crop-input="w">
@@ -89,6 +90,19 @@
         <button class="media-result-stage" type="button" data-media-result-zoom data-tooltip="Открыть крупно" aria-label="Открыть результат крупно"><img alt="Результат" data-media-result-img><span class="media-result-empty" data-media-result-empty>Меняйте настройки — результат обновится здесь</span></button>
       </div>
 
+      {% if presets %}
+      <div class="media-preset-pick">
+        <label class="media-preset-pick-field"><span><i class="ti ti-aspect-ratio"></i> Подогнать под вид</span>
+          <select class="select" data-crop-preset>
+            <option value="">— вручную —</option>
+            {% for p in presets %}
+            <option value="{{ p.code }}" data-mode="{{ p.mode }}" data-width="{{ p.width }}" data-height="{{ p.height }}" data-format="{{ p.format }}" data-quality="{{ p.quality }}" data-webp-twin="{{ p.webp_twin }}">{{ p.label }}{% if p.webp_twin %} · +WebP{% endif %}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <p class="media-preset-warn" data-crop-preset-warning hidden></p>
+      </div>
+      {% endif %}
       <div class="media-form-grid">
         <label><span>Кадр</span><select class="select" data-crop-ratio><option value="original">Оригинал</option><option value="free">Свободный</option><option value="1:1">1:1</option><option value="4:3">4:3</option><option value="16:9">16:9</option><option value="9:16">9:16</option></select></label>
         <label><span>Режим</span><select class="select" name="mode"><option value="cover">Обрезать</option><option value="contain">Вписать</option><option value="fit">Уменьшить</option><option value="stretch">Растянуть</option></select></label>

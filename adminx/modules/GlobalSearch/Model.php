@@ -17,6 +17,7 @@
 	defined('BASEPATH') || die('Direct access to this location is not allowed.');
 
 	use App\Common\DatabaseSchema;
+	use App\Common\SystemTables;
 	use App\Adminx\Support\GlobalSearchRegistry;
 	use App\Adminx\Support\ModuleExtensions;
 	use App\Content\ContentTables;
@@ -57,7 +58,7 @@
 					self::decode($row['document_title']),
 					'#' . (int) $row['Id'] . ' · /' . (string) $row['document_alias'],
 					'/documents/' . (int) $row['Id'] . '/edit',
-					'ti-file-text'
+					'ti ti-file-text'
 				);
 				$item['score'] = (float) $row['search_relevance'];
 				$out[] = $item;
@@ -79,7 +80,7 @@
 			)->getAll() ?: array();
 			$out = array();
 			foreach ($rows as $row) {
-				$out[] = self::item('rubric', 'Рубрики', self::decode($row['rubric_title']), '#' . (int) $row['Id'] . ' · ' . (string) $row['rubric_alias'], '/rubrics?edit=' . (int) $row['Id'], 'ti-forms');
+				$out[] = self::item('rubric', 'Рубрики', self::decode($row['rubric_title']), '#' . (int) $row['Id'] . ' · ' . (string) $row['rubric_alias'], '/rubrics?edit=' . (int) $row['Id'], 'ti ti-forms');
 			}
 
 			return $out;
@@ -98,7 +99,7 @@
 			)->getAll() ?: array();
 			$out = array();
 			foreach ($rows as $row) {
-				$out[] = self::item('block', 'Блоки', self::decode($row['sysblock_name']), '#' . (int) $row['id'] . ' · ' . (string) $row['sysblock_alias'], '/blocks?edit=' . (int) $row['id'], 'ti-blockquote');
+				$out[] = self::item('block', 'Блоки', self::decode($row['sysblock_name']), '#' . (int) $row['id'] . ' · ' . (string) $row['sysblock_alias'], '/blocks?edit=' . (int) $row['id'], 'ti ti-blockquote');
 			}
 
 			return $out;
@@ -117,7 +118,7 @@
 			)->getAll() ?: array();
 			$out = array();
 			foreach ($rows as $row) {
-				$out[] = self::item('request', 'Запросы', self::decode($row['request_title']), '#' . (int) $row['Id'] . ' · ' . (string) $row['request_alias'], '/requests/' . (int) $row['Id'], 'ti-list-search');
+				$out[] = self::item('request', 'Запросы', self::decode($row['request_title']), '#' . (int) $row['Id'] . ' · ' . (string) $row['request_alias'], '/requests/' . (int) $row['Id'], 'ti ti-list-search');
 			}
 
 			return $out;
@@ -142,7 +143,50 @@
 					self::decode($row['title']),
 					'#' . (int) $row['navigation_item_id'] . ' · ' . (string) $row['alias'],
 					'/navigation?navigation=' . (int) $row['navigation_id'] . '&item=' . (int) $row['navigation_item_id'],
-					'ti-menu-2'
+					'ti ti-menu-2'
+				);
+			}
+
+			return $out;
+		}
+
+		public static function users($query, $limit = 6)
+		{
+			$table = SystemTables::table('users');
+			if (!self::available($table)) { return array(); }
+			// У таблицы пользователей смешанные коллации (email обычно ascii,
+			// name/login — utf8mb4), поэтому приводим сравниваемые колонки к
+			// charset соединения (utf8 = utf8mb3, см. dbchar): иначе
+			// кириллический запрос роняет провайдер на «illegal mix of
+			// collations». Ведущий подстановочный знак и так исключает
+			// использование индекса, так что CONVERT ничего не стоит.
+			$rows = DB::query(
+				'SELECT id,name,login,email,is_active FROM ' . $table
+					. ' WHERE CONVERT(name USING utf8) LIKE %ss'
+					. ' OR CONVERT(login USING utf8) LIKE %ss'
+					. ' OR CONVERT(email USING utf8) LIKE %ss OR id=%i'
+					. ' ORDER BY is_active DESC,name LIMIT ' . max(1, min(12, (int) $limit)),
+				$query,
+				$query,
+				$query,
+				(int) $query
+			)->getAll() ?: array();
+			$out = array();
+			foreach ($rows as $row) {
+				$name = trim((string) $row['name']);
+				$login = trim((string) $row['login']);
+				$email = trim((string) $row['email']);
+				$title = $name !== '' ? $name : ($login !== '' ? '@' . $login : $email);
+				$parts = array('#' . (int) $row['id']);
+				if ($email !== '') { $parts[] = $email; }
+				if (empty($row['is_active'])) { $parts[] = 'выключен'; }
+				$out[] = self::item(
+					'user',
+					'Пользователи',
+					self::decode($title !== '' ? $title : ('#' . (int) $row['id'])),
+					implode(' · ', $parts),
+					'/users/' . (int) $row['id'],
+					'ti ti-user'
 				);
 			}
 
@@ -168,6 +212,7 @@
 				'blocks' => array('provider' => array(self::class, 'blocks'), 'permission' => 'view_blocks', 'priority' => 30, 'limit' => 6),
 				'requests' => array('provider' => array(self::class, 'requests'), 'permission' => 'view_requests', 'priority' => 40, 'limit' => 6),
 				'navigation' => array('provider' => array(self::class, 'navigation'), 'permission' => 'view_navigation', 'priority' => 50, 'limit' => 5),
+				'users' => array('provider' => array(self::class, 'users'), 'permission' => 'view_users', 'priority' => 60, 'limit' => 6),
 			) as $code => $definition) {
 				GlobalSearchRegistry::register('core.' . $code, $definition);
 			}

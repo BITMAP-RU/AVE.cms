@@ -72,6 +72,9 @@
 			'005_register_development_site_permission' => array('{{prefix}}_permissions'),
 			'006_normalize_control_panel_permission' => array('{{prefix}}_permissions'),
 		)),
+		'media' => array('directory' => 'Media', 'ids' => array(
+			'001_image_presets',
+		), 'backup' => array('001_image_presets' => array())),
 		'navigation' => array('directory' => 'Navigation', 'ids' => array('001_create_navigation_tables')),
 		'notfound' => array('directory' => 'NotFound', 'optional' => true, 'ids' => array(
 			'001_register_notfound_permissions', '002_create_not_found_log',
@@ -102,7 +105,7 @@
 			'007_rubric_open_graph', '008_normalize_field_layout_width',
 			'009_expand_clean_starter_rubric', '010_form_conditions', '011_schema_revisions',
 			'012_linked_field_sets', '013_group_form_conditions', '014_rubric_purpose',
-			'015_merge_directory_permissions',
+			'015_merge_directory_permissions', '016_rubric_trash',
 		), 'backup' => array(
 			'012_linked_field_sets' => array(),
 			'013_group_form_conditions' => array('{{content_prefix}}_rubric_fields_group'),
@@ -111,6 +114,7 @@
 				'{{prefix}}_permissions',
 				'{{prefix}}_role_permissions',
 			),
+			'016_rubric_trash' => array(),
 		)),
 		'security' => array('directory' => 'Security', 'ids' => array('001_create_ip_blocks')),
 		'settings' => array('directory' => 'Settings', 'ids' => array(

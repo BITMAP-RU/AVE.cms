@@ -31,6 +31,8 @@
       document.addEventListener('click', function (event) {
         var customerEdit = event.target.closest('[data-customer-edit]');
         if (customerEdit) { event.preventDefault(); self.openCustomer(customerEdit); return; }
+        var customerDelete = event.target.closest('[data-customer-delete]');
+        if (customerDelete) { event.preventDefault(); self.deleteCustomer(customerDelete); return; }
         if (event.target.closest('[data-field-new]')) { self.fieldForm(null); }
         var edit = event.target.closest('[data-field-edit]');
         if (edit) { self.fieldForm(JSON.parse(edit.closest('[data-field]').getAttribute('data-field'))); }
@@ -135,6 +137,7 @@
       if (!form) { return; }
       form.reset();
       form.dataset.id = user.id || '0';
+      form.dataset.current = data.is_current ? '1' : '0';
       ['firstname', 'lastname', 'email', 'user_name', 'phone', 'company', 'birthday', 'description', 'city', 'street', 'street_nr', 'zipcode', 'user_group'].forEach(function (name) {
         if (form.elements[name]) { form.elements[name].value = user[name] == null ? '' : user[name]; }
       });
@@ -145,6 +148,7 @@
       form.elements.phone_verified.checked = Number(user.phone_verified_at) > 0;
       form.elements.admin_access.checked = !!(data.system && Number(data.system.is_active) === 1);
       form.elements.admin_role.value = data.system && data.system.role ? data.system.role : 'manager';
+      this.syncCurrentAccountProtection();
       this.syncAdminAccess();
       Object.keys(extra).forEach(function (id) {
         var input = form.elements['extra[' + id + ']'];
@@ -179,9 +183,51 @@
       var form = document.querySelector('[data-customer-editor]');
       var field = form ? form.querySelector('[data-customer-admin-role]') : null;
       var toggle = form && form.elements.admin_access ? form.elements.admin_access : null;
+      var isCurrent = form && form.dataset.current === '1';
+      var canManage = form && form.dataset.canManageAdminAccess === '1';
       if (!field || !toggle) { return; }
       field.hidden = !toggle.checked;
-      if (form.elements.admin_role) { form.elements.admin_role.disabled = !toggle.checked; }
+      if (form.elements.admin_role) { form.elements.admin_role.disabled = !toggle.checked || !canManage || isCurrent; }
+    },
+
+    syncCurrentAccountProtection: function () {
+      var form = document.querySelector('[data-customer-editor]');
+      var isCurrent = form && form.dataset.current === '1';
+      var canManage = form && form.dataset.canManageAdminAccess === '1';
+      var accountHint = form ? form.querySelector('[data-customer-account-hint]') : null;
+      var adminHint = form ? form.querySelector('[data-customer-admin-hint]') : null;
+      var groupHint = form ? form.querySelector('[data-customer-group-hint]') : null;
+      var roleHint = form ? form.querySelector('[data-customer-admin-role-hint]') : null;
+      var accountCard = form ? form.querySelector('[data-customer-account-card]') : null;
+      var adminCard = form ? form.querySelector('[data-customer-admin-card]') : null;
+      if (!form) { return; }
+      form.elements.user_group.disabled = isCurrent;
+      form.elements.status.disabled = isCurrent;
+      form.elements.admin_access.disabled = isCurrent || !canManage;
+      if (accountCard) { accountCard.classList.toggle('is-locked', isCurrent); }
+      if (adminCard) { adminCard.classList.toggle('is-locked', isCurrent || !canManage); }
+      if (accountHint) {
+        accountHint.textContent = isCurrent
+          ? 'Собственную учётную запись нельзя отключить.'
+          : 'Может входить на сайт и в личный кабинет.';
+      }
+      if (adminHint) {
+        adminHint.textContent = isCurrent
+          ? 'Собственный доступ к панели нельзя отключить.'
+          : (canManage
+            ? 'Та же учётная запись сможет работать в административном интерфейсе.'
+            : 'Изменение требует права управления системными пользователями.');
+      }
+      if (groupHint) {
+        groupHint.textContent = isCurrent
+          ? 'Собственную публичную группу изменяйте через другого администратора.'
+          : 'Определяет права пользователя на публичной части сайта.';
+      }
+      if (roleHint) {
+        roleHint.textContent = isCurrent
+          ? 'Собственную роль изменяйте через другого администратора.'
+          : 'Права роли настраиваются в разделе «Роли и права».';
+      }
     },
 
     formatTimestamp: function (value) {
@@ -203,6 +249,22 @@
         message: 'Значения этого поля у пользователей сайта также будут удалены.',
         confirmLabel: 'Удалить', confirmClass: 'btn-danger',
         onConfirm: function () { self.request(button.getAttribute('data-url'), new FormData()).then(function () { window.location.reload(); }); }
+      });
+    },
+
+    deleteCustomer: function (button) {
+      var self = this;
+      Adminx.Confirm.open({
+        kind: 'error',
+        title: 'Удалить пользователя сайта?',
+        message: 'Аккаунт будет отключён, а его публичные сессии завершены. История заказов и связанные записи сохранятся.',
+        confirmLabel: 'Удалить',
+        confirmClass: 'btn-danger',
+        onConfirm: function () {
+          self.request(button.getAttribute('data-url'), new FormData()).then(function () {
+            window.location.reload();
+          });
+        }
       });
     },
 

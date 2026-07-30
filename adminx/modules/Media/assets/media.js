@@ -62,12 +62,134 @@
         if (clearThumbs) { self.clearThumbnails(clearThumbs); return; }
         if (webp) { self.convertWebp(webp); return; }
         if (zoom) { e.preventDefault(); self.openResultLarge(); return; }
-        if (copy) { self.copy(copy.getAttribute('data-copy')); }
+        if (copy) { self.copy(copy.getAttribute('data-copy')); return; }
+
+        var presetsOpen = e.target.closest('[data-media-presets-open]');
+        if (presetsOpen) { self.loadPresets(); return; }
+        if (e.target.closest('[data-preset-save]')) { self.savePreset(); return; }
+        if (e.target.closest('[data-preset-reset]')) { self.resetPresetForm(); return; }
+        var presetEdit = e.target.closest('[data-preset-edit]');
+        if (presetEdit) { self.editPreset(presetEdit.getAttribute('data-preset-edit')); return; }
+        var presetDelete = e.target.closest('[data-preset-delete]');
+        if (presetDelete) { self.deletePreset(presetDelete.getAttribute('data-preset-delete')); return; }
       });
     },
 
     base: function () {
       return Adminx.base();
+    },
+
+    presetData: null,
+
+    loadPresets: function () {
+      var self = this;
+      Adminx.Loader.show();
+      Adminx.Ajax.request(this.base() + '/media/presets').then(function (payload) {
+        Adminx.Loader.hide();
+        var r = payload.data || {};
+        if (!r.success || !r.data) { Adminx.Toast.show(r.message || 'Не удалось загрузить виды', 'error'); return; }
+        self.presetData = r.data;
+        self.fillPresetSelects(r.data.modes || {}, r.data.formats || {});
+        self.renderPresets(r.data.items || []);
+      }).catch(function () { Adminx.Loader.hide(); Adminx.Toast.show('Ошибка сети', 'error'); });
+    },
+
+    fillPresetSelects: function (modes, formats) {
+      var m = document.querySelector('[data-preset-modes]');
+      var f = document.querySelector('[data-preset-formats]');
+      if (m && !m.getAttribute('data-filled')) {
+        m.innerHTML = Object.keys(modes).map(function (k) { return '<option value="' + esc(k) + '">' + esc(modes[k]) + '</option>'; }).join('');
+        m.setAttribute('data-filled', '1');
+      }
+      if (f && !f.getAttribute('data-filled')) {
+        f.innerHTML = Object.keys(formats).map(function (k) { return '<option value="' + esc(k) + '">' + esc(formats[k]) + '</option>'; }).join('');
+        f.setAttribute('data-filled', '1');
+      }
+    },
+
+    renderPresets: function (items) {
+      var list = document.querySelector('[data-preset-list]');
+      if (!list) { return; }
+      if (!items.length) { list.innerHTML = '<div class="empty-state">Виды ещё не заданы. Добавьте первый в форме ниже.</div>'; return; }
+      var canManage = this.presetData && this.presetData.can_manage;
+      list.innerHTML = items.map(function (item) {
+        return '<div class="media-preset-row">'
+          + '<span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-aspect-ratio"></i></span>'
+          + '<div class="media-preset-main"><div><b>' + esc(item.title) + '</b>'
+          + (item.group_label ? ' <span class="badge badge-gray">' + esc(item.group_label) + '</span>' : '') + '</div>'
+          + '<small>' + esc(item.mode_label) + ' · ' + item.width + '×' + item.height + (item.format !== 'original' ? ' · ' + esc(item.format) : '') + ' · q' + item.quality + (item.webp_twin ? ' · +WebP' : '') + '</small></div>'
+          + (canManage ? '<div class="cluster"><button class="btn btn-ghost btn-icon btn-sm" type="button" data-preset-edit="' + item.id + '" data-tooltip="Изменить" aria-label="Изменить"><i class="ti ti-pencil"></i></button>'
+          + '<button class="btn btn-ghost btn-icon btn-sm media-action-danger" type="button" data-preset-delete="' + item.id + '" data-tooltip="Удалить" aria-label="Удалить"><i class="ti ti-trash"></i></button></div>' : '')
+          + '</div>';
+      }).join('');
+    },
+
+    editPreset: function (id) {
+      if (!this.presetData) { return; }
+      var item = (this.presetData.items || []).filter(function (p) { return String(p.id) === String(id); })[0];
+      var form = document.getElementById('mediaPresetForm');
+      if (!item || !form) { return; }
+      form.querySelector('[name="id"]').value = item.id;
+      form.querySelector('[name="title"]').value = item.title;
+      form.querySelector('[name="group_label"]').value = item.group_label || '';
+      form.querySelector('[name="mode"]').value = item.mode;
+      form.querySelector('[name="format"]').value = item.format;
+      form.querySelector('[name="width"]').value = item.width;
+      form.querySelector('[name="height"]').value = item.height;
+      form.querySelector('[name="quality"]').value = item.quality;
+      var twin = form.querySelector('[name="webp_twin"]');
+      if (twin) { twin.checked = !!item.webp_twin; }
+      form.querySelectorAll('[data-error]').forEach(function (el) { el.textContent = ''; });
+    },
+
+    resetPresetForm: function () {
+      var form = document.getElementById('mediaPresetForm');
+      if (!form) { return; }
+      form.reset();
+      form.querySelector('[name="id"]').value = '';
+      form.querySelectorAll('[data-error]').forEach(function (el) { el.textContent = ''; });
+    },
+
+    savePreset: function () {
+      var form = document.getElementById('mediaPresetForm');
+      if (!form) { return; }
+      var self = this;
+      var id = (form.querySelector('[name="id"]').value || '').trim();
+      var url = this.base() + '/media/presets' + (id ? '/' + id : '');
+      form.querySelectorAll('[data-error]').forEach(function (el) { el.textContent = ''; });
+      Adminx.Loader.show();
+      Adminx.Ajax.post(url, new FormData(form)).then(function (payload) {
+        Adminx.Loader.hide();
+        var r = payload.data || {};
+        if (!r.success) {
+          if (r.errors) { Object.keys(r.errors).forEach(function (k) { var el = form.querySelector('[data-error="' + k + '"]'); if (el) { el.textContent = r.errors[k]; } }); }
+          Adminx.Toast.show(r.message || 'Проверьте поля', 'error');
+          return;
+        }
+        Adminx.Toast.show(r.message || 'Сохранено', 'success');
+        self.resetPresetForm();
+        self.loadPresets();
+      }).catch(function () { Adminx.Loader.hide(); Adminx.Toast.show('Ошибка сети', 'error'); });
+    },
+
+    deletePreset: function (id) {
+      var self = this;
+      Adminx.Confirm.open({
+        kind: 'danger',
+        title: 'Удалить вид?',
+        message: 'Он исчезнет из списка подгонки. Уже обрезанные картинки не изменятся.',
+        confirmLabel: 'Удалить',
+        onConfirm: function () {
+          Adminx.Loader.show();
+          Adminx.Ajax.post(self.base() + '/media/presets/' + id + '/delete').then(function (payload) {
+            Adminx.Loader.hide();
+            var r = payload.data || {};
+            if (!r.success) { Adminx.Toast.show(r.message || 'Не удалось удалить', 'error'); return; }
+            Adminx.Toast.show(r.message || 'Удалено', 'success');
+            self.loadPresets();
+          }).catch(function () { Adminx.Loader.hide(); Adminx.Toast.show('Ошибка сети', 'error'); });
+        }
+      });
     },
 
     modalInput: function (cfg, done) {
@@ -546,6 +668,52 @@
 
       if (ratioSelect) {
         ratioSelect.addEventListener('change', function (e) { setRatio(e.target.value); });
+      }
+
+      var presetSelect = form.querySelector('[data-crop-preset]');
+      var presetWarn = form.querySelector('[data-crop-preset-warning]');
+      if (presetSelect) {
+        presetSelect.addEventListener('change', function () {
+          var opt = presetSelect.options[presetSelect.selectedIndex];
+          var webpTwinInput = form.querySelector('[data-webp-twin]');
+          if (!opt || !opt.value) {
+            if (webpTwinInput) { webpTwinInput.value = '0'; }
+            if (presetWarn) { presetWarn.hidden = true; }
+            return;
+          }
+          if (webpTwinInput) { webpTwinInput.value = opt.getAttribute('data-webp-twin') === '1' ? '1' : '0'; }
+          var pw = parseInt(opt.getAttribute('data-width'), 10) || 0;
+          var ph = parseInt(opt.getAttribute('data-height'), 10) || 0;
+          var pmode = opt.getAttribute('data-mode');
+          var pformat = opt.getAttribute('data-format');
+          var pquality = parseInt(opt.getAttribute('data-quality'), 10) || 82;
+          var modeInput = form.querySelector('[name="mode"]');
+          var formatInput = form.querySelector('[name="format"]');
+          var qualityInput = form.querySelector('[name="quality"]');
+          if (modeInput && pmode) { modeInput.value = pmode; }
+          if (formatInput && pformat && formatInput.querySelector('option[value="' + pformat + '"]')) { formatInput.value = pformat; }
+          if (qualityInput) { qualityInput.value = pquality; }
+          // рамку кропа — под соотношение вида (если заданы обе стороны)
+          if (pw > 0 && ph > 0) {
+            if (ratioSelect) { ratioSelect.value = 'free'; }
+            setRatio(pw + ':' + ph);
+          }
+          // выходной размер — точные размеры вида (перекрывает пересчёт из sync)
+          if (inputs.outputW && pw > 0) { inputs.outputW.value = pw; }
+          if (inputs.outputH && ph > 0) { inputs.outputH.value = ph; }
+          if (inputs.outputW) { inputs.outputW.dispatchEvent(new Event('input', { bubbles: true })); }
+          // предупреждение о растягивании
+          if (presetWarn) {
+            var nw = img.naturalWidth || 0;
+            var nh = img.naturalHeight || 0;
+            if ((pw && nw && nw < pw) || (ph && nh && nh < ph)) {
+              presetWarn.textContent = 'Исходник ' + nw + '×' + nh + ' меньше вида ' + pw + '×' + ph + ' — картинка растянется и будет мыльной.';
+              presetWarn.hidden = false;
+            } else {
+              presetWarn.hidden = true;
+            }
+          }
+        });
       }
       form.querySelector('[data-crop-reset]').addEventListener('click', function () {
         state = { x: 0, y: 0, w: 100, h: 100, drag: null, sx: 0, sy: 0 };

@@ -167,7 +167,7 @@
 			));
 		}
 
-		public static function deleteRubric($id)
+		public static function deleteRubric($id, $authorId = 0)
 		{
 			$id = (int) $id;
 			if ($id <= 1) {
@@ -195,16 +195,35 @@
 				}
 			}
 
-			DB::Delete(self::fieldsTable(), 'rubric_id = %i', $id);
-			DB::Delete(self::groupsTable(), 'rubric_id = %i', $id);
-			DB::Delete(self::templatesTable(), 'rubric_id = %i', $id);
-			DB::Delete(self::permissionsTable(), 'rubric_id = %i', $id);
-			DB::Delete(AdminView::table(), 'rubric_id = %i', $id);
-			RubricFieldSetLinks::deleteForRubric($id);
-			DB::Delete(self::rubricsTable(), 'Id = %i', $id);
-			RubricRevisions::deleteForRubric($id);
+			// Перед необратимым каскадом снимаем полный слепок рубрики в
+			// корзину: удаление разрешено только для пустой рубрики без
+			// зависимостей, поэтому её можно честно убрать из активных таблиц
+			// и восстановить позже. Слепок и каскад — в одной транзакции.
+			DB::startTransaction();
+			try {
+				RubricTrash::capture($id, (int) $authorId);
+				DB::Delete(self::fieldsTable(), 'rubric_id = %i', $id);
+				DB::Delete(self::groupsTable(), 'rubric_id = %i', $id);
+				DB::Delete(self::templatesTable(), 'rubric_id = %i', $id);
+				DB::Delete(self::permissionsTable(), 'rubric_id = %i', $id);
+				DB::Delete(AdminView::table(), 'rubric_id = %i', $id);
+				RubricFieldSetLinks::deleteForRubric($id);
+				DB::Delete(self::rubricsTable(), 'Id = %i', $id);
+				RubricRevisions::deleteForRubric($id);
+				DB::commit();
+			} catch (\Throwable $e) {
+				DB::rollback();
+				throw $e;
+			}
+
 			self::clearRubricCache($id);
 			return true;
+		}
+
+		/** Публичный сброс кэша рубрики (для восстановления из корзины). */
+		public static function clearRubricCachePublic($id)
+		{
+			self::clearRubricCache((int) $id);
 		}
 
 		public static function fieldsForRubric($rubricId)

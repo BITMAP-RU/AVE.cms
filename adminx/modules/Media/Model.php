@@ -556,6 +556,15 @@
 			$name = self::uniqueName($outAbsDir, self::safeName($base, false), $r['format']);
 			$out = $outAbsDir . DIRECTORY_SEPARATOR . $name;
 			self::saveImage($dst, $out, $r['format'], $r['quality']);
+
+			// WebP-двойник рядом: если вид просит и результат ещё не webp —
+			// кладём тот же кадр в .webp с тем же базовым именем (foto-...-.webp),
+			// чтобы сайт отдавал webp с jpg-фолбэком. Делаем до imagedestroy.
+			if (!empty($input['webp_twin']) && $r['format'] !== 'webp' && self::supportsWebp()) {
+				$webpName = pathinfo($name, PATHINFO_FILENAME) . '.webp';
+				self::saveImage($dst, $outAbsDir . DIRECTORY_SEPARATOR . $webpName, 'webp', $r['quality']);
+			}
+
 			imagedestroy($dst);
 			return rtrim($outDir, '/') . '/' . $name;
 		}

@@ -737,3 +737,17 @@ button.media-thumb {
     grid-template-columns: 1fr;
   }
 }
+
+.media-presets-list { display: flex; flex-direction: column; gap: 8px; }
+.media-preset-row { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; background: var(--surface-2, #f6f8fb); }
+.media-preset-row .media-preset-main { flex: 1; min-width: 0; }
+.media-preset-row .media-preset-main small { color: var(--text-secondary, #667085); display: block; margin-top: 2px; }
+.media-presets-form { margin-top: 16px; }
+
+.media-preset-pick { margin-bottom: 12px; }
+.media-preset-pick-field { display: flex; flex-direction: column; gap: 4px; }
+.media-preset-pick-field > span { font-size: 13px; color: var(--text-secondary, #667085); }
+.media-preset-warn { margin-top: 8px; padding: 8px 10px; border-radius: 8px; background: var(--amber-100, #fef3c7); color: var(--amber-700, #b45309); font-size: 13px; }
+
+.media-preset-check { flex-direction: row; align-items: center; gap: 8px; }
+.media-preset-check > span { color: var(--text-secondary, #667085); font-size: 13px; }

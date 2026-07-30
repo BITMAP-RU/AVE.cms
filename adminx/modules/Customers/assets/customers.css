@@ -97,6 +97,16 @@
 .customers-editor-access .customers-switch-card:last-child {
   grid-column: 1 / -1;
 }
+.customers-editor-input {
+  width: 100%;
+}
+.customers-editor-input .input {
+  width: 100%;
+}
+.customers-switch-card.is-locked {
+  opacity: 0.68;
+  cursor: not-allowed;
+}
 .customers-editor-checkbox {
   display: flex;
   align-items: center;

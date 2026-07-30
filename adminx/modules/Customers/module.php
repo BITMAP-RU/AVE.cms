@@ -15,7 +15,7 @@
 	defined('BASEPATH') || die('Direct access to this location is not allowed.');
 
 	return array(
-		'code' => 'customers', 'name' => 'Пользователи сайта', 'version' => '0.3.0',
+		'code' => 'customers', 'name' => 'Пользователи сайта', 'version' => '0.3.1',
 		'permissions' => array('key' => 'customers', 'items' => array(
 			array(
 				'code' => 'view_customers',
@@ -48,6 +48,7 @@
 			array('GET', '/system/customers', array(\App\Adminx\Customers\Controller::class, 'index')),
 			array('GET', '/system/customers/users/{id}', array(\App\Adminx\Customers\Controller::class, 'customer')),
 			array('POST', '/system/customers/users/{id}', array(\App\Adminx\Customers\Controller::class, 'updateCustomer')),
+			array('POST', '/system/customers/users/{id}/delete', array(\App\Adminx\Customers\Controller::class, 'deleteCustomer')),
 			array('POST', '/system/customers/{id}/toggle', array(\App\Adminx\Customers\Controller::class, 'toggle')),
 			array('POST', '/system/customers/fields/reorder', array(\App\Adminx\Customers\Controller::class, 'reorderFields')),
 			array('POST', '/system/customers/fields/{id}', array(\App\Adminx\Customers\Controller::class, 'saveField')),

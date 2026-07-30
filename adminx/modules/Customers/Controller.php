@@ -31,14 +31,20 @@
 		{
 			if(!Permission::check('view_customers')){Response::forbidden();return '';}AdminAssets::addStyle($this->base().'/modules/Customers/assets/customers.css',50);AdminAssets::addScript($this->base().'/modules/Customers/assets/customers.js',50);CodeEditor::useCodeMirror('htmlmixed');
 			$oauthModules=Model::oauthModules();foreach($oauthModules as &$oauthModule){$oauthModule['can_open']=Permission::check($oauthModule['permission']);}unset($oauthModule);
-			$tab=Request::getStr('tab','customers');if(!in_array($tab,array('customers','fields','auth','pages'),true)){$tab='customers';}return $this->render('@customers/index.twig',array('tab'=>$tab,'customers'=>Model::customers(Request::getStr('q','')),'fields'=>Model::fields(),'stats'=>Model::stats(),'auth_settings'=>Model::authSettings(),'checkout_access_template_default'=>\App\Common\PublicAuthSettings::defaultCheckoutAccessTemplate(),'oauth_modules'=>$oauthModules,'customer_groups'=>Model::groups(),'admin_roles'=>Roles::map(),'page_templates'=>Model::pageTemplates(),'auth_forms'=>Model::authFormDefinitions(),'q'=>Request::getStr('q',''),'can_manage'=>Permission::check('manage_customers'),'can_manage_admin_access'=>Permission::check('manage_users')));
+			$tab=Request::getStr('tab','customers');if(!in_array($tab,array('customers','fields','auth','pages'),true)){$tab='customers';}return $this->render('@customers/index.twig',array('tab'=>$tab,'customers'=>Model::customers(Request::getStr('q','')),'fields'=>Model::fields(),'stats'=>Model::stats(),'auth_settings'=>Model::authSettings(),'checkout_access_template_default'=>\App\Common\PublicAuthSettings::defaultCheckoutAccessTemplate(),'oauth_modules'=>$oauthModules,'customer_groups'=>Model::groups(),'admin_roles'=>Roles::map(),'page_templates'=>Model::pageTemplates(),'auth_forms'=>Model::authFormDefinitions(),'q'=>Request::getStr('q',''),'can_manage'=>Permission::check('manage_customers'),'can_manage_admin_access'=>Permission::check('manage_users'),'current_public_user_id'=>Model::publicIdForSystem(Auth::id())));
 		}
 
-		public function toggle(array $params=array()){if(($e=$this->guard())!==null){return $e;}return $this->success(Model::toggle(isset($params['id'])?$params['id']:0)?'Пользователь включён':'Пользователь отключён');}
+		public function toggle(array $params=array())
+		{
+			if(($e=$this->guard())!==null){return $e;}
+			try{$active=Model::toggle(isset($params['id'])?$params['id']:0,Auth::id());}catch(\InvalidArgumentException $e){return $this->error($e->getMessage(),array(),422);}
+			return $this->success($active?'Пользователь включён':'Пользователь отключён');
+		}
+
 		public function customer(array $params=array())
 		{
 			if(!Permission::check('view_customers')){return $this->error('Недостаточно прав',array(),403);}
-			$customer=Model::customer(isset($params['id'])?$params['id']:0);
+			$customer=Model::customer(isset($params['id'])?$params['id']:0,Auth::id());
 			return $customer?$this->success('',array('data'=>$customer)):$this->error('Пользователь не найден',array(),404);
 		}
 
@@ -46,9 +52,26 @@
 		{
 			if(($e=$this->guard())!==null){return $e;}
 			$id=isset($params['id'])?(int)$params['id']:0;$input=Request::postAll();
-			if(!Permission::check('manage_users')){$current=Model::customer($id);$input['admin_access']=!empty($current['system']['is_active'])?'1':'';$input['admin_role']=!empty($current['system']['role'])?(string)$current['system']['role']:'manager';}
+			if(!Permission::check('manage_users')){$current=Model::customer($id,Auth::id());$input['admin_access']=!empty($current['system']['is_active'])?'1':'';$input['admin_role']=!empty($current['system']['role'])?(string)$current['system']['role']:'manager';}
 			try{$customer=Model::updateCustomer($id,$input,Auth::id());}catch(\InvalidArgumentException $e){return $this->error($e->getMessage(),array(),422);}catch(\Throwable $e){return $this->error('Не удалось сохранить пользователя',array(),500);}
 			return $this->success('Профиль пользователя сохранён',array('data'=>$customer));
+		}
+
+		public function deleteCustomer(array $params = array())
+		{
+			if (($e = $this->guard()) !== null) {
+				return $e;
+			}
+
+			try {
+				Model::deleteCustomer(isset($params['id']) ? $params['id'] : 0, Auth::id());
+			} catch (\InvalidArgumentException $e) {
+				return $this->error($e->getMessage(), array(), 422);
+			} catch (\Throwable $e) {
+				return $this->error('Не удалось удалить пользователя', array(), 500);
+			}
+
+			return $this->success('Пользователь удалён', array('reload' => true));
 		}
 
 		public function saveField(array $params=array()){if(($e=$this->guard())!==null){return $e;}try{$id=Model::saveField(isset($params['id'])?$params['id']:0,Request::postAll());}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}return $this->success('Поле сохранено',array('data'=>array('id'=>$id),'reload'=>true));}

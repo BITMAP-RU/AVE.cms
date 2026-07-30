@@ -20,6 +20,7 @@
 	use App\Adminx\Support\Roles;
 	use App\Common\Auth\IdentityLinker;
 	use App\Common\ModuleManager;
+	use App\Common\SystemTables;
 	use App\Content\PublicUserTables;
 	use App\Content\ContentTables;
 	use App\Common\PublicAuthSettings;
@@ -43,15 +44,24 @@
 			$table=self::table('users');return array('total'=>(int)DB::query('SELECT COUNT(*) FROM '.$table.' WHERE deleted!=%s','1')->getValue(),'active'=>(int)DB::query('SELECT COUNT(*) FROM '.$table.' WHERE deleted!=%s AND status=%s','1','1')->getValue(),'verified'=>(int)DB::query('SELECT COUNT(*) FROM '.$table.' WHERE deleted!=%s AND (email_verified_at>0 OR phone_verified_at>0)','1')->getValue(),'fields'=>count(self::fields()));
 		}
 
-		public static function toggle($id)
+		public static function toggle($id, $currentSystemId = 0)
 		{
+			$customer = self::customer($id, $currentSystemId);
+			if (!$customer) {
+				throw new \InvalidArgumentException('Пользователь не найден');
+			}
+
+			if (!empty($customer['is_current'])) {
+				throw new \InvalidArgumentException('Нельзя отключить собственную учётную запись');
+			}
+
 			DB::query('UPDATE '.self::table('users')." SET status=IF(status='1','0','1') WHERE Id=%i AND deleted!=%s",(int)$id,'1');
 			$active=(string)DB::query('SELECT status FROM '.self::table('users').' WHERE Id=%i',(int)$id)->getValue()==='1';
 			if(!$active){self::invalidateCustomerSessions((int)$id);}
 			return $active;
 		}
 
-		public static function customer($id)
+		public static function customer($id, $currentSystemId = 0)
 		{
 			$row=DB::query('SELECT Id AS id,email,email_verified_at,firstname,lastname,user_name,phone,phone_normalized,phone_verified_at,company,city,street,street_nr,zipcode,birthday,description,user_group,status,reg_time,last_visit FROM '.self::table('users').' WHERE Id=%i AND deleted!=%s LIMIT 1',(int)$id,'1')->getAssoc();
 			if(!$row){return null;}
@@ -63,14 +73,43 @@
 			$system=IdentityLinker::systemForPublic((int)$id,(string)$row['email']);
 			return array('user'=>$row,'extra'=>$extra,'system'=>$system?array(
 				'id'=>(int)$system['id'],'role'=>(string)$system['role'],'is_active'=>(int)$system['is_active'],
-			):null);
+			):null,'is_current'=>$system&&(int)$system['id']===(int)$currentSystemId);
+		}
+
+		public static function publicIdForSystem($systemId)
+		{
+			$system = DB::query(
+				'SELECT * FROM ' . SystemTables::table('users') . ' WHERE id = %i LIMIT 1',
+				(int) $systemId
+			)->getAssoc();
+			if (!$system) {
+				return 0;
+			}
+
+			$public = IdentityLinker::publicForSystem((array) $system);
+			return $public ? (int) $public['Id'] : 0;
 		}
 
 		public static function updateCustomer($id,array $input,$currentSystemId=0)
 		{
 			$id=(int)$id;
-			$current=self::customer($id);
+			$current=self::customer($id,$currentSystemId);
 			if(!$current){throw new \InvalidArgumentException('Пользователь не найден');}
+			if(!empty($current['is_current'])){
+				$currentSystem=$current['system'];
+				if(isset($input['user_group'])&&(int)$input['user_group']!==(int)$current['user']['user_group']){
+					throw new \InvalidArgumentException('Нельзя изменить собственную публичную группу');
+				}
+
+				if(isset($input['admin_role'])&&(string)$input['admin_role']!==(string)$currentSystem['role']){
+					throw new \InvalidArgumentException('Нельзя изменить собственную роль в панели управления');
+				}
+
+				$input['user_group']=(string)$current['user']['user_group'];
+				$input['status']=(string)$current['user']['status']==='1'?'1':'';
+				$input['admin_access']=!empty($currentSystem['is_active'])?'1':'';
+				$input['admin_role']=(string)$currentSystem['role'];
+			}
 
 			$email=mb_strtolower(trim((string)(isset($input['email'])?$input['email']:'')));
 			$phoneInput=trim((string)(isset($input['phone'])?$input['phone']:''));
@@ -130,6 +169,40 @@
 				DB::commit();
 			}catch(\Throwable $e){DB::rollback();throw $e;}
 			return self::customer($id);
+		}
+
+		public static function deleteCustomer($id, $currentSystemId = 0)
+		{
+			$id = (int) $id;
+			$current = self::customer($id, $currentSystemId);
+			if (!$current) {
+				throw new \InvalidArgumentException('Пользователь не найден');
+			}
+
+			if (!empty($current['is_current'])) {
+				throw new \InvalidArgumentException('Нельзя удалить собственную учётную запись');
+			}
+
+			if (!empty($current['system']['is_active'])) {
+				throw new \InvalidArgumentException('Сначала отключите пользователю доступ к панели управления');
+			}
+
+			DB::startTransaction();
+			try {
+				DB::Update(self::table('users'), array(
+					'status' => '0',
+					'deleted' => '1',
+					'del_time' => time(),
+				), 'Id = %i', $id);
+				self::invalidateCustomerSessions($id);
+				DB::Delete(self::table('user_identities'), 'user_id = %i', $id);
+				DB::commit();
+			} catch (\Throwable $e) {
+				DB::rollback();
+				throw $e;
+			}
+
+			return true;
 		}
 
 		public static function fields()

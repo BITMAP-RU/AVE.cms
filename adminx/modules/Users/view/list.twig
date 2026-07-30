@@ -72,6 +72,7 @@
           <th style="width:120px">Роль</th>
           <th style="width:110px">Статус</th>
           <th style="width:150px">Создан</th>
+          <th style="width:150px">Последний вход</th>
           {% if can_manage %}<th style="width:96px"></th>{% endif %}
         </tr>
       </thead>
@@ -102,6 +103,10 @@
             {% endif %}
           </td>
           <td class="text-muted text-sm">{{ u.created_at ? u.created_at|slice(0,10) : '—' }}</td>
+          <td class="text-sm">
+            {% if u.last_login_at %}<span class="text-muted">{{ u.last_login_at|slice(0,16) }}</span>
+            {% else %}<span class="badge badge-amber badge-dot">никогда</span>{% endif %}
+          </td>
           {% if can_manage %}
           <td>
             <div class="cluster" style="gap:4px">
@@ -114,7 +119,7 @@
           {% endif %}
         </tr>
         {% else %}
-        <tr><td colspan="{{ can_manage ? 8 : 6 }}"><div class="empty-state">Ничего не найдено</div></td></tr>
+        <tr><td colspan="{{ can_manage ? 9 : 7 }}"><div class="empty-state">Ничего не найдено</div></td></tr>
         {% endfor %}
       </tbody>
     </table>

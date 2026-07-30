@@ -73,6 +73,7 @@
 				'parent_dir' => Model::parentDir($file['path']),
 				'can_manage' => Permission::check('manage_media'),
 				'supports_webp' => Model::supportsWebp(),
+				'presets' => ImagePresets::options(),
 			));
 		}
 
@@ -261,6 +262,7 @@
 					'height' => Request::postInt('height', 240),
 					'format' => Request::postStr('format', 'original'),
 					'quality' => Request::postInt('quality', 82),
+					'webp_twin' => Request::postInt('webp_twin', 0),
 					'crop_enabled' => Request::postStr('crop_enabled', ''),
 					'crop_x' => Request::postInt('crop_x', 0),
 					'crop_y' => Request::postInt('crop_y', 0),
@@ -337,6 +339,53 @@
 				'data' => array('path' => $out),
 				'redirect' => $this->base() . '/media/file?path=' . rawurlencode($out),
 			));
+		}
+
+		public function presets(array $params = array())
+		{
+			if (!Permission::check('view_media')) {
+				return $this->error('Недостаточно прав', array(), 403);
+			}
+
+			return $this->success('', array('data' => array(
+				'items' => ImagePresets::all(),
+				'modes' => ImagePresets::modes(),
+				'formats' => ImagePresets::formats(),
+				'can_manage' => Permission::check('manage_media'),
+			)));
+		}
+
+		public function storePreset(array $params = array())
+		{
+			if (($err = $this->guard()) !== null) { return $err; }
+			list($errors, $data) = ImagePresets::validate(Request::postAll(), 0);
+			if (!empty($errors)) { return $this->error('Проверьте поля', $errors, 422); }
+
+			$id = ImagePresets::save(0, $data);
+			return $this->success('Вид создан', array('data' => array('id' => $id)));
+		}
+
+		public function updatePreset(array $params = array())
+		{
+			if (($err = $this->guard()) !== null) { return $err; }
+			$id = isset($params['id']) ? (int) $params['id'] : 0;
+			if (!ImagePresets::one($id)) { return $this->error('Вид не найден', array(), 404); }
+
+			list($errors, $data) = ImagePresets::validate(Request::postAll(), $id);
+			if (!empty($errors)) { return $this->error('Проверьте поля', $errors, 422); }
+
+			ImagePresets::save($id, $data);
+			return $this->success('Вид сохранён', array('data' => array('id' => $id)));
+		}
+
+		public function deletePreset(array $params = array())
+		{
+			if (($err = $this->guard()) !== null) { return $err; }
+			if (!ImagePresets::delete(isset($params['id']) ? (int) $params['id'] : 0)) {
+				return $this->error('Вид не найден', array(), 404);
+			}
+
+			return $this->success('Вид удалён');
 		}
 
 		protected function guard()

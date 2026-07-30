@@ -62,6 +62,7 @@
 .themes-tabs > .tabs-list {
   margin-bottom: 18px;
   overflow-x: auto;
+  overflow-y: hidden;
   scrollbar-width: thin;
 }
 .themes-tabs {
@@ -69,6 +70,7 @@
 }
 .themes-tabs > .tabs-list .tab {
   min-height: 40px;
+  margin-bottom: 0;
   white-space: nowrap;
 }
 .themes-tabs > [data-tab-panel] {

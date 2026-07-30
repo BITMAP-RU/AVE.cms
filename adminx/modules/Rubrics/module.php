@@ -17,7 +17,7 @@
 	return array(
 		'code' => 'rubrics',
 		'name' => 'Рубрики и поля',
-		'version' => '0.2.0',
+		'version' => '0.3.2',
 		'field_sets' => \App\Adminx\Rubrics\RubricFieldPresets::definitions(),
 		'hook_definitions' => array(
 			array(
@@ -83,6 +83,7 @@
 			array('id' => '013_group_form_conditions', 'file' => 'migrations/013_group_form_conditions.php'),
 			array('id' => '014_rubric_purpose', 'file' => 'migrations/014_rubric_purpose.php'),
 			array('id' => '015_merge_directory_permissions', 'file' => 'migrations/015_merge_directory_permissions.php'),
+			array('id' => '016_rubric_trash', 'file' => 'migrations/016_rubric_trash.sql'),
 		),
 
 		'routes' => array(
@@ -101,6 +102,9 @@
 			array('POST', '/rubrics/schema-revisions/{revision}/delete', array(\App\Adminx\Rubrics\Controller::class, 'deleteSchemaRevision')),
 			array('GET', '/rubrics/{id}/schema-revisions', array(\App\Adminx\Rubrics\Controller::class, 'schemaRevisions')),
 			array('POST', '/rubrics/{id}/schema-revisions/delete', array(\App\Adminx\Rubrics\Controller::class, 'deleteSchemaRevisions')),
+			array('GET', '/rubrics/trash', array(\App\Adminx\Rubrics\Controller::class, 'trash')),
+			array('POST', '/rubrics/trash/{id}/restore', array(\App\Adminx\Rubrics\Controller::class, 'restoreTrash'), array('permission' => 'manage_rubrics')),
+			array('POST', '/rubrics/trash/{id}/purge', array(\App\Adminx\Rubrics\Controller::class, 'purgeTrash'), array('permission' => 'manage_rubrics')),
 			array('GET', '/rubrics/{id}', array(\App\Adminx\Rubrics\Controller::class, 'showRubric')),
 			array('POST', '/rubrics/{id}', array(\App\Adminx\Rubrics\Controller::class, 'updateRubric'), array('permission' => 'manage_rubrics', 'sensitive' => 'stored_php.write', 'reauth' => true)),
 			array('POST', '/rubrics/{id}/delete', array(\App\Adminx\Rubrics\Controller::class, 'destroyRubric')),
