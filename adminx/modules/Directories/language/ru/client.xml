@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="directories_delete_confirm">Удалить справочник?</phrase>
+	<phrase data="directories_delete_value_confirm">Удалить значение?</phrase>
+	<phrase data="directories_edit">Настройки справочника</phrase>
+	<phrase data="directories_edit_value">Изменить значение</phrase>
+	<phrase data="directories_in_use">Справочник используется</phrase>
+	<phrase data="directories_new">Новый справочник</phrase>
+	<phrase data="directories_new_value">Новое значение</phrase>
+	<phrase data="directories_request_failed">Ошибка запроса</phrase>
+	<phrase data="directories_save_failed">Не удалось сохранить данные</phrase>
+</language>

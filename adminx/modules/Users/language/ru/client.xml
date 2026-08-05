@@ -26,4 +26,22 @@
 	<phrase data="auto_f2d6a66eee4f2dba">средний</phrase>
 	<phrase data="auto_f2f391cf89444519">отличный</phrase>
 	<phrase data="auto_f89814d87e446cdd">Изменение:</phrase>
+	<phrase data="users_browser">Браузер</phrase>
+	<phrase data="users_device">Устройство</phrase>
+	<phrase data="users_never">Не было</phrase>
+	<phrase data="users_no_data">Нет данных</phrase>
+	<phrase data="users_password_change_clear">Обязательная смена не назначена</phrase>
+	<phrase data="users_password_change_pending">При следующем входе потребуется новый пароль</phrase>
+	<phrase data="users_revoke_all">Завершить все</phrase>
+	<phrase data="users_revoke_all_failed">Не удалось завершить сессии</phrase>
+	<phrase data="users_revoke_failed">Не удалось завершить сессию</phrase>
+	<phrase data="users_revoke_others">Завершить остальные</phrase>
+	<phrase data="users_revoke_session">Завершить сессию</phrase>
+	<phrase data="users_session_activity">активность</phrase>
+	<phrase data="users_session_current">Текущая</phrase>
+	<phrase data="users_session_login">вход</phrase>
+	<phrase data="users_sessions_empty">Активных сессий нет</phrase>
+	<phrase data="users_sessions_empty_hint">Пользователь войдёт снова с действующим паролем.</phrase>
+	<phrase data="users_sessions_load_failed">Не удалось загрузить сессии</phrase>
+	<phrase data="users_sessions_loading">Загружаем сессии</phrase>
 </language>

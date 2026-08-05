@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="global_search_name">Глобальный поиск</phrase>
+	<phrase data="global_search_results">Результаты</phrase>
+	<phrase data="global_search_documents">Документы</phrase>
+	<phrase data="global_search_rubrics">Рубрики</phrase>
+	<phrase data="global_search_blocks">Блоки</phrase>
+	<phrase data="global_search_requests">Запросы</phrase>
+	<phrase data="global_search_navigation">Навигация</phrase>
+	<phrase data="global_search_users">Пользователи</phrase>
+	<phrase data="global_search_customers">Пользователи сайта</phrase>
+	<phrase data="global_search_media">Медиа</phrase>
+</language>

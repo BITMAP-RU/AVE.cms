@@ -3,6 +3,12 @@
 The Commerce module manages the cart, checkout, delivery, payment,
 coupons, favorites, viewed products and customer order history.
 
+## Order export
+
+Set the search, order state, and payment filter, then click **CSV**. The current
+filtered result is streamed in chunks of 500 rows and the operation is recorded
+in the audit log.
+
 ## Cart promotions
 
 Open `Store -> Settings -> Promotions` to create automatic rules that do not
@@ -75,6 +81,7 @@ An employee with the right `manage_orders` can create an order without a public 
 1. Open `Orders` and click **Create Order** to the right of the header.
 2. Find an existing site user by name, phone, email or ID.
    His profile will be linked to the order, and his contacts will be filled in automatically.
+   The form also shows the customer's order count, total, and recent orders.
    If the buyer has not yet registered, fill in the name and phone number or email
    manually.
 3. Find products by name, SKU or ID. Each product variant is
@@ -84,9 +91,12 @@ An employee with the right `manage_orders` can create an order without a public 
    inside this order and does not change the price of the product in the catalog.
 5. Active promotions are previewed automatically. A matching bed and mattress,
    for example, can discount the mattress or add a configured gift.
+   A configured product bundle can be added to the order in one action.
 6. If necessary, set a separate manager discount, delivery, payment, status
    and payment state. Promotions are applied first, then the manager discount,
    followed by delivery and payment surcharges.
+   The helper warns about incompatible delivery and payment methods and products
+   whose shipping packages are not configured.
 7. After saving, the order card will open. It shows catalog and manual
    price, discount, author of creation and history of actions.
 
@@ -99,6 +109,9 @@ creating an order; The payment transition does not open automatically.
 The server recalculates promotions during save, so the browser preview cannot
 be used to submit a forged total. Applied promotion and gift snapshots are
 stored exactly as they are for orders created from the public cart.
+
+The **Customer link** button in a saved order copies its public result URL. The
+URL contains the random order token instead of the database record ID.
 
 ## Changing the composition of an order
 

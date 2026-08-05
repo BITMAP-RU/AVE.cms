@@ -87,6 +87,29 @@
 			}
 		}
 
+		/**
+		 * Каталог только из кеша, без обращения к сети.
+		 *
+		 * Нужен там, где нельзя блокировать отрисовку страницы ожиданием
+		 * внешнего сервера: колокольчик, виджеты. Кеш прогревает регулярная
+		 * проверка, поэтому пустой ответ означает «пока не проверяли».
+		 */
+		public static function cachedCatalog()
+		{
+			$settings = self::settings();
+			if (!$settings['enabled'] || $settings['url'] === '' || $settings['public_key'] === '') { return null; }
+			$key = 'core-update-repository:' . hash('sha256', $settings['url'] . "\0" . $settings['public_key']);
+			try {
+				$catalog = Cache::get($key);
+			} catch (\Throwable $e) {
+				return null;
+			}
+
+			if (!is_array($catalog) || !isset($catalog['items'])) { return null; }
+			$catalog['enabled'] = true;
+			return self::withState($catalog);
+		}
+
 		public static function download($id, $actorId = null)
 		{
 			$catalog = self::catalog(false);

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="customers_center_title">Центр покупателей</phrase>
+	<phrase data="customers_center_eyebrow">Работа с покупателями</phrase>
+	<phrase data="customers_center_description">Аккаунт, покупки, обращения и интересы человека собраны в одной карточке.</phrase>
+	<phrase data="customers_center_accounts">Аккаунтов</phrase>
+	<phrase data="customers_center_buyers">Покупателей</phrase>
+	<phrase data="customers_center_repeat">Повторных</phrase>
+	<phrase data="customers_center_duplicates">Групп дублей</phrase>
+	<phrase data="customers_center_duplicate_warning">Найдены возможные дубли</phrase>
+	<phrase data="customers_center_duplicate_email">Одинаковый email</phrase>
+	<phrase data="customers_center_duplicate_phone">Одинаковый телефон</phrase>
+	<phrase data="customers_center_open">Открыть карточку</phrase>
+	<phrase data="customers_center_card">Карточка покупателя</phrase>
+	<phrase data="customers_center_card_hint">Профиль и история взаимодействия</phrase>
+	<phrase data="customers_center_orders">Заказы</phrase>
+	<phrase data="customers_center_login_methods">Способы входа</phrase>
+	<phrase data="customers_center_contacts">Обращения</phrase>
+	<phrase data="customers_center_notes">Заметки менеджеров</phrase>
+	<phrase data="customers_center_note_hint">Внутренняя информация, покупатель её не видит</phrase>
+	<phrase data="customers_center_note_new">Новая заметка</phrase>
+	<phrase data="customers_center_note_added">Заметка добавлена</phrase>
+	<phrase data="customers_center_merged">Аккаунты объединены</phrase>
+	<phrase data="customers_center_segment_all">Все</phrase>
+	<phrase data="customers_center_segment_new">Новые</phrase>
+	<phrase data="customers_center_segment_buyers">С заказами</phrase>
+	<phrase data="customers_center_segment_repeat">Повторные</phrase>
+	<phrase data="customers_center_segment_vip">От 100 000 ₽</phrase>
+	<phrase data="customers_center_segment_inactive">Неактивные</phrase>
+	<phrase data="customers_center_segment_empty">Без заказов</phrase>
+</language>

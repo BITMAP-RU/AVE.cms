@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="customers_center_title">Customer center</phrase>
+	<phrase data="customers_center_eyebrow">Customer operations</phrase>
+	<phrase data="customers_center_description">Account, purchases, inquiries, and customer interests are collected in one card.</phrase>
+	<phrase data="customers_center_accounts">Accounts</phrase>
+	<phrase data="customers_center_buyers">Customers</phrase>
+	<phrase data="customers_center_repeat">Repeat customers</phrase>
+	<phrase data="customers_center_duplicates">Duplicate groups</phrase>
+	<phrase data="customers_center_duplicate_warning">Possible duplicates found</phrase>
+	<phrase data="customers_center_duplicate_email">Same email</phrase>
+	<phrase data="customers_center_duplicate_phone">Same phone</phrase>
+	<phrase data="customers_center_open">Open customer card</phrase>
+	<phrase data="customers_center_card">Customer card</phrase>
+	<phrase data="customers_center_card_hint">Profile and interaction history</phrase>
+	<phrase data="customers_center_orders">Orders</phrase>
+	<phrase data="customers_center_login_methods">Login methods</phrase>
+	<phrase data="customers_center_contacts">Inquiries</phrase>
+	<phrase data="customers_center_notes">Manager notes</phrase>
+	<phrase data="customers_center_note_hint">Internal information that is not visible to the customer</phrase>
+	<phrase data="customers_center_note_new">New note</phrase>
+	<phrase data="customers_center_note_added">Note added</phrase>
+	<phrase data="customers_center_merged">Accounts merged</phrase>
+	<phrase data="customers_center_segment_all">All</phrase>
+	<phrase data="customers_center_segment_new">New</phrase>
+	<phrase data="customers_center_segment_buyers">With orders</phrase>
+	<phrase data="customers_center_segment_repeat">Repeat</phrase>
+	<phrase data="customers_center_segment_vip">Over ₽100,000</phrase>
+	<phrase data="customers_center_segment_inactive">Inactive</phrase>
+	<phrase data="customers_center_segment_empty">Without orders</phrase>
+</language>

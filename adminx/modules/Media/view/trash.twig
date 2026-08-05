@@ -1,0 +1,21 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}Корзина медиа{% endblock %}
+{% block content %}
+<nav class="breadcrumbs" aria-label="Хлебные крошки"><a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i><a href="{{ ADMINX_BASE }}/media">Медиа</a><i class="ti ti-chevron-right"></i><span>Корзина</span></nav>
+<div class="page-header"><div class="between"><div><h1>Корзина медиа</h1><p class="text-secondary">Файлы находятся вне публичного каталога и могут быть восстановлены.</p></div></div></div>
+<div class="tabs media-tabs" role="navigation" aria-label="Разделы медиа">
+  <a class="tab" href="{{ ADMINX_BASE }}/media"><i class="ti ti-folders"></i>Файлы</a>
+  <a class="tab" href="{{ ADMINX_BASE }}/media/audit"><i class="ti ti-scan"></i>Анализатор</a>
+  <a class="tab active" href="{{ ADMINX_BASE }}/media/trash" aria-current="page"><i class="ti ti-trash"></i>Корзина</a>
+</div>
+<div class="section-header ax-panel-header"><div class="section-icon"><i class="ti ti-trash"></i></div><div><div class="section-eyebrow">Медиа</div><h2>Удалённые файлы и папки</h2><p class="section-desc">Восстановление возвращает объект по исходному пути. Окончательное удаление необратимо.</p></div></div>
+<div class="card ax-list-card media-trash-card">
+  <div class="table-scroll"><table class="table"><thead><tr><th>Объект</th><th>Тип</th><th>Удалён</th><th class="table-actions"></th></tr></thead><tbody>
+  {% for item in items %}<tr><td><b>{{ item.name }}</b><small class="table-subtitle mono">{{ item.path }}</small></td><td>{{ item.type == 'folder' ? 'Папка' : 'Файл' }}</td><td>{{ item.deleted_label }}</td><td class="table-actions"><div class="cluster">
+    <button class="btn btn-ghost btn-icon ax-act ax-act-restore" type="button" data-media-trash-restore="{{ item.token }}" data-name="{{ item.name }}" data-tooltip="Восстановить" aria-label="Восстановить"><i class="ti ti-restore"></i></button>
+    <button class="btn btn-ghost btn-icon ax-act ax-act-delete" type="button" data-media-trash-purge="{{ item.token }}" data-name="{{ item.name }}" data-tooltip="Удалить окончательно" aria-label="Удалить окончательно"><i class="ti ti-trash"></i></button>
+  </div></td></tr>{% else %}<tr><td colspan="4" class="ax-empty">Корзина медиа пуста</td></tr>{% endfor %}
+  </tbody></table></div>
+</div>
+<form id="mediaActionForm" method="post"><input type="hidden" name="_csrf" value="{{ csrf_token }}"><input type="hidden" name="path" value=""></form>
+{% endblock %}

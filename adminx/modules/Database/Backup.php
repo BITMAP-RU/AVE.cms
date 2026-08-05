@@ -16,6 +16,7 @@
 
 	defined('BASEPATH') || die('Direct access to this location is not allowed.');
 
+	use App\Common\Settings;
 	use DB;
 
 	/**
@@ -25,9 +26,65 @@
 	 */
 	class Backup
 	{
+		/** Ключ настройки «сколько копий хранить»; 0 — хранить все. */
+		const KEEP_SETTING = 'database_backup_keep';
+		const KEEP_DEFAULT = 10;
+		const KEEP_MAX = 200;
+
 		public static function dir()
 		{
 			return BASEPATH . DS . 'tmp' . DS . 'backup';
+		}
+
+		public static function keep()
+		{
+			$value = Settings::get(self::KEEP_SETTING);
+			if ($value === null || $value === '') { return self::KEEP_DEFAULT; }
+			return max(0, min(self::KEEP_MAX, (int) $value));
+		}
+
+		public static function setKeep($value)
+		{
+			$value = max(0, min(self::KEEP_MAX, (int) $value));
+			Settings::set(self::KEEP_SETTING, $value, 'integer');
+			return $value;
+		}
+
+		/**
+		 * Оставляет только последние $keep копий, созданных системой.
+		 *
+		 * Загруженные вручную и чужие файлы не трогаются: их имя не проходит
+		 * isManagedName(), и админ мог положить их сюда намеренно. Страховочные
+		 * копии перед восстановлением тоже участвуют в ротации — иначе каждое
+		 * восстановление оставляло бы вечный файл.
+		 */
+		public static function prune($keep = null)
+		{
+			$keep = $keep === null ? self::keep() : $keep;
+			$names = array();
+			foreach (self::prunable(self::all(), $keep) as $name) {
+				$path = self::path($name);
+				if ($path !== null && @unlink($path)) { $names[] = $name; }
+			}
+
+			return array('deleted' => count($names), 'names' => $names);
+		}
+
+		/**
+		 * Отбирает имена лишних копий: чистая функция, файлы не трогает.
+		 * Список приходит из all() и уже отсортирован «новые сверху».
+		 */
+		public static function prunable(array $items, $keep)
+		{
+			$keep = max(0, min(self::KEEP_MAX, (int) $keep));
+			if ($keep < 1) { return array(); }
+
+			$managed = array();
+			foreach ($items as $item) {
+				if (!empty($item['own'])) { $managed[] = (string) $item['name']; }
+			}
+
+			return count($managed) <= $keep ? array() : array_slice($managed, $keep);
 		}
 
 		/** Список файлов резервных копий (name/size/mtime), новые сверху. */
@@ -202,7 +259,17 @@
 			flock($lock, LOCK_UN);
 			fclose($lock);
 
-			return array('name' => $name, 'size' => filesize($path), 'tables' => count($tables), 'prefixes' => $prefixes);
+			//-- Ротация только после успешного переименования: сначала новая
+			//-- копия на диске, и лишь потом удаляются лишние старые.
+			$pruned = self::prune();
+
+			return array(
+				'name' => $name,
+				'size' => filesize($path),
+				'tables' => count($tables),
+				'prefixes' => $prefixes,
+				'pruned' => (int) $pruned['deleted'],
+			);
 		}
 
 		/** Новые имена AVE.cms и старые adminx-дампы поддерживаются одинаково. */

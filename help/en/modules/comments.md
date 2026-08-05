@@ -80,12 +80,18 @@ POST /api/v1/comments/37/delete
 
 Creation accepts `body`, `parent_id`, and for guest `author_name` and
 `author_email`; CSRF is carried with the `_csrf` field or the `X-CSRF-Token` header.
-The response reports the status `published` or `pending`.
+The response reports the resulting comment status. A suspicious submission is
+reported to the visitor as awaiting moderation without exposing protection
+rules.
 
 You cannot create a discussion for a missing or deleted object. Antispam
 checks the contents of the form, but does not replace the frequency limit: always for guest
 There are separate limits for the actor cookie and the network/target HMAC prefix. Therefore
-changing cookies does not create an unlimited flow of comments.
+changing cookies does not create an unlimited flow of comments. When the active
+antispam profile detects an automated submission, the comment is retained with
+the `spam` status and a reason for the moderator. A false positive can therefore
+be reviewed and published. A runtime failure in antispam stops the request and
+is not silently treated as spam.
 
 Setting up pre-moderation has modes: without moderation, only guests, everyone. When
 When a document is deleted, its discussion is closed. Hooks `comments.creating`,

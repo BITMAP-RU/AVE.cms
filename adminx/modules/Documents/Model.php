@@ -22,6 +22,7 @@
 	use App\Content\Fields\FieldConditionEvaluator;
 	use App\Content\Fields\FieldValueCodec;
 	use App\Content\Fields\FieldContext;
+	use App\Content\Fields\HtmlSanitizer;
 	use App\Content\Fields\FieldRegistry;
 	use App\Content\Fields\FieldLifecycle;
 	use App\Content\Fields\FieldSettings;
@@ -1680,6 +1681,7 @@
 			$editor = FieldAdminEditors::describe($type);
 			$kind = self::documentEditorKind($editor);
 			$settings = FieldSettings::effective($row);
+			$description = self::decode($row['rubric_field_description']);
 			if ($type === 'choice') {
 				$kind = isset($settings['mode']) && (string) $settings['mode'] === 'multiple' ? 'choice_multi' : 'choice';
 			}
@@ -1697,7 +1699,8 @@
 				'rubric_field_type' => $type,
 				'rubric_field_numeric' => (int) $row['rubric_field_numeric'],
 				'rubric_field_search' => (int) $row['rubric_field_search'],
-				'rubric_field_description' => self::decode($row['rubric_field_description']),
+				'rubric_field_description' => $description,
+				'rubric_field_description_html' => HtmlSanitizer::clean($description),
 				'rubric_field_default' => (string) $row['rubric_field_default'],
 				'rubric_field_settings' => isset($row['rubric_field_settings']) ? (string) $row['rubric_field_settings'] : '',
 				'group_settings' => isset($row['group_settings']) ? (string) $row['group_settings'] : '',
@@ -2125,7 +2128,7 @@
 			$data = array(
 				'field_value' => $first,
 				'field_number_value' => ((int) $field['rubric_field_numeric'] === 1)
-					? ($type === 'period' ? \App\Content\Fields\Types\PeriodValue::indexValue($value) : self::numericValue($value))
+					? ($type === 'period' ? \App\Content\Fields\Types\PeriodValue::indexValue($value) : FieldValueCodec::numericIndexValue($value))
 					: 0,
 				'document_in_search' => (int) $inSearch ? '1' : '0',
 			);
@@ -2577,12 +2580,6 @@
 		{
 			$value = trim((string) $value);
 			return in_array($value, array('index,follow', 'index,nofollow', 'noindex,nofollow'), true) ? $value : 'index,follow';
-		}
-
-		protected static function numericValue($value)
-		{
-			$value = preg_replace('/[^\d.]/', '', (string) $value);
-			return $value === '' ? 0 : $value;
 		}
 
 		protected static function dateInput($time)

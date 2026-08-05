@@ -16,6 +16,7 @@
 
 	defined('BASEPATH') || die('Direct access to this location is not allowed.');
 
+	use App\Common\RuntimeDirectoryGuard;
 	use App\Frontend\PublicSettings;
 	use App\Helpers\Dir;
 	use App\Helpers\File;
@@ -157,9 +158,6 @@
 				Dir::create($directory);
 			}
 
-			$file = rtrim($directory, '/') . '/.htaccess';
-			if (!is_file($file)) {
-				File::putAtomic($file, "Deny from all\n");
-			}
+			RuntimeDirectoryGuard::protect(rtrim($directory, '/'));
 		}
 	}

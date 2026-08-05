@@ -17,7 +17,7 @@
 	return array(
 		'code' => 'public_site',
 		'name' => 'Публичный сайт',
-		'version' => '0.4.0',
+		'version' => '0.5.0',
 		'permissions' => array(
 			'key' => 'public_site',
 			'items' => array(
@@ -59,6 +59,10 @@
 			array('GET', '/public-site/map', array(\App\Adminx\PublicSite\Controller::class, 'siteMap')),
 			array('GET', '/public-site/placements', array(\App\Adminx\PublicSite\Controller::class, 'placements')),
 			array('GET', '/public-site/diagnostics', array(\App\Adminx\PublicSite\Controller::class, 'diagnostics')),
+			array('GET', '/public-site/templates', array(\App\Adminx\PublicSite\Controller::class, 'publicTemplates')),
+			array('POST', '/public-site/templates/lint', array(\App\Adminx\PublicSite\Controller::class, 'lintPublicTemplate'), array('permission' => 'manage_public_presentations')),
+			array('POST', '/public-site/templates/{code}', array(\App\Adminx\PublicSite\Controller::class, 'savePublicTemplate'), array('permission' => 'manage_themes', 'sensitive' => 'theme_assets.write', 'reauth' => true)),
+			array('POST', '/public-site/templates/{code}/delete', array(\App\Adminx\PublicSite\Controller::class, 'deletePublicTemplate'), array('permission' => 'manage_themes', 'sensitive' => 'theme_assets.write', 'reauth' => true)),
 			array('POST', '/public-site/placements/rebuild', array(\App\Adminx\PublicSite\Controller::class, 'rebuildPlacements')),
 			array('GET', '/public-site/presentations', array(\App\Adminx\PublicSite\PresentationsController::class, 'index')),
 			array('POST', '/public-site/presentations/lint', array(\App\Adminx\PublicSite\PresentationsController::class, 'lint')),

@@ -133,6 +133,10 @@
 			$row = self::store()->formatRow($row, $withSnapshot);
 			$snapshot = $row['snapshot'];
 			$text = $withSnapshot && is_array($snapshot) && isset($snapshot['sysblock_text']) ? (string) $snapshot['sysblock_text'] : '';
+			$current = $withSnapshot ? Model::raw((int) $row['block_id']) : array();
+			$comparison = $withSnapshot && is_array($snapshot)
+				? JsonRevisionStore::compareSnapshots($current ? Model::snapshot($current) : array(), $snapshot)
+				: array();
 
 			return array(
 				'id' => (int) $row['id'],
@@ -152,6 +156,7 @@
 				'text_size_label' => $withSnapshot ? JsonRevisionStore::formatBytes(strlen($text)) : '',
 				'snapshot' => $snapshot,
 				'code' => $text,
+				'comparison' => $comparison,
 			);
 		}
 

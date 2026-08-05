@@ -36,6 +36,8 @@
 		// На сервере без reverse proxy оставьте список пустым.
 		'trusted_proxies' => array(),
 		'trusted_proxy_headers' => array('x-forwarded-for'),
+		// Дополнительные домены, разрешённые помимо PUBLIC_SITE_URL.
+		'allowed_hosts' => array(),
 		'debug' => array(
 			'enabled' => true,
 			'groups' => array(1),

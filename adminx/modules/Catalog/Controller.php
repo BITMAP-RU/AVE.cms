@@ -32,6 +32,7 @@
 	use App\Adminx\Support\CodeEditor;
 	use App\Adminx\Support\SavedViews;
 	use App\Content\PaymentPrograms;
+	use App\Content\Documents\DocumentMediaDraft;
 	use App\Content\ProductShipping;
 	use App\Frontend\ThemeAssets;
 	use App\Adminx\Packages\Products\AttributeNormalization;
@@ -48,7 +49,9 @@
 	use App\Adminx\Packages\Products\ProductRelations;
 	use App\Adminx\Packages\Products\ProductCollections;
 	use App\Adminx\Packages\Products\ProductDemands;
+	use App\Adminx\Packages\Products\ProductDuplicator;
 	use App\Adminx\Packages\Products\ProductReadiness;
+	use App\Adminx\Packages\Products\PublicViewTemplates;
 	use App\Adminx\Packages\Products\ShippingPackageTemplates;
 	use App\Adminx\Packages\Products\VariantGroups;
 	use App\Adminx\Packages\Commerce\Promotions;
@@ -96,6 +99,8 @@
 				'filters' => $filters,
 				'saved_views' => SavedViews::all('catalog_products', Auth::id(), $this->savedViewFields('products')),
 				'can_manage' => Permission::check('manage_products'),
+				'can_copy' => Permission::check('manage_products') && Permission::check('manage_documents'),
+				'can_toggle' => Permission::check('manage_products') && Permission::check('manage_documents'),
 			));
 		}
 
@@ -118,6 +123,7 @@
 				'state' => $state,
 				'page' => Request::getInt('page', 1),
 				'per_page' => Request::getInt('per_page', 25),
+				'include_quality' => true,
 			);
 			return $this->render('@products/product-quality.twig', array(
 				'result' => Model::products($filters),
@@ -475,6 +481,55 @@
 			));
 		}
 
+		public function publicTemplates(array $params = array())
+		{
+			if (!Permission::check('view_products')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
+			$this->publicTemplateAssets();
+			return $this->render('@themes/view-overrides.twig', array(
+				'page_title' => 'Публичные шаблоны товаров',
+				'page_description' => 'Каталог, карточки, страница товара, сравнение и обращения в активной теме.',
+				'back_url' => '/catalog/products',
+				'back_label' => 'Товары',
+				'route_base' => '/catalog/public-templates',
+				'list_title' => 'Публичный вывод',
+				'tabs_template' => '@products/_tabs.twig',
+				'product_tab' => 'public_templates',
+				'templates' => PublicViewTemplates::all(),
+				'selected' => PublicViewTemplates::one(Request::getStr('template', '')),
+				'can_manage' => Permission::check('manage_products') && Permission::check('manage_themes'),
+				'can_view_themes' => Permission::check('view_themes'),
+			));
+		}
+
+		public function lintPublicTemplate(array $params = array())
+		{
+			if (($error = $this->publicTemplateGuard(false)) !== null) { return $error; }
+			$result = PublicViewTemplates::lint(Request::postStr('content', ''));
+			return !empty($result['ok'])
+				? $this->success($result['message'], array('data' => $result))
+				: $this->error($result['message'], array('content' => $result['message']), 422);
+		}
+
+		public function savePublicTemplate(array $params = array())
+		{
+			if (($error = $this->publicTemplateGuard()) !== null) { return $error; }
+			$code = isset($params['code']) ? (string) $params['code'] : '';
+			try { $item = PublicViewTemplates::save($code, Request::postStr('content', ''), Auth::id()); }
+			catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
+			$this->audit('catalog.public_template_saved', null, array('theme' => $item['theme'], 'path' => $item['theme_path']));
+			return $this->success('Шаблон активной темы сохранён', array('data' => $item));
+		}
+
+		public function deletePublicTemplate(array $params = array())
+		{
+			if (($error = $this->publicTemplateGuard()) !== null) { return $error; }
+			$code = isset($params['code']) ? (string) $params['code'] : '';
+			try { $item = PublicViewTemplates::deleteOverride($code, Auth::id()); }
+			catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
+			$this->audit('catalog.public_template_override_deleted', null, array('theme' => $item['theme'], 'path' => $item['theme_path']));
+			return $this->success('Переопределение удалено, используется шаблон модуля', array('data' => $item));
+		}
+
 		public function cardTemplate(array $params = array())
 		{
 			if (!Permission::check('view_products')) { return $this->error('Недостаточно прав', array(), 403); }
@@ -536,7 +591,7 @@
 			if (!$syntax['ok']) { return $this->error($syntax['message'], array('draft_markup' => $syntax['message']), 422); }
 			try {
 				$this->bootPublicCatalogPreview();
-				$catalog = \App\Modules\Products\Repository::fromDocumentId(Request::postInt('preview_catalog_id', 0));
+				$catalog = \App\Modules\Products\Repository::forFilterPreviewFromDocumentId(Request::postInt('preview_catalog_id', 0));
 				if (!$catalog) { throw new \RuntimeException('Выберите раздел каталога с настроенными фильтрами'); }
 				$result = \App\Modules\Products\FilterTemplateRenderer::preview($catalog, $markup, $css);
 				$html = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
@@ -729,13 +784,14 @@
 			if (!Permission::check('view_products')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
 			$this->attributeAssets();
 			$view = Request::getStr('view', 'overview');
-			if (!in_array($view, array('overview', 'normalization', 'attributes', 'sets', 'migration', 'sections'), true)) { $view = 'overview'; }
+			if (!in_array($view, array('overview', 'normalization', 'attributes', 'sets', 'filters', 'migration', 'sections'), true)) { $view = 'overview'; }
 			return $this->render('@products/attributes.twig', array(
 				'view' => $view, 'stats' => Attributes::stats(), 'value_types' => Attributes::valueTypes(),
 				'attributes' => Attributes::all(Request::getStr('q', ''), Request::getStr('status', '')),
 				'product_attributes' => $view === 'migration' ? Attributes::all('', 'active', 'product') : array(),
 				'sets' => Attributes::sets(), 'legacy_fields' => $view === 'migration' ? Attributes::legacyFields() : array(),
 				'sections' => $view === 'sections' ? Attributes::sections() : array(),
+				'section_filters' => $view === 'filters' ? Attributes::sectionFilterEditor(Request::getInt('section_id', 0)) : array(),
 				'normalization' => $view === 'normalization' ? AttributeNormalization::audit() : array(),
 				'overview' => $view === 'overview' ? Attributes::overview() : array(),
 				'filters' => array('q'=>Request::getStr('q',''),'status'=>Request::getStr('status','')),
@@ -864,6 +920,19 @@
 		public function saveAttributeSection(array $params = array())
 		{
 			if(($error=$this->productGuard())!==null){return $error;}try{$data=Attributes::saveSection((int)$params['id'],Request::postAll(),Auth::id());}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}return $this->success('Режим раздела сохранён',array('data'=>$data));
+		}
+
+		public function saveAttributeSectionFilters(array $params = array())
+		{
+			if (($error = $this->productGuard()) !== null) { return $error; }
+			$id = isset($params['id']) ? (int) $params['id'] : 0;
+			try { $data = Attributes::saveSectionFilters($id, Request::postAll(), Auth::id()); }
+			catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
+			$this->audit('catalog.attribute_section_filters_saved', $id, $data);
+			return $this->success('Фильтры раздела сохранены', array(
+				'redirect' => $this->base() . '/catalog/attributes?view=filters&section_id=' . $id,
+				'data' => $data,
+			));
 		}
 
 		public function rebuildAttributeShadow(array $params = array())
@@ -1103,8 +1172,8 @@
 			$sourceId = (int) $params['product'];
 			$newId = 0;
 			try {
-				$newId = DocumentsModel::copy($sourceId, Auth::id());
-				Model::reindexDocument($newId);
+				$copy = ProductDuplicator::copy($sourceId, Auth::id());
+				$newId = (int) $copy['id'];
 				VariantGroups::add((int) $params['id'], $newId);
 			} catch (\Throwable $e) {
 				if ($newId > 0) { try { DocumentsModel::delete($newId); DocumentsModel::purge($newId); } catch (\Throwable $cleanupError) {} }
@@ -1113,6 +1182,45 @@
 
 			$this->audit('catalog.variant_copied', (int) $params['id'], array('source_id' => $sourceId, 'product_id' => $newId));
 			return $this->success('Вариант создан копированием', array('redirect' => $this->base() . '/catalog/products/' . $newId . '/edit'));
+		}
+
+		public function copyProduct(array $params = array())
+		{
+			if (($error = $this->guardPermission('manage_products', 'manage_documents')) !== null) { return $error; }
+			$sourceId = isset($params['id']) ? (int) $params['id'] : 0;
+			try {
+				$copy = ProductDuplicator::copy($sourceId, Auth::id());
+			} catch (\Throwable $e) {
+				return $this->error($e->getMessage(), array(), 422);
+			}
+
+			$this->audit('catalog.product_copied', (int) $copy['id'], array(
+				'source_id' => $sourceId,
+				'attributes' => (int) $copy['attributes'],
+				'shipping' => !empty($copy['shipping']),
+			));
+			return $this->success('Копия товара создана', array(
+				'id' => (int) $copy['id'],
+				'redirect' => $this->base() . '/catalog/products/' . (int) $copy['id'] . '/edit',
+			));
+		}
+
+		public function toggleProduct(array $params = array())
+		{
+			if (($error = $this->guardPermission('manage_products', 'manage_documents')) !== null) { return $error; }
+			$productId = isset($params['id']) ? (int) $params['id'] : 0;
+			if (!Model::product($productId)) { return $this->error('Товар не найден', array(), 404); }
+			try {
+				$status = DocumentsModel::toggleStatus($productId);
+			} catch (\Throwable $e) {
+				return $this->error($e->getMessage(), array(), 422);
+			}
+
+			if ($status === false) { return $this->error('Товар не найден', array(), 404); }
+			$this->audit('catalog.product_status_changed', $productId, array('status' => (int) $status));
+			return $this->success($status ? 'Товар опубликован' : 'Товар снят с публикации', array(
+				'data' => array('status' => (int) $status),
+			));
 		}
 
 		public function deleteVariantGroup(array $params = array())
@@ -1181,14 +1289,16 @@
 			$variantGroup = VariantGroups::membership($id);
 			$shippingProfile = ProductShipping::profile($id);
 			$nativeAttributes = Attributes::productEditor($id);
+			$mediaDraftToken = DocumentMediaDraft::issue(Auth::id(), $id);
 			return $this->render('@documents/edit.twig', array(
 				'document' => $document,
-				'field_groups' => DocumentsModel::fieldsForDocument($id),
+				'field_groups' => DocumentsModel::fieldsForDocument($id, $mediaDraftToken),
+				'media_draft_token' => $mediaDraftToken,
 				'rubrics' => DocumentsModel::rubrics(),
 				'templates' => DocumentsModel::rubricTemplates((int) $document['rubric_id']),
 				'navigation_items' => DocumentsModel::navigationItems(),
 				'authors' => DocumentsModel::authors(),
-				'is_new' => false, 'can_manage' => true,
+				'is_new' => false, 'can_manage' => true, 'quick_edit' => Request::getBool('quick_edit', false),
 				'actor_id' => Auth::id(),
 				'catalog_mode' => true, 'product' => $product, 'variant_group' => $variantGroup,
 					'shipping_profile' => $shippingProfile,
@@ -1199,6 +1309,7 @@
 					'product_promotions' => Promotions::forProduct($id),
 					'can_manage_product_promotions' => Permission::check('manage_orders'),
 				'return_url' => $this->base() . '/catalog/products',
+				'product_copy_url' => $this->base() . '/catalog/products/' . $id . '/copy',
 				'submit_url' => $this->base() . '/documents/' . $id,
 			));
 		}
@@ -1752,6 +1863,24 @@
 			CodeEditor::useCodeMirror('text/css');
 			AdminAssets::addStyle('/modules/products/admin/assets/card-templates.css', 56);
 			AdminAssets::addScript('/modules/products/admin/assets/card-templates.js', 56);
+		}
+
+		protected function publicTemplateAssets()
+		{
+			$this->assets();
+			CodeEditor::useCodeMirror('htmlmixed');
+			AdminAssets::addStyle(ADMINX_BASE . '/modules/Themes/assets/view-overrides.css', 56);
+			AdminAssets::addScript(ADMINX_BASE . '/modules/Themes/assets/view-overrides.js', 56);
+		}
+
+		protected function publicTemplateGuard($requireThemePermission = true)
+		{
+			if (($error = $this->productGuard()) !== null) { return $error; }
+			if ($requireThemePermission && !Permission::check('manage_themes')) {
+				return $this->error('Для изменения публичной разметки требуется право управления темами', array(), 403);
+			}
+
+			return null;
 		}
 
 		protected function audit($action, $targetId = null, array $meta = array())

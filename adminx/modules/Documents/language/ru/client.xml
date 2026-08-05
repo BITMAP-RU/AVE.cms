@@ -228,6 +228,12 @@
 	<phrase data="auto_fc8b3939cc9dc467">Путь будет записан в поле документа.</phrase>
 	<phrase data="auto_fda74d41e3311f87">На сервере уже сохранена более новая версия. Обновите страницу, проверьте изменения и сохраните документ повторно.</phrase>
 	<phrase data="auto_ffec67789fb1fcdc">щ</phrase>
+	<phrase data="documents_bulk_action">Действие</phrase>
+	<phrase data="documents_bulk_action_fallback">Действие</phrase>
+	<phrase data="documents_bulk_documents_suffix"> документов.</phrase>
+	<phrase data="documents_bulk_errors">ошибок</phrase>
+	<phrase data="documents_bulk_processed">обработано</phrase>
+	<phrase data="documents_bulk_unchanged">без изменений</phrase>
 	<phrase data="runtime_05d4ae78b6f1bfee">н</phrase>
 	<phrase data="runtime_0918b4ba92684eaa">Название</phrase>
 	<phrase data="runtime_0940401102b8a3fe">т</phrase>
@@ -287,4 +293,10 @@
 	<phrase data="runtime_f4019994d4e75a2a">после сохранения</phrase>
 	<phrase data="runtime_f9a506077fa0d961">Новый</phrase>
 	<phrase data="runtime_fff8b34d92dab340">Шаблон</phrase>
+	<phrase data="auto_f8af664b7ab2ef75">Удалить все элементы?</phrase>
+	<phrase data="auto_10403ca9b11a0b49">После сохранения элементы исчезнут из документа. Неиспользуемые файлы можно будет восстановить из корзины медиа.</phrase>
+	<phrase data="auto_5ede041b60096d58">Удалить изображение?</phrase>
+	<phrase data="auto_c5b3cd090f16f479">После сохранения изображение исчезнет из документа. Неиспользуемый файл можно будет восстановить из корзины медиа.</phrase>
+	<phrase data="auto_e26c8664b60bfa9a">Удалить изображение из документа?</phrase>
+	<phrase data="auto_02e536f7b2d5cec8">Документ сохранён, но часть старых файлов не перемещена в корзину.</phrase>
 </language>

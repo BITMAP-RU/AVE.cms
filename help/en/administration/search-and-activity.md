@@ -12,6 +12,10 @@ It searches documents, rubrics, directories, blocks, queries, and navigation
 items by title, URL, or ID. Results respect the current user permissions and
 open the regular editor without saving anything automatically.
 
+The same search includes public accounts and media files. Existing media
+appears after the first analyzer run; uploads and renames are indexed
+immediately.
+
 ## Activity timeline
 
 Open **System → Events → Activity**. The technical audit is presented as a

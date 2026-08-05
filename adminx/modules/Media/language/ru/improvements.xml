@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="media_usage_title">Где используется файл</phrase>
+	<phrase data="media_usage_description">Данные последней проверки анализатора медиа.</phrase>
+	<phrase data="media_usage_not_checked">Анализ ещё не запускался.</phrase>
+	<phrase data="media_usage_run_check">Проверьте медиа</phrase>
+	<phrase data="media_usage_run_check_help">чтобы увидеть связи и разрешить удаление.</phrase>
+	<phrase data="media_usage_links">связей</phrase>
+	<phrase data="media_usage_none">Явных ссылок не найдено.</phrase>
+	<phrase data="media_usage_checked_at">Проверка выполнена</phrase>
+	<phrase data="media_usage_dynamic_warning">Динамически составленные пути могут не распознаваться.</phrase>
+	<phrase data="media_usage_open_source">Открыть источник</phrase>
+	<phrase data="media_trash_title">Корзина медиа</phrase>
+	<phrase data="media_trash_description">Файлы находятся вне публичного каталога и могут быть восстановлены.</phrase>
+	<phrase data="media_trash_items">Удалённые файлы и папки</phrase>
+	<phrase data="media_trash_items_help">Восстановление возвращает объект по исходному пути. Окончательное удаление необратимо.</phrase>
+	<phrase data="media_trash_empty">Корзина медиа пуста</phrase>
+	<phrase data="media_restore">Восстановить</phrase>
+	<phrase data="media_purge">Удалить окончательно</phrase>
+	<phrase data="media_to_trash">В корзину</phrase>
+	<phrase data="media_usage_check_failed">Не удалось проверить использование</phrase>
+	<phrase data="media_usage_error">Ошибка проверки медиа</phrase>
+	<phrase data="media_restore_confirm">Восстановить объект?</phrase>
+	<phrase data="media_purge_confirm">Удалить окончательно?</phrase>
+	<phrase data="media_purge_forever">Удалить навсегда</phrase>
+</language>

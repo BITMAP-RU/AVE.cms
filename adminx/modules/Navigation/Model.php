@@ -78,6 +78,34 @@
 			return $row ? $row : null;
 		}
 
+		public static function snapshot($id)
+		{
+			$row = self::raw($id);
+			if (!$row) { return array(); }
+			unset($row['navigation_id']);
+			return $row;
+		}
+
+		public static function applySnapshot($id, array $snapshot)
+		{
+			$current = self::raw($id);
+			if (!$current) { throw new \RuntimeException('Навигация не найдена'); }
+			$data = array();
+			foreach (array_merge(array('alias', 'title', 'user_group', 'expand_ext'), self::templateFields()) as $key) {
+				if (array_key_exists($key, $snapshot)) { $data[$key] = $snapshot[$key]; }
+			}
+
+			if (!$data) { throw new \RuntimeException('Ревизия не содержит данных навигации'); }
+			if (isset($data['alias']) && self::aliasExists((string) $data['alias'], (int) $id)) {
+				throw new \RuntimeException('Алиас из ревизии уже занят другой навигацией');
+			}
+
+			DB::Update(self::table(), $data, 'navigation_id=%i', (int) $id);
+			self::clearCache((int) $id, isset($current['alias']) ? $current['alias'] : '');
+			self::clearCache((int) $id, isset($data['alias']) ? $data['alias'] : '');
+			return (int) $id;
+		}
+
 		public static function itemsTree($navigationId)
 		{
 			$rows = DB::query(

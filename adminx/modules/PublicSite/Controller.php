@@ -17,11 +17,14 @@
 	defined('BASEPATH') || die('Direct access to this location is not allowed.');
 
 	use App\Common\AdminAssets;
+	use App\Common\AuditLog;
+	use App\Common\Auth;
 	use App\Common\Controller as BaseController;
 	use App\Common\Permission;
 	use App\Content\Introspection\IntrospectionService;
 	use App\Helpers\Json;
 	use App\Helpers\Request;
+	use App\Adminx\Support\CodeEditor;
 
 	class Controller extends BaseController
 	{
@@ -55,7 +58,8 @@
 				'type' => Request::getStr('type', ''),
 				'state' => Request::getStr('state', ''),
 				'area' => Request::getStr('area', ''),
-				'view' => Request::getStr('view', 'placements') === 'usage' ? 'usage' : 'placements',
+				'view' => in_array(Request::getStr('view', 'placements'), array('usage', 'dependencies', 'unused'), true)
+					? Request::getStr('view', 'placements') : 'placements',
 				'page' => max(1, Request::getInt('page', 1)),
 			);
 
@@ -131,6 +135,48 @@
 			));
 		}
 
+		public function publicTemplates(array $params = array())
+		{
+			if (!Permission::check('view_public_site')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
+			$this->publicTemplateAssets();
+			return $this->render('@themes/view-overrides.twig', array(
+				'page_title' => 'Шаблоны публичного сайта',
+				'page_description' => 'Общие списки материалов и компоненты активной темы.',
+				'back_url' => '/public-site', 'back_label' => 'Публичный сайт',
+				'route_base' => '/public-site/templates', 'list_title' => 'Сборка страницы',
+				'tabs_template' => '@public_site/_tabs.twig', 'public_site_tab' => 'templates',
+				'templates' => PublicViewTemplates::all(),
+				'selected' => PublicViewTemplates::one(Request::getStr('template', '')),
+				'can_manage' => Permission::check('manage_public_presentations') && Permission::check('manage_themes'),
+				'can_view_themes' => Permission::check('view_themes'),
+			));
+		}
+
+		public function lintPublicTemplate(array $params = array())
+		{
+			if (($error = $this->guardPermission('manage_public_presentations')) !== null) { return $error; }
+			$result = PublicViewTemplates::lint(Request::postStr('content', ''));
+			return !empty($result['ok']) ? $this->success($result['message'], array('data' => $result)) : $this->error($result['message'], array(), 422);
+		}
+
+		public function savePublicTemplate(array $params = array())
+		{
+			if (($error = $this->templateGuard()) !== null) { return $error; }
+			try { $item = PublicViewTemplates::save(isset($params['code']) ? $params['code'] : '', Request::postStr('content', ''), Auth::id()); }
+			catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
+			AuditLog::record('public_site.template_saved', array('actor_id' => Auth::id(), 'target_type' => 'theme', 'meta' => array('theme' => $item['theme'], 'path' => $item['theme_path'])));
+			return $this->success('Публичный шаблон сохранён', array('data' => $item));
+		}
+
+		public function deletePublicTemplate(array $params = array())
+		{
+			if (($error = $this->templateGuard()) !== null) { return $error; }
+			try { $item = PublicViewTemplates::deleteOverride(isset($params['code']) ? $params['code'] : '', Auth::id()); }
+			catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
+			AuditLog::record('public_site.template_override_deleted', array('actor_id' => Auth::id(), 'target_type' => 'theme', 'meta' => array('theme' => $item['theme'], 'path' => $item['theme_path'])));
+			return $this->success('Используется резервный шаблон', array('data' => $item));
+		}
+
 		public function rebuildPlacements(array $params = array())
 		{
 			if (($error = $this->guardPermission('view_public_site')) !== null) {
@@ -160,5 +206,18 @@
 			$result = array();
 			parse_str($input, $result);
 			return is_array($result) ? $result : array();
+		}
+
+		protected function templateGuard()
+		{
+			if (($error = $this->guardPermission('manage_public_presentations')) !== null) { return $error; }
+			return Permission::check('manage_themes') ? null : $this->error('Для изменения публичной разметки требуется право управления темами', array(), 403);
+		}
+
+		protected function publicTemplateAssets()
+		{
+			CodeEditor::useCodeMirror('htmlmixed');
+			AdminAssets::addStyle(ADMINX_BASE . '/modules/Themes/assets/view-overrides.css', 56);
+			AdminAssets::addScript(ADMINX_BASE . '/modules/Themes/assets/view-overrides.js', 56);
 		}
 	}

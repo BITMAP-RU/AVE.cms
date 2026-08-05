@@ -172,6 +172,18 @@
 
 	$authUser && Auth::ensureBrowserToken();
 	$canAdmin = $authUser !== null && Permission::checkAcp('admin_panel');
+	$forcePasswordPath = in_array($requestPath, array('/account/password', '/logout', '/locale'), true);
+	if ($canAdmin && !empty($authUser['must_change_password']) && !$forcePasswordPath) {
+		if (Request::isAjax()) {
+			Response::json(array(
+				'success' => false,
+				'message' => 'Сначала смените временный пароль.',
+				'redirect' => ADMINX_BASE . '/account/password',
+			), 428);
+		}
+
+		Request::redirect(ADMINX_BASE . '/account/password');
+	}
 
 	//-- Пункты меню для layout: фильтр по правам + активный пункт + абсолютный href.
 	$navFlat = [];

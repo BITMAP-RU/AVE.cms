@@ -25,7 +25,7 @@
 	return array(
 		'code' => 'modules',
 		'name' => 'Модули',
-		'version' => '0.1.3',
+		'version' => '0.2.0',
 
 		'settings' => array(
 			'repository_enabled' => array('label' => 'Удалённый каталог модулей', 'type' => 'bool', 'default' => false, 'group' => 'modules_repository'),
@@ -33,6 +33,7 @@
 			'repository_public_key' => array('label' => 'Публичный ключ каталога', 'type' => 'code', 'default' => '', 'group' => 'modules_repository', 'sensitive' => true),
 		),
 
+		'notifications' => array('provider' => array(\App\Adminx\Modules\NotificationProvider::class, 'items'), 'permission' => 'view_modules', 'sort_order' => 46),
 		'permissions' => array(
 			'key' => 'modules',
 			'items' => array(

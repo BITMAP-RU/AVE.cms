@@ -32,6 +32,34 @@
 			return self::request('POST', $url, $body, $options);
 		}
 
+		public static function head($url, array $options = array())
+		{
+			return self::request('HEAD', $url, null, $options);
+		}
+
+		/** Download a checked response without keeping it in PHP memory. */
+		public static function download($url, $destination, array $options = array())
+		{
+			$destination = (string) $destination;
+			if ($destination === '' || !is_dir(dirname($destination))) {
+				throw new \InvalidArgumentException('Некорректный путь для сохранения удалённого файла');
+			}
+
+			$options['download_path'] = $destination;
+			@unlink($destination);
+			try {
+				$response = self::request('GET', $url, null, $options);
+				if (!is_file($destination) || (int) filesize($destination) !== (int) $response['bytes']) {
+					throw new \RuntimeException('Удалённый файл сохранён не полностью');
+				}
+
+				return $response;
+			} catch (\Throwable $e) {
+				@unlink($destination);
+				throw $e;
+			}
+		}
+
 		public static function inspectUrl($url, array $options = array())
 		{
 			$options = self::options($options);
@@ -55,7 +83,7 @@
 
 			$options = self::options($options);
 			$method = strtoupper((string) $method);
-			if (!in_array($method, array('GET', 'POST'), true)) {
+			if (!in_array($method, array('GET', 'POST', 'HEAD'), true)) {
 				throw new \InvalidArgumentException('Неподдерживаемый метод исходящего HTTP-запроса');
 			}
 
@@ -76,7 +104,7 @@
 					$target = self::resolve($currentUrl, $options);
 					$response = self::execute($currentMethod, $target, $currentBody, $currentHeaders, $options);
 					if ($response['status'] < 300 || $response['status'] >= 400) {
-						if ($response['status'] < 200 || $response['status'] >= 300) {
+					if (!$options['allow_http_errors'] && ($response['status'] < 200 || $response['status'] >= 300)) {
 							throw new \RuntimeException('Удалённый сервер вернул HTTP ' . $response['status']);
 						}
 
@@ -129,6 +157,12 @@
 			$overflow = false;
 			$responseHeaders = array();
 			$headerOverflow = false;
+			$file = null;
+			if ($options['download_path'] !== '' && $method !== 'HEAD') {
+				$file = @fopen($options['download_path'], 'wb');
+				if (!$file) { throw new \RuntimeException('Не удалось создать временный файл'); }
+			}
+
 			$handle = curl_init($target['url']);
 			$resolveIp = strpos($target['ip'], ':') !== false ? '[' . $target['ip'] . ']' : $target['ip'];
 			$curlOptions = array(
@@ -166,8 +200,15 @@
 					$responseHeaders[$name] = $value;
 					return $length;
 				},
-				CURLOPT_WRITEFUNCTION => function ($curl, $chunk) use (&$buffer, &$bytes, &$overflow, $options) {
-					return self::appendChunk($buffer, $bytes, $overflow, $chunk, $options['max_bytes']);
+				CURLOPT_WRITEFUNCTION => function ($curl, $chunk) use (&$buffer, &$bytes, &$overflow, $options, $file) {
+					if (!is_resource($file)) {
+						return self::appendChunk($buffer, $bytes, $overflow, $chunk, $options['max_bytes']);
+					}
+
+					$length = strlen($chunk);
+					$bytes += $length;
+					if ($bytes > $options['max_bytes']) { $overflow = true; return 0; }
+					return fwrite($file, $chunk);
 				},
 			);
 			if (defined('CURLOPT_PROTOCOLS')) {
@@ -182,12 +223,15 @@
 				$curlOptions[CURLOPT_POSTFIELDS] = (string) $body;
 			}
 
+			if ($method === 'HEAD') { $curlOptions[CURLOPT_NOBODY] = true; }
+
 			curl_setopt_array($handle, $curlOptions);
 			$result = curl_exec($handle);
 			$status = (int) curl_getinfo($handle, CURLINFO_HTTP_CODE);
 			$primaryIp = (string) curl_getinfo($handle, CURLINFO_PRIMARY_IP);
 			$error = curl_error($handle);
 			curl_close($handle);
+			if (is_resource($file)) { fclose($file); }
 			if ($overflow || $headerOverflow) {
 				throw new \RuntimeException('Удалённый ответ превышает допустимый размер');
 			}
@@ -374,13 +418,17 @@
 				'headers' => array(),
 				'user_agent' => 'AVE.cms/' . (defined('APP_VERSION') ? APP_VERSION : '3.3') . ' OutboundHttpClient',
 				'source' => 'runtime',
+				'download_path' => '',
+				'allow_http_errors' => false,
 			), $options);
 			$options['allowed_schemes'] = array_values(array_intersect(array('http', 'https'), array_map('strtolower', (array) $options['allowed_schemes'])));
 			$options['allowed_ports'] = array_values(array_unique(array_map('intval', (array) $options['allowed_ports'])));
 			$options['connect_timeout'] = max(1, min(30, (int) $options['connect_timeout']));
 			$options['timeout'] = max($options['connect_timeout'], min(120, (int) $options['timeout']));
 			$options['max_redirects'] = max(0, min(5, (int) $options['max_redirects']));
-			$options['max_bytes'] = max(1, min(52428800, (int) $options['max_bytes']));
+			$options['max_bytes'] = max(1, min(104857600, (int) $options['max_bytes']));
+			$options['download_path'] = isset($options['download_path']) ? (string) $options['download_path'] : '';
+			$options['allow_http_errors'] = !empty($options['allow_http_errors']);
 			$options['headers'] = self::headers((array) $options['headers']);
 			$options['source'] = substr(
 				preg_replace('/[^a-z0-9_.-]+/', '_', strtolower(trim((string) $options['source']))),

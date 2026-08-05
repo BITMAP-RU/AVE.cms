@@ -39,6 +39,16 @@
 			if($q!==''){$sql.=' AND (email LIKE %ss OR firstname LIKE %ss OR lastname LIKE %ss OR phone LIKE %ss OR company LIKE %ss)';for($i=0;$i<5;$i++){$args[]=$q;}}$sql.=' ORDER BY Id DESC LIMIT 500';return call_user_func_array(array('DB','query'),array_merge(array($sql),$args))->getAll()?:array();
 		}
 
+		public static function exportChunk($q, $beforeId, $limit = 500)
+		{
+			$sql = 'SELECT Id AS id,email,firstname,lastname,user_name,phone,company,status,reg_time,last_visit FROM ' . self::table('users') . ' WHERE deleted!=%s';
+			$args = array('1'); $q = trim((string) $q);
+			if ($q !== '') { $sql .= ' AND (email LIKE %ss OR firstname LIKE %ss OR lastname LIKE %ss OR phone LIKE %ss OR company LIKE %ss)'; for ($i = 0; $i < 5; $i++) { $args[] = $q; } }
+			if ((int) $beforeId > 0) { $sql .= ' AND Id<%i'; $args[] = (int) $beforeId; }
+			$sql .= ' ORDER BY Id DESC LIMIT ' . max(1, min(1000, (int) $limit));
+			return call_user_func_array(array('DB', 'query'), array_merge(array($sql), $args))->getAll() ?: array();
+		}
+
 		public static function stats()
 		{
 			$table=self::table('users');return array('total'=>(int)DB::query('SELECT COUNT(*) FROM '.$table.' WHERE deleted!=%s','1')->getValue(),'active'=>(int)DB::query('SELECT COUNT(*) FROM '.$table.' WHERE deleted!=%s AND status=%s','1','1')->getValue(),'verified'=>(int)DB::query('SELECT COUNT(*) FROM '.$table.' WHERE deleted!=%s AND (email_verified_at>0 OR phone_verified_at>0)','1')->getValue(),'fields'=>count(self::fields()));
@@ -264,7 +274,7 @@
 			return $settings;
 		}
 
-		public static function oauthModules()
+		public static function authMethods()
 		{
 			$definitions = array(
 				array(
@@ -290,24 +300,33 @@
 			$items = array();
 			foreach ($definitions as $definition) {
 				$module = ModuleManager::get($definition['module']);
-				if (!$module || empty($module['installed'])) { continue; }
+				$available = $module !== null;
+				$installed = $available && !empty($module['installed']);
 
 				$isPhone = isset($definition['kind']) && $definition['kind'] === 'phone';
-				if ($isPhone) {
+				if ($installed && $isPhone) {
 					$phoneProvider = PhoneProviderRegistry::get($definition['provider']);
 					$isRegistered = $phoneProvider !== null;
 					$config = class_exists('\\App\\Modules\\SmscAuth\\SecretStore')
 						? \App\Modules\SmscAuth\SecretStore::config()
 						: array();
 					$configured = $isRegistered && $phoneProvider->configured();
-				} else {
+				} elseif ($installed) {
 					$isRegistered = in_array($definition['provider'], $registered, true);
 					$config = $isRegistered ? ProviderRegistry::config($definition['provider']) : array();
 					$configured = $isRegistered && ProviderRegistry::configured($definition['provider'], $config);
+				} else {
+					$config = array();
+					$configured = false;
 				}
 
-				$active = !empty($module['enabled']) && $configured && !empty($config['enabled']);
-				if (empty($module['enabled'])) {
+				$moduleEnabled = $installed && !empty($module['enabled']);
+				$active = $moduleEnabled && $configured && !empty($config['enabled']);
+				if (!$available) {
+					$state = array('label' => 'Пакет отсутствует', 'badge' => 'badge-red');
+				} elseif (!$installed) {
+					$state = array('label' => 'Не установлен', 'badge' => 'badge-gray');
+				} elseif (!$moduleEnabled) {
 					$state = array('label' => 'Модуль выключен', 'badge' => 'badge-gray');
 				} elseif (!$configured) {
 					$state = array('label' => 'Нужны ключи', 'badge' => 'badge-amber');
@@ -318,7 +337,9 @@
 				}
 
 				$items[] = array_merge($definition, array(
-					'module_enabled' => !empty($module['enabled']),
+					'available' => $available,
+					'installed' => $installed,
+					'module_enabled' => $moduleEnabled,
 					'configured' => $configured,
 					'active' => $active,
 					'allow_registration' => !empty($config['allow_registration']),
@@ -390,6 +411,9 @@
 				'profile' => array('label' => 'Профиль', 'description' => 'Контактные и дополнительные поля пользователя.', 'icon' => 'ti-user-circle', 'tile' => 'violet'),
 				'password' => array('label' => 'Смена пароля', 'description' => 'Форма для авторизованного пользователя.', 'icon' => 'ti-lock-cog', 'tile' => 'cyan'),
 				'message' => array('label' => 'Системное сообщение', 'description' => 'Результат регистрации, подтверждения и восстановления.', 'icon' => 'ti-message-circle-check', 'tile' => 'green'),
+				'phone' => array('label' => 'Вход по телефону', 'description' => 'Запрос и проверка одноразового SMS-кода.', 'icon' => 'ti-device-mobile-message', 'tile' => 'cyan'),
+				'oauth' => array('label' => 'Вход через сервисы', 'description' => 'Кнопки входа через подключённые OAuth-модули.', 'icon' => 'ti-brand-openid', 'tile' => 'blue'),
+				'oauth_connections' => array('label' => 'Привязанные сервисы', 'description' => 'Управление внешними способами входа в профиле.', 'icon' => 'ti-plug-connected', 'tile' => 'violet'),
 			);
 		}
 

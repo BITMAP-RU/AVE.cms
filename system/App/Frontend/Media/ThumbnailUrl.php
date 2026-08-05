@@ -57,7 +57,7 @@
 			$thumbnail = rtrim(str_replace('\\', '/', dirname($link)), '/') . '/' . self::directoryName() . '/' . implode('.', $parts);
 			ThumbnailStorage::ensureCurrent($link);
 			self::discardStaleThumbnail($link, $thumbnail);
-			self::$urls[$cacheKey] = $thumbnail;
+			self::$urls[$cacheKey] = $thumbnail . '?v=' . ThumbnailStorage::sourceVersion($link);
 			return self::$urls[$cacheKey];
 		}
 

@@ -29,6 +29,10 @@
 		{
 			$items = array();
 			foreach (ModuleExtensions::catalog() as $extension) {
+				if (empty($extension['module']['managed'])) {
+					continue;
+				}
+
 				$items[] = self::normalize($extension);
 			}
 
@@ -81,7 +85,7 @@
 		public static function one($code)
 		{
 			foreach (ModuleExtensions::catalog() as $extension) {
-				if ($extension['code'] === (string) $code) {
+				if ($extension['code'] === (string) $code && !empty($extension['module']['managed'])) {
 					return self::normalize($extension);
 				}
 			}

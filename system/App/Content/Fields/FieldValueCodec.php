@@ -27,6 +27,36 @@
 	 */
 	class FieldValueCodec
 	{
+		/**
+		 * Построить безопасное значение для DECIMAL(18,4) в числовом индексе поля.
+		 * Для составного текста берётся первое число: размеры не склеиваются в одно
+		 * заведомо ложное и потенциально слишком большое значение.
+		 */
+		public static function numericIndexValue($value)
+		{
+			$raw = str_replace(array(',', "\xC2\xA0", "\xE2\x80\xAF"), array('.', ' ', ' '), trim((string) $value));
+			if (!preg_match('/[-+]?(?:(?:\d+(?:\.\d*)?)|(?:\.\d+))/', $raw, $match)) {
+				return '0';
+			}
+
+			$number = $match[0];
+			$negative = substr($number, 0, 1) === '-';
+			$number = ltrim($number, '+-');
+			$parts = explode('.', $number, 2);
+			$integer = ltrim($parts[0], '0');
+			$integer = $integer === '' ? '0' : $integer;
+			if (strlen($integer) > 14) {
+				return '0';
+			}
+
+			$fraction = isset($parts[1]) ? substr($parts[1], 0, 4) : '';
+			if ($integer === '0' && trim($fraction, '0') === '') {
+				return '0';
+			}
+
+			return ($negative ? '-' : '') . $integer . ($fraction === '' ? '' : '.' . $fraction);
+		}
+
 		public static function normalizeForStorage($value)
 		{
 			if (is_array($value)) {

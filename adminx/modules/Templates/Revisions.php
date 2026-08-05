@@ -135,6 +135,10 @@
 			$text = $withSnapshot && is_array($snapshot) && isset($snapshot['template_text'])
 				? Model::decodeText((string) $snapshot['template_text'])
 				: '';
+			$current = $withSnapshot ? Model::raw((int) $row['template_id']) : array();
+			$comparison = $withSnapshot && is_array($snapshot)
+				? JsonRevisionStore::compareSnapshots($current ? Model::snapshot($current) : array(), $snapshot)
+				: array();
 
 			return array(
 				'id' => (int) $row['id'],
@@ -154,6 +158,7 @@
 				'text_size_label' => $withSnapshot ? JsonRevisionStore::formatBytes(strlen($text)) : '',
 				'snapshot' => $snapshot,
 				'code' => $text,
+				'comparison' => $comparison,
 			);
 		}
 

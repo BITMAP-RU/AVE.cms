@@ -315,7 +315,13 @@
 			$pickerDir = isset($field['media_picker_dir']) && $field['media_picker_dir'] !== '' ? (string) $field['media_picker_dir'] : '/uploads';
 			$fileAccept = $accept === 'image' ? ' accept="image/*"' : '';
 
+			$uploadAction = $isImage
+				? '<button class="btn btn-ghost btn-sm" type="button" data-document-media-replace><i class="ti ti-refresh"></i>Заменить</button>'
+					. '<button class="btn btn-ghost btn-sm text-danger" type="button" data-document-media-clear-single><i class="ti ti-trash"></i>Удалить</button>'
+				: '<button class="btn btn-ghost btn-sm" type="button" data-document-media-upload><i class="ti ti-upload"></i>Загрузить файл</button>';
+
 			return '<div class="documents-media-card documents-single-media-field" data-document-media-single data-field-id="' . (int) $field['Id']
+				. '" data-field-type="' . $this->e($type)
 				. '" data-media-accept="' . $this->e($accept) . '" data-upload-url="' . $this->e($base . '/media/upload')
 				. '" data-upload-dir="' . $this->e($uploadDir) . '" data-target-dir="' . $this->e($targetDir)
 				. '" data-picker-dir="' . $this->e($pickerDir) . '">'
@@ -328,9 +334,10 @@
 				. '<button class="btn btn-secondary btn-icon btn-sm" type="button" data-document-media-pick data-tooltip="Выбрать файл" aria-label="Выбрать файл"><i class="ti ti-photo-plus"></i></button>'
 				. '</div>'
 				. '<div class="documents-media-card-actions">'
-				. '<button class="btn btn-ghost btn-sm" type="button" data-document-media-upload><i class="ti ti-upload"></i>Загрузить</button>'
+				. $uploadAction
 				. '<input class="visually-hidden" type="file"' . $fileAccept . ' data-document-media-files>'
 				. '</div>'
+				. '<div class="documents-media-replacement-note" data-document-media-replacement-note hidden><i class="ti ti-info-circle"></i>Старый файл будет перемещён в корзину после сохранения.</div>'
 				. '<input class="input" type="text" name="' . $this->e($this->fname($field, '[description]')) . '" value="' . $this->e($description)
 				. '" placeholder="' . ($type === 'download' ? 'Название или описание файла' : 'Описание изображения') . '">'
 				. '</div></div>';
@@ -388,6 +395,7 @@
 			}
 
 			$fileAccept = $accept === 'image' ? ' accept="image/*"' : '';
+			$isImageList = $type === 'image_multi' || $type === 'image_mega';
 			return '<div class="documents-media-list" data-document-media-list data-field-id="' . (int) $field['Id']
 				. '" data-field-type="' . $this->e($type) . '" data-media-accept="' . $this->e($accept)
 				. '" data-upload-url="' . $this->e($base . '/media/upload') . '" data-upload-dir="' . $this->e($uploadDir)
@@ -395,11 +403,13 @@
 				. '<input type="hidden" name="' . $this->e($this->fname($field, '[media_present]')) . '" value="1">'
 				. '<div class="documents-media-list-actions">'
 				. '<button class="btn btn-secondary btn-sm" type="button" data-document-media-add><i class="ti ti-plus"></i>Добавить</button>'
-				. '<button class="btn btn-ghost btn-sm" type="button" data-document-media-upload><i class="ti ti-upload"></i>Загрузить</button>'
+				. '<button class="btn btn-ghost btn-sm" type="button" data-document-media-upload><i class="ti ti-upload"></i>' . ($isImageList ? 'Добавить фото' : 'Загрузить') . '</button>'
 				. '<button class="btn btn-ghost btn-sm" type="button" data-document-media-import-folder><i class="ti ti-folder-plus"></i>Из папки</button>'
-				. '<button class="btn btn-ghost btn-sm" type="button" data-document-media-clear><i class="ti ti-trash"></i>Очистить</button>'
+				. ($isImageList ? '<button class="btn btn-ghost btn-sm" type="button" data-document-media-replace><i class="ti ti-refresh"></i>Заменить все</button>' : '')
+				. '<button class="btn btn-ghost btn-sm text-danger" type="button" data-document-media-clear><i class="ti ti-trash"></i>Удалить все</button>'
 				. '<input class="visually-hidden" type="file" multiple' . $fileAccept . ' data-document-media-files>'
 				. '</div>'
+				. '<div class="documents-media-replacement-note" data-document-media-replacement-note hidden><i class="ti ti-info-circle"></i>Текущий комплект будет перемещён в корзину после сохранения.</div>'
 				. '<div class="documents-media-dropzone" data-document-media-drop><i class="ti ti-cloud-upload"></i><span>Перетащите файлы сюда — после сохранения: <code data-document-media-target>' . $this->e($targetDir) . '</code></span></div>'
 				. '<div class="documents-media-list-items" data-document-media-items>' . $rows . '</div>'
 				. '<div class="documents-media-empty"' . (!empty($items) ? ' hidden' : '') . ' data-document-media-empty>Нет добавленных элементов.</div>'

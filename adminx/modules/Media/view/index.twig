@@ -24,6 +24,12 @@
   </div>
 </div>
 
+<div class="tabs media-tabs" role="navigation" aria-label="Разделы медиа">
+  <a class="tab active" href="{{ ADMINX_BASE }}/media" aria-current="page"><i class="ti ti-folders"></i>Файлы</a>
+  <a class="tab" href="{{ ADMINX_BASE }}/media/audit"><i class="ti ti-scan"></i>Анализатор</a>
+  {% if can_manage %}<a class="tab" href="{{ ADMINX_BASE }}/media/trash"><i class="ti ti-trash"></i>Корзина</a>{% endif %}
+</div>
+
 <aside class="drawer drawer-right drawer-lg" id="mediaPresetsDrawer" role="dialog" aria-modal="true" aria-labelledby="mediaPresetsTitle" hidden>
   <div class="drawer-header">
     <div>
@@ -106,7 +112,10 @@
           <p class="text-secondary">{{ folders|length }} папок, {{ total }} файлов в текущем фильтре.</p>
         </div>
       </div>
-      <span class="badge badge-blue">{{ filters.view == 'grid' ? 'Сетка' : 'Список' }}</span>
+      <div class="cluster">
+        {% if dir != '/uploads' %}<button class="btn btn-danger-soft" type="button" data-media-empty-folder data-path="{{ dir }}" data-name="{{ dir|split('/')|last }}" data-tooltip="Переместить всё содержимое текущей папки в корзину"><i class="ti ti-folder-x"></i>Очистить папку</button>{% endif %}
+        <span class="badge badge-blue">{{ filters.view == 'grid' ? 'Сетка' : 'Список' }}</span>
+      </div>
     </div>
 
     <div class="table-toolbar media-toolbar">
@@ -128,7 +137,8 @@
         {% endif %}
       </form>
 
-      <div class="segmented media-view" role="group" aria-label="Вид">
+	  {% set saved_views_form = '.media-filter' %}{% set saved_views_save_url = ADMINX_BASE ~ '/media/saved-views' %}{% set saved_views_delete_url = ADMINX_BASE ~ '/media/saved-views/__ID__/delete' %}{% set saved_views_fields = ['dir','q','type','view'] %}{% include '@adminx/_saved_views.twig' %}
+	  <div class="segmented media-view" role="group" aria-label="Вид">
         <a href="{{ ADMINX_BASE }}/media?dir={{ dir|url_encode }}&view=grid&q={{ filters.q|url_encode }}&type={{ filters.type }}" aria-pressed="{{ filters.view == 'grid' ? 'true' : 'false' }}" data-tooltip="Сетка" aria-label="Сетка"><i class="ti ti-layout-grid"></i></a>
         <a href="{{ ADMINX_BASE }}/media?dir={{ dir|url_encode }}&view=table&q={{ filters.q|url_encode }}&type={{ filters.type }}" aria-pressed="{{ filters.view == 'table' ? 'true' : 'false' }}" data-tooltip="Список" aria-label="Список"><i class="ti ti-list"></i></a>
       </div>

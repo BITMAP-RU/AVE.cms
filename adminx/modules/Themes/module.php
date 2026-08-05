@@ -17,7 +17,7 @@
 	return array(
 		'code' => 'themes',
 		'name' => 'Темы',
-		'version' => '0.1.0',
+		'version' => '0.2.0',
 
 		'permissions' => array(
 			'key' => 'themes',

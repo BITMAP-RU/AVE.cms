@@ -32,6 +32,17 @@ coverage - the percentage of visitors participating in the test. Payload option 
 You can leave the experiment as a draft, run it, pause it, or end it.
 The start and end period are optional.
 
+## When the result is reliable
+
+**Minimum impressions per variant** is a fixed sample threshold. Before every
+variant reaches it, AVE.cms reports **Not enough data** and does not name a
+winner. The default is 500 impressions per variant.
+
+After the threshold, control A is compared with the best alternative using a
+two-proportion z-test and a correction for multiple alternatives. The result is
+not enough data, difference within sampling error, or a winner at 95%
+confidence. A mature result also appears in panel notifications.
+
 ## Inserting into a template
 
 ```text
@@ -70,9 +81,8 @@ POST /api/v1/experiments/event
 ```
 
 The last endpoint accepts `code` and `event`. The variant ID from the client is not
-accepted: the server recalculates the destination and writes the event only to
-this option. For one visitor, the uniqueness of an event is considered once a day,
-however, the total number of events is also maintained.
+accepted: the server recalculates the assignment and requires its signed proof.
+One event is counted at most once per visitor per day.
 
 ##Hooks
 
@@ -102,7 +112,8 @@ IP and original seed are not saved in statistics.
 ## Permissions and deletion
 
 - `view_experiments` - viewing experiments and results;
-- `manage_experiments` - creation, launch, statistics reset and deletion.
+- `manage_experiments` - statistics reset and operational control;
+- `manage_experiment_code` - public HTML variants and automatic injection, with password re-authentication.
 
 Uninstallation removes experiments, variants, statistics, deduplication
 visitors and module settings.

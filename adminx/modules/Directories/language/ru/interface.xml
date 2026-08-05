@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="directories_title">Справочники</phrase>
+	<phrase data="directories_description">Общие списки значений, которые можно подключать к нескольким полям.</phrase>
+	<phrase data="directories_create">Создать справочник</phrase>
+	<phrase data="directories_shared">Общие справочники</phrase>
+	<phrase data="directories_shared_description">Один список можно подключить к нескольким полям и менять централизованно.</phrase>
+	<phrase data="directories_list">Список справочников</phrase>
+	<phrase data="directories_storage_help">Ключ хранится в документе, подпись можно менять без перезаписи документов.</phrase>
+	<phrase data="directories_empty">Справочников пока нет</phrase>
+	<phrase data="directories_empty_help">Создайте общий список значений для полей.</phrase>
+	<phrase data="directories_values_empty">Значений пока нет</phrase>
+	<phrase data="directories_values_empty_help">Добавьте первую пару «ключ → подпись».</phrase>
+	<phrase data="directories_new">Новый справочник</phrase>
+	<phrase data="directories_new_value">Новое значение</phrase>
+	<phrase data="directories_source_help">Общий источник значений для полей.</phrase>
+	<phrase data="directories_stable_code_help">Стабильный технический код. Если оставить пустым, сформируется из названия.</phrase>
+	<phrase data="directories_stable_key">Стабильный ключ</phrase>
+	<phrase data="directories_key_help">Хранится в документе. После начала использования ключ лучше не менять.</phrase>
+	<phrase data="directories_label_help">Эту подпись увидят редактор и посетитель сайта.</phrase>
+	<phrase data="directories_available">Доступен для выбора в полях</phrase>
+	<phrase data="directories_show">Показывать в полях</phrase>
+	<phrase data="directories_open_values">Открыть значения</phrase>
+	<phrase data="directories_add_value">Добавить значение</phrase>
+	<phrase data="directories_edit">Настройки справочника</phrase>
+	<phrase data="directories_in_use">Справочник используется</phrase>
+	<phrase data="directories_delete_confirm">Удалить справочник?</phrase>
+	<phrase data="directories_edit_value">Изменить значение</phrase>
+	<phrase data="directories_delete_value_confirm">Удалить значение?</phrase>
+	<phrase data="directories_save_failed">Не удалось сохранить данные</phrase>
+	<phrase data="directories_request_failed">Ошибка запроса</phrase>
+</language>

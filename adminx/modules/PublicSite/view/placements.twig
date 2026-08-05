@@ -48,6 +48,10 @@
     <span class="icon-tile" style="--tile-bg:var(--red-100);--tile-fg:var(--red-600)"><i class="ti ti-link-off"></i></span>
     <div><b>{{ placement_map.stats.broken }}</b><span>Битых ссылок</span></div>
   </div>
+  <div class="card public-site-stat">
+    <span class="icon-tile" style="--tile-bg:var(--amber-100);--tile-fg:var(--amber-600)"><i class="ti ti-file-off"></i></span>
+    <div><b>{{ placement_map.stats.unused }}</b><span>Не используется</span></div>
+  </div>
 </div>
 
 <div class="alert alert-info public-site-placement-help">
@@ -62,6 +66,8 @@
 <nav class="tabs public-site-placement-view-tabs" aria-label="Вид карты размещений">
   <a class="tab {{ placement_view == 'placements' ? 'is-active' : '' }}" href="{{ ADMINX_BASE }}/public-site/placements?view=placements{{ filter_suffix }}"><i class="ti ti-route-square"></i>Размещения</a>
   <a class="tab {{ placement_view == 'usage' ? 'is-active' : '' }}" href="{{ ADMINX_BASE }}/public-site/placements?view=usage{{ filter_suffix }}"><i class="ti ti-link"></i>Где используется</a>
+  <a class="tab {{ placement_view == 'dependencies' ? 'is-active' : '' }}" href="{{ ADMINX_BASE }}/public-site/placements?view=dependencies{{ filter_suffix }}"><i class="ti ti-hierarchy-2"></i>Зависимости</a>
+  <a class="tab {{ placement_view == 'unused' ? 'is-active' : '' }}" href="{{ ADMINX_BASE }}/public-site/placements?view=unused{{ filter_suffix }}"><i class="ti ti-file-off"></i>Не используется</a>
 </nav>
 
 {% if placement_view == 'placements' %}
@@ -69,11 +75,21 @@
   {% set section_eyebrow = 'Области страницы' %}
   {% set section_title = 'Подключённые компоненты' %}
   {% set section_desc = placement_map.stats.filtered ~ ' связей соответствует текущему фильтру.' %}
-{% else %}
+{% elseif placement_view == 'usage' %}
   {% set section_icon = 'ti-link' %}
   {% set section_eyebrow = 'Где используется' %}
   {% set section_title = 'Компоненты в текущей выборке' %}
   {% set section_desc = 'Сводка помогает найти повторно используемые и потерянные компоненты.' %}
+{% elseif placement_view == 'dependencies' %}
+  {% set section_icon = 'ti-hierarchy-2' %}
+  {% set section_eyebrow = 'Состав страниц' %}
+  {% set section_title = 'Зависимости источников' %}
+  {% set section_desc = 'Какие поля, блоки, подборки, меню и модули нужны каждому сохранённому шаблону.' %}
+{% else %}
+  {% set section_icon = 'ti-file-off' %}
+  {% set section_eyebrow = 'Очистка структуры' %}
+  {% set section_title = 'Неиспользуемые компоненты и шаблоны' %}
+  {% set section_desc = 'Элементы без назначений и ссылок. Перед удалением их всё равно нужно проверить вручную.' %}
 {% endif %}
 
 <section class="public-site-panel">
@@ -191,7 +207,7 @@
     </div>
     {% include '@public_site/_placement_pagination.twig' %}
   </div>
-{% else %}
+{% elseif placement_view == 'usage' %}
   <div class="card public-site-card public-site-usage-card">
     <div class="table-scroll public-site-placement-scroll">
       <table class="table table-compact public-site-table public-site-usage-table">
@@ -232,6 +248,46 @@
           {% else %}
           <tr><td colspan="6"><div class="empty-state">Компонентов в текущей выборке нет.</div></td></tr>
           {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% include '@public_site/_placement_pagination.twig' %}
+  </div>
+{% elseif placement_view == 'dependencies' %}
+  <div class="card public-site-card public-site-dependencies-card">
+    <div class="table-scroll public-site-placement-scroll">
+      <table class="table table-compact public-site-table public-site-dependencies-table">
+        <thead><tr><th>Источник</th><th>Что требуется</th><th>Ссылок</th><th>Проблемы</th><th></th></tr></thead>
+        <tbody>
+          {% for item in placement_map.dependencies %}
+          <tr class="{{ item.broken ? 'is-row-danger' : '' }}">
+            <td><div class="public-site-placement-source"><b>{{ item.source_title ?: item.source_type_title ~ ' #' ~ item.source_id }}</b><span>{{ item.source_type_title }} · ID {{ item.source_id }}</span></div></td>
+            <td><div class="public-site-dependency-list">{% for component in item.components %}<span class="badge {{ component.status == 'broken' ? 'badge-red' : (component.type == 'field' ? 'badge-blue' : 'badge-gray') }}" title="{{ component.tag }}">{{ component.title }}</span>{% endfor %}</div></td>
+            <td><b>{{ item.references }}</b></td>
+            <td>{% if item.broken %}<span class="badge badge-red">{{ item.broken }} ошибок</span>{% else %}<span class="badge badge-green">Проверено</span>{% endif %}</td>
+            <td>{% if item.source_url %}<div class="action-buttons public-site-placement-actions"><a class="btn btn-ghost btn-icon btn-sm" href="{{ ADMINX_BASE }}{{ item.source_url }}" data-tooltip-left="Открыть источник" aria-label="Открыть источник"><i class="ti ti-arrow-up-right"></i></a></div>{% endif %}</td>
+          </tr>
+          {% else %}<tr><td colspan="5"><div class="empty-state">Зависимостей в текущей выборке нет.</div></td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% include '@public_site/_placement_pagination.twig' %}
+  </div>
+{% else %}
+  <div class="card public-site-card public-site-unused-card">
+    <div class="table-scroll public-site-placement-scroll">
+      <table class="table table-compact public-site-table public-site-unused-table">
+        <thead><tr><th>Наименование</th><th>Тип</th><th>Alias</th><th>Использование</th><th></th></tr></thead>
+        <tbody>
+          {% for item in placement_map.unused %}
+          <tr>
+            <td><div class="public-site-placement-component"><b>{{ item.title ?: item.type_title ~ ' #' ~ item.id }}</b><small>ID {{ item.id }}</small></div></td>
+            <td><span class="badge badge-gray">{{ item.type_title }}</span></td>
+            <td><code>{{ item.alias ?: '—' }}</code></td>
+            <td><span class="badge badge-amber">Нет ссылок</span></td>
+            <td>{% if item.url %}<div class="action-buttons public-site-placement-actions"><a class="btn btn-ghost btn-icon btn-sm" href="{{ ADMINX_BASE }}{{ item.url }}" data-tooltip-left="Проверить элемент" aria-label="Проверить элемент"><i class="ti ti-arrow-up-right"></i></a></div>{% endif %}</td>
+          </tr>
+          {% else %}<tr><td colspan="5"><div class="empty-state"><i class="ti ti-circle-check"></i><b>Неиспользуемых элементов нет</b><span>Все найденные компоненты и шаблоны имеют назначения.</span></div></td></tr>{% endfor %}
         </tbody>
       </table>
     </div>

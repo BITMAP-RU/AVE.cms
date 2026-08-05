@@ -330,6 +330,7 @@
 			}
 
 			if ($uploaded) {
+				foreach ($uploaded as $file) { MediaSearchIndex::put($file); }
 				self::invalidateStats();
 			}
 
@@ -378,37 +379,65 @@
 				self::renameWebpCompanion($path, $target);
 			}
 
+			MediaSearchIndex::remove($path);
+			MediaSearchIndex::indexPath($target);
 			self::invalidateStats();
 			return $target;
 		}
 
-		public static function delete($path)
+		public static function trash($path)
 		{
 			$path = self::normalize($path, '');
-			if (self::isProtectedPath($path)) {
-				throw new \RuntimeException('Этот путь нельзя удалить');
-			}
-
+			if (self::isProtectedPath($path)) { throw new \RuntimeException('Этот путь нельзя удалить'); }
 			$abs = self::abs($path);
-			if (is_dir($abs)) {
-				if (!self::removeDir($abs)) {
-					throw new \RuntimeException('Не удалось удалить папку');
-				}
+			if (!is_file($abs) && !is_dir($abs)) { throw new \RuntimeException('Файл или папка не найдены'); }
 
-				self::invalidateStats();
-				return true;
-			}
-
+			$related = array();
 			if (is_file($abs)) {
-				self::deleteFileCompanions($path, $abs);
+				$extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+				if (in_array($extension, array('jpg', 'jpeg', 'png'), true)) {
+					$webp = dirname($path) . '/' . pathinfo($path, PATHINFO_FILENAME) . '.webp';
+					if (is_file(self::abs($webp))) { $related[] = $webp; }
+				}
 			}
 
-			if (is_file($abs) && !File::delete($abs)) {
-				throw new \RuntimeException('Не удалось удалить файл');
-			}
-
+			$entry = MediaTrash::store($path, $related);
+			if ($entry['type'] === 'file') { self::clearGeneratedForFile($path, $abs); }
+			MediaSearchIndex::remove($path);
 			self::invalidateStats();
-			return true;
+			return $entry;
+		}
+
+		public static function trashContents($dir)
+		{
+			$dir = self::normalize($dir, '');
+			if ($dir === '' || self::isProtectedPath($dir)) {
+				throw new \RuntimeException('Эту папку нельзя очистить');
+			}
+
+			$abs = self::abs($dir);
+			if (!is_dir($abs)) {
+				throw new \RuntimeException('Папка не найдена');
+			}
+
+			$paths = array();
+			foreach (@scandir($abs) ?: array() as $name) {
+				if (!self::isVisibleEntry($name)) { continue; }
+				$paths[] = rtrim($dir, '/') . '/' . $name;
+			}
+
+			if (!$paths) {
+				throw new \RuntimeException('Папка уже пуста');
+			}
+
+			$entry = MediaTrash::storeContents($dir, $paths);
+			try { self::clearThumbnails($dir); } catch (\RuntimeException $e) { /* Производные можно пересоздать. */ }
+			$derivatives = $abs . DIRECTORY_SEPARATOR . '_derivatives';
+			if (is_dir($derivatives)) { self::removeDir($derivatives); }
+			MediaSearchIndex::remove($dir);
+			self::invalidateStats();
+			$entry['count'] = count($paths);
+			return $entry;
 		}
 
 		public static function clearThumbnails($dir)
@@ -468,6 +497,7 @@
 					throw new \RuntimeException('Не удалось удалить превью');
 				}
 
+				ThumbnailStorage::invalidateDirectory(dirname($target));
 				$roots++;
 			}
 

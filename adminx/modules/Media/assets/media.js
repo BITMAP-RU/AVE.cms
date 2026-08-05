@@ -51,14 +51,22 @@
         var folder = e.target.closest('[data-media-folder]');
         var rename = e.target.closest('[data-media-rename]');
         var del = e.target.closest('[data-media-delete]');
+        var emptyFolder = e.target.closest('[data-media-empty-folder]');
         var clearThumbs = e.target.closest('[data-media-clear-thumbs]');
         var copy = e.target.closest('[data-copy]');
         var webp = e.target.closest('[data-media-webp]');
         var zoom = e.target.closest('[data-media-result-zoom]');
+        var audit = e.target.closest('[data-media-audit-run]');
+        var trashRestore = e.target.closest('[data-media-trash-restore]');
+        var trashPurge = e.target.closest('[data-media-trash-purge]');
 
+        if (audit) { self.runAudit(audit); return; }
+        if (trashRestore) { self.restoreTrash(trashRestore); return; }
+        if (trashPurge) { self.purgeTrash(trashPurge); return; }
         if (folder) { self.createFolder(); return; }
         if (rename) { self.rename(rename); return; }
         if (del) { self.remove(del); return; }
+        if (emptyFolder) { self.emptyFolder(emptyFolder); return; }
         if (clearThumbs) { self.clearThumbnails(clearThumbs); return; }
         if (webp) { self.convertWebp(webp); return; }
         if (zoom) { e.preventDefault(); self.openResultLarge(); return; }
@@ -77,6 +85,29 @@
 
     base: function () {
       return Adminx.base();
+    },
+
+    runAudit: function (button) {
+      var form = document.querySelector('[data-media-audit-form]');
+      if (!form || button.disabled) { return; }
+      button.disabled = true;
+      button.classList.add('is-loading');
+      button.innerHTML = '<i class="ti ti-loader-2"></i>Проверяем...';
+      Adminx.Loader.show();
+      Adminx.Ajax.post(form.action, new FormData(form)).then(function (payload) {
+        Adminx.Loader.hide();
+        var result = payload.data || {};
+        if (!result.success) {
+          button.disabled = false;
+          button.classList.remove('is-loading');
+        }
+        Adminx.Ajax.handle(payload);
+      }).catch(function () {
+        Adminx.Loader.hide();
+        button.disabled = false;
+        button.classList.remove('is-loading');
+        Adminx.Toast.show('Не удалось выполнить проверку медиа', 'error');
+      });
     },
 
     presetData: null,
@@ -268,16 +299,104 @@
       var self = this;
       var name = button.getAttribute('data-name') || button.getAttribute('data-path') || '';
       var kind = button.getAttribute('data-kind') === 'folder' ? 'папку и всё содержимое' : 'файл';
+      var form = document.getElementById('mediaActionForm');
+      if (!form) { return; }
+      var fd = new FormData(form);
+      fd.set('path', button.getAttribute('data-path') || '');
+      Adminx.Loader.show();
+      Adminx.Ajax.post(self.base() + '/media/delete-check', fd).then(function (payload) {
+        Adminx.Loader.hide();
+        var response = payload.data || {};
+        if (!response.success) {
+          Adminx.Toast.show(response.message || 'Не удалось проверить использование', 'error');
+          return;
+        }
+        var usage = response.data && response.data.usage ? response.data.usage : { use_count: 0, uses: [] };
+        var used = Number(usage.use_count || 0);
+        var message = used > 0
+          ? '«' + name + '» используется в ' + used + ' местах. Объект будет скрыт с сайта и перенесён в корзину, откуда его можно восстановить.'
+          : '«' + name + '» будет перенесён в корзину и останется доступен для восстановления.';
+        Adminx.Confirm.open({
+          kind: used > 0 ? 'warning' : 'danger',
+          title: used > 0 ? 'Объект используется' : 'Удалить ' + kind + '?',
+          message: message,
+          confirmLabel: 'В корзину',
+          confirmClass: used > 0 ? 'btn-primary' : 'btn-danger',
+          onConfirm: function () {
+            submitAction(self.base() + '/media/delete', {
+              path: button.getAttribute('data-path') || '',
+              confirm_usage: used > 0 ? '1' : '0'
+            });
+          }
+        });
+      }).catch(function () {
+        Adminx.Loader.hide();
+        Adminx.Toast.show('Ошибка проверки медиа', 'error');
+      });
+    },
+
+    emptyFolder: function (button) {
+      var self = this;
+      var path = button.getAttribute('data-path') || '';
+      var name = button.getAttribute('data-name') || path;
+      var form = document.getElementById('mediaActionForm');
+      if (!form) { return; }
+      var fd = new FormData(form);
+      fd.set('path', path);
+      Adminx.Loader.show();
+      Adminx.Ajax.post(self.base() + '/media/delete-check', fd).then(function (payload) {
+        Adminx.Loader.hide();
+        var response = payload.data || {};
+        if (!response.success) {
+          Adminx.Toast.show(response.message || 'Не удалось проверить содержимое папки', 'error');
+          return;
+        }
+        var usage = response.data && response.data.usage ? response.data.usage : { use_count: 0 };
+        var used = Number(usage.use_count || 0);
+        Adminx.Confirm.open({
+          kind: used > 0 ? 'warning' : 'danger',
+          title: 'Очистить папку «' + name + '»?',
+          message: used > 0
+            ? 'Внутри есть файлы, используемые в ' + used + ' местах. Всё содержимое будет перенесено в корзину, сама папка останется.'
+            : 'Все файлы и вложенные папки будут перенесены в корзину. Текущая папка останется на месте.',
+          confirmLabel: 'Очистить папку',
+          confirmClass: used > 0 ? 'btn-primary' : 'btn-danger',
+          onConfirm: function () {
+            submitAction(self.base() + '/media/empty-folder', {
+              path: path,
+              confirm_usage: used > 0 ? '1' : '0'
+            });
+          }
+        });
+      }).catch(function () {
+        Adminx.Loader.hide();
+        Adminx.Toast.show('Ошибка проверки медиа', 'error');
+      });
+    },
+
+    restoreTrash: function (button) {
+      var self = this;
       Adminx.Confirm.open({
-        kind: 'error',
-        title: 'Удалить ' + kind + '?',
-        message: '«' + name + '» будет удалён с диска.',
-        confirmLabel: 'Удалить',
+        kind: 'info',
+        title: 'Восстановить объект?',
+        message: '«' + (button.getAttribute('data-name') || '') + '» вернётся по исходному пути.',
+        confirmLabel: 'Восстановить',
+        onConfirm: function () {
+          submitAction(self.base() + '/media/trash/' + encodeURIComponent(button.getAttribute('data-media-trash-restore') || '') + '/restore', {});
+        }
+      });
+    },
+
+    purgeTrash: function (button) {
+      var self = this;
+      Adminx.Confirm.open({
+        kind: 'danger',
+        title: 'Удалить окончательно?',
+        message: '«' + (button.getAttribute('data-name') || '') + '» нельзя будет восстановить.',
+        confirmLabel: 'Удалить навсегда',
         confirmClass: 'btn-danger',
         onConfirm: function () {
-          submitAction(self.base() + '/media/delete', {
-            path: button.getAttribute('data-path') || ''
-          });
+          submitAction(self.base() + '/media/trash/' + encodeURIComponent(button.getAttribute('data-media-trash-purge') || '') + '/purge', {});
         }
       });
     },

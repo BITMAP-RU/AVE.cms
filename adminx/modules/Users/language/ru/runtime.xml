@@ -22,4 +22,11 @@
 	<phrase data="runtime_d40e0bdeb83cdf61">Управление пользователями</phrase>
 	<phrase data="runtime_9dbd7e3b1a2b8fa8">Этот email уже занят.</phrase>
 	<phrase data="runtime_41859888161442dc">Этот логин уже занят.</phrase>
+	<phrase data="users_session_not_found">Сессия не найдена</phrase>
+	<phrase data="users_current_session_revoked">Текущая сессия завершена</phrase>
+	<phrase data="users_session_revoked">Сессия завершена</phrase>
+	<phrase data="users_other_sessions_revoked">Остальные сессии завершены</phrase>
+	<phrase data="users_all_sessions_revoked">Все сессии завершены</phrase>
+	<phrase data="users_failed_logins_notification">Неудачные попытки входа</phrase>
+	<phrase data="users_failed_logins_notification_hint">За последние 10 минут. Проверьте пользователей и аудит.</phrase>
 </language>

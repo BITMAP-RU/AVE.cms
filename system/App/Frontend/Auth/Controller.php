@@ -185,8 +185,8 @@
 				return $this->renderRegistration(array(), array('_form' => 'Сессия устарела. Обновите страницу.'), 403);
 			}
 
-			if (!Feature::registrationFormEnabled()) {
-				return $this->formError('register', 'Регистрация временно отключена.', 403);
+			if (!Feature::emailRegistrationEnabled()) {
+				return $this->renderRegistration(array(), array('_form' => 'Регистрация по email отключена. Используйте доступный способ регистрации.'), 403);
 			}
 
 			if (!$this->verifyProtection('registration')) {
@@ -249,12 +249,16 @@
 		public function verifyRegistration(array $params = array())
 		{
 			$token = Request::getStr('token', '');
-			$valid = $token !== '' && (new AuthService(Feature::config()))->verifyRegistration($token);
+			$result = $token !== '' ? (new AuthService(Feature::config()))->verifyEmailToken($token) : false;
+			$valid = $result !== false;
+			$emailChange = $result === 'email_change';
 			return Renderer::page('message', array(
 				'title' => $valid ? 'Email подтвержден' : 'Ссылка недействительна',
-				'message' => $valid ? 'Регистрация завершена. Теперь можно войти.' : 'Ссылка уже использована или срок её действия истёк.',
-				'action_url' => $valid ? Feature::url('login') : '',
-				'action_label' => $valid ? 'Войти' : '',
+				'message' => $valid
+					? ($emailChange ? 'Адрес добавлен к вашему аккаунту.' : 'Регистрация завершена. Теперь можно войти.')
+					: 'Ссылка уже использована или срок её действия истёк.',
+				'action_url' => $valid ? ($emailChange ? Feature::url('profile') : Feature::url('login')) : '',
+				'action_label' => $valid ? ($emailChange ? 'Вернуться в профиль' : 'Войти') : '',
 			));
 		}
 
@@ -330,7 +334,7 @@
 			if (!$user && !$preview) { return $this->redirectToLogin(Feature::url('profile')); }
 			if (!$user) { $user = $this->previewUser(); }
 			$profiles = new ProfileRepository();
-			return Renderer::page('profile', array('user' => $user, 'fields' => $profiles->fields(), 'extra_values' => $preview ? array() : $profiles->values((int) $user['Id']), 'errors' => array(), 'saved' => Request::getBool('saved', false), 'preview' => $preview, 'oauth_connections' => $this->oauthConnections((int) $user['Id'], $preview)));
+			return Renderer::page('profile', array('user' => $user, 'fields' => $profiles->fields(), 'extra_values' => $preview ? array() : $profiles->values((int) $user['Id']), 'errors' => array(), 'saved' => Request::getBool('saved', false), 'email_pending' => Request::getBool('email_pending', false), 'preview' => $preview, 'oauth_connections' => $this->oauthConnections((int) $user['Id'], $preview)));
 		}
 
 		public function overview(array $params = array())
@@ -354,7 +358,7 @@
 			if (!$user) { return $this->redirectToLogin(Feature::url('profile')); }
 			if (!$this->verifyCsrf()) { return $this->formError('profile', 'Сессия устарела. Обновите страницу.', 403, array('user' => $user)); }
 			$data = array();
-			foreach (array('firstname','lastname','phone','company','city','street','street_nr','zipcode') as $key) {
+			foreach (array('email','firstname','lastname','phone','company','city','street','street_nr','zipcode') as $key) {
 				$data[$key] = trim(Request::postStr($key, ''));
 			}
 
@@ -369,7 +373,11 @@
 			}
 
 			try {
-				(new UserRepository())->updateProfile((int) $user['Id'], $data);
+				$profileResult = (new UserRepository())->updateProfile((int) $user['Id'], $data);
+				if ($profileResult['email'] !== ''
+					&& (!empty($profileResult['email_changed']) || empty($user['email_verified_at']))) {
+					(new AuthService(Feature::config()))->sendEmailVerification((int) $user['Id']);
+				}
 			} catch (\InvalidArgumentException $e) {
 				http_response_code(422);
 				return Renderer::page('profile', array(
@@ -386,7 +394,10 @@
 			Session::set('user_firstname', $data['firstname']);
 			Session::set('user_lastname', $data['lastname']);
 			Session::set('user_name', trim($data['firstname'] . ' ' . $data['lastname']));
-			return $this->redirect(Feature::url('profile') . '?saved=1');
+			$query = '?saved=1';
+			if ($profileResult['email'] !== ''
+				&& (!empty($profileResult['email_changed']) || empty($user['email_verified_at']))) { $query .= '&email_pending=1'; }
+			return $this->redirect(Feature::url('profile') . $query);
 		}
 
 		public function passwordForm(array $params = array())
@@ -539,6 +550,9 @@
 				'extra_values' => isset($values['extra']) && is_array($values['extra']) ? $values['extra'] : array(),
 				'fields' => $profiles->fields('registration'),
 				'config' => Feature::config(),
+				'email_registration_enabled' => Feature::emailRegistrationEnabled(),
+				'phone_registration_enabled' => Feature::phoneRegistrationEnabled(),
+				'registration_phone_providers' => Feature::phoneRegistrationProviders(),
 				'errors' => $errors,
 				'preview' => !empty($preview),
 			));
@@ -554,9 +568,11 @@
 			return array(
 				'Id' => 0,
 				'email' => 'customer@example.org',
+				'email_verified_at' => time(),
 				'firstname' => 'Имя',
 				'lastname' => 'Фамилия',
 				'phone' => '+7 900 000-00-00',
+				'phone_verified_at' => 0,
 				'company' => 'Компания',
 				'city' => 'Город',
 				'street' => 'Улица',

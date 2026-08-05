@@ -26,6 +26,7 @@
 			'core.update' => 'Установка подписанного обновления ядра',
 			'stored_php.execute' => 'Выполнение сохранённого PHP-кода',
 			'stored_php.write' => 'Сохранение PHP-кода, исполняемого runtime',
+			'stored_html.write' => 'Сохранение HTML форм и разметки, исполняемых в публичной странице',
 			'theme_assets.write' => 'Изменение исполняемых CSS/JavaScript и файлов публичной темы',
 			'legacy_migration.write' => 'Изменение реквизитов исходной системы',
 			'legacy_migration.execute' => 'Очистка стартовых данных и миграция старой AVE.cms',
@@ -86,6 +87,12 @@
 			'POST /modules/legacy-migration/runs/{id}/rollback' => array('legacy_migration.execute', 'run_legacy_migration'),
 			'POST /modules/legacy-migration/runs/{id}/files' => array('legacy_migration.execute', 'run_legacy_migration'),
 			'POST /database/backup/restore' => array('database.restore', 'manage_database'),
+			'POST /modules/popups/{id}' => array('stored_html.write', 'manage_popup_code'),
+			'POST /modules/popups/{id}/delete' => array('stored_html.write', 'manage_popup_code'),
+			'POST /modules/popups/settings' => array('stored_html.write', 'manage_popup_code'),
+			'POST /modules/experiments/{id}' => array('stored_html.write', 'manage_experiment_code'),
+			'POST /modules/experiments/{id}/delete' => array('stored_html.write', 'manage_experiment_code'),
+			'POST /modules/experiments/settings' => array('stored_html.write', 'manage_experiment_code'),
 		);
 
 		public static function validate(array $route)

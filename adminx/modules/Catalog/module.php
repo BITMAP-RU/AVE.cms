@@ -14,7 +14,7 @@
 
 	defined('BASEPATH') || die('Direct access to this location is not allowed.');
 	return array(
-		'code' => 'catalog', 'name' => 'Каталог', 'version' => '0.2.0',
+		'code' => 'catalog', 'name' => 'Каталог', 'version' => '0.3.2',
 		'permissions' => array('key' => 'catalog', 'items' => array(
 			array(
 				'code' => 'view_catalog',

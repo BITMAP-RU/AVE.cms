@@ -23,7 +23,7 @@
 	return [
 		'code'    => 'auth',
 		'name'    => 'Доступ',
-		'version' => '0.1.0',
+		'version' => '0.2.1',
 
 		'public_routes' => [
 			'/login',
@@ -34,6 +34,8 @@
 			array('GET', '/login', array(\App\Adminx\Auth\Controller::class, 'form')),
 			array('POST', '/login', array(\App\Adminx\Auth\Controller::class, 'login')),
 			array('POST', '/locale', array(\App\Adminx\Auth\Controller::class, 'language')),
+			array('GET', '/account/password', array(\App\Adminx\Auth\Controller::class, 'passwordForm'), array('permission' => 'admin_panel')),
+			array('POST', '/account/password', array(\App\Adminx\Auth\Controller::class, 'changePassword'), array('permission' => 'admin_panel')),
 			array('POST', '/reauth', array(\App\Adminx\Auth\Controller::class, 'reauth'), array('permission' => 'admin_panel')),
 			array('POST', '/logout', array(\App\Adminx\Auth\Controller::class, 'logout')),
 		),

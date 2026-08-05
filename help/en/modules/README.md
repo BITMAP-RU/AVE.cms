@@ -87,6 +87,8 @@ administrative extensions are physically located in
 | [Polls](polls.md) | Single and multiple voting, archive, tags and API. |
 | [Galleries](galleries.md) | Media collections, grid, slider, thumbnails and template tags. |
 | [Site search](search.md) | Index, scopes, query output, JSON/HTML API, live search and hooks. |
+| [Product quiz](quiz.md) | Step-by-step catalog selection and its public page template. |
+| [Public widgets](public-widgets.md) | Exchange rates, subscription, and active-theme Twig overrides. |
 | [Banners](banners.md) | Advertising slots, rotation strategies, scheduling, templates and statistics. |
 | [Q&A](faq.md) | Collections of FAQs, rich-text answers, templates, JSON API and Schema.org. |
 | [Related content](related.md) | Relevance, circular inference, manual connections, templates, queries and APIs. |
@@ -113,6 +115,8 @@ administrative extensions are physically located in
 | [A/B tests](experiments.md) | Variants of blocks and elements, stable distribution and conversions. |
 | [Reliable events](reliable-events.md) | Signed webhook outbox, retries, and delivery history. |
 | [Cache warmup](cache-warmup.md) | Controlled background warming of published pages. |
+| [Crossposting](crossposting.md) | Telegram, VK, Zen, and custom gateways with templates, scheduling, and deduplication. |
+| [System comparison](environment-comparison.md) | Core, modules, migrations, database schema, settings, themes, and templates without exporting secrets. |
 | [Step by step: your module](tutorial.md) | Mini-module from scratch to working screen. |
 
 ## Installable AVE.cms modules
@@ -148,13 +152,15 @@ widgets and “Document Operations” are deliberately not included in this list
 | `site_readiness` | Panel | `view_site_readiness`, `run_site_readiness`, `manage_site_readiness` | [Site readiness](site-readiness.md) |
 | `scheduler` | Public + panel | `view_scheduler`, `run_scheduler`, `manage_scheduler` | [Scheduler](scheduler.md) |
 | `system_health` | Panel | `view_system_health`, `run_system_health`, `manage_system_health` | [Health Monitoring](system-health.md) |
-| `popups` | Public + panel | `view_popups`, `manage_popups` | [Pop-ups](popups.md) |
+| `popups` | Public + panel | `view_popups`, `manage_popups`, `manage_popup_code` | [Pop-ups](popups.md) |
 | `commerceml` | Public + panel | `view_commerceml`, `manage_commerceml` | [Exchange with 1C](commerceml.md) |
 | `traffic_analytics` | Public + panel | `view_traffic_analytics`, `manage_traffic_analytics` | [Traffic sources](traffic-analytics.md) |
 | `search_analytics` | Public + panel | `view_search_analytics`, `manage_search_analytics` | [Search queries](search-analytics.md) |
-| `experiments` | Public + panel | `view_experiments`, `manage_experiments` | [A/B tests](experiments.md) |
+| `experiments` | Public + panel | `view_experiments`, `manage_experiments`, `manage_experiment_code` | [A/B tests](experiments.md) |
 | `reliable_events` | Public + panel | `view_reliable_events`, `manage_reliable_events` | [Reliable events](reliable-events.md) |
 | `cache_warmup` | Public + panel | `view_cache_warmup`, `manage_cache_warmup` | [Cache warmup](cache-warmup.md) |
+| `crossposting` | Public + panel | `view_crossposting`, `manage_crossposting` | [Crossposting](crossposting.md) |
+| `environment_compare` | Panel | `view_environment_compare`, `run_environment_compare` | [System comparison](environment-comparison.md) |
 | `todo` | Panel | `view_todos`, `manage_todos` | [Personal Tools](personal-tools.md#todo) |
 | `vk_oauth` | Public + panel | `view_vk_oauth`, `manage_vk_oauth` | [Login via VK ID](oauth-providers.md#vk-id) |
 | `yandex_oauth` | Public + panel | `view_yandex_oauth`, `manage_yandex_oauth` | [Login via Yandex](oauth-providers.md#яндекс) |

@@ -160,6 +160,10 @@
 	$success = null;
 	$base = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/');
 	$rootUrl = preg_replace('#/setup$#', '', $base);
+	$requestHost = isset($_SERVER['HTTP_HOST']) ? strtolower(trim((string) $_SERVER['HTTP_HOST'])) : '';
+	if (!preg_match('/^[a-z0-9.\-\[\]:]+$/', $requestHost)) { $requestHost = 'localhost'; }
+	$requestScheme = $setupCookieSecure ? 'https' : 'http';
+	$defaultSiteUrl = $requestScheme . '://' . $requestHost . ($rootUrl !== '' ? $rootUrl : '');
 	$progressRequest = $_SERVER['REQUEST_METHOD'] === 'POST'
 		&& isset($_SERVER['HTTP_X_SETUP_PROGRESS'])
 		&& $_SERVER['HTTP_X_SETUP_PROGRESS'] === '1';
@@ -193,6 +197,7 @@
 		'admin_login' => 'admin',
 		'admin_email' => '',
 		'admin_directory' => 'adminx',
+		'site_url' => $defaultSiteUrl,
 	);
 	$resetPrefixRequested = $_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['reset_prefix']);
 	$resetPrefixConfirmation = $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset_prefix_confirmation'])
@@ -236,6 +241,7 @@
 				'admin_password' => isset($_POST['admin_password']) ? $_POST['admin_password'] : '',
 				'admin_directory' => isset($_POST['admin_directory']) ? $_POST['admin_directory'] : 'adminx',
 				'admin_language' => $setupLanguage,
+				'site_url' => isset($_POST['site_url']) ? $_POST['site_url'] : $defaultSiteUrl,
 			);
 			$repositories = $installer->validateRepositorySelection($repositoryMode, $customRepositoryProfile);
 			$success = $installer->install($database, $site, array(
@@ -412,7 +418,8 @@
 		  <div class="installer-divider"></div>
           <div class="installer-section-head"><span>3</span><div><h2>Сайт и администратор</h2><p>Единственная учётная запись новой системы</p></div></div>
           <div class="form-grid">
-            <label class="form-span-2"><span>Название сайта</span><input name="site_name" value="<?= setup_escape($defaults['site_name']) ?>" required></label>
+			<label class="form-span-2"><span>Название сайта</span><input name="site_name" value="<?= setup_escape($defaults['site_name']) ?>" required></label>
+			<label class="form-span-2"><span>Публичный адрес сайта</span><input name="site_url" type="url" value="<?= setup_escape($defaults['site_url']) ?>" required><small>Полный адрес с https://. Он используется для проверки домена и защищённых ссылок в письмах.</small></label>
             <label><span>Имя администратора</span><input name="admin_name" value="<?= setup_escape($defaults['admin_name']) ?>" required></label>
             <label><span>Логин</span><input name="admin_login" value="<?= setup_escape($defaults['admin_login']) ?>" required></label>
 			<label><span>Email</span><input name="admin_email" type="email" value="<?= setup_escape($defaults['admin_email']) ?>" required></label>

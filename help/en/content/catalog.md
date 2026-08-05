@@ -21,6 +21,10 @@ entities or an empty list of “product catalogs”.
 
 ## Product catalog overview
 
+The scheduler refreshes the product quality summary hourly. Its latest snapshot
+is shown on the dashboard, and an admin notification appears only when the
+number of required issues grows. The first snapshot establishes the baseline.
+
 **Catalog → Attributes → Overview** is the starting point for the product
 subsystem. It does not create a second catalog or switch public output. It
 connects the existing editors in one workflow:
@@ -29,7 +33,8 @@ connects the existing editors in one workflow:
 2. **Section sets** decide which properties are relevant in each branch.
 3. **Colors and configurations** group separate product documents as variants.
 4. **Shipping** stores one or more cargo places per product.
-5. **Cards** and **Filters** control Twig markup and CSS.
+5. **Filters** define which attributes are exposed in each catalog section.
+6. **Cards** and **Filter appearance** control Twig markup and CSS.
 
 The status area shows which sections have an active set and which runtime modes
 are enabled. Sections without a working set are listed with a direct editor
@@ -131,9 +136,128 @@ Filter conditions must take into account the data type. The number is compared a
 list - by value key, relationship - by ID of the related entity. After change
 conditions, rebuild the index if the screen prompts you to do so.
 
+Product filtering has three separate levels:
+
+1. **Products → Attributes** defines the data that products may store.
+2. **Products → Filters** selects the attributes shown in each section, their order, and whether they use a range, checkboxes, a select, or a search input.
+3. **Products → Filter appearance** edits the shared Twig markup and CSS.
+
+A section must have an attribute set before its filters can be selected. Saving
+the filter list rebuilds that section's index. The public site remains unchanged
+while the section's filter runtime is **Legacy**.
+
+### From an attribute to a public filter
+
+Use the five setup steps in order:
+
+1. Create a reusable property under **Products → Attributes → Attributes**. Its
+   stable code, such as `seat_width`, becomes the public query parameter name.
+2. Add the property to the relevant **Attribute sets**. A set controls the
+   product form and does not expose anything publicly by itself. Create groups
+   such as "Main parameters", "Dimensions", and "Functions" inside the set,
+   then assign each attribute to the appropriate group. Group and item order is
+   used by the public product page.
+3. Under **Assign to sections**, connect the set to the required catalog branch.
+4. Under **Section filters**, enable properties, drag them into order, and choose
+   a control type.
+5. Under **Filter appearance**, edit shared Twig markup and CSS. Appearance does
+   not change product selection rules.
+
+A disabled filter keeps its order, label, unit, and control type. It can be
+prepared in advance and enabled later; only enabled rows are read publicly.
+
+### Groups on the product page
+
+The public product view model exposes two compatible structures:
+
+- `characteristics` is the existing flat list;
+- `characteristic_groups` contains ordered groups with an `items` array.
+
+The standard product template renders a group heading followed by its
+attributes. Ungrouped values appear under "Main characteristics". If a product
+belongs to several sections, the primary section's set wins, followed by the
+configured section order.
+
+```twig
+{% for group in characteristic_groups %}
+  <h3>{{ group.name }}</h3>
+  {% for item in group.items %}
+    <div>{{ item.name }}: {{ item.value }} {{ item.unit }}</div>
+  {% endfor %}
+{% endfor %}
+```
+
+### Product public templates
+
+Open **Products → More sections → Page templates** to edit all 19 public product
+views: catalog navigation and listings, cards and selections, product details
+and variants, comparison, bundles, and product-demand pages.
+
+Each view has one active source. The module fallback keeps the public feature
+working when a theme has no override. A file under
+`templates/<theme>/views/products_public/` takes priority when it exists and
+the namespace is enabled in `theme.json`.
+
+When no override exists, the editor displays the module fallback as a starting
+point. **Create in theme** writes the fixed view path, enables the
+`products_public` namespace when necessary, records theme revisions, and
+invalidates the public presentation cache. **Return to module template**
+removes the override while preserving its last content in theme revisions.
+
+Expand **Template data** to see the variables accepted by the selected Twig
+view. Clicking a variable inserts its expression into the editor. Validate the
+Twig source before saving and check a live product page on desktop and mobile,
+because a saved override becomes active immediately.
+
+### Control types
+
+- **Automatic** uses a safe default: range for numbers, a yes checkbox for
+  booleans, checkboxes for choices, and a search input for text.
+- **Checkboxes** allow several values and are suited to features, colors, and
+  compact option lists.
+- **Select** allows one value and keeps long option lists compact.
+- **Range** compares numeric minimum and maximum values as numbers.
+- **Search input** matches part of a stored value and is mainly intended for
+  text.
+
+Drag the handle on the left to reorder filters. The same handle supports the Up
+and Down arrow keys. No position number has to be entered manually.
+
+### Public selection rules
+
+The attribute code becomes a GET parameter. Examples:
+
+```text
+?seat_width[]=40&seat_width[]=45
+?motor_count=2
+?load_capacity[min]=100&load_capacity[max]=180
+```
+
+Several values of the same filter use **OR**. Different filters use **AND**. In
+the example, the result must have seat width 40 or 45 **and** two motors.
+
+Before these inputs are applied, the engine already limits products by catalog
+section, product rubric, publication state, and static conditions of the
+assigned request. Each active filter then adds a parameterized condition. The
+administrator does not write SQL on the filter screen.
+
+Native values are read from `catalog_attribute_filter_index`, which stores the
+section, product, attribute, and normalized value. It is updated after product
+save/import and rebuilt for a section when its filter list is saved. Documents'
+JSON values are therefore not scanned on every public request.
+
+Facet counts respect the section and the other active conditions while omitting
+the filter whose options are currently being counted. Listing and facet results
+are cached for ten minutes and invalidated by the section tag when product data
+changes.
+
+Runtime is selected per section: **Legacy** keeps the old fields and conditions,
+**Shadow** builds and compares the new index without changing the site, and
+**Native** enables the new attributes and configured filter order.
+
 ### Check before Native
 
-In **Catalog → Characteristics → Partition Modes** first assign a set and
+Under **Products → Attributes → Assign to sections**, first assign a set and
 leave both modes in **Legacy** state. Refresh button builds shadow
 index, and the report button compares the old and new contours without changing the site.
 
@@ -230,7 +354,8 @@ commodity index. It helps you find products:
 - without a brief announcement and SEO description;
 - with incomplete packaging with delivery calculation included;
 - with zero balance;
-- with an outdated product projection.
+- with an outdated product projection;
+- with duplicate articles, legacy attribute remnants, native filter gaps, or invalid variant groups.
 
 Click the required queue card - the table will immediately be filtered by this issue.
 Search, product status, number of lines and pagination work without rebooting
@@ -247,7 +372,9 @@ its product projection will be updated by a regular system event. If she changed
 field layout or external migration was performed, use point update
 index or general restructuring on the products tab.
 
-### Appearance of filtersIn the product module, open **Catalog → Filters** to change the Twig markup
+### Appearance of filters
+
+In the product module, open **Products → Filter appearance** to change the Twig markup
 and CSS filters. The draft can be checked on the real partition without affecting
 website. After publishing, select the view in the settings of the desired directory.
 
@@ -294,6 +421,12 @@ such as size or material. U type
 stable key and, if necessary, HEX color. Then in all groups it is selected
 the same entry, and the renaming does not have to be repeated for each product.
 
+When one finish combines two colors, use the split-square button next to the
+first swatch and choose the second color. Product cards, filters, and the variant
+selector display the result as a diagonally split square. This represents one
+fixed color combination. Create separate product variants when customers must
+choose each color independently.
+
 If the list of values ​​is empty, the editor leaves manual entry of the label and color. This
 Compatibility mode for existing groups, not the recommended setup method
 new colors and sizes.The same list is used for the usual product characteristics. In the product card
@@ -317,8 +450,16 @@ The appearance of the switch is set in **Products → Groups of options**:
 - **Cards** - the same view, where each option comes with one point;
 - **By characteristics** - separate rows for color, size, material or configuration.
 
-There you can also enable display of price, availability and article. The default mode is **Cards**,
-therefore, updating the module does not change the appearance of the site without administrator action.
+You can also enable price, stock, and article display there. New installations
+default to **By characteristics**. If an administrator explicitly saved the
+**Cards** mode earlier, an update keeps that choice.
+
+The next setting controls the compact variant preview in product cards. It can
+be disabled or limited to one through five values before the **more N** link.
+Colors are shown as swatches and other attributes as compact text buttons. A
+group card uses the minimum group price (with **from** when prices differ) and
+asks the buyer to select a concrete variant instead of adding an arbitrary
+primary product to the cart.
 
 Each item remains a regular link to a separate product. Therefore, the URL, cart, price and article are always
 refer to the actual chosen option. If the group's characteristics are not yet filled in, the engine will show
@@ -330,9 +471,25 @@ as standard, but there is no blue product with pedal, “With pedal”
 will remain visible but inaccessible. The engine does not replace it with a random product
 different color.
 
-The public model `VariantRepository::forProduct()` gives away `items`, `attributes` and the prepared `matrix`.
-The templates are in `modules/products/app/view/variants.twig` and
-`modules/products/app/view/variant-matrix.twig`. Assigning characteristics alone does not enable the new catalog card template.
+The public model `VariantRepository::forProduct()` exposes `items`, `attributes`,
+`count_label`, and the prepared `matrix`.
+The system templates are in `modules/products/app/view/variants.twig` and
+`modules/products/app/view/variant-matrix.twig`. Keep project-specific markup
+in the active theme overrides `views/products_public/variants.twig` and
+`views/products_public/variant-matrix.twig`. Open that directory directly from
+**Products → Variant groups → Variant templates**. The built-in theme editor can
+edit `.twig` files. The `products_public` namespace must be listed in
+`theme.json` under `view_overrides`. Assigning attributes alone does not enable
+a new catalog card template.
+
+Custom product-card templates can use:
+
+- `item.variants_count` — total products in the group;
+- `item.group_price_min` and `item.group_price_max` — group price range;
+- `item.group_in_stock` — whether at least one variant is in stock;
+- `item.variants.items` — products with URL, article, price, stock, image, and attributes;
+- `item.variants.matrix.axes` — prepared selection axes and options;
+- `item.variant_settings.card_preview_limit` — configured preview limit.
 
 ### How to quickly fill out options
 
@@ -372,6 +529,8 @@ summary `summary` and characteristic `complete`. To calculate the order it is us
 `packagesForQuantity($productId, $quantity)`: number of seats multiplied by
 quantity of goods. Public design does not automatically output packaging; website
 only shows it where the template or module explicitly uses this service.
+Delivery methods are configured under **Shop → Settings → Delivery**.
+Their checkout markup is edited under **Shop → Settings → Templates**.
 
 ### Connections and kits
 
@@ -381,8 +540,13 @@ in both directions, turn on the corresponding switch: create a second record
 no need.
 
 A bundle combines at least two products and stores the quantity of each item.
+Select one primary product and mark other items as required or gifts. A complete
+bundle may apply a percentage or fixed discount. Public checkout and
+manager-created orders use the same promotion calculation.
 The name, price, balance and images are always read from the products themselves, so
 After changing the product, the kit does not need to be re-saved.
+The bundle table shows how many orders used each bundle, the total discount
+granted, and the most recent usage date.
 
 The public site does not change after creating links. The output must be explicitly pasted into
 product page template:

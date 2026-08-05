@@ -40,7 +40,8 @@ An API key that can be revoked without changing the SMSC owner's password.
 8. Enable public login only after a successful test.
 
 The general ability to create users and their group is configured in
-`System -> Site Users -> Registration`. Module switch
+`System -> Site Users -> Registration`. Select `By phone` or `By email or phone`
+there. Module switch
 `Create accounts` may additionally prohibit registration by phone,
 leaving existing users logged in.
 

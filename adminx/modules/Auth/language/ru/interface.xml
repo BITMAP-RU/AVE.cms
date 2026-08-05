@@ -13,4 +13,13 @@
 	<phrase data="auto_94d6ba09fac4d9d6">Сессия устарела, обновите страницу и попробуйте снова.</phrase>
 	<phrase data="auto_941abeff84af0919">Слишком много попыток. Повторите через</phrase>
 	<phrase data="auto_5a6373e98b6ebb55">Учётная запись отключена.</phrase>
+	<phrase data="auth_temp_password_title">Смена временного пароля</phrase>
+	<phrase data="auth_temp_password_heading">Смените временный пароль</phrase>
+	<phrase data="auth_temp_password_intro">После смены откроется панель управления.</phrase>
+	<phrase data="auth_temp_password_for">Для</phrase>
+	<phrase data="auth_temp_password_current">Временный пароль</phrase>
+	<phrase data="auth_temp_password_new">Новый пароль</phrase>
+	<phrase data="auth_temp_password_hint">Минимум 6 символов, пароль должен отличаться от временного.</phrase>
+	<phrase data="auth_temp_password_confirm">Повторите новый пароль</phrase>
+	<phrase data="auth_temp_password_save">Сохранить новый пароль</phrase>
 </language>

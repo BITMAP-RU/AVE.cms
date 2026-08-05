@@ -168,6 +168,11 @@
 			DB::query('UPDATE `' . PublicUserTables::table('users') . '` SET status=%s,email_verified_at=%i WHERE Id=%i', '1', time(), (int) $id);
 		}
 
+		public function confirmEmail($id)
+		{
+			DB::query('UPDATE `' . PublicUserTables::table('users') . '` SET email_verified_at=%i WHERE Id=%i AND email IS NOT NULL', time(), (int) $id);
+		}
+
 		public function activate($id)
 		{
 			DB::query('UPDATE `' . PublicUserTables::table('users') . '` SET status=%s WHERE Id=%i', '1', (int) $id);
@@ -206,9 +211,26 @@
 		public function updateProfile($id, array $data)
 		{
 			$current = $this->find((int) $id);
+			if (!$current) { throw new \InvalidArgumentException('Пользователь не найден.'); }
+			$email = mb_strtolower(trim((string) (isset($data['email']) ? $data['email'] : $current['email'])));
+			if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+				throw new \InvalidArgumentException('Укажите корректный email.');
+			}
+
+			$emailOwner = $email !== '' ? $this->findByEmail($email) : null;
+			if ($emailOwner && (int) $emailOwner['Id'] !== (int) $id) {
+				throw new \InvalidArgumentException('Этот email уже используется.');
+			}
+
+			$currentEmail = mb_strtolower(trim((string) (isset($current['email']) ? $current['email'] : '')));
+			$emailChanged = $email !== $currentEmail;
 			$phone = Phone::normalize(isset($data['phone']) ? $data['phone'] : '');
 			if (trim((string) (isset($data['phone']) ? $data['phone'] : '')) !== '' && $phone === '') {
 				throw new \InvalidArgumentException('Укажите корректный номер телефона.');
+			}
+
+			if ($email === '' && empty($current['phone_verified_at'])) {
+				throw new \InvalidArgumentException('Нельзя удалить email, пока не подтверждён телефон.');
 			}
 
 			$duplicate = $phone !== '' ? $this->findByPhone($phone) : null;
@@ -223,6 +245,8 @@
 
 			$phoneUnchanged = $current && $currentPhone === $phone;
 			DB::Update(PublicUserTables::table('users'), array(
+				'email' => $email !== '' ? $email : null,
+				'email_verified_at' => $emailChanged ? 0 : (int) $current['email_verified_at'],
 				'firstname' => trim((string) $data['firstname']),
 				'lastname' => trim((string) $data['lastname']),
 				'phone' => $phone,
@@ -236,6 +260,8 @@
 				'street_nr' => trim((string) $data['street_nr']),
 				'zipcode' => trim((string) $data['zipcode']),
 			), 'Id=%i', (int) $id);
+
+			return array('email_changed' => $emailChanged, 'email' => $email);
 		}
 
 		protected function ipLong($ip)

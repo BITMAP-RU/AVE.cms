@@ -1,1 +1,1 @@
-<div class="content-list">{% for item in items %}<article><h2><a href="{{ item.url }}">{{ item.title }}</a></h2>{% if item.excerpt %}<p>{{ item.excerpt }}</p>{% endif %}</article>{% endfor %}</div>
+<div class="content-list">{% for item in items %}<article><h2><a href="{{ item.url }}">{{ item.title }}</a></h2>{% if item.excerpt %}<p>{{ item.excerpt }}</p>{% endif %}<span data-adminx-edit-placeholder data-document-id="{{ item.id }}" data-edit-class="--item"></span></article>{% endfor %}</div>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="directories_delete_confirm">Delete directory?</phrase>
+	<phrase data="directories_delete_value_confirm">Delete value?</phrase>
+	<phrase data="directories_edit">Directory settings</phrase>
+	<phrase data="directories_edit_value">Edit value</phrase>
+	<phrase data="directories_in_use">Directory is in use</phrase>
+	<phrase data="directories_new">New directory</phrase>
+	<phrase data="directories_new_value">New value</phrase>
+	<phrase data="directories_request_failed">Request failed</phrase>
+	<phrase data="directories_save_failed">Failed to save data</phrase>
+</language>

@@ -15,6 +15,30 @@ phone, activity and role. The role determines the sections and actions available
 - disabling prohibits new entry, but preserves the document author and audit;
 - deleting an employee should not destroy the content created by him.
 
+### Temporary password
+
+The **Require change on next login** switch is enabled for a new employee.
+Give the employee the generated temporary password. Their first login opens a
+separate password screen; the rest of the control panel stays unavailable until
+they save a different password.
+
+You can enable the same requirement again while editing an existing employee.
+
+### Active sessions
+
+Open a user and select **Sessions and logins**. Each saved login shows its
+browser, device, IP address, login time, and last activity. The current browser
+is marked separately.
+
+- **End** revokes one login;
+- **End other sessions** preserves the current browser;
+- for another employee, **End all sessions** revokes every saved login;
+- disabling an account or resetting its password also revokes old sessions.
+
+The same tab shows the last failed login and the number of failures over 24
+hours. Five or more failures within ten minutes add a notification to the
+control panel. The complete history remains available in the audit log.
+
 The system administrator uses general authorization for the site and panel. After login
 in one context he should not re-register or enter a password in
 friend; access to the panel is still checked by a separate right `admin_panel`.
@@ -41,8 +65,8 @@ to the store.
 
 Here are the settings:
 
-- enable registration and group of new accounts;
-- minimum password length and confirmation email;
+- enable registration, choose email/phone methods, and select the group for new accounts;
+- minimum password length and email confirmation for email registration;
 - password reset;
 - URL of login, registration, recovery and account pages;
 - HTML templates for public forms;
@@ -51,6 +75,11 @@ Here are the settings:
 
 Assigned URLs are reserved in a public registry, so a document with such
 alias cannot be created.
+
+Phone registration does not request an email and stores it as an empty value.
+The user may add an email later in the profile and confirm it by mail. The SMS
+provider remains an optional module: without it password login still works, but
+the phone form is not shown.
 
 ## Additional profile fields
 

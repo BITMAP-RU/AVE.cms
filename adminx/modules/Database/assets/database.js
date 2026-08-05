@@ -42,6 +42,14 @@
         if (e.target.closest('[data-db-restore-close]')) { self.closeRestoreProgress(); return; }
       });
 
+      var keepForm = document.querySelector('[data-db-backup-keep-form]');
+      if (keepForm) {
+        keepForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          self.saveBackupKeep(keepForm);
+        });
+      }
+
       document.addEventListener('input', function (e) {
         var filter = e.target.closest('[data-db-table-filter]');
         if (filter) { self.filterTables(filter.value); }
@@ -337,6 +345,15 @@
       }).catch(function () {
         if (attempt < 10) { window.setTimeout(function () { self.pollRestoreStatus(jobId, attempt + 1); }, 2000); }
         else { self.showRestoreError('Не удалось получить состояние восстановления.'); }
+      });
+    },
+
+    saveBackupKeep: function (form) {
+      if (!form.reportValidity()) { return; }
+      this.post(this.base() + '/database/backup/keep', new FormData(form)).then(function (d) {
+        if (d.success === false) { Adminx.Toast.show(d.message || 'Ошибка', 'error'); return; }
+        Adminx.Toast.show(d.message || 'Сохранено', 'success');
+        if (d.redirect) { window.location.href = d.redirect; } else { window.location.reload(); }
       });
     },
 

@@ -117,6 +117,7 @@
     </div>
     <div class="cluster">
       <a class="btn btn-ghost" href="{{ ADMINX_BASE }}/requests"><i class="ti ti-arrow-left"></i>К списку</a>
+	  {% if request %}<button class="btn btn-secondary" type="button" data-request-revisions><i class="ti ti-history"></i>Ревизии</button>{% endif %}
       {% if can_manage %}<button class="btn btn-primary" type="submit" form="requestForm"><i class="ti ti-device-floppy"></i>Сохранить</button>{% endif %}
     </div>
   </div>
@@ -481,5 +482,22 @@
   </div>
   <div class="drawer-footer"><div class="df-left"><span class="badge badge-gray" data-request-explain-footer>Ожидание проверки</span></div><button class="btn btn-secondary" type="button" data-close-drawer>Закрыть</button></div>
 </aside>
+
+{% if request %}
+<aside class="drawer drawer-right drawer-lg request-revisions-drawer" id="requestRevisionsDrawer" role="dialog" aria-modal="true" aria-labelledby="requestRevisionsTitle" hidden>
+  <div class="drawer-header">
+	<div><h3 id="requestRevisionsTitle">Ревизии запроса</h3><p class="text-secondary text-sm" data-request-revisions-meta>Параметры, группы и условия сохраняются вместе.</p></div>
+	<button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="drawer-body request-revisions-layout">
+	<div class="request-revisions-list" data-request-revisions-list><div class="empty-state">Загрузка...</div></div>
+	<div class="request-revision-detail" data-request-revision-detail><div class="empty-state">Выберите ревизию слева.</div></div>
+  </div>
+  <div class="drawer-footer">
+	<button class="btn btn-secondary" type="button" data-close-drawer>Закрыть</button>
+	<button class="btn btn-primary" type="button" data-request-revision-restore disabled style="margin-left:auto"><i class="ti ti-restore"></i>Восстановить</button>
+  </div>
+</aside>
+{% endif %}
 
 {% endblock %}

@@ -22,6 +22,33 @@
   </div>
 </div>
 
+<section class="media-usage-panel">
+  <div class="section-header ax-panel-header">
+    <div class="section-icon"><i class="ti ti-topology-star"></i></div>
+    <div>
+      <div class="section-eyebrow">Связи</div>
+      <h2>Где используется файл</h2>
+      <p class="section-desc">Данные последней проверки анализатора медиа.</p>
+    </div>
+    {% if usage.checked %}<span class="badge {{ usage.use_count ? 'badge-green' : 'badge-gray' }}">{{ usage.use_count }} связей</span>{% endif %}
+  </div>
+  {% if not usage.checked %}
+    <div class="alert alert-warning"><i class="ti ti-alert-triangle alert-ic"></i><span>Общий анализ ещё не запускался. <a href="{{ ADMINX_BASE }}/media/audit">Проверьте медиа</a>, чтобы увидеть полную карту связей. Перед удалением выбранный путь будет проверен отдельно.</span></div>
+  {% elseif usage.uses %}
+    <div class="card media-usage-card">
+      {% for use in usage.uses %}
+        <div class="media-usage-row">
+          <span class="icon-tile"><i class="ti ti-link"></i></span>
+          <div><b>{{ use.source }}{% if use.source_id %} #{{ use.source_id }}{% endif %}</b><small>{{ use.column }}</small></div>
+          {% if use.link %}<a class="btn btn-ghost btn-icon ax-act ax-act-edit" href="{{ ADMINX_BASE }}{{ use.link }}" data-tooltip="Открыть источник" aria-label="Открыть источник"><i class="ti ti-external-link"></i></a>{% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-neutral"><i class="ti ti-circle-check alert-ic"></i><span>Явных ссылок не найдено. Проверка выполнена {{ usage.report.generated_label }}. Динамически составленные пути могут не распознаваться.</span></div>
+  {% endif %}
+</section>
+
 <div class="media-file-layout" data-media-editor>
   <section class="card media-preview-card">
     <div class="media-section-head">

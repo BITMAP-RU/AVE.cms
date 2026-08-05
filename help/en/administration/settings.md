@@ -12,6 +12,13 @@ Here you can find the name and address of the site, mail, document parameters, b
 crumbs and other general public runtime values. After changing, check
 site page, sending a test letter and canonical URL.
 
+Set `PUBLIC_SITE_URL` under `Settings -> Constants` to the complete public URL,
+for example `https://example.com` or `https://example.com/cms`. AVE.cms accepts
+that host and uses the URL for OAuth, email verification and password reset.
+This prevents a visitor from replacing the domain in a secret-bearing link.
+Additional technical hosts can be listed in `allowed_hosts` in
+`configs/public.config.php`.
+
 ### Development mode
 
 In the 'Site Access' group you can temporarily close the public part. In this mode:

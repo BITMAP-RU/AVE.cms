@@ -79,7 +79,7 @@
       <tbody>
         {% for u in users %}
         {% set is_self = u.id == current_id %}
-        <tr data-id="{{ u.id }}" data-name="{{ u.name }}" data-email="{{ u.email }}" data-login="{{ u.login }}" data-phone="{{ u.phone }}" data-role="{{ u.role }}" data-role-label="{{ roles[u.role]|default(u.role) }}" data-active="{{ u.is_active }}" data-created="{{ u.created_at }}" data-updated="{{ u.updated_at }}"{{ is_self ? ' data-self' : '' }}>
+        <tr data-id="{{ u.id }}" data-name="{{ u.name }}" data-email="{{ u.email }}" data-login="{{ u.login }}" data-phone="{{ u.phone }}" data-role="{{ u.role }}" data-role-label="{{ roles[u.role]|default(u.role) }}" data-active="{{ u.is_active }}" data-created="{{ u.created_at }}" data-updated="{{ u.updated_at }}" data-password-changed="{{ u.password_changed_at }}" data-must-change-password="{{ u.must_change_password }}"{{ is_self ? ' data-self' : '' }}>
           {% if can_manage %}<td><input type="checkbox" value="{{ u.id }}" data-bulk-item="users" aria-label="Выбрать пользователя {{ u.name|e('html_attr') }}"{{ is_self ? ' disabled' : '' }}></td>{% endif %}
           <td class="mono text-muted">{{ u.id }}</td>
           <td>
@@ -137,6 +137,8 @@
       <div class="users-editor">
         <input type="hidden" name="id" value="">
         <div class="users-editor-summary"><span class="avatar" data-user-preview-avatar>НП</span><div><b data-user-preview-name>Новый пользователь</b><span data-user-preview-meta>Учётная запись ещё не сохранена</span></div><span class="badge badge-blue" data-user-preview-role>Пользователь</span></div>
+		<div class="tabs users-editor-tabs" role="tablist"><button class="tab active" type="button" data-user-tab="account" aria-selected="true"><i class="ti ti-user-edit"></i>Учётная запись</button><button class="tab" type="button" data-user-tab="security" aria-selected="false" hidden><i class="ti ti-devices"></i>Сессии и входы</button></div>
+		<div class="users-editor-panel" data-user-panel="account">
 
         <section class="users-editor-section"><div class="users-editor-section-head"><span class="icon-tile"><i class="ti ti-id"></i></span><div><b>Основные данные</b><span>Имя и контакты сотрудника.</span></div></div><div class="form-grid">
           <label class="field col-6"><span class="field-label">Имя</span><input class="input" type="text" name="name" placeholder="Например, Иван Петров" required><span class="field-error" data-error="name"></span></label>
@@ -150,14 +152,19 @@
           <label class="users-active-card"><span><b>Доступ разрешён</b><small data-user-active-hint>Отключённый пользователь не сможет войти.</small></span><span class="switch"><input type="checkbox" name="is_active" value="1" checked><span></span></span></label>
         </div></section>
 
-        <section class="users-editor-section"><div class="users-editor-section-head"><span class="icon-tile" style="--tile-bg:var(--amber-100);--tile-fg:var(--amber-600)"><i class="ti ti-key"></i></span><div><b>Безопасность</b><span data-pass-hint>Пароль обязателен для новой учётной записи.</span></div></div><div class="field"><span class="field-label">Новый пароль</span><div class="input-wrap"><input class="input has-action" type="password" name="password" placeholder="Минимум 6 символов" autocomplete="new-password" data-pw-input><button class="input-action" type="button" data-pw-toggle aria-label="Показать пароль" data-tooltip="Показать / скрыть"><i class="ti ti-eye"></i></button></div><div class="cluster pw-actions" style="gap:6px;margin-top:6px"><button type="button" class="btn btn-ghost btn-xs" data-pw-generate><i class="ti ti-wand"></i>Сгенерировать</button><button type="button" class="btn btn-ghost btn-xs" data-pw-copy data-tooltip="Скопировать в буфер"><i class="ti ti-copy"></i>Копировать</button></div><div class="pw-strength" data-level="" aria-hidden="true"><span></span><span></span><span></span><span></span></div><span class="field-hint" data-pw-hint>Минимум 6 символов, желательно буквы разных регистров и цифры</span><span class="field-error" data-error="password"></span></div></section>
+        <section class="users-editor-section"><div class="users-editor-section-head"><span class="icon-tile" style="--tile-bg:var(--amber-100);--tile-fg:var(--amber-600)"><i class="ti ti-key"></i></span><div><b>Безопасность</b><span data-pass-hint>Пароль обязателен для новой учётной записи.</span></div></div><div class="users-password-grid"><div class="field"><span class="field-label">Новый пароль</span><div class="input-wrap"><input class="input has-action" type="password" name="password" placeholder="Минимум 8 символов" autocomplete="new-password" data-pw-input><button class="input-action" type="button" data-pw-toggle aria-label="Показать пароль" data-tooltip="Показать / скрыть"><i class="ti ti-eye"></i></button></div><div class="cluster pw-actions" style="gap:6px;margin-top:6px"><button type="button" class="btn btn-ghost btn-xs" data-pw-generate><i class="ti ti-wand"></i>Сгенерировать</button><button type="button" class="btn btn-ghost btn-xs" data-pw-copy data-tooltip="Скопировать в буфер"><i class="ti ti-copy"></i>Копировать</button></div><div class="pw-strength" data-level="" aria-hidden="true"><span></span><span></span><span></span><span></span></div><span class="field-hint" data-pw-hint>Минимум 8 символов, желательно буквы разных регистров и цифры</span><span class="field-error" data-error="password"></span></div><label class="users-active-card users-password-required"><span><b>Сменить при следующем входе</b><small>Подходит для временного пароля нового сотрудника.</small></span><span class="switch"><input type="checkbox" name="must_change_password" value="1" checked><span></span></span></label></div></section>
 
         <div class="users-editor-dates" data-user-dates hidden><span><i class="ti ti-calendar-plus"></i>Создан: <b data-user-created>—</b></span><span><i class="ti ti-refresh"></i>Изменён: <b data-user-updated>—</b></span></div>
+		</div>
+		<div class="users-editor-panel" data-user-panel="security" hidden>
+		  <section class="users-editor-section users-security-summary"><div class="users-editor-section-head"><span class="icon-tile" style="--tile-bg:var(--red-100);--tile-fg:var(--red-600)"><i class="ti ti-shield-search"></i></span><div><b>Попытки входа</b><span>События за последние сутки и дата смены пароля.</span></div></div><div class="users-security-stats"><div><span>Неудачных за 24 часа</span><b data-user-failed-count>—</b></div><div><span>Последняя попытка</span><b data-user-failed-last>—</b><small data-user-failed-ip></small></div><div><span>Пароль изменён</span><b data-user-password-changed>—</b><small data-user-password-state></small></div></div></section>
+		  <section class="users-editor-section"><div class="users-editor-section-head users-sessions-head"><span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-devices"></i></span><div><b>Активные сессии</b><span>Браузеры, в которых сохранён вход в панель.</span></div><button class="btn btn-secondary btn-sm" type="button" data-user-revoke-others><i class="ti ti-logout"></i><span data-user-revoke-label>Завершить остальные</span></button></div><div class="users-session-list" data-user-sessions><div class="empty-state"><i class="ti ti-loader-2"></i><b>Загружаем сессии</b></div></div></section>
+		</div>
       </div>
     </div>
     <div class="drawer-footer">
       <button class="btn btn-secondary" type="button" data-close-drawer>Закрыть</button>
-      <button class="btn btn-primary" type="submit" style="margin-left:auto"><i class="ti ti-check"></i>Сохранить</button>
+      <button class="btn btn-primary" type="submit" style="margin-left:auto" data-user-save><i class="ti ti-check"></i>Сохранить</button>
     </div>
   </form>
 </aside>

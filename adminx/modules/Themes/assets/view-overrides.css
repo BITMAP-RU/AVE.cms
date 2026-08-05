@@ -1,0 +1,364 @@
+.view-override-intro {
+  margin: 0 0 24px;
+}
+.view-override-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+  align-items: start;
+  gap: 20px;
+}
+.view-override-list,
+.view-override-editor {
+  overflow: hidden;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  background: var(--background-card);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.view-override-list-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 54px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-default);
+}
+.view-override-group {
+  padding: 14px 16px 6px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+.view-override-list-head b {
+  font-size: 14px;
+}
+.view-override-list-head span {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.view-override-item {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+  min-height: 76px;
+  padding: 10px 14px;
+  color: var(--text-primary);
+  text-decoration: none;
+  transition-property: background-color, box-shadow, transform;
+  transition-duration: 140ms;
+}
+.view-override-item + .view-override-item {
+  border-top: 1px solid var(--border-default);
+}
+.view-override-item:hover {
+  background: var(--background-subtle);
+}
+.view-override-item:active {
+  transform: scale(0.96);
+}
+.view-override-item.is-active {
+  background: var(--blue-50);
+  box-shadow: inset 0 0 0 1px var(--blue-200);
+}
+.view-override-item .icon-tile {
+  width: 38px;
+  height: 38px;
+  --tile-bg: var(--blue-100);
+  --tile-fg: var(--blue-600);
+}
+.view-override-item-copy,
+.view-override-item-copy b,
+.view-override-item-copy small {
+  display: block;
+  min-width: 0;
+}
+.view-override-item-copy b {
+  font-size: 13px;
+  line-height: 1.3;
+  text-wrap: pretty;
+}
+.view-override-item-copy small {
+  display: -webkit-box;
+  overflow: hidden;
+  margin-top: 3px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.35;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.view-override-editor-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 72px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border-default);
+}
+.view-override-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.view-override-title .icon-tile {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  --tile-bg: var(--violet-100);
+  --tile-fg: var(--violet-600);
+}
+.view-override-title h2,
+.view-override-title p {
+  margin: 0;
+}
+.view-override-title h2 {
+  font-size: 17px;
+  letter-spacing: 0;
+  text-wrap: balance;
+}
+.view-override-title p {
+  margin-top: 3px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-wrap: pretty;
+}
+.view-override-source {
+  min-width: 180px;
+  text-align: right;
+}
+.view-override-source small {
+  display: block;
+  max-width: 320px;
+  overflow: hidden;
+  margin-top: 5px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.view-override-warning {
+  margin: 16px 18px 0;
+}
+.view-override-fallback {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin: 14px 18px 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: var(--blue-50);
+  color: var(--blue-800);
+  font-size: 12px;
+  line-height: 1.45;
+}
+.view-override-fallback i {
+  margin-top: 2px;
+  flex: none;
+}
+.view-override-form {
+  padding: 16px 18px 18px;
+}
+.view-override-toolbar,
+.view-override-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.view-override-toolbar {
+  min-height: 42px;
+  margin-bottom: 10px;
+}
+.view-override-toolbar b,
+.view-override-toolbar small {
+  display: block;
+}
+.view-override-toolbar b {
+  font-size: 13px;
+}
+.view-override-toolbar small {
+  margin-top: 2px;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+.view-override-form .CodeMirror {
+  height: min(640px, calc(100vh - 270px)) !important;
+  min-height: 440px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  line-height: 1.55;
+}
+.view-override-lint {
+  display: block;
+  min-height: 20px;
+  padding-top: 5px;
+}
+.view-override-lint.is-ok {
+  color: var(--green-600);
+}
+.view-override-lint.is-error {
+  color: var(--red-600);
+}
+.view-override-variables {
+  margin-top: 10px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--background-subtle);
+}
+.view-override-variables summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 52px;
+  padding: 8px 12px;
+  cursor: pointer;
+  list-style: none;
+}
+.view-override-variables summary::-webkit-details-marker {
+  display: none;
+}
+.view-override-variables summary > span {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: center;
+}
+.view-override-variables summary > span > i {
+  grid-row: 1 / span 2;
+  color: var(--blue-600);
+  font-size: 17px;
+}
+.view-override-variables summary b,
+.view-override-variables summary small {
+  display: block;
+}
+.view-override-variables summary b {
+  font-size: 13px;
+}
+.view-override-variables summary small {
+  margin-top: 2px;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+.view-override-variables[open] summary > .ti-chevron-down {
+  transform: rotate(180deg);
+}
+.view-override-variables summary > .ti-chevron-down {
+  transition-property: transform;
+  transition-duration: 140ms;
+}
+.view-override-variable-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  padding: 10px 12px 12px;
+  border-top: 1px solid var(--border-default);
+}
+.view-override-variable-list button {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(130px, 0.8fr) 22px;
+  align-items: center;
+  gap: 9px;
+  min-height: 42px;
+  padding: 6px 9px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--background-card);
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition-property: border-color, box-shadow, transform;
+  transition-duration: 140ms;
+}
+.view-override-variable-list button:hover:not(:disabled) {
+  border-color: var(--blue-300);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+.view-override-variable-list button:active:not(:disabled) {
+  transform: scale(0.96);
+}
+.view-override-variable-list button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+.view-override-variable-list code {
+  overflow: hidden;
+  color: var(--blue-700);
+  text-overflow: ellipsis;
+}
+.view-override-variable-list span {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+.view-override-variable-list i {
+  color: var(--blue-600);
+}
+.view-override-footer {
+  justify-content: flex-end;
+  padding-top: 14px;
+}
+.view-override-save-state {
+  margin-right: auto;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.view-override-save-state.is-dirty {
+  padding: 5px 9px;
+  border-radius: var(--radius-md);
+  background: var(--amber-100);
+  color: var(--amber-700);
+  font-weight: 600;
+}
+@media (max-width: 1100px) {
+  .view-override-layout {
+    grid-template-columns: 250px minmax(0, 1fr);
+  }
+  .view-override-item {
+    grid-template-columns: 38px minmax(0, 1fr);
+  }
+  .view-override-item > .badge {
+    grid-column: 2;
+    justify-self: start;
+  }
+  .view-override-variable-list {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 760px) {
+  .view-override-layout {
+    grid-template-columns: 1fr;
+  }
+  .view-override-item {
+    grid-template-columns: 38px minmax(0, 1fr) auto;
+  }
+  .view-override-item > .badge {
+    grid-column: auto;
+  }
+  .view-override-editor-head,
+  .view-override-toolbar,
+  .view-override-footer {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .view-override-source {
+    width: 100%;
+    text-align: left;
+  }
+  .view-override-source small {
+    max-width: 100%;
+  }
+  .view-override-form .CodeMirror {
+    height: 520px !important;
+    min-height: 360px;
+  }
+  .view-override-save-state {
+    width: 100%;
+    margin-right: 0;
+  }
+}

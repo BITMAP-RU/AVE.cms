@@ -17,6 +17,7 @@
 	defined('BASEPATH') || die('Direct access to this location is not allowed.');
 
 	use App\Common\PublicAuthSettings;
+	use App\Common\SiteOrigin;
 	use App\Common\Twig;
 	use App\Frontend\Auth\Feature;
 	use App\Frontend\PublicMailer;
@@ -40,7 +41,7 @@
 
 		public function send(array $user, $token)
 		{
-			$url = rtrim(defined('HOST') ? HOST : '', '/') . Feature::url('verify') . '?token=' . rawurlencode((string) $token);
+			$url = SiteOrigin::absolute(Feature::url('verify'), true) . '?token=' . rawurlencode((string) $token);
 			$name = trim((string) $user['firstname']);
 			$html = '<h2>Подтверждение регистрации</h2><p>'
 				. ($name !== '' ? htmlspecialchars($name, ENT_QUOTES, 'UTF-8') . ', ' : '')
@@ -63,7 +64,7 @@
 		{
 			$settings = PublicAuthSettings::all();
 			$ttl = max(300, (int) (isset($context['ttl']) ? $context['ttl'] : 3600));
-			$url = rtrim(defined('HOST') ? HOST : '', '/') . Feature::url('reset') . '?token=' . rawurlencode((string) $token);
+			$url = SiteOrigin::absolute(Feature::url('reset'), true) . '?token=' . rawurlencode((string) $token);
 			$data = array_merge($context, array(
 				'user' => $user,
 				'access_url' => $url,

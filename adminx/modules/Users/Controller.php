@@ -34,6 +34,10 @@
 		/** GET /users */
 		public function index(array $params = [])
 		{
+			if (!Permission::check('view_users')) {
+				return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403);
+			}
+
 			AdminAssets::addStyle($this->base() . '/modules/Users/assets/users.css', 50);
 			AdminAssets::addScript($this->base() . '/modules/Users/assets/users.js', 50);
 
@@ -54,6 +58,10 @@
 		/** GET /users/{id} — данные пользователя (JSON, для формы правки). */
 		public function show(array $params = [])
 		{
+			if (!Permission::check('view_users')) {
+				return $this->error('Недостаточно прав', array(), 403);
+			}
+
 			$user = Model::find($params['id'] ?? 0);
 			if (!$user) {
 				return $this->error('Пользователь не найден', [], 404);
@@ -67,6 +75,8 @@
 				'phone'     => $user->phone,
 				'role'      => $user->role,
 				'is_active' => (int) $user->is_active,
+				'must_change_password' => (int) $user->must_change_password,
+				'password_changed_at' => $user->password_changed_at,
 				'created_at' => $user->created_at,
 				'updated_at' => $user->updated_at,
 			]]);
@@ -86,6 +96,9 @@
 			}
 
 			$id = Model::create($data);
+			AuditLog::record('user.created', array(
+				'actor_id' => Auth::id(), 'target_type' => 'user', 'target_id' => $id,
+			));
 			return $this->success('Пользователь создан', ['redirect' => $this->base() . '/users']);
 		}
 
@@ -114,6 +127,13 @@
 			}
 
 			Model::update($id, $data);
+			AuditLog::record('user.updated', array(
+				'actor_id' => Auth::id(), 'target_type' => 'user', 'target_id' => $id,
+				'meta' => array(
+					'password_changed' => $data['password'] !== '',
+					'must_change_password' => !empty($data['must_change_password']),
+				),
+			));
 			return $this->success('Изменения сохранены', ['redirect' => $this->base() . '/users']);
 		}
 
@@ -134,6 +154,10 @@
 			}
 
 			$active = Model::toggle($id);
+			AuditLog::record('user.status_updated', array(
+				'actor_id' => Auth::id(), 'target_type' => 'user', 'target_id' => $id,
+				'meta' => array('is_active' => $active),
+			));
 			return $this->success($active ? 'Пользователь включён' : 'Пользователь отключён', [
 				'data' => ['is_active' => $active],
 			]);
@@ -156,7 +180,68 @@
 			}
 
 			Model::delete($id);
+			AuditLog::record('user.deleted', array(
+				'actor_id' => Auth::id(), 'target_type' => 'user', 'target_id' => $id,
+			));
 			return $this->success('Пользователь удалён', ['redirect' => $this->base() . '/users']);
+		}
+
+		/** GET /users/{id}/security — active browser sessions and failed logins. */
+		public function security(array $params = array())
+		{
+			if (!Permission::check('manage_users')) {
+				return $this->error('Недостаточно прав', array(), 403);
+			}
+
+			$id = (int) (isset($params['id']) ? $params['id'] : 0);
+			$user = Model::find($id);
+			if (!$user) { return $this->error('Пользователь не найден', array(), 404); }
+
+			$data = Model::security($id);
+			$data['password_changed_at'] = isset($user->password_changed_at) ? (string) $user->password_changed_at : '';
+			$data['must_change_password'] = !empty($user->must_change_password);
+			$data['is_self'] = $id === (int) Auth::id();
+
+			return $this->success('', array('data' => $data));
+		}
+
+		/** POST /users/{id}/sessions/{session}/revoke. */
+		public function revokeSession(array $params = array())
+		{
+			if (($response = $this->guard()) !== null) { return $response; }
+			$id = (int) (isset($params['id']) ? $params['id'] : 0);
+			$result = Model::revokeSession($id, isset($params['session']) ? $params['session'] : 0);
+			if (empty($result['removed'])) { return $this->error('Сессия не найдена', array(), 404); }
+
+			AuditLog::record('user.session_revoked', array(
+				'actor_id' => Auth::id(), 'target_type' => 'user', 'target_id' => $id,
+				'meta' => array('session_id' => (int) $params['session']),
+			));
+			if (!empty($result['current'])) {
+				Auth::logout();
+				return $this->success('Текущая сессия завершена', array('redirect' => $this->base() . '/login'));
+			}
+
+			return $this->success('Сессия завершена');
+		}
+
+		/** POST /users/{id}/sessions/revoke-others. */
+		public function revokeOtherSessions(array $params = array())
+		{
+			if (($response = $this->guard()) !== null) { return $response; }
+			$id = (int) (isset($params['id']) ? $params['id'] : 0);
+			if (!Model::find($id)) { return $this->error('Пользователь не найден', array(), 404); }
+			$preserve = $id === (int) Auth::id() ? Auth::currentBrowserTokenHash() : '';
+			$count = Model::revokeSessions($id, $preserve);
+
+			AuditLog::record('user.sessions_revoked', array(
+				'actor_id' => Auth::id(), 'target_type' => 'user', 'target_id' => $id,
+				'meta' => array('count' => $count, 'current_preserved' => $preserve !== ''),
+			));
+
+			return $this->success($preserve !== '' ? 'Остальные сессии завершены' : 'Все сессии завершены', array(
+				'data' => array('count' => $count),
+			));
 		}
 
 		public function bulk(array $params = array())
@@ -217,6 +302,7 @@
 				'role'      => Request::postStr('role'),
 				'password'  => (string) Request::post('password', ''),
 				'is_active' => Request::postBool('is_active', false),
+				'must_change_password' => Request::postBool('must_change_password', false),
 			];
 		}
 
@@ -247,10 +333,10 @@
 				$errors['role'] = 'Выберите роль.';
 			}
 
-			if ($isCreate && strlen($data['password']) < 6) {
-				$errors['password'] = 'Пароль не короче 6 символов.';
-			} elseif (!$isCreate && $data['password'] !== '' && strlen($data['password']) < 6) {
-				$errors['password'] = 'Пароль не короче 6 символов.';
+			if ($isCreate && mb_strlen($data['password'], 'UTF-8') < 8) {
+				$errors['password'] = 'Пароль не короче 8 символов.';
+			} elseif (!$isCreate && $data['password'] !== '' && mb_strlen($data['password'], 'UTF-8') < 8) {
+				$errors['password'] = 'Пароль не короче 8 символов.';
 			}
 
 			return $errors;

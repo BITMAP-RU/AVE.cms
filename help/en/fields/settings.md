@@ -53,6 +53,22 @@ $unit = (string) $ctx->setting('unit', '');
 $all = $ctx->settings();
 ```
 
+## Editor hint
+
+Every field has a shared **“Editor hint (HTML)”** setting. Its content appears
+below the field when an editor creates or changes a document. The hint is not
+part of the field value and is not rendered on the public site.
+
+Safe HTML formatting is supported, for example:
+
+```html
+<strong>Important:</strong> enter the width in centimetres.<br>
+<small>Allowed value: from 40 to 120.</small>
+```
+
+Links and lists can also be used. Scripts, event handlers, and unsafe URLs are
+removed automatically before rendering.
+
 ## validationSchema()
 
 `AbstractFieldType` already adds suitable basic rules depending on

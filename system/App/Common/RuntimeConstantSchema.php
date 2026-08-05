@@ -35,6 +35,7 @@
 				: array('dracula');
 
 			self::$schemas[$cacheKey] = array(
+				'PUBLIC_SITE_URL' => self::item('_CONST_URL', '', 'string', 'Канонический публичный URL сайта для проверки Host и защищённых ссылок.'),
 				'REWRITE_MODE' => self::item('_CONST_URL', true, 'bool', 'Использовать человекопонятные URL.'),
 				'URL_SUFF' => self::item('_CONST_URL', '', 'string', 'Суффикс публичных URL, например .html.'),
 				'TRANSLIT_URL' => self::item('_CONST_URL', true, 'bool', 'Транслитерировать кириллицу в публичных URL.'),

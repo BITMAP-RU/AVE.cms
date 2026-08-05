@@ -63,6 +63,21 @@
 			return self::all();
 		}
 
+		/** Returns whether the selected public-registration method is enabled. */
+		public static function allowsRegistrationMethod($method, array $settings = null)
+		{
+			$settings = $settings === null ? self::all() : $settings;
+			if (empty($settings['registration_enabled'])) { return false; }
+
+			$method = strtolower(trim((string) $method));
+			$gate = isset($settings['registration_gate'])
+				? strtolower(trim((string) $settings['registration_gate']))
+				: 'email';
+			if ($gate === 'both') { $gate = 'email_phone'; }
+
+			return $gate === $method || $gate === 'email_phone';
+		}
+
 		protected static function defaults(array $fallback)
 		{
 			return array(
@@ -107,7 +122,9 @@
 			foreach ($bools as $key) { $data[$key] = !empty($data[$key]) ? 1 : 0; }
 			$mode = isset($data['registration_mode']) ? (string) $data['registration_mode'] : 'email';
 			$data['registration_mode'] = in_array($mode, array('now','email','byadmin'), true) ? $mode : 'email';
-			$data['registration_gate'] = 'email';
+			$gate = isset($data['registration_gate']) ? strtolower(trim((string) $data['registration_gate'])) : 'email';
+			if ($gate === 'both') { $gate = 'email_phone'; }
+			$data['registration_gate'] = in_array($gate, array('email','phone','email_phone'), true) ? $gate : 'email';
 			if (empty($data['show_lastname'])) { $data['require_lastname'] = 0; }
 			if (empty($data['show_phone'])) { $data['require_phone'] = 0; }
 			if (empty($data['show_company'])) { $data['require_company'] = 0; }

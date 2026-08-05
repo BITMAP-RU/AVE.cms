@@ -87,7 +87,8 @@ Email registration is part of AVE.cms and does not require a separate module.
 Open `System -> Site Users -> Registration`. On one page
 configured:
 
-- availability of registration and method of account activation;
+- registration availability and allowed methods: email, phone, or both;
+- activation method for accounts created by email;
 - the group into which the new user will be assigned;
 - basic form fields, password length and terms of one-time links;
 - prohibited email and domains;
@@ -99,10 +100,12 @@ Additional registration and profile fields are collected in the `Profile Fields`
 VK ID, Yandex and SMS login are additional installable methods
 login, but create or link the same site user account.
 
-A phone account can exist without an email. The confirmed number is stored
-in a normalized international format and is unique. Such
-the user logs in with a one-time SMS code; email is added if necessary
-administrator in the site user profile.
+A phone account can exist without an email. Creating one requires an installed,
+configured SMS provider that allows registration. The confirmed number is stored
+in a normalized international format and is unique. The user logs in with a
+one-time SMS code. An email can be added later in the profile, but email login
+and password recovery become available only after confirmation. The field may
+remain empty when email is not needed.
 
 ## Personal account pages
 

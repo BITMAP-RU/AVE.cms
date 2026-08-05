@@ -252,6 +252,7 @@
 					'admin_language' => isset($site['admin_language']) && in_array($site['admin_language'], array('ru', 'en'), true)
 						? (string) $site['admin_language']
 						: $this->locale,
+					'site_url' => rtrim(trim(isset($site['site_url']) ? (string) $site['site_url'] : ''), '/'),
 			);
 			if ($out['site_name'] === '' || $out['admin_name'] === '' || $out['admin_login'] === '') {
 				throw new InvalidArgumentException('Укажите название сайта, имя и логин администратора.');
@@ -259,6 +260,12 @@
 
 			if (!filter_var($out['admin_email'], FILTER_VALIDATE_EMAIL)) {
 				throw new InvalidArgumentException('Укажите корректный email администратора.');
+			}
+
+			$siteUrl = parse_url($out['site_url']);
+			if (!is_array($siteUrl) || !in_array(strtolower(isset($siteUrl['scheme']) ? $siteUrl['scheme'] : ''), array('http', 'https'), true)
+				|| empty($siteUrl['host']) || isset($siteUrl['user']) || isset($siteUrl['pass']) || isset($siteUrl['query']) || isset($siteUrl['fragment'])) {
+				throw new InvalidArgumentException('Укажите полный публичный адрес сайта без параметров, например https://example.org.');
 			}
 
 			if (!preg_match('/^[A-Za-z0-9_.@-]{3,150}$/', $out['admin_login'])) {
@@ -349,7 +356,7 @@
 			$this->execute($db, 'INSERT INTO `' . $prefix . '_role_permissions` (role_id,permission_code) VALUES (1,\'all_permissions\')');
 
 				$this->seedSettings($db, $prefix, $site['site_name'], $site['admin_language'], $repositories);
-			$this->seedConstants($db, $prefix, $date);
+			$this->seedConstants($db, $prefix, $date, isset($site['site_url']) ? $site['site_url'] : '');
 			$this->seedCoreMigrationLedger($db, $prefix, $date);
 			$this->seedPublicIdentity($db, $prefix, $site['site_name'], $site['admin_name'], $site['admin_login'], $site['admin_email'], $password, $date);
 			$this->seedContent($db, $prefix, $site['site_name'], $now);
@@ -428,7 +435,7 @@
 			}
 		}
 
-		protected function seedConstants(mysqli $db, $prefix, $date)
+		protected function seedConstants(mysqli $db, $prefix, $date, $siteUrl = '')
 		{
 			if (!class_exists('App\\Common\\RuntimeConstantSchema', false)) {
 				require_once $this->root . '/system/App/Common/RuntimeConstantSchema.php';
@@ -437,6 +444,10 @@
 			$position = 10;
 			foreach (\App\Common\RuntimeConstantSchema::all(false) as $name => $definition) {
 				$value = $definition['default'];
+				if ($name === 'PUBLIC_SITE_URL' && trim((string) $siteUrl) !== '') {
+					$value = rtrim(trim((string) $siteUrl), '/');
+				}
+
 				if (is_bool($value)) {
 					$value = $value ? '1' : '0';
 					$type = 'bool';

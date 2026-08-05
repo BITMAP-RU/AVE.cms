@@ -31,7 +31,7 @@
 				return filter_var($value, FILTER_VALIDATE_BOOLEAN);
 			}
 
-			return !defined('ENV_CMS') || strtolower((string) ENV_CMS) !== 'production';
+			return false;
 		}
 
 		public static function execute($code)

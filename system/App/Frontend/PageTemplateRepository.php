@@ -18,6 +18,7 @@
 
 	use App\Content\ContentTables;
 	use App\Common\Lifecycle;
+	use App\Common\RuntimeDirectoryGuard;
 	use App\Helpers\File;
 	use DB;
 
@@ -82,9 +83,8 @@
 				@mkdir($directory, 0775, true);
 			}
 
-			$guard = $directory . '/.htaccess';
-			if (is_dir($directory) && !is_file($guard)) {
-				File::putAtomic($guard, "Deny from all\n");
+			if (is_dir($directory)) {
+				RuntimeDirectoryGuard::protect($directory);
 			}
 		}
 

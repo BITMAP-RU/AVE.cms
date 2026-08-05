@@ -17,7 +17,7 @@
 	return array(
 		'code' => 'blocks',
 		'name' => 'Блоки',
-		'version' => '0.1.3',
+		'version' => '0.1.4',
 
 		'permissions' => array(
 			'key' => 'blocks',

@@ -10,7 +10,7 @@
       <div class="form-group"><label for="public-auth-password">Пароль</label><input class="form-control" id="public-auth-password" type="password" name="user_pass" autocomplete="current-password" required></div>
       <div class="form-check"><input class="form-check-input" id="public-auth-remember" type="checkbox" name="keep_in" value="1"><label class="form-check-label" for="public-auth-remember">Запомнить меня</label></div>
       <div class="system-public-auth-actions"><button class="btn btn-primary" type="submit">{{ page.submit_label }}</button>{% if config.password_reset_enabled %}<a href="{{ base }}{{ auth_urls.remember }}">Забыли пароль?</a>{% endif %}</div>
-      {% if config.registration_enabled %}<p class="system-public-auth-secondary">Нет аккаунта? <a href="{{ base }}{{ auth_urls.register }}">Зарегистрироваться</a></p>{% endif %}
+      {% if registration_enabled %}<p class="system-public-auth-secondary">Нет аккаунта? <a href="{{ base }}{{ auth_urls.register }}">Зарегистрироваться</a></p>{% endif %}
     </form>
     {% include '@system_auth/phone.twig' %}
     {% include '@system_auth/oauth.twig' %}

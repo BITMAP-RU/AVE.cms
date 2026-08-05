@@ -17,6 +17,7 @@
 	defined('BASEPATH') || die('Direct access to this location is not allowed.');
 
 	use App\Common\AdminAssets;
+	use App\Common\Auth;
 	use App\Common\Controller as BaseController;
 	use App\Common\Permission;
 	use App\Common\ErrorReport;
@@ -268,6 +269,7 @@
 			}
 
 			$id = Model::create($data);
+			Revisions::capture($id, 'create', Auth::id());
 			return $this->success('Запрос создан', ['redirect' => $this->base() . '/requests/' . $id . '?saved=1']);
 		}
 
@@ -289,7 +291,9 @@
 				return $this->error('Проверьте поля', $errors);
 			}
 
+			Revisions::capture($id, 'baseline', Auth::id(), 'Снимок до изменения');
 			Model::update($id, $data);
+			Revisions::capture($id, 'update', Auth::id());
 			if ((int) $request->rubric_id !== (int) $data['rubric_id']) {
 				return $this->success('Сохранено', array(
 					'redirect' => $this->base() . '/requests/' . $id . '?saved=1',
@@ -312,7 +316,43 @@
 			}
 
 			$newId = Model::copy($id);
+			Revisions::capture($newId, 'create', Auth::id(), 'Создано копированием');
 			return $this->success('Создана копия', ['redirect' => $this->base() . '/requests/' . $newId]);
+		}
+
+		public function revisions(array $params = array())
+		{
+			$id = isset($params['id']) ? (int) $params['id'] : 0;
+			$request = Model::find($id);
+			if (!$request) { return $this->error('Запрос не найден', array(), 404); }
+
+			return $this->success('', array('data' => array(
+				'request' => array('id' => $id, 'title' => (string) $request->request_title),
+				'revisions' => Revisions::listing($id),
+			)));
+		}
+
+		public function revision(array $params = array())
+		{
+			$revision = Revisions::one(isset($params['revision']) ? (int) $params['revision'] : 0);
+			return $revision
+				? $this->success('', array('data' => $revision))
+				: $this->error('Ревизия не найдена', array(), 404);
+		}
+
+		public function restoreRevision(array $params = array())
+		{
+			if (($resp = $this->guard()) !== null) { return $resp; }
+			try {
+				$id = Revisions::restore(isset($params['revision']) ? (int) $params['revision'] : 0, Auth::id());
+			} catch (\Throwable $e) {
+				return $this->error($e->getMessage(), array(), 422);
+			}
+
+			return $this->success('Запрос восстановлен из ревизии', array(
+				'data' => array('id' => $id),
+				'redirect' => $this->base() . '/requests/' . $id,
+			));
 		}
 
 		/** POST /requests/{id}/delete — удалить. */
@@ -363,8 +403,10 @@
 				return $this->error('Запрос не найден', [], 404);
 			}
 
+			Revisions::capture($id, 'baseline', Auth::id(), 'Снимок до изменения условий');
 			$order = Request::post('items', Request::post('order', []));
 			Model::reorderConditions($id, is_array($order) ? $order : []);
+			Revisions::capture($id, 'structure', Auth::id(), 'Изменён порядок условий');
 			return $this->success('Порядок сохранён');
 		}
 
@@ -404,6 +446,7 @@
 				return $this->error('Запрос не найден', [], 404);
 			}
 
+			$before = Model::snapshot($id);
 			try {
 				$condId = Model::conditionSave($id, [
 					'id'                 => Request::postInt('cond_id'),
@@ -422,6 +465,9 @@
 				return $this->error($e->getMessage(), array(), 422);
 			}
 
+			Revisions::capture($id, 'baseline', Auth::id(), 'Снимок до изменения условий', $before);
+			Revisions::capture($id, 'structure', Auth::id(), 'Условие сохранено');
+
 			return $this->success('Условие сохранено', ['data' => ['id' => $condId]]);
 		}
 
@@ -432,7 +478,14 @@
 				return $resp;
 			}
 
+			$condition = Model::findCondition((int) ($params['id'] ?? 0));
+			$before = $condition ? Model::snapshot((int) $condition->request_id) : array();
 			Model::conditionDelete((int) ($params['id'] ?? 0));
+			if ($condition) {
+				Revisions::capture((int) $condition->request_id, 'baseline', Auth::id(), 'Снимок до изменения условий', $before);
+				Revisions::capture((int) $condition->request_id, 'structure', Auth::id(), 'Условие удалено');
+			}
+
 			return $this->success('Условие удалено');
 		}
 
@@ -447,6 +500,7 @@
 				return $this->error('Запрос не найден', [], 404);
 			}
 
+			$before = Model::snapshot($requestId);
 			$groupId = Model::groupSave($requestId, array(
 				'id' => Request::postInt('group_id'),
 				'parent_id' => Request::postInt('parent_id'),
@@ -456,6 +510,9 @@
 			if ($groupId <= 0) {
 				return $this->error('Не удалось сохранить группу', [], 422);
 			}
+
+			Revisions::capture($requestId, 'baseline', Auth::id(), 'Снимок до изменения условий', $before);
+			Revisions::capture($requestId, 'structure', Auth::id(), 'Группа условий сохранена');
 
 			return $this->success('Группа сохранена', array('data' => array('id' => $groupId)));
 		}
@@ -468,9 +525,13 @@
 
 			$requestId = (int) ($params['id'] ?? 0);
 			$groupId = (int) ($params['groupId'] ?? 0);
+			$before = Model::snapshot($requestId);
 			if (!Model::groupDelete($requestId, $groupId)) {
 				return $this->error('Корневую или чужую группу удалить нельзя', [], 422);
 			}
+
+			Revisions::capture($requestId, 'baseline', Auth::id(), 'Снимок до изменения условий', $before);
+			Revisions::capture($requestId, 'structure', Auth::id(), 'Группа условий удалена');
 
 			return $this->success('Группа удалена. Ее содержимое перенесено выше.');
 		}

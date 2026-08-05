@@ -14,10 +14,12 @@
 
 	defined('BASEPATH') || die('Direct access to this location is not allowed.');
 
+	use App\Adminx\Media\GlobalSearchProvider;
+
 	return array(
 		'code' => 'media',
 		'name' => 'Медиа',
-		'version' => '0.2.3',
+		'version' => '0.6.2',
 
 		'permissions' => array(
 			'key' => 'media',
@@ -58,10 +60,16 @@
 
 		'migrations' => array(
 			array('id' => '001_image_presets', 'file' => 'migrations/001_image_presets.sql'),
+			array('id' => '002_media_search_index', 'file' => 'migrations/002_media_search_index.sql'),
 		),
 
 		'routes' => array(
 			array('GET', '/media', array(\App\Adminx\Media\Controller::class, 'index')),
+			array('POST', '/media/saved-views', array(\App\Adminx\Media\Controller::class, 'saveSavedView')),
+			array('POST', '/media/saved-views/{id}/delete', array(\App\Adminx\Media\Controller::class, 'deleteSavedView')),
+			array('GET', '/media/audit', array(\App\Adminx\Media\Controller::class, 'audit'), array('permission' => 'view_media')),
+			array('GET', '/media/trash', array(\App\Adminx\Media\Controller::class, 'trash'), array('permission' => 'manage_media')),
+			array('POST', '/media/audit/run', array(\App\Adminx\Media\Controller::class, 'runAudit'), array('permission' => 'manage_media')),
 			array('GET', '/media/presets', array(\App\Adminx\Media\Controller::class, 'presets')),
 			array('POST', '/media/presets', array(\App\Adminx\Media\Controller::class, 'storePreset'), array('permission' => 'manage_media')),
 			array('POST', '/media/presets/{id}', array(\App\Adminx\Media\Controller::class, 'updatePreset'), array('permission' => 'manage_media')),
@@ -73,6 +81,10 @@
 			array('POST', '/media/folders', array(\App\Adminx\Media\Controller::class, 'createFolder')),
 			array('POST', '/media/rename', array(\App\Adminx\Media\Controller::class, 'rename')),
 			array('POST', '/media/delete', array(\App\Adminx\Media\Controller::class, 'delete')),
+			array('POST', '/media/delete-check', array(\App\Adminx\Media\Controller::class, 'deleteCheck')),
+			array('POST', '/media/empty-folder', array(\App\Adminx\Media\Controller::class, 'emptyFolder'), array('permission' => 'manage_media')),
+			array('POST', '/media/trash/{token}/restore', array(\App\Adminx\Media\Controller::class, 'restoreTrash'), array('permission' => 'manage_media')),
+			array('POST', '/media/trash/{token}/purge', array(\App\Adminx\Media\Controller::class, 'purgeTrash'), array('permission' => 'manage_media')),
 			array('POST', '/media/clear-thumbnails', array(\App\Adminx\Media\Controller::class, 'clearThumbnails')),
 			array('POST', '/media/transform', array(\App\Adminx\Media\Controller::class, 'transform')),
 			array('POST', '/media/preview', array(\App\Adminx\Media\Controller::class, 'preview')),
@@ -82,5 +94,11 @@
 
 		'view_globals' => array(
 			'module_code' => 'media',
+		),
+		'admin_extension' => array(
+			'url' => '/media',
+			'feature' => 'Файлы, изображения и превью',
+			'icon' => 'ti ti-photo',
+			'search' => array('code' => 'media', 'provider' => array(GlobalSearchProvider::class, 'search'), 'permission' => 'view_media', 'priority' => 35, 'limit' => 8),
 		),
 	);

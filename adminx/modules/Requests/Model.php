@@ -426,6 +426,63 @@
 			return DB::query('SELECT * FROM ' . self::req() . ' WHERE Id = %i LIMIT 1', (int) $id)->getObject();
 		}
 
+		public static function snapshot($id)
+		{
+			$request = self::find($id);
+			if (!$request) { return array(); }
+			$normalize = function ($value) {
+				return is_object($value) ? get_object_vars($value) : (array) $value;
+			};
+			$row = (array) $request;
+			unset($row['Id']);
+			return array(
+				'request' => $row,
+				'groups' => array_map($normalize, self::groupsFlat((int) $id)),
+				'conditions' => array_map($normalize, self::conditions((int) $id)),
+			);
+		}
+
+		public static function applySnapshot($id, array $snapshot)
+		{
+			$current = self::find($id);
+			if (!$current || empty($snapshot['request']) || !is_array($snapshot['request'])) {
+				throw new \RuntimeException('Ревизия не содержит данных запроса');
+			}
+
+			$request = $snapshot['request'];
+			unset($request['Id']);
+			if (!empty($request['request_alias']) && self::aliasExists((string) $request['request_alias'], (int) $id)) {
+				throw new \RuntimeException('Алиас из ревизии уже занят другим запросом');
+			}
+
+			DB::startTransaction();
+			try {
+				DB::Update(self::req(), $request, 'Id=%i', (int) $id);
+				DB::Delete(self::cond(), 'request_id=%i', (int) $id);
+				DB::Delete(self::groups(), 'request_id=%i', (int) $id);
+				foreach (isset($snapshot['groups']) && is_array($snapshot['groups']) ? $snapshot['groups'] : array() as $group) {
+					$group['request_id'] = (int) $id;
+					DB::Insert(self::groups(), $group);
+				}
+
+				foreach (isset($snapshot['conditions']) && is_array($snapshot['conditions']) ? $snapshot['conditions'] : array() as $condition) {
+					$condition['request_id'] = (int) $id;
+					DB::Insert(self::cond(), $condition);
+				}
+
+				DB::commit();
+			} catch (\Throwable $e) {
+				DB::rollback();
+				throw $e;
+			}
+
+			\App\Content\Requests\NativeRequestPlanCompiler::persist((int) $id);
+			\App\Frontend\RequestRepository::reset();
+			FileCacheInvalidator::request((int) $id, isset($current->request_alias) ? (string) $current->request_alias : '');
+			FileCacheInvalidator::request((int) $id, isset($request['request_alias']) ? (string) $request['request_alias'] : '');
+			return (int) $id;
+		}
+
 		public static function aliasExists($alias, $exceptId = 0)
 		{
 			return (bool) DB::query(

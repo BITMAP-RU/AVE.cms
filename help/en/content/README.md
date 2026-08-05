@@ -44,6 +44,7 @@ start with the in-depth chapter [Content Studio: From Category to Publishing](co
 | Panel Section | Guide |
 | --- | --- |
 | Documents | [Creation, publication, URL, revisions and system pages](documents.md) |
+| Bulk editor | [Previewed batch changes for documents and products](bulk-editor.md) |
 | Categories and fields | [Design content type, form and public output](rubrics.md) |
 | Dictionaries | [Shared value lists without documents, URLs, or SEO](directories.md) |
 | Templates | [External shell of the site, tags, cache and revisions](templates.md) |

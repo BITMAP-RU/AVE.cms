@@ -17,7 +17,7 @@
 	return array(
 		'code' => 'documents',
 		'name' => 'Документы',
-		'version' => '0.1.7',
+		'version' => '0.3.3',
 
 		'permissions' => array(
 			'key' => 'documents',
@@ -65,12 +65,19 @@
 
 		'routes' => array(
 			array('GET', '/documents', array(\App\Adminx\Documents\Controller::class, 'index')),
+			array('POST', '/documents/saved-views', array(\App\Adminx\Documents\Controller::class, 'saveSavedView')),
+			array('POST', '/documents/saved-views/{id}/delete', array(\App\Adminx\Documents\Controller::class, 'deleteSavedView')),
 			array('GET', '/documents/create', array(\App\Adminx\Documents\Controller::class, 'create')),
 			array('GET', '/documents/alias-check', array(\App\Adminx\Documents\Controller::class, 'aliasCheck')),
 			array('POST', '/documents/slug', array(\App\Adminx\Documents\Controller::class, 'slug')),
 			array('POST', '/documents/short-alias', array(\App\Adminx\Documents\Controller::class, 'shortAlias')),
 			array('POST', '/documents/preview', array(\App\Adminx\Documents\Controller::class, 'previewPayload')),
 			array('POST', '/documents/bulk', array(\App\Adminx\Documents\Controller::class, 'bulk')),
+			array('GET', '/documents/bulk-editor', array(\App\Adminx\Documents\Controller::class, 'bulkEditor')),
+			array('GET', '/documents/bulk-editor/fields', array(\App\Adminx\Documents\Controller::class, 'bulkEditorFields')),
+			array('POST', '/documents/bulk-editor/preview', array(\App\Adminx\Documents\Controller::class, 'bulkEditorPreview')),
+			array('POST', '/documents/bulk-editor/run', array(\App\Adminx\Documents\Controller::class, 'bulkEditorRun')),
+			array('POST', '/documents/bulk-editor/cancel', array(\App\Adminx\Documents\Controller::class, 'bulkEditorCancel')),
 			array('POST', '/documents/snapshots/rebuild', array(\App\Adminx\Documents\Controller::class, 'rebuildSnapshots')),
 			array('GET', '/documents/picker', array(\App\Adminx\Documents\Controller::class, 'documentPicker')),
 			array('GET', '/documents/terms', array(\App\Adminx\Documents\Controller::class, 'termSuggestions')),

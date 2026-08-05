@@ -33,7 +33,7 @@
   margin-bottom: 16px;
 }
 .public-site-placement-summary {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 .public-site-placement-view-tabs {
   margin-bottom: 20px;
@@ -278,6 +278,11 @@
 }
 .public-site-placement-actions {
   justify-content: flex-end;
+}
+.public-site-dependency-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 .public-site-placement-footer {
   display: flex;

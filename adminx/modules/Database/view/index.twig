@@ -123,6 +123,22 @@
     <div><b>Восстановление полностью заменяет данные текущей схемы</b><p>Перед запуском AVE.cms автоматически создаст страховочную копию. Не закрывайте страницу до завершения операции.</p></div>
   </div>
 
+  {% if can_manage %}
+  <form class="card database-backup-keep" data-db-backup-keep-form>
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <span class="icon-tile" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-history-toggle"></i></span>
+    <div class="database-backup-keep-text">
+      <b>Сколько копий хранить</b>
+      <p class="text-secondary text-sm">После создания новой копии лишние старые удаляются. Загруженные вручную файлы не трогаются. Ноль отключает ротацию.</p>
+    </div>
+    <label class="field database-backup-keep-field">
+      <span class="field-label">Хранить последних</span>
+      <input class="input" type="number" name="keep" min="0" max="{{ backup_keep_max }}" value="{{ backup_keep }}">
+    </label>
+    <button class="btn btn-secondary" type="submit"><i class="ti ti-device-floppy"></i>Применить</button>
+  </form>
+  {% endif %}
+
   <div class="card ax-list-card database-backups-card">
     <div class="ax-list-head">
       <div class="ax-list-title"><span class="icon-tile" style="--tile-bg:var(--amber-100);--tile-fg:var(--amber-600)"><i class="ti ti-archive"></i></span><div><h2>Файлы резервных копий</h2><p class="text-secondary">Собственные и загруженные SQL-дампы базы данных.</p></div></div>

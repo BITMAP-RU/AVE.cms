@@ -24,6 +24,7 @@
 	{
 		const FORMAT_VERSION = 2;
 		const MARKER = '.ave-thumbnails';
+		const DIRECTORY_VERSION_MARKER = '.ave-thumbnail-version';
 
 		protected static $currentDirectories = array();
 
@@ -73,6 +74,36 @@
 			$base = preg_quote(pathinfo($source, PATHINFO_FILENAME), '/');
 			$ext = preg_quote(strtolower(pathinfo($source, PATHINFO_EXTENSION)), '/');
 			return self::clearGenerated($directory, '/^' . $base . '-[rcfts]\d+x\d+r?\.' . $ext . '$/i');
+		}
+
+		public static function invalidateDirectory($directory)
+		{
+			$directory = rtrim((string) $directory, '/\\');
+			if (!is_dir($directory)) {
+				return false;
+			}
+
+			return File::putAtomic(
+				$directory . DIRECTORY_SEPARATOR . self::DIRECTORY_VERSION_MARKER,
+				sprintf('%.6F', microtime(true)) . ':' . uniqid('', true) . "\n"
+			);
+		}
+
+		public static function sourceVersion($source)
+		{
+			$source = str_replace('\\', '/', (string) $source);
+			$file = strpos($source, rtrim(str_replace('\\', '/', BASEPATH), '/') . '/') === 0
+				? $source
+				: rtrim(str_replace('\\', '/', BASEPATH), '/') . '/' . ltrim($source, '/');
+			if (!is_file($file)) {
+				return '0';
+			}
+
+			$marker = dirname($file) . DIRECTORY_SEPARATOR . self::DIRECTORY_VERSION_MARKER;
+			$directoryVersion = is_file($marker) ? trim((string) File::getContent($marker)) : '';
+			return substr(sha1(
+				(int) @filemtime($file) . ':' . (int) @filesize($file) . ':' . (int) @fileinode($file) . ':' . $directoryVersion
+			), 0, 12);
 		}
 
 		protected static function clearGenerated($directory, $pattern = '/-[rcfts]\d+x\d+r?\.(?:jpe?g|png|gif|webp)$/i')

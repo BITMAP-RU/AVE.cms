@@ -22,4 +22,11 @@
 	<phrase data="runtime_d40e0bdeb83cdf61">User management</phrase>
 	<phrase data="runtime_9dbd7e3b1a2b8fa8">This email is already taken.</phrase>
 	<phrase data="runtime_41859888161442dc">This login is already taken.</phrase>
+	<phrase data="users_session_not_found">Session not found</phrase>
+	<phrase data="users_current_session_revoked">Current session ended</phrase>
+	<phrase data="users_session_revoked">Session ended</phrase>
+	<phrase data="users_other_sessions_revoked">Other sessions ended</phrase>
+	<phrase data="users_all_sessions_revoked">All sessions ended</phrase>
+	<phrase data="users_failed_logins_notification">Failed login attempts</phrase>
+	<phrase data="users_failed_logins_notification_hint">During the last 10 minutes. Check users and the audit log.</phrase>
 </language>

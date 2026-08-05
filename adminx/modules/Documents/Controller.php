@@ -25,6 +25,7 @@
 	use App\Common\ErrorReport;
 	use App\Common\Permission;
 	use App\Adminx\Support\CodeEditor;
+	use App\Adminx\Support\SavedViews;
 	use App\Adminx\Rubrics\AdminView;
 	use App\Content\Documents\DocumentHookException;
 	use App\Content\Documents\ContentCacheInvalidator;
@@ -44,6 +45,9 @@
 
 	class Controller extends BaseController
 	{
+		protected function savedViewFields() { return array('q', 'field', 'rubric_id', 'state', 'per_page'); }
+		protected function savedViewGuard() { if (($error = $this->csrfGuard()) !== null) { return $error; } return Permission::check('view_documents') ? null : $this->error('Недостаточно прав', array(), 403); }
+
 		public function index(array $params = array())
 		{
 			AdminAssets::addStyle($this->base() . '/modules/Documents/assets/documents.css', 50);
@@ -84,7 +88,26 @@
 				'table_name' => Model::documentsTable(),
 				'can_manage' => Permission::check('manage_documents'),
 				'open_create' => Request::getBool('create', false),
+				'saved_views' => SavedViews::all('documents', Auth::id(), $this->savedViewFields()),
 			));
+		}
+
+		public function saveSavedView(array $params = array())
+		{
+			if (($error = $this->savedViewGuard()) !== null) { return $error; }
+			$filters = json_decode(Request::postStr('filters', '{}'), true);
+			if (!is_array($filters)) { return $this->error('Некорректный набор фильтров', array(), 422); }
+			try { $views = SavedViews::save('documents', Auth::id(), Request::postStr('title', ''), $filters, $this->savedViewFields()); }
+			catch (\InvalidArgumentException $e) { return $this->error($e->getMessage(), array(), 422); }
+			return $this->success('Представление сохранено', array('data' => array('views' => $views)));
+		}
+
+		public function deleteSavedView(array $params = array())
+		{
+			if (($error = $this->savedViewGuard()) !== null) { return $error; }
+			try { $views = SavedViews::delete('documents', Auth::id(), isset($params['id']) ? $params['id'] : '', $this->savedViewFields()); }
+			catch (\InvalidArgumentException $e) { return $this->error($e->getMessage(), array(), 404); }
+			return $this->success('Представление удалено', array('data' => array('views' => $views)));
 		}
 
 		public function create(array $params = array())
@@ -190,7 +213,13 @@
 			try {
 				$scopes = Request::post('scopes', array());
 				$scopes = is_array($scopes) ? $scopes : array();
-				$result = ApiTokenRepository::issue(Auth::id(), Request::postStr('name', ''), $scopes, Request::postStr('expires_at', ''));
+				$result = ApiTokenRepository::issueRestricted(
+					Auth::id(),
+					Request::postStr('name', ''),
+					$scopes,
+					array('documents:read', 'documents:write', 'documents:*'),
+					Request::postStr('expires_at', '')
+				);
 				AuditLog::record('document.api_token_created', array('actor_id'=>Auth::id(),'target_type'=>'api_token','target_id'=>$result['id'],'meta'=>array('scopes'=>$result['scopes'])));
 				return $this->success('API-токен создан', array('data' => $result));
 			} catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
@@ -201,7 +230,10 @@
 			if (($err = $this->csrfGuard()) !== null) { return $err; }
 			if (!Permission::check('manage_document_api')) { return $this->error('Недостаточно прав', array(), 403); }
 			$id = isset($params['id']) ? (int) $params['id'] : 0;
-			if (!ApiTokenRepository::revoke($id)) { return $this->error('Токен не найден или уже отозван', array(), 404); }
+			if (!ApiTokenRepository::revokeRestricted($id, array('documents:read', 'documents:write'))) {
+				return $this->error('Токен документов не найден или уже отозван', array(), 404);
+			}
+
 			AuditLog::record('document.api_token_revoked', array('actor_id'=>Auth::id(),'target_type'=>'api_token','target_id'=>$id));
 			return $this->success('API-токен отозван');
 		}
@@ -391,6 +423,70 @@
 			return $this->success('Пакетное действие выполнено', array('data' => $result));
 		}
 
+		public function bulkEditor(array $params = array())
+		{
+			if (!Permission::check('manage_documents')) {
+				return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403);
+			}
+
+			AdminAssets::addStyle($this->base() . '/modules/Documents/assets/documents.css', 50);
+			AdminAssets::addScript($this->base() . '/modules/Documents/assets/documents.js', 50);
+			return $this->render('@documents/bulk-editor.twig', array(
+				'bulk_options' => BulkEditor::options(),
+			));
+		}
+
+		public function bulkEditorFields(array $params = array())
+		{
+			if (!Permission::check('manage_documents')) {
+				return $this->error('Недостаточно прав', array(), 403);
+			}
+
+			return $this->success('', array('data' => array(
+				'items' => BulkEditor::fields(Request::getInt('rubric_id', 0)),
+			)));
+		}
+
+		public function bulkEditorPreview(array $params = array())
+		{
+			if (($err = $this->guard()) !== null) { return $err; }
+			try {
+				$plan = BulkEditor::preview(Request::postAll(), Auth::id());
+			} catch (\InvalidArgumentException $e) {
+				return $this->error($e->getMessage(), array(), 422);
+			} catch (\Throwable $e) {
+				return $this->error(ErrorReport::publicMessage('Не удалось подготовить массовое изменение', $e, 'DOCBULKPREVIEW'), array(), 500);
+			}
+
+			return $this->success('Предпросмотр подготовлен', array('data' => array('plan' => $plan)));
+		}
+
+		public function bulkEditorRun(array $params = array())
+		{
+			if (($err = $this->guard()) !== null) { return $err; }
+			try {
+				$plan = BulkEditor::runChunk(Request::postStr('token', ''), Auth::id());
+			} catch (\InvalidArgumentException $e) {
+				return $this->error($e->getMessage(), array(), 422);
+			} catch (\Throwable $e) {
+				return $this->error(ErrorReport::publicMessage('Не удалось выполнить пакет документов', $e, 'DOCBULKRUN'), array(), 500);
+			}
+
+			return $this->success($plan['status'] === 'completed' ? 'Массовое изменение завершено' : 'Пакет обработан', array('data' => array('plan' => $plan)));
+		}
+
+		public function bulkEditorCancel(array $params = array())
+		{
+			if (($err = $this->guard()) !== null) { return $err; }
+			try {
+				$plan = BulkEditor::cancel(Request::postStr('token', ''), Auth::id());
+			} catch (\Throwable $e) {
+				return $this->error($e->getMessage(), array(), 422);
+			}
+
+			return $this->success('Выполнение остановлено', array('data' => array('plan' => $plan)));
+		}
+
 		public function store(array $params = array())
 		{
 			if (($err = $this->guard()) !== null) {
@@ -559,6 +655,12 @@
 				return $this->error('Проверьте поля документа', $errors, 422);
 			}
 
+			$mediaReplacement = DocumentMediaReplacement::capture(
+				$fieldGroups,
+				$fieldValues,
+				DocumentMediaReplacement::requestedFieldIds(Request::post('media_replace_fields', array()))
+			);
+
 			$mediaFinalization = null;
 			$previousDatabaseExceptionMode = DB::$throw_exception_on_error;
 			DB::$throw_exception_on_error = true;
@@ -622,10 +724,12 @@
 			$snapshotError = ContentCacheInvalidator::consumeError($id);
 			$snapshot = (new DocumentSnapshotRepository())->find($id);
 			DocumentSaveEvents::after('update', 'adminx', $id, (int) $doc['rubric_id'], Auth::id(), $input, $fieldValues, $doc, is_array($snapshot) ? $snapshot : array());
+			$mediaCleanup = DocumentMediaReplacement::cleanup($mediaReplacement, $fieldValues);
 			return $this->success('Документ сохранён', array('data' => array(
 				'id' => $id,
 				'document_version' => Model::documentVersion($id),
 				'snapshot_warning' => $snapshotError,
+				'media_cleanup' => $mediaCleanup,
 				'media_draft_token' => DocumentMediaDraft::issue(Auth::id(), $id),
 			), 'redirect' => $this->base() . '/documents/' . $id . '/edit'));
 		}

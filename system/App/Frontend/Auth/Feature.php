@@ -20,6 +20,7 @@
 	use App\Common\PublicAuthSettings;
 	use App\Common\Router;
 	use App\Common\Twig;
+	use App\Frontend\Auth\Phone\ProviderRegistry as PhoneProviderRegistry;
 
 	class Feature
 	{
@@ -76,9 +77,27 @@
 
 		public static function registrationFormEnabled()
 		{
-			if (!self::registrationEnabled()) { return false; }
-			$code = isset(self::$config['registration_gate']) ? (string) self::$config['registration_gate'] : 'email';
-			return Registration\RegistrationGateRegistry::get($code) !== null;
+			return self::emailRegistrationEnabled() || !empty(self::phoneRegistrationProviders());
+		}
+
+		public static function emailRegistrationEnabled()
+		{
+			return PublicAuthSettings::allowsRegistrationMethod('email', self::$config)
+				&& Registration\RegistrationGateRegistry::get('email') !== null;
+		}
+
+		public static function phoneRegistrationEnabled()
+		{
+			return PublicAuthSettings::allowsRegistrationMethod('phone', self::$config);
+		}
+
+		public static function phoneRegistrationProviders()
+		{
+			if (!self::phoneRegistrationEnabled()) { return array(); }
+
+			return array_values(array_filter(PhoneProviderRegistry::publicItems(), function ($provider) {
+				return !empty($provider['allow_registration']);
+			}));
 		}
 
 		public static function page($key)

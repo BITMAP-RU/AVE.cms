@@ -1,0 +1,194 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}Анализатор медиа{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i>
+  <a href="{{ ADMINX_BASE }}/media">Медиа</a><i class="ti ti-chevron-right"></i>
+  <span>Анализатор</span>
+</nav>
+
+<div class="page-header">
+  <div class="between">
+    <div>
+      <h1>Анализатор медиа</h1>
+      <p class="text-secondary">Проверка файлов, превью и ссылок на uploads без автоматического удаления.</p>
+    </div>
+    {% if can_manage %}
+    <button class="btn btn-primary" type="button" data-media-audit-run>
+      <i class="ti ti-scan"></i>{{ report ? 'Проверить заново' : 'Запустить проверку' }}
+    </button>
+    {% endif %}
+  </div>
+</div>
+
+<div class="tabs media-tabs" role="navigation" aria-label="Разделы медиа">
+  <a class="tab" href="{{ ADMINX_BASE }}/media"><i class="ti ti-folders"></i>Файлы</a>
+  <a class="tab active" href="{{ ADMINX_BASE }}/media/audit" aria-current="page"><i class="ti ti-scan"></i>Анализатор</a>
+  {% if can_manage %}<a class="tab" href="{{ ADMINX_BASE }}/media/trash"><i class="ti ti-trash"></i>Корзина</a>{% endif %}
+</div>
+
+{% if not report %}
+<div class="card media-audit-empty">
+  <span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-photo-search"></i></span>
+  <div>
+    <h2>Проверка ещё не запускалась</h2>
+    <p>Анализатор сопоставит физические файлы с документами, шаблонами, блоками, навигацией и файлами темы. Ничего не будет удалено или изменено.</p>
+  </div>
+</div>
+{% else %}
+<div class="ax-summary media-audit-summary">
+  <div class="card stat-tile"><div class="stat-ico"><i class="ti ti-files"></i></div><div><div class="stat-val">{{ report.summary.files }}</div><div class="stat-label">Файлов</div></div></div>
+  <div class="card stat-tile"><div class="stat-ico" style="background:var(--color-warning-soft);color:var(--color-warning)"><i class="ti ti-file-unknown"></i></div><div><div class="stat-val">{{ report.summary.unused }}</div><div class="stat-label">Без найденных связей</div></div></div>
+  <div class="card stat-tile"><div class="stat-ico" style="background:var(--color-violet-soft);color:var(--color-violet)"><i class="ti ti-copy"></i></div><div><div class="stat-val">{{ report.summary.duplicate_groups }}</div><div class="stat-label">Групп дублей</div></div></div>
+  <div class="card stat-tile"><div class="stat-ico" style="background:var(--color-danger-soft);color:var(--color-danger)"><i class="ti ti-photo-x"></i></div><div><div class="stat-val">{{ report.summary.missing_originals }}</div><div class="stat-label">Нет оригинала</div></div></div>
+</div>
+
+<div class="alert alert-info media-audit-note">
+  <i class="ti ti-info-circle alert-ic"></i>
+  <div>
+    <b>Отчёт от {{ report.generated_label }}</b>
+    <p>Проверено за {{ report.duration }} сек. «Без найденных связей» означает только отсутствие явного пути в базе и исходниках: динамически составленные пути анализатор распознать не может.</p>
+  </div>
+</div>
+
+<div class="section-header ax-panel-header media-audit-header">
+  <div class="section-icon"><i class="ti ti-report-analytics"></i></div>
+  <div>
+    <div class="section-eyebrow">Результаты</div>
+    <h2>Проверка файлов и связей</h2>
+    <p class="section-desc">Выберите тип проблемы, затем откройте файл или место его использования.</p>
+  </div>
+</div>
+
+<div class="media-audit-kinds" role="navigation" aria-label="Тип результата">
+  <a href="{{ ADMINX_BASE }}/media/audit?kind=unused" class="{{ kind == 'unused' ? 'is-active' : '' }}"><i class="ti ti-file-unknown"></i><span>Не используются</span><b>{{ report.summary.unused }}</b></a>
+  <a href="{{ ADMINX_BASE }}/media/audit?kind=duplicates" class="{{ kind == 'duplicates' ? 'is-active' : '' }}"><i class="ti ti-copy"></i><span>Одинаковые</span><b>{{ report.summary.duplicate_groups }}</b></a>
+  <a href="{{ ADMINX_BASE }}/media/audit?kind=missing_originals" class="{{ kind == 'missing_originals' ? 'is-active' : '' }}"><i class="ti ti-photo-x"></i><span>Нет оригиналов</span><b>{{ report.summary.missing_originals }}</b></a>
+  <a href="{{ ADMINX_BASE }}/media/audit?kind=missing_previews" class="{{ kind == 'missing_previews' ? 'is-active' : '' }}"><i class="ti ti-photo-off"></i><span>Нет превью</span><b>{{ report.summary.missing_previews }}</b></a>
+  <a href="{{ ADMINX_BASE }}/media/audit?kind=large" class="{{ kind == 'large' ? 'is-active' : '' }}"><i class="ti ti-file-arrow-right"></i><span>Большие</span><b>{{ report.summary.large }}</b></a>
+  <a href="{{ ADMINX_BASE }}/media/audit?kind=invalid" class="{{ kind == 'invalid' ? 'is-active' : '' }}"><i class="ti ti-path"></i><span>Неверные пути</span><b>{{ report.summary.invalid }}</b></a>
+  <a href="{{ ADMINX_BASE }}/media/audit?kind=files" class="{{ kind == 'files' ? 'is-active' : '' }}"><i class="ti ti-topology-star"></i><span>Карта использования</span><b>{{ report.summary.used_files }}</b></a>
+</div>
+
+<div class="card ax-list-card media-audit-card">
+  <div class="ax-list-head">
+    <div class="ax-list-title">
+      <span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-list-details"></i></span>
+      <div>
+        <h2>
+          {% if kind == 'unused' %}Файлы без найденных связей
+          {% elseif kind == 'duplicates' %}Файлы с одинаковым содержимым
+          {% elseif kind == 'missing_originals' %}Ссылки и превью без оригинала
+          {% elseif kind == 'missing_previews' %}Изображения без созданных превью
+          {% elseif kind == 'large' %}Большие файлы и изображения
+          {% elseif kind == 'invalid' %}Некорректные ссылки
+          {% else %}Карта использования файлов{% endif %}
+        </h2>
+        <p class="text-secondary">
+          {% if kind == 'missing_previews' %}Превью создаются по требованию; это состояние не является ошибкой.
+          {% elseif kind == 'duplicates' %}Потенциально повторяется {{ report.summary.duplicate_size }} данных.
+          {% elseif kind == 'large' %}Порог: {{ report.thresholds.large_file }} или сторона изображения от {{ report.thresholds.large_side }}.
+          {% else %}Найдено записей: {{ total }}.{% endif %}
+        </p>
+      </div>
+    </div>
+    <span class="badge badge-blue">{{ total }}</span>
+  </div>
+
+  {% if kind != 'duplicates' %}
+  <div class="table-toolbar media-audit-toolbar">
+    <form method="get" action="{{ ADMINX_BASE }}/media/audit">
+      <input type="hidden" name="kind" value="{{ kind }}">
+      <div class="input-wrap"><i class="ti ti-search"></i><input class="input" type="search" name="q" value="{{ filters.q }}" placeholder="Путь или источник"></div>
+      <button class="btn btn-secondary" type="submit"><i class="ti ti-search"></i>Найти</button>
+      {% if filters.q %}<a class="btn btn-ghost" href="{{ ADMINX_BASE }}/media/audit?kind={{ kind }}"><i class="ti ti-x"></i>Сбросить</a>{% endif %}
+    </form>
+  </div>
+  {% endif %}
+
+  {% if kind == 'duplicates' %}
+    <div class="media-duplicate-list">
+      {% for group in rows %}
+      <details class="media-duplicate-group">
+        <summary>
+          <span><b>{{ group.count }} одинаковых файла</b><small>{{ group.size_label }} каждый · можно освободить до {{ group.recoverable_label }}</small></span>
+          <span class="mono text-muted">{{ group.hash_short }}</span>
+          <i class="ti ti-chevron-down"></i>
+        </summary>
+        <div>
+          {% for file in group.files %}
+          <a href="{{ ADMINX_BASE }}/media/file?path={{ file.path|url_encode }}"><i class="ti ti-file"></i><span>{{ file.path }}</span><small>{{ file.dimensions ?: file.size_label }}</small></a>
+          {% endfor %}
+        </div>
+      </details>
+      {% else %}
+      <div class="ax-empty">Одинаковых файлов не найдено</div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="table-scroll">
+      <table class="table media-audit-table">
+        <thead><tr><th>Файл или путь</th><th>Состояние</th><th>Использование</th><th class="table-actions"></th></tr></thead>
+        <tbody>
+        {% for row in rows %}
+          <tr>
+            <td>
+              <div class="media-audit-path"><b>{{ row.path }}</b>
+                {% if row.size_label is defined %}<small>{{ row.size_label }}{% if row.dimensions %} · {{ row.dimensions }}{% endif %}</small>{% endif %}
+                {% if row.preview is defined %}<small>Превью: {{ row.preview }}</small>{% endif %}
+              </div>
+            </td>
+            <td>
+              {% if kind == 'unused' %}<span class="badge badge-yellow">проверить вручную</span>
+              {% elseif kind == 'missing_originals' %}<span class="badge badge-red">оригинал не найден</span>
+              {% elseif kind == 'missing_previews' %}<span class="badge badge-gray">не прогрето</span>
+              {% elseif kind == 'large' %}<span class="badge badge-yellow">{{ row.size_label }}</span>
+              {% elseif kind == 'invalid' %}<span class="badge badge-red">неверный путь</span>
+              {% elseif row.use_count > 0 %}<span class="badge badge-green">используется</span>
+              {% else %}<span class="badge badge-gray">связей нет</span>{% endif %}
+            </td>
+            <td>
+              {% set uses = row.uses|default([]) %}
+              {% if uses %}
+                <div class="media-usage-list">
+                {% for use in uses|slice(0, 4) %}
+                  {% if use.link %}<a href="{{ ADMINX_BASE }}{{ use.link }}">{{ use.source }} #{{ use.source_id }}</a>{% else %}<span>{{ use.source }} · {{ use.column }}</span>{% endif %}
+                {% endfor %}
+                {% if uses|length > 4 %}<small>и ещё {{ uses|length - 4 }}</small>{% endif %}
+                </div>
+              {% else %}<span class="text-muted">Явных ссылок нет</span>{% endif %}
+            </td>
+            <td class="table-actions">
+              {% if row.path starts with '/uploads/' and kind != 'missing_originals' and kind != 'invalid' %}
+              <a class="btn btn-ghost btn-icon btn-sm ax-act ax-act-info" href="{{ ADMINX_BASE }}/media/file?path={{ row.path|url_encode }}" data-tooltip="Открыть файл" aria-label="Открыть файл"><i class="ti ti-external-link"></i></a>
+              {% endif %}
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="4" class="ax-empty">Для этого фильтра проблем не найдено</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endif %}
+
+  {% if pages > 1 %}
+  <div class="pagination media-pagination">
+    {% for p in 1..pages %}
+      {% if p == page %}<span class="page current">{{ p }}</span>
+      {% elseif p <= 2 or p > pages - 2 or (p >= page - 2 and p <= page + 2) %}<a class="page" href="{{ ADMINX_BASE }}/media/audit?kind={{ kind }}&page={{ p }}&q={{ filters.q|url_encode }}">{{ p }}</a>
+      {% elseif p == 3 or p == pages - 2 %}<span class="page gap">...</span>{% endif %}
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+{% if can_manage %}
+<form class="sr-only" data-media-audit-form method="post" action="{{ ADMINX_BASE }}/media/audit/run">
+  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+</form>
+{% endif %}
+
+{% endblock %}

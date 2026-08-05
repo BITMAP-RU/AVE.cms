@@ -1072,7 +1072,77 @@
 .navigation-alias-state.is-pending {
   color: var(--amber-600);
 }
+.navigation-revisions-layout {
+  display: grid;
+  grid-template-columns: minmax(250px, 0.75fr) minmax(0, 1.25fr);
+  gap: 16px;
+}
+.navigation-revisions-list,
+.navigation-revision-detail {
+  min-width: 0;
+}
+.navigation-revision-row {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.navigation-revision-row:hover,
+.navigation-revision-row.is-active {
+  background: var(--surface-hover);
+}
+.navigation-revision-row > span:nth-child(2) {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.navigation-revision-row small,
+.navigation-revision-detail-head p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+.navigation-revision-row em {
+  font-style: normal;
+}
+.navigation-revision-detail-head,
+.navigation-revision-change > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.navigation-revision-detail-head {
+  margin-bottom: 12px;
+}
+.navigation-revision-detail-head h4 {
+  margin: 0 0 4px;
+}
+.navigation-revision-change {
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+}
+.navigation-revision-change pre {
+  max-height: 180px;
+  margin: 8px 0 0;
+  padding: 10px;
+  overflow: auto;
+  border-radius: 6px;
+  background: var(--surface-muted);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
 @media (max-width: 980px) {
+  .navigation-revisions-layout {
+    grid-template-columns: 1fr;
+  }
   .navigation-template-layout {
     grid-template-columns: 1fr;
   }

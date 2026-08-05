@@ -118,15 +118,9 @@
 
 		public static function site()
 		{
-			$protocol = isset($_SERVER['HTTPS']) ? 'https' : 'http';
-			$host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '';
-			$requestUri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/';
-			$parts = parse_url($protocol . '://' . $host . $requestUri);
-			if (!is_array($parts) || empty($parts['scheme']) || empty($parts['host'])) {
-				return '';
-			}
-
-			return $parts['scheme'] . '://' . $parts['host'];
+			$configured = \App\Common\SiteOrigin::configuredUrl();
+			if ($configured !== '') { return $configured; }
+			return defined('HOST') ? rtrim((string) HOST, '/') : '';
 		}
 
 		public static function home()

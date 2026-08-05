@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="global_search_name">Global search</phrase>
+	<phrase data="global_search_results">Results</phrase>
+	<phrase data="global_search_documents">Documents</phrase>
+	<phrase data="global_search_rubrics">Rubrics</phrase>
+	<phrase data="global_search_blocks">Blocks</phrase>
+	<phrase data="global_search_requests">Requests</phrase>
+	<phrase data="global_search_navigation">Navigation</phrase>
+	<phrase data="global_search_users">Users</phrase>
+	<phrase data="global_search_customers">Site users</phrase>
+	<phrase data="global_search_media">Media</phrase>
+</language>

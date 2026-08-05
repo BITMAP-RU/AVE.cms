@@ -129,6 +129,116 @@
 			);
 		}
 
+		/**
+		 * Move an existing document to another rubric while preserving fields
+		 * with the same non-empty alias and compatible type.
+		 */
+		public function move($documentId, $targetRubricId, $actorId, $source = 'bulk_editor')
+		{
+			$documentId = (int) $documentId;
+			$targetRubricId = (int) $targetRubricId;
+			$existing = $this->document($documentId);
+			$targetRubric = $this->rubric($targetRubricId);
+			if (!$existing) { throw new DocumentSaveRejected('Документ не найден'); }
+			if (!$targetRubric) { throw new DocumentSaveRejected('Целевая рубрика не найдена'); }
+			if ((int) $existing['rubric_id'] === $targetRubricId) {
+				return array('id' => $documentId, 'operation' => 'move', 'moved' => false, 'mapped_fields' => 0, 'skipped_fields' => array());
+			}
+
+			$sourceDefinitions = $this->fieldDefinitions((int) $existing['rubric_id']);
+			$sourceValues = $this->fieldValues($documentId, $sourceDefinitions, false);
+			$sourceByAlias = array();
+			foreach ($sourceDefinitions as $fieldId => $field) {
+				$alias = trim((string) $field['rubric_field_alias']);
+				if ($alias === '') { continue; }
+				$sourceByAlias[$alias] = array(
+					'type' => (string) $field['rubric_field_type'],
+					'value' => isset($sourceValues[$fieldId]) ? $sourceValues[$fieldId] : '',
+					'title' => (string) $field['rubric_field_title'],
+				);
+			}
+
+			$targetDefinitions = $this->fieldDefinitions($targetRubricId);
+			$targetFields = $this->fieldValues(0, $targetDefinitions, true);
+			$mapped = 0;
+			$skipped = array();
+			foreach ($targetDefinitions as $fieldId => $field) {
+				$alias = trim((string) $field['rubric_field_alias']);
+				if ($alias === '' || !isset($sourceByAlias[$alias])) { continue; }
+				if ((string) $field['rubric_field_type'] !== $sourceByAlias[$alias]['type']) {
+					$skipped[] = $alias;
+					continue;
+				}
+
+				$targetFields[$fieldId] = $sourceByAlias[$alias]['value'];
+				$mapped++;
+			}
+
+			$targetTemplateId = (int) DB::query(
+				'SELECT id FROM ' . ContentTables::table('rubric_templates')
+					. ' WHERE id=%i AND rubric_id=%i LIMIT 1',
+				isset($existing['rubric_tmpl_id']) ? (int) $existing['rubric_tmpl_id'] : 0,
+				$targetRubricId
+			)->getValue();
+			$moveInput = $existing;
+			$moveInput['rubric_tmpl_id'] = $targetTemplateId > 0 ? $targetTemplateId : 0;
+			$data = $this->normalizeData($moveInput, $existing, $targetRubric, true);
+			$data['rubric_id'] = $targetRubricId;
+			$targetFields = ComputedFieldEvaluator::apply($targetDefinitions, $targetFields, $data);
+			DocumentSaveEvents::before('update', $source, $documentId, $targetRubricId, $actorId, $data, $targetFields, $existing);
+			DocumentRubricCodeRunner::before($targetRubricId, $data, $targetFields, $documentId, $actorId, false, $source);
+			$data = $this->normalizeData($data, $existing, $targetRubric, true);
+			$data['rubric_id'] = $targetRubricId;
+			$targetFields = ComputedFieldEvaluator::apply($targetDefinitions, $targetFields, $data);
+			$errors = array_merge(
+				$this->validate($data, $documentId, $targetRubricId),
+				FieldValidator::validateValues(array_values($targetDefinitions), $targetFields, !empty($targetRubric['rubric_form_conditions']))
+			);
+			if ($errors) { throw new DocumentSaveRejected('Проверьте данные документа', $errors); }
+
+			$previousDatabaseExceptionMode = DB::$throw_exception_on_error;
+			DB::$throw_exception_on_error = true;
+			$externalTransaction = DB::$transaction_in_progress;
+			$ownsTransaction = !$externalTransaction;
+			if ($ownsTransaction) { DB::startTransaction(); }
+			try {
+				$this->captureRevision($documentId, $actorId);
+				$this->writeDocument($documentId, $data, $targetRubric, $actorId, $existing);
+				DB::Delete(ContentTables::table('document_fields_text'), 'document_id=%i', $documentId);
+				DB::Delete(ContentTables::table('document_fields'), 'document_id=%i', $documentId);
+				\App\Content\Fields\DocumentRelationIndex::removeSource($documentId);
+				DocumentRubricCodeRunner::after($targetRubricId, $data, $targetFields, $documentId, $actorId, false, $source);
+				$data = $this->normalizeData($data, $this->document($documentId), $targetRubric, true);
+				$data['rubric_id'] = $targetRubricId;
+				$this->writeDocument($documentId, $data, $targetRubric, $actorId, $this->document($documentId), false);
+				$this->writeFields($documentId, $data, $targetDefinitions, $targetFields);
+				DocumentTerms::sync($documentId, $targetRubricId, $data['document_meta_keywords'], $data['document_tags']);
+				DocumentSaveEvents::persisted('update', $source, $documentId, $targetRubricId, $actorId, $data, $targetFields, $existing);
+				if ($ownsTransaction) { DB::commit(); }
+			} catch (\Throwable $e) {
+				if ($ownsTransaction) { DB::rollback(); }
+				throw $e;
+			} finally {
+				DB::$throw_exception_on_error = $previousDatabaseExceptionMode;
+			}
+
+			$dispatch = function () use ($source, $documentId, $targetRubricId, $actorId, $data, $targetFields, $existing) {
+				ContentCacheInvalidator::document($documentId, true);
+				$snapshot = (new DocumentSnapshotRepository())->find($documentId);
+				DocumentSaveEvents::after('update', $source, $documentId, $targetRubricId, $actorId, $data, $targetFields, $existing, is_array($snapshot) ? $snapshot : array());
+			};
+			if ($externalTransaction) { DB::afterCommit($dispatch); }
+			else { $dispatch(); }
+
+			return array(
+				'id' => $documentId,
+				'operation' => 'move',
+				'moved' => true,
+				'mapped_fields' => $mapped,
+				'skipped_fields' => $skipped,
+			);
+		}
+
 		/** Permanently remove a package-owned document and all core-owned derivatives. */
 		public function hardDelete($documentId, $source = 'content_package')
 		{
@@ -385,7 +495,12 @@
 				$value = $saving->result();
 				$first = mb_substr((string) $value, 0, 500, 'UTF-8');
 				$more = mb_substr((string) $value, 500, null, 'UTF-8');
-				$numeric = $type && $type->isNumeric() ? $this->numeric($value) : 0;
+				$isNumeric = !empty($field['rubric_field_numeric']) || ($type && $type->isNumeric());
+				$numeric = $isNumeric
+					? ((string) $field['rubric_field_type'] === 'period'
+						? \App\Content\Fields\Types\PeriodValue::indexValue($value)
+						: FieldValueCodec::numericIndexValue($value))
+					: 0;
 				$rowId = (int) DB::query('SELECT Id FROM ' . ContentTables::table('document_fields') . ' WHERE document_id=%i AND rubric_field_id=%i LIMIT 1', (int) $documentId, (int) $id)->getValue();
 				$row = array('field_value'=>$first,'field_number_value'=>$numeric,'document_in_search'=>(int)$document['document_in_search'] && (int)$field['rubric_field_search'] ? '1' : '0');
 				if ($rowId > 0) { DB::Update(ContentTables::table('document_fields'), $row, 'Id=%i', $rowId); }
@@ -410,5 +525,4 @@
 		protected function boolean($value) { return in_array(strtolower(trim((string)$value)), array('1','true','yes','on','published','active'), true) ? 1 : 0; }
 		protected function timestamp($value, $default) { if (is_int($value) || ctype_digit((string)$value)) { return max(0,(int)$value); } $time=strtotime((string)$value); return $time ? $time : (int)$default; }
 		protected function robots($value) { return in_array((string)$value,array('index,follow','index,nofollow','noindex,nofollow'),true)?(string)$value:'index,follow'; }
-		protected function numeric($value) { $value=str_replace(',','.',(string)$value); $value=preg_replace('/[^0-9.\-]/','',$value); return is_numeric($value)?(float)$value:0; }
 	}

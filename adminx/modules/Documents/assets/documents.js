@@ -96,6 +96,12 @@
         var mediaClear = e.target.closest('[data-document-media-clear]');
         if (mediaClear) { self.clearMediaRows(mediaClear.closest('[data-document-media-list]')); }
 
+        var mediaClearSingle = e.target.closest('[data-document-media-clear-single]');
+        if (mediaClearSingle) { self.clearSingleMedia(mediaClearSingle.closest('[data-document-media-single]')); }
+
+        var mediaReplace = e.target.closest('[data-document-media-replace]');
+        if (mediaReplace) { self.openMediaReplacement(mediaReplace.closest('[data-document-media-list], [data-document-media-single]')); }
+
         var mediaUpload = e.target.closest('[data-document-media-upload]');
         if (mediaUpload) { self.openMediaUpload(mediaUpload.closest('[data-document-media-list], [data-document-media-single]')); }
 
@@ -352,7 +358,9 @@
 
       document.addEventListener('change', function (e) {
         if (!e.target.matches('[data-document-media-files]')) { return; }
-        self.uploadMediaFiles(e.target.closest('[data-document-media-list], [data-document-media-single]'), e.target.files);
+		var replace = e.target.getAttribute('data-replace-upload') === '1';
+		e.target.removeAttribute('data-replace-upload');
+        self.uploadMediaFiles(e.target.closest('[data-document-media-list], [data-document-media-single]'), e.target.files, replace);
         e.target.value = '';
       });
 
@@ -1378,6 +1386,9 @@
           if (payload.data && payload.data.snapshot_warning) {
             Adminx.Toast.show('Документ сохранён, но JSON-снимок не записан: ' + payload.data.snapshot_warning, 'warning');
           }
+		  if (payload.data && payload.data.media_cleanup && payload.data.media_cleanup.errors && payload.data.media_cleanup.errors.length) {
+			Adminx.Toast.show('Документ сохранён, но часть старых файлов не перемещена в корзину.', 'warning');
+		  }
           if (payload.data && payload.data.id) {
             self.field('id').value = payload.data.id;
             self.form.setAttribute('data-id', payload.data.id);
@@ -1392,6 +1403,7 @@
           if (payload.data && payload.data.media_draft_token) {
             self.refreshMediaDraft(payload.data.media_draft_token, payload.data.id || id);
           }
+		  self.resetMediaReplacements();
           if (self.form.getAttribute('data-quick-edit') === '1') {
             self.refreshQuickEditOpener(!stay);
             return;
@@ -2480,10 +2492,20 @@
 
     openMediaUpload: function (list) {
       var input = list ? list.querySelector('[data-document-media-files]') : null;
-      if (input) { input.click(); }
+	  if (input) {
+		input.removeAttribute('data-replace-upload');
+		input.click();
+	  }
     },
 
-    uploadMediaFiles: function (container, files) {
+	openMediaReplacement: function (container) {
+		var input = container ? container.querySelector('[data-document-media-files]') : null;
+		if (!input) { return; }
+		input.setAttribute('data-replace-upload', '1');
+		input.click();
+	},
+
+    uploadMediaFiles: function (container, files, replace) {
       if (!container || !files || !files.length) { return; }
       var data = new FormData();
       data.append('_csrf', this.csrf());
@@ -2495,6 +2517,9 @@
       var self = this;
       this.ajax(container.getAttribute('data-upload-url') || (this.base() + '/media/upload'), data, function (payload) {
         var uploaded = ((payload.data || {}).files) || [];
+		if (replace && uploaded.length) {
+			self.prepareMediaReplacement(container);
+		}
         if (container.matches('[data-document-media-single]')) {
           self.applyUploadedSingle(container, uploaded[0] || null);
         } else {
@@ -2625,23 +2650,82 @@
       if (!list) { return; }
       var self = this;
       var clear = function () {
-        var box = list.querySelector('[data-document-media-items]');
-        if (box) { box.innerHTML = ''; }
-        self.updateMediaListEmpty(list);
-        self.setDirty(true);
+		self.prepareMediaReplacement(list);
       };
       if (Adminx.Confirm) {
         Adminx.Confirm.open({
           kind: 'danger',
-          title: 'Очистить поле?',
-          message: 'Все элементы этого поля будут удалены из документа после сохранения.',
-          confirmLabel: 'Очистить',
+		title: 'Удалить все элементы?',
+		message: 'После сохранения элементы исчезнут из документа. Неиспользуемые файлы можно будет восстановить из корзины медиа.',
+		confirmLabel: 'Удалить все',
           onConfirm: clear
         });
         return;
       }
       if (confirm('Очистить все элементы поля?')) { clear(); }
     },
+
+	clearSingleMedia: function (container) {
+		if (!container) { return; }
+		var self = this;
+		var clear = function () { self.prepareMediaReplacement(container); };
+		if (Adminx.Confirm) {
+			Adminx.Confirm.open({
+				kind: 'danger',
+				title: 'Удалить изображение?',
+				message: 'После сохранения изображение исчезнет из документа. Неиспользуемый файл можно будет восстановить из корзины медиа.',
+				confirmLabel: 'Удалить',
+				onConfirm: clear
+			});
+			return;
+		}
+		if (confirm('Удалить изображение из документа?')) { clear(); }
+	},
+
+	prepareMediaReplacement: function (container) {
+		if (!container) { return; }
+		if (container.matches('[data-document-media-list]')) {
+			var box = container.querySelector('[data-document-media-items]');
+			if (box) { box.innerHTML = ''; }
+			this.updateMediaListEmpty(container);
+		} else {
+			var input = container.querySelector('[data-document-media-url]');
+			if (input) {
+				input.value = '';
+				input.dispatchEvent(new Event('input', { bubbles: true }));
+			}
+		}
+
+		this.markMediaReplacement(container);
+		this.setDirty(true);
+	},
+
+	markMediaReplacement: function (container) {
+		if (!this.form || !container) { return; }
+		var fieldId = parseInt(container.getAttribute('data-field-id'), 10) || 0;
+		if (!fieldId) { return; }
+		var existing = this.form.querySelector('input[name="media_replace_fields[]"][value="' + fieldId + '"]');
+		if (!existing) {
+			existing = document.createElement('input');
+			existing.type = 'hidden';
+			existing.name = 'media_replace_fields[]';
+			existing.value = String(fieldId);
+			this.form.appendChild(existing);
+		}
+		container.classList.add('is-replacing');
+		var note = container.querySelector('[data-document-media-replacement-note]');
+		if (note) { note.hidden = false; }
+	},
+
+	resetMediaReplacements: function () {
+		if (!this.form) { return; }
+		this.form.querySelectorAll('input[name="media_replace_fields[]"]').forEach(function (input) { input.remove(); });
+		this.form.querySelectorAll('.is-replacing').forEach(function (container) {
+			container.classList.remove('is-replacing');
+			var note = container.querySelector('[data-document-media-replacement-note]');
+			if (note) { note.hidden = true; }
+		});
+	},
 
     updateMediaPreview: function (input) {
       var key = input.getAttribute('data-media-key');
@@ -3326,16 +3410,20 @@
       var remove = document.querySelector('[data-document-revision-delete]');
       var publicPreview = document.querySelector('[data-document-revision-preview]');
       if (title) { title.textContent = 'Ревизия #' + (item.id || ''); }
-      if (meta) { meta.textContent = (item.created_label || '-') + (item.author_name ? ' · ' + item.author_name : '') + (item.size_label ? ' · ' + item.size_label : ''); }
+      if (meta) {
+		var changedCount = (item.document_preview || []).filter(function (field) { return !!field.changed; }).length
+		  + (item.preview || []).filter(function (field) { return !!field.changed; }).length;
+		meta.textContent = (item.created_label || '-') + (item.author_name ? ' · ' + item.author_name : '') + (item.size_label ? ' · ' + item.size_label : '') + ' · изменений: ' + changedCount;
+	  }
       if (fields) {
         var preview = item.preview || [];
 		var documentPreview = item.document_preview || [];
 		var systemHtml = documentPreview.length ? '<section class="documents-revision-system"><div class="documents-revision-subhead"><i class="ti ti-settings"></i><b>Основные настройки</b><span>' + self.esc(documentPreview.length) + '</span><label class="documents-revision-group-check"><input type="checkbox" data-document-revision-group="document" checked><span>Все</span></label></div>' + documentPreview.map(function (field) {
-		  return '<article class="documents-revision-field documents-revision-system-field"><div><label class="documents-revision-check" aria-label="Восстановить ' + self.esc(field.title || field.key) + '"><input type="checkbox" value="' + self.esc(field.key || '') + '" data-document-revision-select="document" checked></label><span class="documents-revision-field-name"><b>' + self.esc(field.title || field.key) + '</b><small>' + self.esc(field.key || '') + '</small></span></div><pre>' + self.esc(field.value_preview || '') + '</pre></article>';
+		  return '<article class="documents-revision-field documents-revision-system-field ' + (field.changed ? 'is-changed' : 'is-unchanged') + '"><div><label class="documents-revision-check" aria-label="Восстановить ' + self.esc(field.title || field.key) + '"><input type="checkbox" value="' + self.esc(field.key || '') + '" data-document-revision-select="document"' + (field.changed ? ' checked' : '') + '></label><span class="documents-revision-field-name"><b>' + self.esc(field.title || field.key) + '</b><small>' + self.esc(field.key || '') + '</small></span><span class="badge ' + (field.changed ? 'badge-amber' : 'badge-gray') + '">' + (field.changed ? 'изменится' : 'совпадает') + '</span></div><pre>' + self.esc(field.value_preview || '') + '</pre></article>';
 		}).join('') + '</section>' : '';
 		var fieldsHtml = preview.length ? '<section class="documents-revision-content"><div class="documents-revision-subhead"><i class="ti ti-forms"></i><b>Поля рубрики</b><span>' + self.esc(preview.length) + '</span><label class="documents-revision-group-check"><input type="checkbox" data-document-revision-group="field" checked><span>Все</span></label></div>' + preview.map(function (field) {
-          return '<article class="documents-revision-field">'
-            + '<div><label class="documents-revision-check" aria-label="Восстановить ' + self.esc(field.title || ('Поле #' + field.field_id)) + '"><input type="checkbox" value="' + self.esc(field.field_id) + '" data-document-revision-select="field" checked></label><span class="documents-revision-field-name"><b>' + self.esc(field.title || ('Поле #' + field.field_id)) + '</b><small>#' + self.esc(field.field_id) + (field.type ? ' · ' + self.esc(field.type) : '') + '</small></span><span>' + self.esc(field.size_label || '') + '</span></div>'
+          return '<article class="documents-revision-field ' + (field.changed ? 'is-changed' : 'is-unchanged') + '">'
+            + '<div><label class="documents-revision-check" aria-label="Восстановить ' + self.esc(field.title || ('Поле #' + field.field_id)) + '"><input type="checkbox" value="' + self.esc(field.field_id) + '" data-document-revision-select="field"' + (field.changed ? ' checked' : '') + '></label><span class="documents-revision-field-name"><b>' + self.esc(field.title || ('Поле #' + field.field_id)) + '</b><small>#' + self.esc(field.field_id) + (field.type ? ' · ' + self.esc(field.type) : '') + '</small></span><span class="badge ' + (field.changed ? 'badge-amber' : 'badge-gray') + '">' + (field.changed ? 'изменится' : 'совпадает') + '</span><span>' + self.esc(field.size_label || '') + '</span></div>'
             + '<pre>' + self.esc(field.value_preview || '') + '</pre>'
             + '</article>';
 		}).join('') + '</section>' : '<div class="empty-state">В снимке нет значений полей.</div>';
@@ -3465,4 +3553,243 @@
   };
 
   document.addEventListener('DOMContentLoaded', function () { Adminx.Documents.init(); });
+})(window, document);
+
+/**
+ * Universal document batch editor. The server owns the frozen ID list; this
+ * client only renders the preview and advances the prepared plan by chunks.
+ */
+(function (window, document) {
+  'use strict';
+
+  var Adminx = window.Adminx || (window.Adminx = {});
+  var root = document.querySelector('[data-document-bulk-editor]');
+  if (!root) { return; }
+
+  var form = root.querySelector('[data-document-bulk-form]');
+  var operation = root.querySelector('[data-bulk-operation]');
+  var scope = root.querySelector('[name="scope"]');
+  var rubric = root.querySelector('[data-bulk-rubric]');
+  var target = root.querySelector('[data-bulk-target]');
+  var fieldGroup = root.querySelector('[data-bulk-field-options]');
+  var previewPanel = root.querySelector('[data-bulk-preview-panel]');
+  var progressPanel = root.querySelector('[data-bulk-progress-panel]');
+  var token = '';
+  var stopped = false;
+
+  function updateTargetHelp() {
+    var help = root.querySelector('[data-bulk-target-help]');
+    if (!help || !target) { return; }
+    var selected = target.options[target.selectedIndex];
+    var message = selected ? String(selected.getAttribute('data-help') || '') : '';
+    if (selected && selected.value === 'document_title' && scope && scope.value === 'products') {
+      message = 'Это заголовок документа в панели. Название товара на сайте обычно берётся из поля рубрики, помеченного «витрина: название товара на сайте».';
+    }
+    var text = help.querySelector('span');
+    if (text) { text.textContent = message; }
+    help.hidden = message === '';
+  }
+
+  function endpoint(path) {
+    return Adminx.base() + '/documents/bulk-editor' + path;
+  }
+
+  function body(payload) {
+    var response = payload && payload.data ? payload.data : {};
+    if (!payload || !payload.ok || response.success === false) {
+      throw new Error(response.message || 'Операция не выполнена');
+    }
+    return response.data || {};
+  }
+
+  function post(path, data) {
+    return Adminx.Ajax.post(endpoint(path), data).then(body);
+  }
+
+  function setVisibility(selector, visible) {
+    var node = root.querySelector(selector);
+    if (node) { node.hidden = !visible; }
+  }
+
+  function updateOperation() {
+    var value = operation ? operation.value : '';
+    var editsField = ['fill', 'set', 'clear', 'replace'].indexOf(value) !== -1;
+    setVisibility('[data-bulk-target-wrap]', editsField);
+    setVisibility('[data-bulk-search-wrap]', value === 'replace');
+    setVisibility('[data-bulk-value-wrap]', value === 'fill' || value === 'set' || value === 'replace');
+    setVisibility('[data-bulk-rubric-target-wrap]', value === 'move');
+    updateTargetHelp();
+  }
+
+  function loadFields() {
+    if (!fieldGroup) { return; }
+    fieldGroup.replaceChildren();
+    var id = rubric ? Number(rubric.value || 0) : 0;
+    if (!id) {
+      var empty = document.createElement('option');
+      empty.disabled = true;
+      empty.textContent = 'Сначала выберите рубрику';
+      fieldGroup.appendChild(empty);
+      return;
+    }
+    Adminx.Ajax.request(endpoint('/fields?rubric_id=' + encodeURIComponent(id))).then(function (payload) {
+      var data = body(payload);
+      (data.items || []).forEach(function (item) {
+        var option = document.createElement('option');
+        option.value = 'field:' + item.id;
+        option.textContent = item.title + (item.alias ? ' · ' + item.alias : '') + ' [' + item.type + ']'
+          + (item.usage ? ' · витрина: ' + item.usage : '');
+        option.setAttribute('data-help', item.help || '');
+        fieldGroup.appendChild(option);
+      });
+      if (!fieldGroup.children.length) {
+        var empty = document.createElement('option');
+        empty.disabled = true;
+        empty.textContent = 'В рубрике нет полей';
+        fieldGroup.appendChild(empty);
+      }
+      updateTargetHelp();
+    }).catch(function (error) {
+      Adminx.Toast.show(error.message || 'Не удалось загрузить поля рубрики', 'error');
+    });
+  }
+
+  function cell(text, className) {
+    var td = document.createElement('td');
+    if (className) { td.className = className; }
+    td.textContent = text == null ? '' : String(text);
+    return td;
+  }
+
+  function renderPreview(plan) {
+    token = plan.token || '';
+    var rows = root.querySelector('[data-bulk-preview-rows]');
+    rows.replaceChildren();
+    (plan.sample || []).forEach(function (item) {
+      var tr = document.createElement('tr');
+      var identity = document.createElement('td');
+      var title = document.createElement('b');
+      var meta = document.createElement('small');
+      title.textContent = item.title;
+      meta.textContent = '#' + item.id + ' · ' + item.state;
+      identity.appendChild(title);
+      identity.appendChild(meta);
+      tr.appendChild(identity);
+      tr.appendChild(cell(item.rubric));
+      tr.appendChild(cell(item.before, 'documents-bulk-value-cell'));
+      tr.appendChild(cell(item.after, 'documents-bulk-value-cell'));
+      var result = cell(item.changed ? 'Изменится' : (item.note || 'Без изменений'));
+      result.className = item.changed ? 'documents-bulk-result is-changed' : 'documents-bulk-result is-skipped';
+      tr.appendChild(result);
+      rows.appendChild(tr);
+    });
+    root.querySelector('[data-bulk-preview-count]').textContent = plan.total || 0;
+    root.querySelector('[data-bulk-preview-summary]').textContent =
+      (plan.operation && plan.operation.label ? plan.operation.label : 'Действие') +
+      (plan.operation && plan.operation.target_label ? ' · поле: ' + plan.operation.target_label : '') +
+      ' · найдено ' + (plan.matched_total || plan.total || 0) +
+      ', изменится ' + (plan.total || 0) + '.';
+    previewPanel.hidden = false;
+    progressPanel.hidden = true;
+    previewPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function renderProgress(plan) {
+    var finished = plan.status === 'completed' || plan.status === 'cancelled';
+    var percent = Number(plan.progress || 0);
+    progressPanel.hidden = false;
+    root.querySelector('[data-bulk-progress-percent]').textContent = percent + '%';
+    root.querySelector('[data-bulk-progress-bar]').style.width = percent + '%';
+    root.querySelector('[data-bulk-progress-processed]').textContent = plan.processed || 0;
+    root.querySelector('[data-bulk-progress-done]').textContent = plan.done || 0;
+    root.querySelector('[data-bulk-progress-skipped]').textContent = plan.skipped || 0;
+    root.querySelector('[data-bulk-progress-errors]').textContent = (plan.errors || []).length;
+    root.querySelector('[data-bulk-progress-title]').textContent =
+      plan.status === 'completed' ? 'Массовое изменение завершено' :
+      (plan.status === 'cancelled' ? 'Выполнение остановлено' : 'Обрабатываем документы');
+    root.querySelector('[data-bulk-progress-message]').textContent =
+      'Обработано ' + (plan.processed || 0) + ' из ' + (plan.total || 0);
+    root.querySelector('[data-bulk-cancel]').hidden = finished;
+    root.querySelector('[data-bulk-finish]').hidden = !finished;
+    var errors = root.querySelector('[data-bulk-errors]');
+    errors.hidden = !(plan.errors || []).length;
+    errors.replaceChildren();
+    (plan.errors || []).forEach(function (message) {
+      var line = document.createElement('div');
+      line.textContent = message;
+      errors.appendChild(line);
+    });
+  }
+
+  function runNext() {
+    if (stopped || !token) { return; }
+    var data = new FormData();
+    data.append('token', token);
+    post('/run', data).then(function (result) {
+      var plan = result.plan || {};
+      renderProgress(plan);
+      if (plan.status === 'running') {
+        window.setTimeout(runNext, 120);
+      } else {
+        Adminx.Toast.show(plan.errors && plan.errors.length ? 'Готово с ошибками' : 'Массовое изменение завершено', plan.errors && plan.errors.length ? 'warning' : 'success');
+      }
+    }).catch(function (error) {
+      renderProgress({ status: 'cancelled', total: 0, processed: 0, errors: [error.message] });
+      Adminx.Toast.show(error.message || 'Выполнение остановлено из-за ошибки', 'error');
+    });
+  }
+
+  if (operation) { operation.addEventListener('change', updateOperation); }
+  if (rubric) { rubric.addEventListener('change', loadFields); }
+  if (scope) { scope.addEventListener('change', updateTargetHelp); }
+  if (target) { target.addEventListener('change', updateTargetHelp); }
+  updateOperation();
+  loadFields();
+
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    var button = form.querySelector('[data-bulk-preview]');
+    button.disabled = true;
+    Adminx.Loader.show();
+    post('/preview', new FormData(form)).then(function (result) {
+      renderPreview(result.plan || {});
+      Adminx.Toast.show('Предпросмотр подготовлен', 'success');
+    }).catch(function (error) {
+      Adminx.Toast.show(error.message || 'Не удалось подготовить предпросмотр', 'error');
+    }).then(function () {
+      button.disabled = false;
+      Adminx.Loader.hide();
+    });
+  });
+
+  root.addEventListener('click', function (event) {
+    var run = event.target.closest('[data-bulk-run]');
+    if (run) {
+      Adminx.Confirm.open({
+        kind: 'warning',
+        title: 'Применить изменения ко всему набору?',
+        message: 'Будут обработаны все документы из зафиксированного предпросмотра. Для изменённых записей сохранятся ревизии.',
+        confirmLabel: 'Запустить',
+        onConfirm: function () {
+          stopped = false;
+          previewPanel.hidden = true;
+          renderProgress({ status: 'running', total: Number(root.querySelector('[data-bulk-preview-count]').textContent || 0), processed: 0, done: 0, skipped: 0, errors: [], progress: 0 });
+          progressPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          runNext();
+        }
+      });
+      return;
+    }
+    if (event.target.closest('[data-bulk-cancel]')) {
+      stopped = true;
+      var data = new FormData();
+      data.append('token', token);
+      post('/cancel', data).then(function (result) {
+        renderProgress(result.plan || {});
+        Adminx.Toast.show('Выполнение остановлено', 'warning');
+      }).catch(function (error) {
+        Adminx.Toast.show(error.message || 'Не удалось остановить выполнение', 'error');
+      });
+    }
+  });
 })(window, document);

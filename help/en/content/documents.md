@@ -18,6 +18,12 @@ category, and the appearance is a category template and a site template.
 The heading of an existing document cannot be freely changed: another heading has a different
 a set of fields and storage rules. This transfer is performed as a separate migration.
 
+## Saved list views
+
+The current rubric, state, search field, query, and page size can be stored as a
+personal view. Applying or deleting a view never changes documents and does not
+affect other administrators.
+
 ## States
 
 | State | What does |
@@ -65,6 +71,25 @@ Document data is available:- in the category template via `[tag:fld:alias]`;
 - via JSON API document;
 - in hooks before and after saving;
 - in a native snapshot, which combines the document and its fields.
+
+### Replacing images
+
+Gallery fields provide separate actions:
+
+- **Add photos** keeps existing images and appends new ones;
+- **Replace all** uploads the new set first and removes the old set only after a
+  successful upload;
+- **Remove all** clears the field after confirmation.
+
+Until the document is saved, new files remain in its protected media draft and
+the current files continue to work on the site. After a successful save, live
+references are checked. Files still used by another document, block, template,
+or module remain in place; unused files are moved to the recoverable **Media**
+trash.
+
+Document revisions store field values, not copies of binary files. To restore an
+old revision together with its images, restore the corresponding files from the
+media trash first.
 
 ## SEO and announcement
 

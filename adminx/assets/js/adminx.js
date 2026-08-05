@@ -575,6 +575,8 @@
   //                        cancelLabel, onConfirm });
   // ------------------------------------------------------------------ //
   Adminx.Confirm = {
+    active: null,
+
     ICONS: {
       info:    ['info',    'ti-info-circle'],
       success: ['success', 'ti-circle-check'],
@@ -584,6 +586,11 @@
 
     open: function (cfg) {
       cfg = cfg || {};
+      if (this.active) {
+        this.active.focus();
+        return false;
+      }
+
       var kind = this.ICONS[cfg.kind] ? cfg.kind : 'warning';
       var ic = this.ICONS[kind];
 
@@ -615,21 +622,46 @@
       requestAnimationFrame(function () { overlay.classList.add('show'); });
 
       var self = this;
-      var close = function () {
+      var previousFocus = document.activeElement;
+      var confirmButton = modal.querySelector('[data-ok]');
+      var settled = false;
+      var finish = function (confirmed) {
+        if (settled) { return; }
+        settled = true;
+        document.removeEventListener('keydown', onKey, true);
+        self.active = null;
         overlay.classList.remove('show');
-        setTimeout(function () { overlay.remove(); document.removeEventListener('keydown', onKey); }, 180);
+        setTimeout(function () {
+          overlay.remove();
+          if (!confirmed && previousFocus && document.contains(previousFocus)) {
+            previousFocus.focus();
+          }
+        }, 180);
+        if (confirmed && typeof cfg.onConfirm === 'function') {
+          cfg.onConfirm();
+        }
       };
-      var onKey = function (e) { if (e.key === 'Escape') { close(); } };
+      var onKey = function (e) {
+        if (e.key !== 'Escape' && e.key !== 'Enter') { return; }
+        e.preventDefault();
+        e.stopPropagation();
+        if (typeof e.stopImmediatePropagation === 'function') { e.stopImmediatePropagation(); }
+        finish(e.key === 'Enter');
+      };
 
       overlay.addEventListener('click', function (e) {
-        if (e.target === overlay || e.target.closest('[data-cancel]')) { close(); return; }
+        if (e.target === overlay || e.target.closest('[data-cancel]')) { finish(false); return; }
         if (e.target.closest('[data-ok]')) {
-          close();
-          if (typeof cfg.onConfirm === 'function') { cfg.onConfirm(); }
+          finish(true);
         }
       });
-      document.addEventListener('keydown', onKey);
-      modal.querySelector('[data-ok]').focus();
+      document.addEventListener('keydown', onKey, true);
+      this.active = {
+        focus: function () { confirmButton.focus(); },
+        close: function () { finish(false); }
+      };
+      confirmButton.focus();
+      return true;
     }
   };
 

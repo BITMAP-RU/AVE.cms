@@ -20,7 +20,7 @@
 		return array(
 			'code' => 'console',
 			'name' => 'PHP-консоль',
-			'version' => '0.1.0',
+			'version' => '0.1.1',
 			'registry' => array('dynamic' => true),
 		);
 	}
@@ -28,7 +28,7 @@
 	return array(
 		'code' => 'console',
 		'name' => 'PHP-консоль',
-		'version' => '0.1.0',
+		'version' => '0.1.1',
 		'registry' => array('dynamic' => true),
 		'permissions' => array(
 			'key' => 'console',

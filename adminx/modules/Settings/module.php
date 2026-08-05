@@ -17,7 +17,7 @@
 	return array(
 		'code' => 'settings',
 		'name' => 'Настройки',
-		'version' => '0.1.1',
+		'version' => '0.1.2',
 
 		'permissions' => array(
 			'key' => 'settings',
@@ -169,6 +169,7 @@
 			array('id' => '004_seed_core_display_defaults', 'file' => 'migrations/004_seed_core_display_defaults.sql'),
 			array('id' => '005_order_system_navigation', 'file' => 'migrations/005_order_system_navigation.php'),
 			array('id' => '006_create_admin_saved_views', 'file' => 'migrations/006_create_admin_saved_views.sql'),
+			array('id' => '007_public_site_url', 'file' => 'migrations/007_public_site_url.sql'),
 		),
 
 		'routes' => array(

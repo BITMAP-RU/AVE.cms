@@ -128,7 +128,8 @@
 			$type = isset($filters['type']) ? trim((string) $filters['type']) : '';
 			$state = isset($filters['state']) ? trim((string) $filters['state']) : '';
 			$area = isset($filters['area']) ? trim((string) $filters['area']) : '';
-			$view = isset($filters['view']) && $filters['view'] === 'usage' ? 'usage' : 'placements';
+			$view = isset($filters['view']) && in_array($filters['view'], array('usage', 'dependencies', 'unused'), true)
+				? $filters['view'] : 'placements';
 			$page = isset($filters['page']) ? max(1, (int) $filters['page']) : 1;
 			$rows = array_values(array_filter($all, function ($item) use ($query, $type, $state, $area) {
 				if ($type !== '' && $item['component_type'] !== $type) {
@@ -160,9 +161,21 @@
 			}));
 			$filteredCount = count($rows);
 			$usage = self::placementUsage($rows);
-			$pagination = self::paginate($view === 'usage' ? $usage : $rows, $page, 25);
+			$dependencies = self::placementDependencies($rows);
+			$unusedAll = ContentPlacementMap::inventory($all);
+			$unused = array_values(array_filter($unusedAll, function ($item) use ($query, $type) {
+				if ($type !== '' && $item['type'] !== $type) { return false; }
+				if ($query === '') { return true; }
+				return strpos(self::lower($item['title'] . ' ' . $item['alias'] . ' ' . $item['type_title']), $query) !== false;
+			}));
+			$viewItems = $view === 'usage' ? $usage : ($view === 'dependencies' ? $dependencies : ($view === 'unused' ? $unused : $rows));
+			$pagination = self::paginate($viewItems, $page, 25);
 			if ($view === 'usage') {
 				$usage = $pagination['items'];
+			} elseif ($view === 'dependencies') {
+				$dependencies = $pagination['items'];
+			} elseif ($view === 'unused') {
+				$unused = $pagination['items'];
 			} else {
 				$rows = $pagination['items'];
 			}
@@ -170,7 +183,9 @@
 			return array(
 				'rows' => $rows,
 				'usage' => $usage,
-				'stats' => self::placementStats($all, $filteredCount),
+				'dependencies' => $dependencies,
+				'unused' => $unused,
+				'stats' => self::placementStats($all, $filteredCount, count($unusedAll)),
 				'options' => self::placementOptions($all),
 				'pagination' => $pagination,
 			);
@@ -312,7 +327,7 @@
 			return $issues;
 		}
 
-		protected static function placementStats(array $rows, $filtered)
+		protected static function placementStats(array $rows, $filtered, $unused = 0)
 		{
 			$sources = array();
 			$total = 0;
@@ -332,7 +347,40 @@
 				'sources' => count($sources),
 				'broken' => $broken,
 				'modules' => $modules,
+				'unused' => (int) $unused,
 			);
+		}
+
+		protected static function placementDependencies(array $rows)
+		{
+			$dependencies = array();
+			foreach ($rows as $row) {
+				$key = $row['source_type'] . ':' . $row['source_id'];
+				if (!isset($dependencies[$key])) {
+					$dependencies[$key] = array(
+						'source_type' => $row['source_type'], 'source_type_title' => $row['source_type_title'],
+						'source_id' => $row['source_id'], 'source_title' => $row['source_title'], 'source_url' => $row['source_url'],
+						'components' => array(), 'references' => 0, 'broken' => 0,
+					);
+				}
+
+				$componentKey = $row['component_type'] . ':' . strtolower((string) $row['component_key']);
+				$dependencies[$key]['components'][$componentKey] = array(
+					'type' => $row['component_type'], 'title' => $row['component_title'], 'tag' => $row['tag'],
+					'status' => $row['component_status'], 'url' => $row['component_url'],
+				);
+				$dependencies[$key]['references'] += max(1, (int) $row['occurrences']);
+				if ($row['component_status'] === 'broken') { $dependencies[$key]['broken']++; }
+			}
+
+			foreach ($dependencies as &$item) { $item['components'] = array_values($item['components']); }
+			unset($item);
+			$dependencies = array_values($dependencies);
+			usort($dependencies, function ($left, $right) {
+				return array($left['broken'] > 0 ? 0 : 1, $left['source_type_title'], $left['source_title'])
+					<=> array($right['broken'] > 0 ? 0 : 1, $right['source_type_title'], $right['source_title']);
+			});
+			return $dependencies;
 		}
 
 		protected static function placementUsage(array $rows)
@@ -412,7 +460,10 @@
 				'block' => 'Блоки',
 				'request' => 'Подборки',
 				'navigation' => 'Навигации',
-				'module' => 'Модульные теги',
+					'module' => 'Модульные теги',
+					'field' => 'Поля',
+					'template' => 'Шаблоны сайта',
+					'rubric_template' => 'Шаблоны типов контента',
 			);
 			foreach ($rows as $row) {
 				$options['types'][$row['component_type']] = isset($typeTitles[$row['component_type']])

@@ -17,6 +17,8 @@
 	defined('BASEPATH') || die('Direct access to this location is not allowed.');
 
 	use App\Common\AdminAssets;
+	use App\Common\AuditLog;
+	use App\Common\Auth;
 	use App\Common\Controller as BaseController;
 	use App\Common\Permission;
 	use App\Helpers\Request;
@@ -40,6 +42,28 @@
 				'permission_module_labels' => Model::permissionModuleLabels(),
 				'stats'       => Model::stats(),
 				'can_manage'  => Permission::check('manage_roles'),
+			]);
+		}
+
+		/** GET /roles/simulator — read-only explanation of effective access. */
+		public function simulator(array $params = [])
+		{
+			AdminAssets::addStyle($this->base() . '/modules/Groups/assets/groups.css', 50);
+			AdminAssets::addScript($this->base() . '/modules/Groups/assets/groups.js', 50);
+
+			$options = PermissionSimulator::options();
+			$role = Request::getStr('role', '');
+			$user = Request::getInt('user', 0);
+			try {
+				$result = PermissionSimulator::simulate($role, $user);
+			} catch (\Throwable $e) {
+				$result = PermissionSimulator::simulate('admin', 0);
+			}
+
+			return $this->render('@groups/simulator.twig', [
+				'title' => 'Симулятор прав',
+				'options' => $options,
+				'result' => $result,
 			]);
 		}
 
@@ -89,6 +113,55 @@
 			Model::setPermissions($id, $this->postedPerms());
 
 			return $this->success('Роль создана', ['redirect' => $this->base() . '/roles']);
+		}
+
+		/** POST /roles/{id}/copy — новая роль с тем же набором прав. */
+		public function copy(array $params = [])
+		{
+			if (($resp = $this->guard()) !== null) {
+				return $resp;
+			}
+
+			$role = Model::find($params['id'] ?? 0);
+			if (!$role) {
+				return $this->error('Роль не найдена', [], 404);
+			}
+
+			//-- Полный доступ admin держится фолбэком ядра, а не строками прав:
+			//-- копия получилась бы пустой, поэтому честно отказываем.
+			if ((string) $role->code === 'admin') {
+				return $this->error('Роль «admin» копировать нельзя: её полный доступ не хранится списком прав', [], 422);
+			}
+
+			$code = strtolower(trim(Request::postStr('code')));
+			if ($code === '') { $code = Model::freeCode((string) $role->code); }
+			$name = trim(Request::postStr('name'));
+			if ($name === '') { $name = mb_substr((string) $role->name . ' — копия', 0, 190, 'UTF-8'); }
+
+			$errors = [];
+			if (!preg_match('/^[a-z][a-z0-9_]{1,49}$/', $code)) {
+				$errors['code'] = 'Код: латиница/цифры/подчёркивание, с буквы.';
+			} elseif (Model::codeExists($code)) {
+				$errors['code'] = 'Роль с таким кодом уже есть.';
+			}
+
+			if ($errors) {
+				return $this->error('Проверьте поля формы', $errors);
+			}
+
+			try {
+				$newId = Model::copy((int) $role->id, $code, $name);
+			} catch (\Throwable $e) {
+				return $this->error($e->getMessage(), [], 422);
+			}
+
+			AuditLog::record('role.copied', [
+				'actor_id' => Auth::id(),
+				'target_type' => 'role',
+				'target_id' => (int) $newId,
+				'meta' => ['source_id' => (int) $role->id, 'source_code' => (string) $role->code, 'code' => $code],
+			]);
+			return $this->success('Роль скопирована', ['redirect' => $this->base() . '/roles']);
 		}
 
 		/** POST /roles/{id} — обновить название и права. */

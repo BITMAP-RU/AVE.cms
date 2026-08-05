@@ -40,6 +40,8 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}_users` (
   `last_name` VARCHAR(100) DEFAULT NULL,
   `phone` VARCHAR(35) DEFAULT NULL,
   `last_login_at` DATETIME DEFAULT NULL,
+  `password_changed_at` DATETIME DEFAULT NULL,
+  `must_change_password` TINYINT(1) NOT NULL DEFAULT 0,
   `legacy_id` INT UNSIGNED DEFAULT NULL,
   `legacy_password` VARCHAR(64) DEFAULT NULL,
   `legacy_salt` VARCHAR(32) DEFAULT NULL,
@@ -57,9 +59,12 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}_users_session` (
   `ip` VARCHAR(45) DEFAULT NULL,
   `created_at` DATETIME NOT NULL,
   `last_active` DATETIME NOT NULL,
+	`expires_at` DATETIME NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_token` (`token_hash`),
-  KEY `idx_user` (`user_id`)
+  KEY `idx_user` (`user_id`),
+	KEY `idx_user_active` (`user_id`,`last_active`),
+	KEY `idx_expiry` (`expires_at`)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `{{prefix}}_roles` (
@@ -121,7 +126,8 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}_audit_log` (
   PRIMARY KEY (`id`),
   KEY `idx_created` (`created_at`),
   KEY `idx_action` (`action`),
-  KEY `idx_actor` (`actor_id`)
+  KEY `idx_actor` (`actor_id`),
+  KEY `idx_target_action` (`target_id`,`action`,`created_at`)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `{{prefix}}_module_migrations` (
@@ -169,6 +175,29 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}_media_image_presets` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_code` (`code`),
   KEY `idx_sort` (`sort_order`)
+) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `{{prefix}}_media_search_index` (
+  `path_hash` CHAR(40) CHARACTER SET ascii NOT NULL,
+  `path` TEXT NOT NULL,
+  `name` VARCHAR(190) NOT NULL DEFAULT '',
+  `extension` VARCHAR(20) CHARACTER SET ascii NOT NULL DEFAULT '',
+  `is_image` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+  `size` BIGINT UNSIGNED NOT NULL DEFAULT 0,
+  `modified_at` INT UNSIGNED NOT NULL DEFAULT 0,
+  PRIMARY KEY (`path_hash`),
+  KEY `idx_modified` (`modified_at`),
+  KEY `idx_type` (`is_image`,`extension`)
+) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `{{prefix}}_customer_notes` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_id` INT UNSIGNED NOT NULL,
+  `author_id` INT UNSIGNED NOT NULL DEFAULT 0,
+  `note` TEXT NOT NULL,
+  `created_at` INT UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_customer_notes` (`user_id`,`created_at`)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `{{prefix}}_modules` (
@@ -1004,6 +1033,22 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}_request_conditions` (
   KEY `idx_request_group_position` (`request_id`, `condition_group_id`, `condition_position`)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS `{{prefix}}_request_revisions` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `request_id` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `action` VARCHAR(32) NOT NULL DEFAULT 'update',
+  `snapshot_hash` CHAR(40) NOT NULL DEFAULT '',
+  `snapshot_json` LONGTEXT NOT NULL,
+  `comment` VARCHAR(255) NOT NULL DEFAULT '',
+  `author_id` INT UNSIGNED NOT NULL DEFAULT 0,
+  `author_name` VARCHAR(255) NOT NULL DEFAULT '',
+  `source_revision_id` INT UNSIGNED NOT NULL DEFAULT 0,
+  `created_at` INT UNSIGNED NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `idx_request_created` (`request_id`,`created_at`),
+  KEY `idx_snapshot_hash` (`snapshot_hash`)
+) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS `{{prefix}}_presentations` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `title` VARCHAR(190) NOT NULL,
@@ -1105,6 +1150,22 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}_navigation_items` (
   KEY `idx_navigation_parent` (`navigation_id`, `parent_id`),
   KEY `idx_navigation_position` (`navigation_id`, `position`),
   KEY `idx_document` (`document_id`)
+) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `{{prefix}}_navigation_revisions` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `navigation_id` SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+  `action` VARCHAR(32) NOT NULL DEFAULT 'update',
+  `snapshot_hash` CHAR(40) NOT NULL DEFAULT '',
+  `snapshot_json` LONGTEXT NOT NULL,
+  `comment` VARCHAR(255) NOT NULL DEFAULT '',
+  `author_id` INT UNSIGNED NOT NULL DEFAULT 0,
+  `author_name` VARCHAR(255) NOT NULL DEFAULT '',
+  `source_revision_id` INT UNSIGNED NOT NULL DEFAULT 0,
+  `created_at` INT UNSIGNED NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `idx_navigation_created` (`navigation_id`,`created_at`),
+  KEY `idx_snapshot_hash` (`snapshot_hash`)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `{{prefix}}_sysblocks_groups` (

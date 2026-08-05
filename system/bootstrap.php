@@ -142,34 +142,7 @@
 		*/
 		public static function setHost()
 		{
-			if (isset($_SERVER['HTTP_HOST'])) {
-				//-- Все символы $_SERVER['HTTP_HOST'] приводим к строчным и проверяем
-				//-- на наличие запрещённых символов в соответствии с RFC 952 и RFC 2181.
-				$_SERVER['HTTP_HOST'] = strtolower($_SERVER['HTTP_HOST']);
-
-				if (!preg_match('/^\[?(?:[a-z0-9-:\]_]+\.?)+$/', $_SERVER['HTTP_HOST'])) {
-					//-- $_SERVER['HTTP_HOST'] не соответствует спецификациям.
-					//-- Возможно попытка взлома, даём отлуп статусом 400.
-					App\Helpers\Response::setStatus(400);
-					App\Helpers\Request::shutDown();
-				}
-			} else {
-				$_SERVER['HTTP_HOST'] = '';
-			}
-
-			$ssl = self::isSSL();
-
-			$schema = ($ssl)
-				? 'https://'
-				: 'http://';
-
-			$host = str_replace(':' . $_SERVER['SERVER_PORT'], '', $_SERVER['HTTP_HOST']);
-
-			$port = ($_SERVER['SERVER_PORT'] == '80' || $_SERVER['SERVER_PORT'] == '443' || $ssl)
-				? ''
-				: ':' . $_SERVER['SERVER_PORT'];
-
-			define('HOST', $schema . $host . $port);
+			App\Common\SiteOrigin::initializeHost();
 		}
 
 

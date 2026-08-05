@@ -1,0 +1,153 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}Симулятор прав{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i>
+  <a href="{{ ADMINX_BASE }}/roles">Роли и права</a><i class="ti ti-chevron-right"></i>
+  <span>Симулятор</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <h1>Симулятор прав</h1>
+    <p class="text-secondary">Показывает эффективный доступ без входа под выбранным пользователем и без изменения его сессии.</p>
+  </div>
+</div>
+
+<div class="tabs groups-tabs" role="navigation" aria-label="Разделы ролей и прав">
+  <a class="tab" href="{{ ADMINX_BASE }}/roles"><i class="ti ti-shield-lock"></i>Роли</a>
+  <a class="tab active" href="{{ ADMINX_BASE }}/roles/simulator" aria-current="page"><i class="ti ti-test-pipe"></i>Симулятор прав</a>
+</div>
+
+<form class="card permission-simulator-picker" method="get" action="{{ ADMINX_BASE }}/roles/simulator">
+  <div class="permission-simulator-picker-copy">
+    <span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-user-search"></i></span>
+    <div><h2>Кого проверяем</h2><p>Пользователь имеет приоритет над выбранной ролью. Для роли применяется соответствующая публичная группа.</p></div>
+  </div>
+  <label class="field">
+    <span class="field-label">Роль</span>
+    <select class="select" name="role">
+      {% for role in options.roles %}<option value="{{ role.code }}"{{ result.subject.role_code == role.code and result.subject.type == 'role' ? ' selected' : '' }}>{{ role.name }} · {{ role.code }}</option>{% endfor %}
+    </select>
+  </label>
+  <label class="field">
+    <span class="field-label">Или пользователь</span>
+    <select class="select" name="user">
+      <option value="0">Не выбран</option>
+      {% for user in options.users %}<option value="{{ user.id }}"{{ result.subject.user_id == user.id ? ' selected' : '' }}>#{{ user.id }} · {{ user.name }} · {{ user.role }}{% if not user.is_active %} · отключён{% endif %}</option>{% endfor %}
+    </select>
+  </label>
+  <button class="btn btn-primary" type="submit"><i class="ti ti-player-play"></i>Показать доступ</button>
+</form>
+
+{% if result.subject.type == 'user' and not result.subject.user_active %}
+<div class="alert alert-warning permission-simulator-warning"><i class="ti ti-user-off alert-ic"></i><div><b>Учётная запись отключена</b><p>Набор прав роли показан ниже, но пользователь не сможет войти в панель до включения учётной записи.</p></div></div>
+{% endif %}
+
+<div class="permission-simulator-subject">
+  <div>
+    <span class="icon-tile" style="--tile-bg:var(--color-primary-soft);--tile-fg:var(--color-primary)"><i class="ti ti-user-shield"></i></span>
+    <div><b>{{ result.subject.type == 'user' ? result.subject.user_name : result.subject.role_name }}</b><small>{{ result.subject.type == 'user' ? result.subject.user_email : 'Проверка роли без конкретного пользователя' }}</small></div>
+  </div>
+  <dl>
+    <div><dt>Роль панели</dt><dd>{{ result.subject.role_name }} <span class="mono">{{ result.subject.role_code }}</span></dd></div>
+    <div><dt>Публичная группа</dt><dd>#{{ result.subject.public_group_id }} · {{ result.subject.public_group_name }}</dd></div>
+  </dl>
+</div>
+
+<div class="ax-summary permission-simulator-summary">
+  <div class="card stat-tile"><div class="stat-ico"><i class="ti ti-layout-sidebar"></i></div><div><div class="stat-val">{{ result.summary.sections_allowed }} / {{ result.summary.sections_total }}</div><div class="stat-label">Разделов панели</div></div></div>
+  <div class="card stat-tile"><div class="stat-ico" style="background:var(--color-violet-soft);color:var(--color-violet)"><i class="ti ti-key"></i></div><div><div class="stat-val">{{ result.summary.actions_allowed }} / {{ result.summary.actions_total }}</div><div class="stat-label">Действий</div></div></div>
+  <div class="card stat-tile"><div class="stat-ico" style="background:var(--color-success-soft);color:var(--color-success)"><i class="ti ti-forms"></i></div><div><div class="stat-val">{{ result.summary.rubrics_readable }} / {{ result.summary.rubrics_total }}</div><div class="stat-label">Рубрик на сайте</div></div></div>
+  <div class="card stat-tile"><div class="stat-ico" style="background:var(--color-warning-soft);color:var(--color-warning)"><i class="ti ti-files"></i></div><div><div class="stat-val">{{ result.summary.documents_visible }}</div><div class="stat-label">Из последних 100 документов</div></div></div>
+</div>
+
+<div class="section-header ax-panel-header permission-simulator-header">
+  <div class="section-icon"><i class="ti ti-layout-sidebar"></i></div>
+  <div><div class="section-eyebrow">Панель</div><h2>Разделы</h2><p class="section-desc">Что появится в левом меню и почему пункт доступен или скрыт.</p></div>
+</div>
+<div class="card ax-list-card">
+  <div class="table-scroll">
+    <table class="table permission-sections-table">
+      <thead><tr><th>Раздел</th><th>Группа</th><th>Требование</th><th>Результат</th></tr></thead>
+      <tbody>
+      {% for item in result.sections %}
+        <tr class="{{ item.allowed ? '' : 'is-denied' }}">
+          <td><span class="permission-section-name"><i class="{{ item.icon ?: 'ti ti-point' }}"></i><b>{{ item.label }}</b></span></td>
+          <td>{{ item.group }}</td>
+          <td class="mono text-sm">{{ item.permission ?: 'без отдельного права' }}</td>
+          <td><span class="permission-result {{ item.allowed ? 'is-allowed' : 'is-denied' }}"><i class="ti {{ item.allowed ? 'ti-check' : 'ti-x' }}"></i>{{ item.allowed ? 'Доступен' : 'Запрещён' }}</span><small>{{ item.reason }}</small></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="section-header ax-panel-header permission-simulator-header">
+  <div class="section-icon"><i class="ti ti-key"></i></div>
+  <div><div class="section-eyebrow">Панель</div><h2>Действия</h2><p class="section-desc">Все зарегистрированные права сгруппированы по разделам.</p></div>
+</div>
+<div class="permission-action-groups">
+  {% for group in result.actions %}
+  <details class="card permission-action-group">
+    <summary><span><i class="ti ti-package"></i><b>{{ group.label }}</b></span><span>{{ group.allowed_count }} из {{ group.items|length }}</span><i class="ti ti-chevron-down"></i></summary>
+    <div>
+      {% for item in group.items %}
+      <div class="permission-action-row {{ item.allowed ? '' : 'is-denied' }}">
+        <span class="permission-result {{ item.allowed ? 'is-allowed' : 'is-denied' }}"><i class="ti {{ item.allowed ? 'ti-check' : 'ti-x' }}"></i></span>
+        <div><b>{{ item.name }}</b><small>{{ item.description ?: item.reason }}</small></div>
+        <span class="mono">{{ item.code }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </details>
+  {% endfor %}
+</div>
+
+<div class="section-header ax-panel-header permission-simulator-header">
+  <div class="section-icon"><i class="ti ti-forms"></i></div>
+  <div><div class="section-eyebrow">Публичная часть</div><h2>Рубрики и документы</h2><p class="section-desc">Права публичной группы проверяются отдельно от прав панели.</p></div>
+</div>
+<div class="card ax-list-card">
+  <div class="table-scroll">
+    <table class="table permission-rubrics-table">
+      <thead><tr><th>Рубрика</th><th>Документов</th><th>Чтение</th><th>Создание</th><th>Редактирование</th><th>Причина</th></tr></thead>
+      <tbody>
+      {% for rubric in result.rubrics %}
+        <tr class="{{ rubric.public_read ? '' : 'is-denied' }}">
+          <td><a href="{{ ADMINX_BASE }}/rubrics/{{ rubric.Id }}"><b>{{ rubric.rubric_title }}</b></a><small class="mono">#{{ rubric.Id }} · {{ rubric.rubric_alias }}</small></td>
+          <td>{{ rubric.document_count }}</td>
+          <td><span class="permission-result {{ rubric.public_read ? 'is-allowed' : 'is-denied' }}"><i class="ti {{ rubric.public_read ? 'ti-check' : 'ti-x' }}"></i></span></td>
+          <td><span class="permission-result {{ rubric.public_create ? 'is-allowed' : 'is-denied' }}"><i class="ti {{ rubric.public_create ? 'ti-check' : 'ti-x' }}"></i></span></td>
+          <td><span class="permission-result {{ rubric.public_edit ? 'is-allowed' : 'is-denied' }}"><i class="ti {{ rubric.public_edit ? 'ti-check' : 'ti-x' }}"></i></span></td>
+          <td><span>{{ rubric.reason }}</span><small class="mono">{{ rubric.permissions|join(' · ') ?: 'права не назначены' }}</small></td>
+        </tr>
+      {% else %}<tr><td colspan="6" class="ax-empty">Рубрики не найдены</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<details class="card permission-documents-sample">
+  <summary><span><i class="ti ti-files"></i><b>Последние 100 документов</b></span><span>Показать проверку прямого доступа</span><i class="ti ti-chevron-down"></i></summary>
+  <div class="table-scroll">
+    <table class="table">
+      <thead><tr><th>Документ</th><th>Рубрика</th><th>Панель</th><th>Публичная часть</th><th>Причина</th></tr></thead>
+      <tbody>
+      {% for document in result.documents %}
+        <tr class="{{ document.public_read ? '' : 'is-denied' }}">
+          <td><a href="{{ ADMINX_BASE }}/documents/{{ document.Id }}/edit"><b>{{ document.document_title }}</b></a><small class="mono">#{{ document.Id }}</small></td>
+          <td>{{ document.rubric_title ?: ('#' ~ document.rubric_id) }}</td>
+          <td><span class="permission-result {{ document.panel_view ? 'is-allowed' : 'is-denied' }}"><i class="ti {{ document.panel_view ? 'ti-check' : 'ti-x' }}"></i>{{ document.panel_edit ? 'Просмотр и изменение' : (document.panel_view ? 'Только просмотр' : 'Нет доступа') }}</span></td>
+          <td><span class="permission-result {{ document.public_read ? 'is-allowed' : 'is-denied' }}"><i class="ti {{ document.public_read ? 'ti-check' : 'ti-x' }}"></i>{{ document.public_read ? 'Доступен' : 'Недоступен' }}</span></td>
+          <td>{{ document.reason }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</details>
+
+{% endblock %}

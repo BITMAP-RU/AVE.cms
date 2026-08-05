@@ -153,7 +153,8 @@
 					. ' FROM `' . PublicUserTables::table('users') . '` usr'
 					. ' LEFT JOIN `' . PublicUserTables::table('user_groups') . '` grp ON grp.user_group = usr.user_group'
 					. ' WHERE usr.deleted != %s'
-					. ' AND (usr.email = %s1 OR usr.user_name = %s1 OR usr.phone_normalized = %s2) LIMIT 1',
+					. ' AND ((usr.email = %s1 AND (usr.email_verified_at>0 OR usr.user_name=%s1 OR usr.phone_verified_at=0))'
+					. ' OR usr.user_name = %s1 OR usr.phone_normalized = %s2) LIMIT 1',
 					'1',
 					(string) $identifier,
 					$phone

@@ -24,8 +24,11 @@
 /storage/backups/
 /storage/importprice/
 /storage/imports/
+/storage/jobs/
 /storage/logs/
+/storage/media-trash/
 /storage/releases/
+/storage/reports/
 /storage/runtime/
 /storage/secrets/
 /storage/tmp/

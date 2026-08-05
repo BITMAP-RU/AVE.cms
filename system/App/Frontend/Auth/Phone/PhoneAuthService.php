@@ -44,7 +44,9 @@
 			$options = ProviderRegistry::options($provider);
 			$phoneKey = hash('sha256', $phone);
 			$settings = PublicAuthSettings::all();
-			if (!empty($options['allow_registration']) && !empty($settings['registration_enabled']) && !$consent) {
+			if (!empty($options['allow_registration'])
+				&& PublicAuthSettings::allowsRegistrationMethod('phone', $settings)
+				&& !$consent) {
 				throw new \InvalidArgumentException('Подтвердите согласие с политикой конфиденциальности.');
 			}
 
@@ -61,7 +63,7 @@
 			}
 
 			$registrationEnabled = !empty($options['allow_registration'])
-				&& !empty($settings['registration_enabled']);
+				&& PublicAuthSettings::allowsRegistrationMethod('phone', $settings);
 			$deliver = $registrationEnabled || (new UserRepository())->findByPhone($phone) !== null;
 			$code = $this->code($options['code_length']);
 			$repository = new ChallengeRepository($provider->challengeTable());
@@ -132,7 +134,9 @@
 			if (!$user) {
 				$options = ProviderRegistry::options($provider);
 				$settings = PublicAuthSettings::all();
-				if (empty($options['allow_registration']) || empty($settings['registration_enabled']) || empty($challenge['consent'])) {
+				if (empty($options['allow_registration'])
+					|| !PublicAuthSettings::allowsRegistrationMethod('phone', $settings)
+					|| empty($challenge['consent'])) {
 					throw new \InvalidArgumentException('Аккаунт с таким телефоном не найден.');
 				}
 

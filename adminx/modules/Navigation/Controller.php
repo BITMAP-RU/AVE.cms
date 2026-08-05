@@ -18,6 +18,7 @@
 
 	use App\Adminx\Support\CodeEditor;
 	use App\Common\AdminAssets;
+	use App\Common\Auth;
 	use App\Common\Controller as BaseController;
 	use App\Common\Permission;
 	use App\Helpers\Request;
@@ -114,6 +115,7 @@
 			}
 
 			$id = Model::save(0, Request::postAll());
+			Revisions::capture($id, 'create', Auth::id());
 			return $this->success('Навигация создана', array('data' => array('id' => $id), 'redirect' => $this->base() . '/navigation'));
 		}
 
@@ -133,7 +135,9 @@
 				return $this->error('Проверьте поля формы', $errors);
 			}
 
+			Revisions::capture($id, 'baseline', Auth::id(), 'Снимок до изменения');
 			Model::save($id, Request::postAll());
+			Revisions::capture($id, 'update', Auth::id());
 			return $this->success('Навигация сохранена', array('redirect' => $this->base() . '/navigation'));
 		}
 
@@ -144,12 +148,63 @@
 			}
 
 			try {
-				Model::copy(isset($params['id']) ? (int) $params['id'] : 0, Request::postStr('title', ''));
+				$id = Model::copy(isset($params['id']) ? (int) $params['id'] : 0, Request::postStr('title', ''));
+				Revisions::capture($id, 'create', Auth::id(), 'Создано копированием');
 			} catch (\Throwable $e) {
 				return $this->error($e->getMessage(), array(), 422);
 			}
 
 			return $this->success('Копия создана', array('redirect' => $this->base() . '/navigation'));
+		}
+
+		public function revisions(array $params = array())
+		{
+			$id = isset($params['id']) ? (int) $params['id'] : 0;
+			$item = Model::one($id);
+			if (!$item) { return $this->error('Навигация не найдена', array(), 404); }
+
+			return $this->success('', array('data' => array(
+				'navigation' => array('id' => $id, 'title' => $item['title']),
+				'revisions' => Revisions::listing($id),
+			)));
+		}
+
+		public function revision(array $params = array())
+		{
+			$revision = Revisions::one(isset($params['revision']) ? (int) $params['revision'] : 0);
+			return $revision
+				? $this->success('', array('data' => $revision))
+				: $this->error('Ревизия не найдена', array(), 404);
+		}
+
+		public function restoreRevision(array $params = array())
+		{
+			if (($err = $this->guard()) !== null) { return $err; }
+			try {
+				$id = Revisions::restore(isset($params['revision']) ? (int) $params['revision'] : 0, Auth::id());
+			} catch (\Throwable $e) {
+				return $this->error($e->getMessage(), array(), 422);
+			}
+
+			return $this->success('Навигация восстановлена из ревизии', array(
+				'data' => array('id' => $id),
+				'redirect' => $this->base() . '/navigation',
+			));
+		}
+
+		public function lint(array $params = array())
+		{
+			if (($err = $this->guard()) !== null) { return $err; }
+			if (!class_exists('App\\Adminx\\Templates\\Syntax')) {
+				return $this->error('Проверка недоступна', array(), 501);
+			}
+
+			$result = \App\Adminx\Templates\Syntax::check((string) Request::post('code', ''));
+			if (!empty($result['ok'])) {
+				return $this->success($result['message'], array('data' => array('checked' => !empty($result['checked']))));
+			}
+
+			return $this->error($result['message'], array('code' => $result['output']), 422);
 		}
 
 		public function clearCache(array $params = array())

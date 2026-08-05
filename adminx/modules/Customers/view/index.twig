@@ -5,22 +5,25 @@
 
 <div class="page-header"><div><h1>Пользователи сайта</h1><p class="text-secondary">Публичные аккаунты, профили и способы входа</p></div></div>
 
-<div class="ax-summary customers-summary">
+{% if tab!='center' %}<div class="ax-summary customers-summary">
   <div class="card stat-tile"><div class="stat-ico"><i class="ti ti-users"></i></div><div><div class="stat-val">{{ stats.total }}</div><div class="stat-label">Всего</div></div></div>
   <div class="card stat-tile"><div class="stat-ico is-green"><i class="ti ti-user-check"></i></div><div><div class="stat-val">{{ stats.active }}</div><div class="stat-label">Активные</div></div></div>
   <div class="card stat-tile"><div class="stat-ico is-blue"><i class="ti ti-mail-check"></i></div><div><div class="stat-val">{{ stats.verified }}</div><div class="stat-label">Email подтверждён</div></div></div>
   <div class="card stat-tile"><div class="stat-ico is-violet"><i class="ti ti-forms"></i></div><div><div class="stat-val">{{ stats.fields }}</div><div class="stat-label">Доп. полей</div></div></div>
-</div>
+</div>{% endif %}
 
 <nav class="tabs customers-tabs">
+	<a class="tab{{ tab=='center'?' active':'' }}" href="{{ ADMINX_BASE }}/system/customers?tab=center"><i class="ti ti-users-group"></i>Центр покупателей</a>
   <a class="tab{{ tab=='customers'?' active':'' }}" href="{{ ADMINX_BASE }}/system/customers?tab=customers"><i class="ti ti-users"></i>Пользователи</a>
   <a class="tab{{ tab=='fields'?' active':'' }}" href="{{ ADMINX_BASE }}/system/customers?tab=fields"><i class="ti ti-forms"></i>Поля профиля</a>
   <a class="tab{{ tab=='auth'?' active':'' }}" href="{{ ADMINX_BASE }}/system/customers?tab=auth"><i class="ti ti-user-cog"></i>Регистрация</a>
   <a class="tab{{ tab=='pages'?' active':'' }}" href="{{ ADMINX_BASE }}/system/customers?tab=pages"><i class="ti ti-browser"></i>Страницы входа</a>
 </nav>
 
-{% if tab=='customers' %}
-<div class="section-header ax-panel-header"><div class="section-icon"><i class="ti ti-user-search"></i></div><div><div class="section-eyebrow">Аккаунты сайта</div><h2>Пользователи</h2></div><div class="section-header-right"><form class="customers-filter"><input type="hidden" name="tab" value="customers"><div class="input-wrap"><i class="ti ti-search"></i><input class="input" type="search" name="q" value="{{ q|e }}" placeholder="Имя, email, телефон"></div><button class="btn btn-secondary"><i class="ti ti-filter"></i>Найти</button></form></div></div>
+{% if tab=='center' %}
+	{% include '@customers/customer-center.twig' %}
+{% elseif tab=='customers' %}
+<div class="section-header ax-panel-header"><div class="section-icon"><i class="ti ti-user-search"></i></div><div><div class="section-eyebrow">Аккаунты сайта</div><h2>Пользователи</h2></div><div class="section-header-right"><form class="customers-filter"><input type="hidden" name="tab" value="customers"><div class="input-wrap"><i class="ti ti-search"></i><input class="input" type="search" name="q" value="{{ q|e }}" placeholder="Имя, email, телефон"></div><button class="btn btn-secondary"><i class="ti ti-filter"></i>Найти</button></form><a class="btn btn-secondary" href="{{ ADMINX_BASE }}/system/customers/export?q={{ q|url_encode }}"><i class="ti ti-file-spreadsheet"></i>CSV</a></div></div>
 <div class="card ax-list-card">
   <div class="ax-list-head"><div class="ax-list-title"><span class="icon-tile" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-users-group"></i></span><div><h2>Публичные аккаунты</h2><p class="text-secondary">Посетители, зарегистрированные на сайте, их контакты и доступ к личному кабинету.</p></div></div><span class="badge badge-blue">{{ customers|length }}</span></div>
   <div class="table-scroll"><table class="table customers-table"><thead><tr><th>ID</th><th>Пользователь</th><th>Контакты</th><th>Компания</th><th>Регистрация</th><th>Статус</th>{% if can_manage %}<th class="customers-actions-col">Действия</th>{% endif %}</tr></thead><tbody>
@@ -70,17 +73,17 @@
   <section class="card customers-auth-section">
     <div class="ax-list-head"><div class="ax-list-title"><span class="icon-tile" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-user-plus"></i></span><div><h2>Создание аккаунта</h2><p class="text-secondary">Кто может зарегистрироваться и когда станет доступен вход.</p></div></div><label class="switch" data-tooltip="Разрешить регистрацию"><input type="checkbox" name="registration_enabled" value="1"{{ auth_settings.registration_enabled ? ' checked' : '' }}{{ can_manage ? '' : ' disabled' }}><span></span></label></div>
     <div class="customers-auth-settings-grid">
-      <label class="field"><span class="field-label">Активация аккаунта</span><select class="select" name="registration_mode" data-registration-mode{{ can_manage ? '' : ' disabled' }}><option value="email"{{ auth_settings.registration_mode=='email' ? ' selected' : '' }}>После подтверждения email</option><option value="now"{{ auth_settings.registration_mode=='now' ? ' selected' : '' }}>Сразу после регистрации</option><option value="byadmin"{{ auth_settings.registration_mode=='byadmin' ? ' selected' : '' }}>После одобрения администратором</option></select><span class="field-hint">Для режима одобрения включите пользователя в первом табе.</span></label>
+      <label class="field"><span class="field-label">Способы регистрации</span><select class="select" name="registration_gate" data-registration-gate{{ can_manage ? '' : ' disabled' }}><option value="email"{{ auth_settings.registration_gate=='email' ? ' selected' : '' }}>По email</option><option value="phone"{{ auth_settings.registration_gate=='phone' ? ' selected' : '' }}>По телефону</option><option value="email_phone"{{ auth_settings.registration_gate=='email_phone' ? ' selected' : '' }}>По email или телефону</option></select><span class="field-hint">Телефонная регистрация появится после подключения SMS-провайдера. Email для такого аккаунта не требуется.</span></label>
+      <label class="field" data-auth-email-registration><span class="field-label">Активация регистрации по email</span><select class="select" name="registration_mode" data-registration-mode{{ can_manage ? '' : ' disabled' }}><option value="email"{{ auth_settings.registration_mode=='email' ? ' selected' : '' }}>После подтверждения email</option><option value="now"{{ auth_settings.registration_mode=='now' ? ' selected' : '' }}>Сразу после регистрации</option><option value="byadmin"{{ auth_settings.registration_mode=='byadmin' ? ' selected' : '' }}>После одобрения администратором</option></select><span class="field-hint">Телефон уже подтверждается одноразовым SMS-кодом.</span></label>
       <label class="field"><span class="field-label">Группа после регистрации</span><select class="select" name="default_group"{{ can_manage ? '' : ' disabled' }}>{% for group in customer_groups %}<option value="{{ group.id }}"{{ auth_settings.default_group==group.id ? ' selected' : '' }}>#{{ group.id }} · {{ group.name }} · {{ group.permissions_count }} разрешений</option>{% endfor %}</select><span class="field-hint">Вы сами выбираете группу, которая будет назначаться новым пользователям сайта.</span></label>
-      <div class="field customers-auth-fixed"><span class="field-label">Канал регистрации</span><div class="customers-auth-fixed-value"><i class="ti ti-mail"></i><span><b>Email</b><small>Телефон и SMS подключаются отдельным гейтом.</small></span></div></div>
     </div>
   </section>
 
-  <section class="card customers-auth-section">
-    <div class="ax-list-head"><div class="ax-list-title"><span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-forms"></i></span><div><h2>Поля формы регистрации</h2><p class="text-secondary">Базовые данные аккаунта. Дополнительные поля подключаются в соседнем табе.</p></div></div></div>
+  <section class="card customers-auth-section" data-auth-email-form-fields>
+    <div class="ax-list-head"><div class="ax-list-title"><span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-forms"></i></span><div><h2>Поля регистрации по email</h2><p class="text-secondary">Для регистрации по телефону достаточно номера и SMS-кода. Остальные данные пользователь заполнит в профиле.</p></div></div></div>
     <div class="customers-auth-fields" data-auth-fields>
       <div class="customers-auth-fields-head"><span>Поле</span><span>Показывать</span><span>Обязательное</span></div>
-      <div class="customers-auth-field-row"><span><i class="ti ti-mail"></i><span><b>Email</b><small>Логин и канал подтверждения</small></span></span><span class="badge badge-blue">Всегда</span><span class="badge badge-blue">Всегда</span></div>
+      <div class="customers-auth-field-row"><span><i class="ti ti-mail"></i><span><b>Email</b><small data-auth-email-field-description>{{ auth_settings.registration_gate == 'email_phone' ? 'Запрашивается только при выборе регистрации по email' : 'Логин и канал подтверждения регистрации по email' }}</small></span></span><span class="badge badge-blue" data-auth-email-visibility>{{ auth_settings.registration_gate == 'email_phone' ? 'В email-форме' : 'Показывается' }}</span><span class="badge {{ auth_settings.registration_gate == 'email_phone' ? 'badge-gray' : 'badge-blue' }}" data-auth-email-required>{{ auth_settings.registration_gate == 'email_phone' ? 'По выбору способа' : 'Обязательно' }}</span></div>
       <div class="customers-auth-field-row"><span><i class="ti ti-user"></i><span><b>Имя</b><small>Основное имя пользователя</small></span></span><span class="badge badge-blue">Всегда</span><label class="switch"><input type="checkbox" name="require_firstname" value="1"{{ auth_settings.require_firstname ? ' checked' : '' }}{{ can_manage ? '' : ' disabled' }}><span></span></label></div>
       <div class="customers-auth-field-row" data-auth-field-row><span><i class="ti ti-id"></i><span><b>Фамилия</b><small>Дополняет отображаемое имя</small></span></span><label class="switch"><input type="checkbox" name="show_lastname" value="1" data-auth-show{{ auth_settings.show_lastname ? ' checked' : '' }}{{ can_manage ? '' : ' disabled' }}><span></span></label><label class="switch"><input type="checkbox" name="require_lastname" value="1" data-auth-required{{ auth_settings.require_lastname ? ' checked' : '' }}{{ can_manage ? '' : ' disabled' }}><span></span></label></div>
       <div class="customers-auth-field-row" data-auth-field-row><span><i class="ti ti-phone"></i><span><b>Телефон</b><small>Контакт для заказов и доставки</small></span></span><label class="switch"><input type="checkbox" name="show_phone" value="1" data-auth-show{{ auth_settings.show_phone ? ' checked' : '' }}{{ can_manage ? '' : ' disabled' }}><span></span></label><label class="switch"><input type="checkbox" name="require_phone" value="1" data-auth-required{{ auth_settings.require_phone ? ' checked' : '' }}{{ can_manage ? '' : ' disabled' }}><span></span></label></div>
@@ -88,7 +91,7 @@
     </div>
   </section>
 
-  <section class="card customers-auth-section">
+  <section class="card customers-auth-section" data-auth-email-settings>
     <div class="ax-list-head"><div class="ax-list-title"><span class="icon-tile" style="--tile-bg:var(--amber-100);--tile-fg:var(--amber-600)"><i class="ti ti-shield-lock"></i></span><div><h2>Пароль и подтверждение</h2><p class="text-secondary">Срок действия одноразовых ссылок и требования к паролю.</p></div></div></div>
     <div class="customers-auth-settings-grid">
       <label class="field"><span class="field-label">Минимальная длина пароля</span><input class="input" type="number" name="password_min_length" min="8" max="72" value="{{ auth_settings.password_min_length }}"{{ can_manage ? '' : ' disabled' }}></label>
@@ -98,7 +101,7 @@
     </div>
   </section>
 
-  <section class="card customers-auth-section customers-checkout-registration">
+  <section class="card customers-auth-section customers-checkout-registration" data-auth-email-settings>
     <div class="ax-list-head"><div class="ax-list-title"><span class="icon-tile" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-shopping-bag-check"></i></span><div><h2>Аккаунт после заказа</h2><p class="text-secondary">Покупатель может создать тот же личный кабинет прямо при оформлении.</p></div></div><label class="switch" data-tooltip="Предлагать регистрацию в корзине"><input type="checkbox" name="checkout_registration_enabled" value="1"{{ auth_settings.checkout_registration_enabled ? ' checked' : '' }}{{ can_manage ? '' : ' disabled' }}><span></span></label></div>
     <div class="customers-checkout-body">
       <div class="alert alert-info customers-checkout-note"><i class="ti ti-lock-check"></i><p>Пароль по почте не отправляется. После заказа пользователь сразу входит в аккаунт и получает одноразовую ссылку, чтобы задать пароль самостоятельно.</p></div>
@@ -115,7 +118,7 @@
     </div>
   </section>
 
-  <section class="card customers-auth-section">
+  <section class="card customers-auth-section" data-auth-email-settings>
     <div class="ax-list-head"><div class="ax-list-title"><span class="icon-tile" style="--tile-bg:var(--red-100);--tile-fg:var(--red-600)"><i class="ti ti-shield-x"></i></span><div><h2>Ограничения регистрации</h2><p class="text-secondary">Один email или домен на строку. Проверка не зависит от регистра букв.</p></div></div></div>
     <div class="customers-auth-restrictions"><label class="field"><span class="field-label">Запрещённые домены</span><textarea class="textarea mono" name="deny_domains" rows="5" placeholder="example.org&#10;mail.invalid"{{ can_manage ? '' : ' disabled' }}>{{ auth_settings.deny_domains|e }}</textarea></label><label class="field"><span class="field-label">Запрещённые адреса</span><textarea class="textarea mono" name="deny_emails" rows="5" placeholder="blocked@example.org"{{ can_manage ? '' : ' disabled' }}>{{ auth_settings.deny_emails|e }}</textarea></label></div>
   </section>
@@ -123,14 +126,13 @@
   {% if can_manage %}<div class="customers-auth-actions"><button class="btn btn-primary" type="submit"><i class="ti ti-device-floppy"></i>Сохранить настройки</button></div>{% endif %}
 </form>
 
-{% if oauth_modules %}
 <div class="section-header customers-social-head">
   <div class="section-icon"><i class="ti ti-login-2"></i></div>
-  <div><div class="section-eyebrow">Авторизация</div><h2>Подключённые способы входа</h2><p class="section-desc">OAuth и вход по одноразовому коду используют одну учётную запись сайта.</p></div>
-  <div class="section-header-right"><span class="badge badge-blue">{{ oauth_modules|length }} подключено</span></div>
+  <div><div class="section-eyebrow">Авторизация</div><h2>Способы входа</h2><p class="section-desc">Яндекс, VK ID и SMS-код подключаются к одной учётной записи сайта.</p></div>
+  <div class="section-header-right"><span class="badge badge-green">{{ auth_method_stats.active }} активно</span><span class="badge badge-gray">{{ auth_method_stats.installed }} установлено</span></div>
 </div>
 <div class="customers-social-grid">
-  {% for provider in oauth_modules %}
+  {% for provider in auth_methods %}
   <section class="card customers-social-card">
     <div class="ax-list-head">
       <div class="ax-list-title"><span class="customers-social-mark {{ provider.brand }}">{{ provider.mark }}</span><div><h3>{{ provider.label }}</h3><p class="text-secondary">{{ provider.description }}</p></div></div>
@@ -138,18 +140,16 @@
     </div>
     <div class="customers-social-status">
       <div class="customers-social-checks">
-        <span class="{{ provider.module_enabled ? 'is-ready' : '' }}"><i class="ti {{ provider.module_enabled ? 'ti-circle-check' : 'ti-circle-x' }}"></i>Модуль включён</span>
-        <span class="{{ provider.configured ? 'is-ready' : '' }}"><i class="ti {{ provider.configured ? 'ti-key' : 'ti-key-off' }}"></i>Ключи настроены</span>
+        <span class="{{ provider.installed ? 'is-ready' : '' }}"><i class="ti {{ provider.installed ? 'ti-package' : 'ti-package-off' }}"></i>Модуль {{ provider.installed ? 'установлен' : 'не установлен' }}</span>
+        <span class="{{ provider.module_enabled ? 'is-ready' : '' }}"><i class="ti {{ provider.module_enabled ? 'ti-circle-check' : 'ti-circle-x' }}"></i>Модуль {{ provider.module_enabled ? 'включён' : 'выключен' }}</span>
+        <span class="{{ provider.configured ? 'is-ready' : '' }}"><i class="ti {{ provider.configured ? 'ti-key' : 'ti-key-off' }}"></i>Подключение {{ provider.configured ? 'настроено' : 'не настроено' }}</span>
         <span class="{{ provider.allow_registration ? 'is-ready' : '' }}"><i class="ti ti-user-plus"></i>Регистрация {{ provider.allow_registration ? 'разрешена' : 'выключена' }}</span>
       </div>
-      {% if provider.can_open %}<a class="btn btn-secondary btn-sm" href="{{ ADMINX_BASE }}{{ provider.url }}"><i class="ti ti-settings"></i>Настроить</a>{% endif %}
+      {% if provider.can_open %}<a class="btn btn-secondary btn-sm" href="{{ ADMINX_BASE }}{{ provider.action_url }}"><i class="ti {{ provider.installed ? 'ti-settings' : 'ti-puzzle' }}"></i>{{ provider.action_label }}</a>{% endif %}
     </div>
   </section>
   {% endfor %}
 </div>
-{% else %}
-<div class="alert alert-info customers-auth-note"><span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-plug-connected"></i></span><div><b>Дополнительные способы входа устанавливаются модулями</b><p>Яндекс, VK ID и SMSC настраиваются отдельно в разделе «Модули». Удаление пакета физически убирает его код и форму настроек.</p></div><a class="btn btn-secondary" href="{{ ADMINX_BASE }}/modules"><i class="ti ti-puzzle"></i>Открыть модули</a></div>
-{% endif %}
 {% else %}
 <div class="section-header ax-panel-header customers-pages-head"><div class="section-icon"><i class="ti ti-browser"></i></div><div><div class="section-eyebrow">Публичный сайт</div><h2>Страницы личного кабинета</h2><p class="section-desc">Каждая страница имеет редактируемый Twig-шаблон и выводится через `[tag:maincontent]` внутри выбранного шаблона сайта.</p></div>{% if can_manage %}<div class="section-header-right"><button class="btn btn-primary" type="submit" form="customerPagesForm"><i class="ti ti-device-floppy"></i>Сохранить</button></div>{% endif %}</div>
 
@@ -165,7 +165,7 @@
       </section>
     {% endfor %}
   </div>
-  <section class="card customers-auth-section customers-service-routes"><div class="ax-list-head"><div class="ax-list-title"><span class="icon-tile" style="--tile-bg:var(--gray-100);--tile-fg:var(--gray-700)"><i class="ti ti-code"></i></span><div><h2>Служебные маршруты</h2><p class="text-secondary">Подтверждение email, выход и общий шаблон системных результатов.</p></div></div>{% if can_manage %}<div class="customers-service-actions"><button class="btn btn-secondary btn-sm" type="button" data-auth-form-edit="message"><i class="ti ti-message-circle-check"></i>Сообщения</button></div>{% endif %}</div><div class="customers-auth-restrictions"><label class="field"><span class="field-label">Подтверждение email</span><span class="input-wrap"><i class="ti ti-link"></i><input class="input mono" name="pages[verify][path]" value="{{ auth_settings.pages.verify.path }}" required></span><input type="hidden" name="pages[verify][title]" value=""><input type="hidden" name="pages[verify][description]" value=""><input type="hidden" name="pages[verify][submit_label]" value=""><input type="hidden" name="pages[verify][template_id]" value="1"></label><label class="field"><span class="field-label">Выход</span><span class="input-wrap"><i class="ti ti-link"></i><input class="input mono" name="pages[logout][path]" value="{{ auth_settings.pages.logout.path }}" required></span><input type="hidden" name="pages[logout][title]" value=""><input type="hidden" name="pages[logout][description]" value=""><input type="hidden" name="pages[logout][submit_label]" value=""><input type="hidden" name="pages[logout][template_id]" value="1"></label></div></section>
+  <section class="card customers-auth-section customers-service-routes"><div class="ax-list-head"><div class="ax-list-title"><span class="icon-tile" style="--tile-bg:var(--gray-100);--tile-fg:var(--gray-700)"><i class="ti ti-code"></i></span><div><h2>Служебные маршруты и фрагменты</h2><p class="text-secondary">Подтверждение, выход, панель пользователя и подключаемые способы входа.</p></div></div>{% if can_manage %}<div class="customers-service-actions">{% for key in ['panel','message','phone','oauth','oauth_connections'] %}{% set form_meta = auth_forms[key] %}<button class="btn btn-secondary btn-sm" type="button" data-auth-form-edit="{{ key }}"><i class="ti {{ form_meta.icon }}"></i>{{ form_meta.label }}</button>{% endfor %}</div>{% endif %}</div><div class="customers-auth-restrictions"><label class="field"><span class="field-label">Подтверждение email</span><span class="input-wrap"><i class="ti ti-link"></i><input class="input mono" name="pages[verify][path]" value="{{ auth_settings.pages.verify.path }}" required></span><input type="hidden" name="pages[verify][title]" value=""><input type="hidden" name="pages[verify][description]" value=""><input type="hidden" name="pages[verify][submit_label]" value=""><input type="hidden" name="pages[verify][template_id]" value="1"></label><label class="field"><span class="field-label">Выход</span><span class="input-wrap"><i class="ti ti-link"></i><input class="input mono" name="pages[logout][path]" value="{{ auth_settings.pages.logout.path }}" required></span><input type="hidden" name="pages[logout][title]" value=""><input type="hidden" name="pages[logout][description]" value=""><input type="hidden" name="pages[logout][submit_label]" value=""><input type="hidden" name="pages[logout][template_id]" value="1"></label></div></section>
   {% if can_manage %}<div class="customers-auth-actions"><button class="btn btn-primary" type="submit"><i class="ti ti-device-floppy"></i>Сохранить страницы</button></div>{% endif %}
 </form>
 {% endif %}

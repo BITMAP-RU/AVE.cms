@@ -35,18 +35,7 @@
 
 		protected static function defineHost()
 		{
-			$hostHeader = isset($_SERVER['HTTP_HOST']) ? strtolower((string) $_SERVER['HTTP_HOST']) : '';
-			if ($hostHeader !== '' && !preg_match('/^\[?(?:[a-z0-9-:\]_]+\.?)+$/', $hostHeader)) {
-				http_response_code(400);
-				exit;
-			}
-
-			$_SERVER['HTTP_HOST'] = $hostHeader;
-			$serverPort = isset($_SERVER['SERVER_PORT']) ? (string) $_SERVER['SERVER_PORT'] : '80';
-			$ssl = self::isSsl();
-			$host = str_replace(':' . $serverPort, '', $hostHeader);
-			$port = in_array($serverPort, array('80', '443'), true) || $ssl ? '' : ':' . $serverPort;
-			defined('HOST') || define('HOST', ($ssl ? 'https://' : 'http://') . $host . $port);
+			SiteOrigin::initializeHost();
 
 			$phpSelf = isset($_SERVER['PHP_SELF']) ? (string) $_SERVER['PHP_SELF'] : '/index.php';
 			$scriptName = isset($_SERVER['SCRIPT_NAME']) ? (string) $_SERVER['SCRIPT_NAME'] : '/index.php';

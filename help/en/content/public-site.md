@@ -87,6 +87,14 @@ A placement is a component tag found in saved markup, for example:
 **Placements** shows every occurrence. **Used by** groups equal components and
 shows their usage count.
 
+The map also reads `[tag:fld:*]` and `[tag:rfld:*]`. In a category-specific
+template it verifies that the field exists. In a generic block the field is
+marked as contextual because the actual document supplies the category.
+
+**Dependencies** groups required fields, blocks, requests, navigation, and
+modules by source. **Unused** lists saved templates and components without a
+native assignment or reference. It is a review queue and never deletes data.
+
 The first action opens the exact source containing the tag. The second action
 opens the exact block, request, navigation, or owning module. If a module cannot
 be resolved, AVE.cms opens the general module registry.
@@ -146,3 +154,35 @@ and future integrations.
 
 This keeps ownership clear: the map finds a relationship, and the component
 editor changes the data that actually owns it.
+
+## Page templates
+
+The **Public site → Page templates** tab exposes file-based Twig components
+that previously required browsing the active theme directory. It includes the
+fallback content-list view and general components owned by the active theme,
+such as the page shell, breadcrumbs, account navigation, and type-specific
+page views.
+
+This does not replace site, rubric, or request templates. Saving validates Twig
+syntax, records a theme revision, and clears the public cache. A component with
+a system fallback can be returned to that fallback. Theme-only components are
+edited here and deleted only from the full **Themes** file manager.
+
+## Where each template is edited
+
+| What you need to change | Control-panel section |
+| --- | --- |
+| Main site HTML shell | **Content → Templates** |
+| Document, teaser, Open Graph, and field output | **Content → Rubrics and fields → Rubric templates** |
+| Material list and one result card | **Content → Requests → Templates** |
+| Reusable page fragment | **Content → Blocks** |
+| Menu wrappers and levels | **Content → Navigation → Templates** |
+| Page shell, breadcrumbs, and active-theme components | **Content → Public site → Page templates** |
+| Catalog, product card, and product page | **Store → Products → Page templates** |
+| Cart, checkout, order account, and store email | **Store → Settings → Templates** |
+| Login, registration, profile, and connected login methods | **System → Site users → Account pages** |
+| Search, polls, galleries, reviews, and other module features | The **Templates** tab or **Page template** action in the owning module |
+
+**Themes** remains the complete file manager for developers and rare assets.
+For normal editing, start in the owning section: it explains the component,
+lists its available variables, and preserves the system fallback.

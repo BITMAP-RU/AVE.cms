@@ -221,6 +221,55 @@
 			}
 		}
 
+		/**
+		 * Копия роли вместе с набором прав.
+		 *
+		 * Новая роль всегда обычная: системный признак не наследуется, иначе
+		 * копию нельзя было бы ни переименовать, ни удалить. Пользователи в
+		 * копию не переносятся — их назначают отдельно.
+		 */
+		public static function copy($id, $code, $name)
+		{
+			$source = self::find($id);
+			if (!$source) { throw new \RuntimeException('Роль не найдена'); }
+
+			//-- Без явного режима исключений ошибка уникальности кода оборвала бы
+			//-- выполнение мимо rollback и оставила роль без прав.
+			$previousMode = DB::$throw_exception_on_error;
+			DB::$throw_exception_on_error = true;
+			$newId = 0;
+			DB::startTransaction();
+			try {
+				$newId = (int) self::create($code, $name);
+				if ($newId < 1) { throw new \RuntimeException('Не удалось создать копию роли'); }
+				self::setPermissions($newId, self::permissionCodes((int) $source->id));
+				DB::commit();
+			} catch (\Throwable $e) {
+				if (DB::$transaction_in_progress) { DB::rollback(); }
+				throw $e;
+			} finally {
+				DB::$throw_exception_on_error = $previousMode;
+			}
+
+			return $newId;
+		}
+
+		/** Свободный код вида role_copy, role_copy_2 — на случай повторных копий. */
+		public static function freeCode($base)
+		{
+			$base = trim(preg_replace('/[^a-z0-9_]+/', '_', strtolower((string) $base)), '_');
+			if ($base === '') { $base = 'role'; }
+			$base = substr($base, 0, 40) . '_copy';
+			$candidate = $base;
+			$suffix = 2;
+			while (self::codeExists($candidate) && $suffix < 100) {
+				$candidate = $base . '_' . $suffix;
+				$suffix++;
+			}
+
+			return $candidate;
+		}
+
 		public static function delete($id)
 		{
 			$id = (int) $id;

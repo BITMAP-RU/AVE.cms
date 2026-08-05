@@ -89,6 +89,8 @@ Manifest с вычисляемым runtime-содержимым объявляе
 | [Опросы](polls.md) | Одиночные и множественные голосования, архив, теги и API. |
 | [Галереи](galleries.md) | Медиаколлекции, сетка, слайдер, миниатюры и шаблонные теги. |
 | [Поиск по сайту](search.md) | Индекс, области, вывод через запросы, JSON/HTML API, живой поиск и хуки. |
+| [Подбор товара](quiz.md) | Пошаговый подбор по фильтрам каталога и шаблон публичной страницы. |
+| [Публичные виджеты](public-widgets.md) | Курсы валют, подписка и Twig-override активной темы. |
 | [Баннеры](banners.md) | Рекламные места, стратегии ротации, расписание, шаблоны и статистика. |
 | [Вопросы и ответы](faq.md) | Коллекции FAQ, rich-text ответы, шаблоны, JSON API и Schema.org. |
 | [Похожие материалы](related.md) | Релевантность, кольцевой вывод, ручные связи, шаблоны, запросы и API. |
@@ -116,6 +118,8 @@ Manifest с вычисляемым runtime-содержимым объявляе
 | [A/B-тесты](experiments.md) | Варианты блоков и элементов, стабильное распределение и конверсии. |
 | [Надёжные исходящие события](reliable-events.md) | Webhook-очередь, подписи, повторы и журнал доставок. |
 | [Автоматический прогрев кеша](cache-warmup.md) | Пакетный прогрев опубликованных страниц после сброса кеша. |
+| [Кросспостинг](crossposting.md) | Telegram, VK, Дзен и собственные шлюзы: шаблоны, расписание, очередь и защита от дублей. |
+| [Сравнение систем](environment-comparison.md) | Ядро, модули, миграции, схема БД, настройки, темы и шаблоны без выгрузки секретов. |
 | [Пошагово: свой модуль](tutorial.md) | Мини-модуль с нуля до рабочего экрана. |
 
 ## Устанавливаемые модули AVE.cms
@@ -154,13 +158,15 @@ Manifest с вычисляемым runtime-содержимым объявляе
 | `site_readiness` | Панель | `view_site_readiness`, `run_site_readiness`, `manage_site_readiness` | [Готовность сайта](site-readiness.md) |
 | `scheduler` | Паблик + панель | `view_scheduler`, `run_scheduler`, `manage_scheduler` | [Планировщик](scheduler.md) |
 | `system_health` | Панель | `view_system_health`, `run_system_health`, `manage_system_health` | [Мониторинг здоровья](system-health.md) |
-| `popups` | Паблик + панель | `view_popups`, `manage_popups` | [Всплывающие окна](popups.md) |
+| `popups` | Паблик + панель | `view_popups`, `manage_popups`, `manage_popup_code` | [Всплывающие окна](popups.md) |
 | `commerceml` | Паблик + панель | `view_commerceml`, `manage_commerceml` | [Обмен с 1С](commerceml.md) |
 | `traffic_analytics` | Паблик + панель | `view_traffic_analytics`, `manage_traffic_analytics` | [Источники трафика](traffic-analytics.md) |
 | `search_analytics` | Паблик + панель | `view_search_analytics`, `manage_search_analytics` | [Поисковые запросы](search-analytics.md) |
-| `experiments` | Паблик + панель | `view_experiments`, `manage_experiments` | [A/B-тесты](experiments.md) |
+| `experiments` | Паблик + панель | `view_experiments`, `manage_experiments`, `manage_experiment_code` | [A/B-тесты](experiments.md) |
 | `reliable_events` | Паблик + панель | `view_reliable_events`, `manage_reliable_events` | [Исходящие события](reliable-events.md) |
 | `cache_warmup` | Паблик + панель | `view_cache_warmup`, `manage_cache_warmup` | [Прогрев кеша](cache-warmup.md) |
+| `crossposting` | Паблик + панель | `view_crossposting`, `manage_crossposting` | [Кросспостинг](crossposting.md) |
+| `environment_compare` | Панель | `view_environment_compare`, `run_environment_compare` | [Сравнение систем](environment-comparison.md) |
 | `todo` | Панель | `view_todos`, `manage_todos` | [Личные инструменты](personal-tools.md#todo) |
 | `vk_oauth` | Паблик + панель | `view_vk_oauth`, `manage_vk_oauth` | [Вход через VK ID](oauth-providers.md#vk-id) |
 | `yandex_oauth` | Паблик + панель | `view_yandex_oauth`, `manage_yandex_oauth` | [Вход через Яндекс](oauth-providers.md#яндекс) |

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="directories_title">Directories</phrase>
+	<phrase data="directories_description">Shared value lists that can be connected to multiple fields.</phrase>
+	<phrase data="directories_create">Create directory</phrase>
+	<phrase data="directories_shared">Shared directories</phrase>
+	<phrase data="directories_shared_description">Connect one list to multiple fields and maintain it centrally.</phrase>
+	<phrase data="directories_list">Directory list</phrase>
+	<phrase data="directories_storage_help">The key is stored in the document; the label can change without rewriting documents.</phrase>
+	<phrase data="directories_empty">No directories yet</phrase>
+	<phrase data="directories_empty_help">Create a shared value list for fields.</phrase>
+	<phrase data="directories_values_empty">No values yet</phrase>
+	<phrase data="directories_values_empty_help">Add the first key and label pair.</phrase>
+	<phrase data="directories_new">New directory</phrase>
+	<phrase data="directories_new_value">New value</phrase>
+	<phrase data="directories_source_help">Shared value source for fields.</phrase>
+	<phrase data="directories_stable_code_help">Stable technical code. It is generated from the name when left empty.</phrase>
+	<phrase data="directories_stable_key">Stable key</phrase>
+	<phrase data="directories_key_help">Stored in the document. Avoid changing the key after it is in use.</phrase>
+	<phrase data="directories_label_help">Editors and site visitors will see this label.</phrase>
+	<phrase data="directories_available">Available for field selection</phrase>
+	<phrase data="directories_show">Show in fields</phrase>
+	<phrase data="directories_open_values">Open values</phrase>
+	<phrase data="directories_add_value">Add value</phrase>
+	<phrase data="directories_edit">Directory settings</phrase>
+	<phrase data="directories_in_use">Directory is in use</phrase>
+	<phrase data="directories_delete_confirm">Delete directory?</phrase>
+	<phrase data="directories_edit_value">Edit value</phrase>
+	<phrase data="directories_delete_value_confirm">Delete value?</phrase>
+	<phrase data="directories_save_failed">Failed to save data</phrase>
+	<phrase data="directories_request_failed">Request failed</phrase>
+</language>

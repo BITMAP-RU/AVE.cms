@@ -17,7 +17,7 @@
 	return array(
 		'code' => 'navigation',
 		'name' => 'Навигация',
-		'version' => '0.1.0',
+		'version' => '0.2.0',
 
 		'permissions' => array(
 			'key' => 'navigation',
@@ -58,12 +58,17 @@
 
 		'migrations' => array(
 			array('id' => '001_create_navigation_tables', 'file' => 'migrations/001_create_navigation_tables.sql'),
+			array('id' => '002_navigation_revisions', 'file' => 'migrations/002_navigation_revisions.sql'),
 		),
 
 		'routes' => array(
 			array('GET', '/navigation', array(\App\Adminx\Navigation\Controller::class, 'index')),
 			array('GET', '/navigation/alias-check', array(\App\Adminx\Navigation\Controller::class, 'aliasCheck')),
 			array('GET', '/navigation/documents/picker', array(\App\Adminx\Navigation\Controller::class, 'documentPicker')),
+			array('POST', '/navigation/lint', array(\App\Adminx\Navigation\Controller::class, 'lint'), array('permission' => 'manage_navigation')),
+			array('GET', '/navigation/{id}/revisions', array(\App\Adminx\Navigation\Controller::class, 'revisions')),
+			array('GET', '/navigation/revisions/{revision}', array(\App\Adminx\Navigation\Controller::class, 'revision')),
+			array('POST', '/navigation/revisions/{revision}/restore', array(\App\Adminx\Navigation\Controller::class, 'restoreRevision'), array('permission' => 'manage_navigation', 'sensitive' => 'stored_php.write', 'reauth' => true)),
 			array('GET', '/navigation/{id}/items', array(\App\Adminx\Navigation\Controller::class, 'items')),
 			array('POST', '/navigation/{id}/items', array(\App\Adminx\Navigation\Controller::class, 'storeItem')),
 			array('POST', '/navigation/{id}/items/reorder', array(\App\Adminx\Navigation\Controller::class, 'reorderItems')),

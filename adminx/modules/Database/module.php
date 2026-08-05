@@ -21,7 +21,7 @@
 	return [
 		'code'    => 'database',
 		'name'    => 'База данных',
-		'version' => '0.1.5',
+		'version' => '0.2.0',
 
 		'permissions' => [
 			'key'      => 'database',
@@ -79,6 +79,7 @@
 			array('GET', '/database', array(\App\Adminx\Database\Controller::class, 'index')),
 			array('POST', '/database/maintenance', array(\App\Adminx\Database\Controller::class, 'maintenance')),
 			array('POST', '/database/backup', array(\App\Adminx\Database\Controller::class, 'backupCreate')),
+			array('POST', '/database/backup/keep', array(\App\Adminx\Database\Controller::class, 'backupKeep'), array('permission' => 'manage_database')),
 			array('POST', '/database/backup/upload', array(\App\Adminx\Database\Controller::class, 'backupUpload'), array('permission' => 'manage_database')),
 			array('GET', '/database/backup/download', array(\App\Adminx\Database\Controller::class, 'backupDownload')),
 			array('POST', '/database/backup/delete', array(\App\Adminx\Database\Controller::class, 'backupDelete')),

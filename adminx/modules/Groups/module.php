@@ -21,7 +21,7 @@
 	return [
 		'code'    => 'groups',
 		'name'    => 'Роли и права',
-		'version' => '0.1.1',
+		'version' => '0.3.0',
 
 		'permissions' => [
 			'key'      => 'groups',
@@ -62,9 +62,11 @@
 
 		'routes' => array(
 			array('GET', '/roles', array(\App\Adminx\Groups\Controller::class, 'index')),
+			array('GET', '/roles/simulator', array(\App\Adminx\Groups\Controller::class, 'simulator'), array('permission' => 'view_roles')),
 			array('GET', '/roles/{id}', array(\App\Adminx\Groups\Controller::class, 'show')),
 			array('POST', '/roles', array(\App\Adminx\Groups\Controller::class, 'store')),
 			array('POST', '/roles/{id}', array(\App\Adminx\Groups\Controller::class, 'update')),
+			array('POST', '/roles/{id}/copy', array(\App\Adminx\Groups\Controller::class, 'copy'), array('permission' => 'manage_roles')),
 			array('POST', '/roles/{id}/delete', array(\App\Adminx\Groups\Controller::class, 'destroy')),
 		),
 

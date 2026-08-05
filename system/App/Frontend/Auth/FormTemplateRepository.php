@@ -27,7 +27,7 @@
 	{
 		protected static $keys = array(
 			'panel', 'login', 'register', 'remember', 'reset', 'profile',
-			'overview', 'password', 'message',
+			'overview', 'password', 'message', 'phone', 'oauth', 'oauth_connections',
 		);
 
 		public static function keys()

@@ -1,0 +1,72 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block content %}
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i>
+  {% if back_url %}<a href="{{ ADMINX_BASE }}{{ back_url }}">{{ back_label }}</a><i class="ti ti-chevron-right"></i>{% endif %}
+  <span>{{ page_title }}</span>
+</nav>
+
+<div class="page-header"><div class="between"><div><h1>{{ page_title }}</h1><p class="text-secondary">{{ page_description }}</p></div>{% if can_view_themes %}<a class="btn btn-secondary" href="{{ ADMINX_BASE }}/themes?theme={{ selected.theme|url_encode }}&dir={{ ('views/' ~ selected.namespace)|url_encode }}"><i class="ti ti-palette"></i>Все файлы темы</a>{% endif %}</div></div>
+
+{% if tabs_template %}{% include tabs_template %}{% endif %}
+
+<div class="alert alert-info view-override-intro"><i class="ti ti-template"></i><div><b>Редактируется активная тема «{{ selected.theme }}»</b><p>Если файла в теме нет, показан резерв компонента. Первое сохранение создаст переопределение, последующие изменения останутся в ревизиях темы.</p></div></div>
+
+<div class="view-override-layout" data-view-overrides data-base="{{ ADMINX_BASE }}" data-route="{{ route_base }}">
+  <nav class="view-override-list" aria-label="Публичные шаблоны">
+    <div class="view-override-list-head"><b>{{ list_title|default('Публичный вывод') }}</b><span>{{ templates|length }} шаблонов</span></div>
+    {% for item in templates %}
+      {% if item.group and (loop.first or item.group != templates[loop.index0 - 1].group) %}<div class="view-override-group">{{ item.group }}</div>{% endif %}
+      <a class="view-override-item{{ item.code == selected.code ? ' is-active' : '' }}" href="{{ ADMINX_BASE }}{{ route_base }}?template={{ item.code|url_encode }}"{{ item.code == selected.code ? ' aria-current="page"' : '' }}>
+        <span class="icon-tile"><i class="{{ item.icon }}"></i></span>
+        <span class="view-override-item-copy"><b>{{ item.title }}</b><small>{{ item.description }}</small></span>
+        <span class="badge {{ item.active_override ? 'badge-green' : (item.has_theme_file ? 'badge-amber' : (item.has_fallback ? 'badge-gray' : 'badge-red')) }}">{{ item.active_override ? 'Тема' : (item.has_theme_file ? 'Не подключён' : (item.has_fallback ? 'Резерв' : 'Нет файла')) }}</span>
+      </a>
+    {% endfor %}
+  </nav>
+
+  <section class="view-override-editor">
+    <header class="view-override-editor-head">
+      <div class="view-override-title"><span class="icon-tile"><i class="{{ selected.icon }}"></i></span><div><h2>{{ selected.title }}</h2><p>{{ selected.description }}</p></div></div>
+      <div class="view-override-source"><span class="badge {{ selected.active_override ? 'badge-green' : (selected.has_theme_file ? 'badge-amber' : (selected.has_fallback ? 'badge-gray' : 'badge-red')) }}" data-view-override-source>{{ selected.source_label }}</span><small class="mono">{{ selected.has_theme_file ? selected.theme_path : selected.fallback_path }}</small></div>
+    </header>
+
+    {% if selected.has_theme_file and not selected.namespace_enabled %}
+      <div class="alert alert-warning view-override-warning"><i class="ti ti-plug-off"></i><div><b>Файл темы пока не подключён</b><p>После сохранения пространство <code>{{ selected.namespace }}</code> будет добавлено в реестр темы автоматически.</p></div></div>
+    {% elseif not selected.has_theme_file and selected.has_fallback %}
+      <div class="view-override-fallback"><i class="ti ti-info-circle"></i><span>Сейчас сайт использует резерв компонента. Сохранение создаст файл <code>{{ selected.theme_path }}</code> в теме.</span></div>
+    {% elseif not selected.has_theme_file %}
+      <div class="alert alert-danger view-override-warning"><i class="ti ti-alert-triangle"></i><div><b>Исходный файл отсутствует</b><p>Создайте шаблон в активной теме и заполните его Twig-разметкой.</p></div></div>
+    {% endif %}
+
+    <form class="view-override-form" data-view-override-form data-code="{{ selected.code }}" data-has-override="{{ selected.has_theme_file ? '1' : '0' }}">
+      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+      <div class="view-override-toolbar">
+        <div><b>Twig-разметка</b><small data-view-override-state>{{ selected.modified_label ? 'Изменён: ' ~ selected.modified_label : 'Без сохранённого override' }}</small></div>
+        <div class="cluster">
+          <button class="btn btn-secondary btn-sm" type="button" data-view-override-lint><i class="ti ti-bug"></i>Проверить</button>
+          <button class="btn btn-ghost btn-icon" type="button" data-view-override-fullscreen data-tooltip="На весь экран" aria-label="На весь экран"><i class="ti ti-arrows-maximize"></i></button>
+        </div>
+      </div>
+      <textarea class="textarea mono" name="content" data-code-editor data-mode="htmlmixed" data-height="640"{{ can_manage ? '' : ' readonly' }}>{{ selected.content }}</textarea>
+      <span class="field-hint view-override-lint" data-view-override-lint-result></span>
+
+      <details class="view-override-variables">
+        <summary><span><i class="ti ti-braces"></i><b>Данные этого шаблона</b><small>Переменные, которые можно вставлять в код</small></span><i class="ti ti-chevron-down"></i></summary>
+        <div class="view-override-variable-list" data-code-editor-tags="content">
+          {% for variable in selected.variables %}
+            <button type="button" data-code-editor-tag="{{ '{{ ' ~ variable[0] ~ ' }}'|e('html_attr') }}"{{ can_manage ? '' : ' disabled' }}><code>{{ variable[0] }}</code><span>{{ variable[1] }}</span><i class="ti ti-plus"></i></button>
+          {% else %}<p class="text-secondary">Специальные переменные не объявлены. Доступны глобальные данные публичного шаблона.</p>{% endfor %}
+        </div>
+      </details>
+
+      <footer class="view-override-footer">
+        <span class="view-override-save-state" data-view-override-save-state></span>
+        {% if can_manage and selected.can_delete_override %}<button class="btn btn-danger-soft" type="button" data-view-override-delete><i class="ti ti-restore"></i>Вернуться к резервному шаблону</button>{% endif %}
+        {% if can_manage %}<button class="btn btn-primary" type="submit" data-code-save-stay><i class="ti ti-device-floppy"></i>{{ selected.has_theme_file ? 'Сохранить' : 'Создать в теме' }}</button>{% endif %}
+      </footer>
+    </form>
+  </section>
+</div>
+{% endblock %}

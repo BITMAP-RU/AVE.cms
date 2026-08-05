@@ -13,4 +13,13 @@
 	<phrase data="auto_94d6ba09fac4d9d6">The session is out of date, please refresh the page and try again.</phrase>
 	<phrase data="auto_941abeff84af0919">Too many tries. Repeat after</phrase>
 	<phrase data="auto_5a6373e98b6ebb55">The account has been disabled.</phrase>
+	<phrase data="auth_temp_password_title">Temporary password change</phrase>
+	<phrase data="auth_temp_password_heading">Change your temporary password</phrase>
+	<phrase data="auth_temp_password_intro">The control panel will open after the password is changed.</phrase>
+	<phrase data="auth_temp_password_for">For</phrase>
+	<phrase data="auth_temp_password_current">Temporary password</phrase>
+	<phrase data="auth_temp_password_new">New password</phrase>
+	<phrase data="auth_temp_password_hint">At least 6 characters; the password must differ from the temporary one.</phrase>
+	<phrase data="auth_temp_password_confirm">Repeat the new password</phrase>
+	<phrase data="auth_temp_password_save">Save new password</phrase>
 </language>

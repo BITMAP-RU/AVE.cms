@@ -31,6 +31,7 @@
 		 */
 		protected static $currentUsers = [];
 		protected static $systemRolePermissions = [];
+		protected static $sessionExpiryColumns = [];
 
 		protected function __construct()
 		{
@@ -192,11 +193,9 @@
 
 			$token = isset($_COOKIE[$options['cookie_name']]) ? (string) $_COOKIE[$options['cookie_name']] : '';
 			if (preg_match('/^[a-f0-9]{64}$/', $token)) {
-				$ownerId = (int) DB::query(
-					"SELECT user_id FROM " . $options['session_table'] . " WHERE token_hash = %s LIMIT 1",
-					hash('sha256', $token)
-				)->getOne();
-				if ($ownerId === (int) $user['id']) {
+				$hash = hash('sha256', $token);
+				if (self::modernTokenBelongsTo($hash, (int) $user['id'], $options)) {
+					Session::set(self::modernTokenSessionKey($options), hash('sha256', $token));
 					return true;
 				}
 			}
@@ -340,7 +339,7 @@
 			}
 
 			self::modernForgetCookie($options);
-			Session::del($options['session_key']);
+			Session::del($options['session_key'], self::modernTokenSessionKey($options));
 			if (!empty($options['load_permissions'])) {
 				Session::del('permissions');
 			}
@@ -379,6 +378,17 @@
 				return null;
 			}
 
+			// Browser-token is the revocable identity of this login. Without this
+			// check deleting a row from users_session would leave the PHP session
+			// authorised until its own expiry.
+			$tokenHash = self::currentBrowserTokenHash($options);
+			if ($tokenHash !== '' && !self::modernTokenBelongsTo($tokenHash, $id, $options)) {
+				self::modernForgetCookie($options);
+				Session::del($options['session_key'], self::modernTokenSessionKey($options));
+				self::$currentUsers[$cacheKey] = false;
+				return null;
+			}
+
 			$sql = "SELECT * FROM " . $options['users_table'] . " WHERE id = %i";
 			$args = [$sql, $id];
 			if ($options['active_field'] !== '') {
@@ -406,6 +416,26 @@
 		{
 			$user = self::user($options);
 			return $user ? (int) $user['id'] : 0;
+		}
+
+		/** SHA-256 browser-token of the current modern-auth session, if present. */
+		public static function currentBrowserTokenHash(array $options = array())
+		{
+			$options = self::modernAuthOptions($options);
+			$sessionKey = self::modernTokenSessionKey($options);
+			$stored = (string) Session::get($sessionKey);
+			if (preg_match('/^[a-f0-9]{64}$/', $stored)) {
+				return $stored;
+			}
+
+			$token = isset($_COOKIE[$options['cookie_name']]) ? (string) $_COOKIE[$options['cookie_name']] : '';
+			if (!preg_match('/^[a-f0-9]{64}$/', $token)) {
+				return '';
+			}
+
+			$hash = hash('sha256', $token);
+			Session::set($sessionKey, $hash);
+			return $hash;
 		}
 
 		public static function role(array $options = [])
@@ -450,6 +480,31 @@
 			return $options['session_key'] . '|' . $options['cookie_name'];
 		}
 
+		protected static function modernTokenSessionKey(array $options)
+		{
+			return '_auth_browser_token_' . substr(sha1($options['session_key'] . '|' . $options['cookie_name']), 0, 16);
+		}
+
+		protected static function modernTokenBelongsTo($hash, $userId, array $options)
+		{
+			$expiryColumn = self::modernSessionHasExpiry($options);
+			$row = DB::query(
+				'SELECT user_id,last_active,created_at' . ($expiryColumn ? ',expires_at' : '')
+					. ' FROM ' . $options['session_table'] . ' WHERE token_hash=%s LIMIT 1',
+				(string) $hash
+			)->getAssoc();
+			if (!$row || (int) $row['user_id'] !== (int) $userId) {
+				return false;
+			}
+
+			if (self::modernTokenExpired($row, $options)) {
+				DB::Delete($options['session_table'], 'token_hash=%s', (string) $hash);
+				return false;
+			}
+
+			return true;
+		}
+
 		protected static function modernIssueRememberToken($userId, array $options, $persistent = true)
 		{
 			if (headers_sent()) {
@@ -459,14 +514,21 @@
 			$token = bin2hex(random_bytes(32));
 			$now = date('Y-m-d H:i:s');
 
-			DB::Insert($options['session_table'], [
+			$tokenHash = hash('sha256', $token);
+			$values = [
 				'user_id' => (int) $userId,
-				'token_hash' => hash('sha256', $token),
+				'token_hash' => $tokenHash,
 				'agent' => substr(Request::userAgent(), 0, 255),
 				'ip' => self::modernClientIp(),
 				'created_at' => $now,
 				'last_active' => $now,
-			]);
+			];
+			if (self::modernSessionHasExpiry($options)) {
+				$values['expires_at'] = date('Y-m-d H:i:s', time() + (int) $options['token_ttl']);
+			}
+
+			DB::Insert($options['session_table'], $values);
+			Session::set(self::modernTokenSessionKey($options), $tokenHash);
 
 			self::modernSendCookie($token, $persistent ? time() + (int) $options['token_ttl'] : 0, $options);
 			$_COOKIE[$options['cookie_name']] = $token;
@@ -492,12 +554,19 @@
 			}
 
 			$hash = hash('sha256', $token);
-			$userId = (int) DB::query(
-				"SELECT user_id FROM " . $options['session_table'] . " WHERE token_hash = %s LIMIT 1",
+			$expiryColumn = self::modernSessionHasExpiry($options);
+			$tokenRow = DB::query(
+				"SELECT user_id,last_active,created_at" . ($expiryColumn ? ',expires_at' : '')
+					. " FROM " . $options['session_table'] . " WHERE token_hash = %s LIMIT 1",
 				$hash
-			)->getOne();
+			)->getAssoc();
+			$userId = $tokenRow ? (int) $tokenRow['user_id'] : 0;
 
-			if ($userId <= 0) {
+			if ($userId <= 0 || self::modernTokenExpired($tokenRow ?: array(), $options)) {
+				if ($userId > 0) {
+					DB::Delete($options['session_table'], "token_hash = %s", $hash);
+				}
+
 				self::modernForgetCookie($options);
 				return 0;
 			}
@@ -520,7 +589,21 @@
 			}
 
 			if ($persistSession) {
+				$newToken = bin2hex(random_bytes(32));
+				$newHash = hash('sha256', $newToken);
+				DB::Update(
+					$options['session_table'],
+					array('token_hash' => $newHash, 'last_active' => date('Y-m-d H:i:s'), 'ip' => self::modernClientIp()),
+					'token_hash=%s',
+					$hash
+				);
+				if ((int) DB::affectedRows() !== 1) { self::modernForgetCookie($options); return 0; }
+				$hash = $newHash;
+				$expiresAt = !empty($tokenRow['expires_at']) ? strtotime((string) $tokenRow['expires_at']) : 0;
+				self::modernSendCookie($newToken, $expiresAt > time() ? $expiresAt : 0, $options);
+				$_COOKIE[$options['cookie_name']] = $newToken;
 				Session::set($options['session_key'], $userId);
+				Session::set(self::modernTokenSessionKey($options), $hash);
 			}
 
 			$touchKey = '_auth_token_touch_' . substr($hash, 0, 16);
@@ -536,6 +619,29 @@
 			}
 
 			return $userId;
+		}
+
+		protected static function modernTokenExpired(array $row, array $options)
+		{
+			$ttl = max(1, (int) $options['token_ttl']);
+			$lastActive = !empty($row['last_active']) ? strtotime((string) $row['last_active']) : 0;
+			$absolute = !empty($row['expires_at'])
+				? strtotime((string) $row['expires_at'])
+				: (!empty($row['created_at']) ? strtotime((string) $row['created_at']) + $ttl : 0);
+			return $lastActive <= 0 || $lastActive < time() - $ttl || $absolute <= 0 || $absolute < time();
+		}
+
+		protected static function modernSessionHasExpiry(array $options)
+		{
+			$table = (string) $options['session_table'];
+			if (!array_key_exists($table, self::$sessionExpiryColumns)) {
+				self::$sessionExpiryColumns[$table] = (bool) DB::query(
+					'SHOW COLUMNS FROM ' . $table . ' LIKE %s',
+					'expires_at'
+				)->getAssoc();
+			}
+
+			return self::$sessionExpiryColumns[$table];
 		}
 
 		protected static function modernClientIp()

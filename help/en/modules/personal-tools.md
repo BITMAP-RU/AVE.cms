@@ -1,25 +1,24 @@
-# Personal toolbar
+# Panel work tools
 
 ← [Back to the “Modules” section](README.md)
 
-Todo, Kanban, Notes and Reminders store personal work data of the current
-panel user. Posts by one administrator do not become a common board for
-other users.
+Todo and Kanban support collaborative work. Notes and Reminders remain private
+to their owner.
 
 ##Todo
 
-Module `todo` - short checklist. A task can be created from an action in the header,
-Mark completed or delete. The full list is in **Modules → Todo**, and
-The summary is available via the home widget.
+Module `todo` is a checklist with an assignee, due date, visibility, and an
+optional document link. The author can edit or delete a task; the author and
+assignee can complete it. Overdue tasks appear in notifications.
 
 - `view_todos` - list, action in the header and widget;
 - `manage_todos` - creation, execution and deletion.
 
 ## Kanban
 
-Module `kanban` - personal board with customizable columns and cards. Columns and
-The cards are colored and the order can be changed by dragging and dropping. Widget shows the board
-on the main panel.
+Module `kanban` has configurable columns and cards. Cards may have an assignee,
+due date, team visibility, and document link. Columns remain on the author's
+board; recipients see assigned/shared cards in a separate list.
 
 - `view_kanban` — view the board and widget;
 - `manage_kanban` - columns, cards and movement.

@@ -17,6 +17,7 @@
 	defined('BASEPATH') || die('Direct access to this location is not allowed.');
 
 	use App\Common\Session;
+	use App\Common\SiteOrigin;
 
 	class OAuthFlow
 	{
@@ -30,7 +31,7 @@
 			$flow = array(
 				'provider' => (string) $provider, 'state' => $state,
 				'return_url' => (string) $returnUrl, 'expires_at' => time() + self::TTL,
-				'redirect_uri' => self::callbackUrl($provider),
+				'redirect_uri' => self::callbackUrl($provider, true),
 				'code_verifier' => $verifier,
 				'code_challenge' => self::base64Url(hash('sha256', $verifier, true)),
 			);
@@ -56,11 +57,12 @@
 			return $flow;
 		}
 
-		public static function callbackUrl($provider)
+		public static function callbackUrl($provider, $required = false)
 		{
-			$base = defined('HOST') ? rtrim((string) HOST, '/') : self::requestOrigin();
-			$path = defined('ABS_PATH') ? rtrim((string) ABS_PATH, '/') : '';
-			return $base . $path . '/auth/oauth/' . rawurlencode((string) $provider) . '/callback';
+			return SiteOrigin::absolute(
+				'/auth/oauth/' . rawurlencode((string) $provider) . '/callback',
+				(bool) $required
+			);
 		}
 
 		protected static function active()
@@ -72,13 +74,6 @@
 			}
 
 			return $flows;
-		}
-
-		protected static function requestOrigin()
-		{
-			$https = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== '' && $_SERVER['HTTPS'] !== 'off';
-			$host = isset($_SERVER['HTTP_HOST']) ? preg_replace('/[^A-Za-z0-9.:[\]-]/', '', (string) $_SERVER['HTTP_HOST']) : 'localhost';
-			return ($https ? 'https://' : 'http://') . $host;
 		}
 
 		protected static function base64Url($value)

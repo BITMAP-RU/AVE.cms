@@ -26,10 +26,22 @@
 
 		public static function issue($userId, $name, array $scopes, $expiresAt = '')
 		{
+			return self::issueRestricted($userId, $name, $scopes, self::allowedScopes(), $expiresAt);
+		}
+
+		/** Issue a token only when every requested scope belongs to the caller's boundary. */
+		public static function issueRestricted($userId, $name, array $scopes, array $allowedScopes, $expiresAt = '')
+		{
 			$userId = (int) $userId;
 			$name = trim((string) $name);
 			if ($userId <= 0 || $name === '') { throw new \InvalidArgumentException('Укажите название API-токена'); }
-			$scopes = self::normalizeScopes($scopes);
+			$requested = array_values(array_unique(array_filter(array_map('trim', array_map('strval', $scopes)))));
+			$allowedScopes = self::normalizeScopes($allowedScopes);
+			if (array_diff($requested, $allowedScopes)) {
+				throw new \InvalidArgumentException('Запрошенное разрешение недоступно в этом разделе');
+			}
+
+			$scopes = self::normalizeScopes($requested);
 			if (empty($scopes)) { throw new \InvalidArgumentException('Выберите хотя бы одно разрешение API'); }
 			$raw = 'ave_' . bin2hex(random_bytes(32));
 			$expires = self::dateValue($expiresAt);
@@ -61,6 +73,18 @@
 		public static function revoke($id)
 		{
 			return DB::Update(self::table(), array('revoked_at' => date('Y-m-d H:i:s')), 'id=%i AND revoked_at IS NULL', (int) $id);
+		}
+
+		/** Revoke only a token that belongs to one of the caller's scope families. */
+		public static function revokeRestricted($id, array $scopes)
+		{
+			$token = self::find((int) $id);
+			if (!$token) { return 0; }
+			foreach (self::normalizeScopes($scopes) as $scope) {
+				if (self::hasScope($token, $scope)) { return self::revoke((int) $id); }
+			}
+
+			return 0;
 		}
 
 		public static function find($id)

@@ -13,4 +13,9 @@
 	<phrase data="runtime_4ffa62424067c80f">Слишком много попыток. Повторите через</phrase>
 	<phrase data="runtime_7cc36c1848c1e707">Учётная запись отключена.</phrase>
 	<phrase data="runtime_46a81a92e59e6d10">сек.</phrase>
+	<phrase data="auth_login_rate_limited">Слишком много попыток входа. Повторите через</phrase>
+	<phrase data="auth_current_password_invalid">Текущий пароль указан неверно.</phrase>
+	<phrase data="auth_new_password_short">Новый пароль должен содержать не меньше 6 символов.</phrase>
+	<phrase data="auth_new_password_mismatch">Новые пароли не совпадают.</phrase>
+	<phrase data="auth_new_password_same">Новый пароль должен отличаться от временного.</phrase>
 </language>

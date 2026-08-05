@@ -228,6 +228,12 @@
 	<phrase data="auto_fc8b3939cc9dc467">The path will be written in the document field.</phrase>
 	<phrase data="auto_fda74d41e3311f87">A newer version is already saved on the server. Refresh the page, check the changes, and save the document again.</phrase>
 	<phrase data="auto_ffec67789fb1fcdc">sch</phrase>
+	<phrase data="documents_bulk_action">Action</phrase>
+	<phrase data="documents_bulk_action_fallback">Action</phrase>
+	<phrase data="documents_bulk_documents_suffix"> documents.</phrase>
+	<phrase data="documents_bulk_errors">errors</phrase>
+	<phrase data="documents_bulk_processed">processed</phrase>
+	<phrase data="documents_bulk_unchanged">unchanged</phrase>
 	<phrase data="runtime_05d4ae78b6f1bfee">n</phrase>
 	<phrase data="runtime_0918b4ba92684eaa">Title</phrase>
 	<phrase data="runtime_0940401102b8a3fe">t</phrase>
@@ -287,4 +293,10 @@
 	<phrase data="runtime_f4019994d4e75a2a">after saving</phrase>
 	<phrase data="runtime_f9a506077fa0d961">New</phrase>
 	<phrase data="runtime_fff8b34d92dab340">Template</phrase>
+	<phrase data="auto_f8af664b7ab2ef75">Remove all items?</phrase>
+	<phrase data="auto_10403ca9b11a0b49">After saving, the items will be removed from the document. Unused files can be restored from the media trash.</phrase>
+	<phrase data="auto_5ede041b60096d58">Remove the image?</phrase>
+	<phrase data="auto_c5b3cd090f16f479">After saving, the image will be removed from the document. The unused file can be restored from the media trash.</phrase>
+	<phrase data="auto_e26c8664b60bfa9a">Remove the image from the document?</phrase>
+	<phrase data="auto_02e536f7b2d5cec8">The document was saved, but some old files were not moved to the trash.</phrase>
 </language>

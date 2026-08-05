@@ -17,7 +17,7 @@
 	return array(
 		'code' => 'global_search',
 		'name' => 'Глобальный поиск',
-		'version' => '0.2.0',
+		'version' => '0.2.1',
 		'routes' => array(
 			array('GET', '/search', array(\App\Adminx\GlobalSearch\Controller::class, 'index')),
 		),

@@ -3,6 +3,7 @@
   <div class="static_page_inner">
     {% if page.description %}<p class="text-muted">{{ page.description }}</p>{% endif %}
     {% if errors._form %}<div class="alert alert-danger" role="alert">{{ errors._form }}</div>{% endif %}
+    {% if email_registration_enabled %}
     <form method="post" action="{{ base }}{{ auth_urls.register }}" class="system-public-auth-form">
       <input type="hidden" name="_csrf" value="{{ csrf|e }}">
       <div class="form-row">
@@ -19,5 +20,9 @@
       <div class="form-row"><div class="form-group col-md-6"><label for="register-password">Пароль</label><input class="form-control" id="register-password" type="password" name="password" autocomplete="new-password" minlength="{{ config.password_min_length }}" required>{% if errors.password %}<small class="text-danger">{{ errors.password }}</small>{% endif %}</div><div class="form-group col-md-6"><label for="register-password-confirm">Повторите пароль</label><input class="form-control" id="register-password-confirm" type="password" name="password_confirm" autocomplete="new-password" required>{% if errors.password_confirm %}<small class="text-danger">{{ errors.password_confirm }}</small>{% endif %}</div></div>
       <div class="system-public-auth-actions"><button class="btn btn-primary" type="submit">{{ page.submit_label }}</button><a href="{{ base }}{{ auth_urls.login }}">Уже есть аккаунт</a></div>
     </form>
+    {% endif %}
+    {% if phone_registration_enabled and registration_phone_providers %}
+      {% include '@system_auth/phone.twig' with {'phone_providers': registration_phone_providers, 'phone_auth_registration': true, 'return_url': auth_urls.profile} %}
+    {% endif %}
   </div>
 </div>

@@ -30,7 +30,7 @@
 		'customers' => array('directory' => 'Customers', 'ids' => array(
 			'001_normalize_public_groups', '002_public_auth_schema', '003_normalize_last_visit',
 			'004_materialize_public_auth_schema', '005_checkout_registration',
-			'006_phone_identity',
+			'006_phone_identity', '007_customer_center',
 		), 'backup' => array(
 			'005_checkout_registration' => array(
 				'{{public_user_prefix}}_auth_settings',
@@ -42,6 +42,10 @@
 				'{{prefix}}_settings',
 			),
 			'006_phone_identity' => array('{{public_user_prefix}}_users'),
+			'007_customer_center' => array(
+				'{{system_prefix}}_customer_notes',
+				'{{basket_prefix}}_module_basket_history',
+			),
 		)),
 		'database' => array('directory' => 'Database', 'ids' => array(
 			'001_mysql_legacy_index_compatibility', '002_module_lifecycle_recovery',
@@ -73,9 +77,16 @@
 			'006_normalize_control_panel_permission' => array('{{prefix}}_permissions'),
 		)),
 		'media' => array('directory' => 'Media', 'ids' => array(
-			'001_image_presets',
-		), 'backup' => array('001_image_presets' => array())),
-		'navigation' => array('directory' => 'Navigation', 'ids' => array('001_create_navigation_tables')),
+			'001_image_presets', '002_media_search_index',
+		), 'backup' => array(
+			'001_image_presets' => array(),
+			'002_media_search_index' => array(),
+		)),
+		'navigation' => array('directory' => 'Navigation', 'ids' => array(
+			'001_create_navigation_tables', '002_navigation_revisions',
+		), 'backup' => array(
+			'002_navigation_revisions' => array(),
+		)),
 		'notfound' => array('directory' => 'NotFound', 'optional' => true, 'ids' => array(
 			'001_register_notfound_permissions', '002_create_not_found_log',
 		)),
@@ -94,9 +105,10 @@
 			'005_rebuild_native_condition_cache', '006_sargable_condition_cache',
 			'007_result_contract', '008_preview_renderer', '009_native_executor',
 			'010_native_audit_result', '011_order_tiebreaker', '012_condition_value_sources',
-			'013_sort_rules',
+			'013_sort_rules', '014_request_revisions',
 		), 'backup' => array(
 			'013_sort_rules' => array('{{content_prefix}}_request'),
+			'014_request_revisions' => array(),
 		)),
 		'rubrics' => array('directory' => 'Rubrics', 'ids' => array(
 			'001_create_rubrics_tables', '002_rubric_field_settings',
@@ -121,7 +133,11 @@
 			'001_create_settings_tables', '002_normalize_breadcrumb_separator',
 			'003_remove_unused_constants', '004_seed_core_display_defaults',
 			'005_order_system_navigation', '006_create_admin_saved_views',
-		), 'backup' => array('006_create_admin_saved_views' => array())),
+			'007_public_site_url',
+		), 'backup' => array(
+			'006_create_admin_saved_views' => array(),
+			'007_public_site_url' => array('{{prefix}}_constants'),
+		)),
 		'templates' => array('directory' => 'Templates', 'ids' => array(
 			'001_create_templates_tables', '002_create_template_revisions',
 		)),
@@ -130,7 +146,10 @@
 		)),
 		'users' => array('directory' => 'Users', 'ids' => array(
 			'001_normalize_public_session_activity', '002_harden_public_remember_tokens',
+			'003_system_user_security', '004_system_session_expiry',
 		), 'backup' => array(
 			'002_harden_public_remember_tokens' => array('{{public_user_prefix}}_users_session'),
+			'003_system_user_security' => array(),
+			'004_system_session_expiry' => array('{{prefix}}_users_session'),
 		)),
 	);

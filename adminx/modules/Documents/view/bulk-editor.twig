@@ -1,0 +1,159 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}Массовый редактор{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i>
+  <a href="{{ ADMINX_BASE }}/documents">Документы</a><i class="ti ti-chevron-right"></i>
+  <span>Массовый редактор</span>
+</nav>
+
+<div class="page-header">
+  <div>
+    <h1>Массовый редактор</h1>
+    <p class="text-secondary" style="margin-top:5px">Проверяет изменения до запуска и обрабатывает документы небольшими пакетами.</p>
+  </div>
+</div>
+
+<div class="tabs documents-page-tabs" role="tablist" aria-label="Разделы документов">
+  <a class="tab" href="{{ ADMINX_BASE }}/documents"><i class="ti ti-files"></i>Документы</a>
+  <a class="tab is-active" href="{{ ADMINX_BASE }}/documents/bulk-editor"><i class="ti ti-edit-circle"></i>Массовый редактор</a>
+  <a class="tab" href="{{ ADMINX_BASE }}/documents/views"><i class="ti ti-chart-line"></i>Просмотры</a>
+  <a class="tab" href="{{ ADMINX_BASE }}/documents/redirects"><i class="ti ti-route"></i>Редиректы</a>
+  <a class="tab" href="{{ ADMINX_BASE }}/documents/api"><i class="ti ti-api"></i>JSON API</a>
+</div>
+
+<div class="documents-bulk-editor" data-document-bulk-editor>
+  <div class="alert alert-info documents-bulk-notice">
+    <i class="ti ti-shield-check"></i>
+    <div><b>Сначала проверка, затем применение</b><span>Предпросмотр фиксирует точный список документов. Для изменённых документов создаются обычные ревизии, выполняются хуки и обновляются индексы.</span></div>
+  </div>
+
+  <form class="documents-bulk-form" data-document-bulk-form>
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+
+    <section class="card documents-bulk-step">
+      <div class="documents-section-head">
+        <div class="documents-section-title">
+          <span class="icon-tile documents-head-icon" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-filter"></i></span>
+          <div><h2>1. Какие документы</h2><p class="text-secondary">Сначала сузьте набор. Фильтр не меняет данные.</p></div>
+        </div>
+      </div>
+      <div class="documents-bulk-controls">
+        {% if bulk_options.products_available %}
+        <label class="field"><span>Контур</span><select class="select" name="scope">
+          <option value="all">Документы и товары</option>
+          <option value="documents">Только обычные документы</option>
+          <option value="products">Только товары</option>
+        </select></label>
+        {% else %}
+        <input type="hidden" name="scope" value="all">
+        {% endif %}
+        <label class="field"><span>Рубрика</span><select class="select" name="rubric_id" data-bulk-rubric>
+          <option value="0">Все рубрики</option>
+          {% for rubric in bulk_options.rubrics %}
+          <option value="{{ rubric.Id }}">{{ rubric.rubric_title }}</option>
+          {% endfor %}
+        </select></label>
+        <label class="field"><span>Состояние</span><select class="select" name="state">
+          <option value="">Опубликованные и черновики</option>
+          <option value="active">Только опубликованные</option>
+          <option value="draft">Только черновики</option>
+        </select></label>
+        <label class="field documents-bulk-search"><span>Поиск</span><span class="input-wrap"><i class="ti ti-search"></i><input class="input" type="search" name="q" placeholder="ID, название или alias"></span></label>
+      </div>
+    </section>
+
+    <section class="card documents-bulk-step">
+      <div class="documents-section-head">
+        <div class="documents-section-title">
+          <span class="icon-tile documents-head-icon" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-adjustments-horizontal"></i></span>
+          <div><h2>2. Что изменить</h2><p class="text-secondary">Для полей рубрики сначала выберите одну рубрику выше.</p></div>
+        </div>
+      </div>
+      <div class="documents-bulk-controls">
+        <label class="field"><span>Действие</span><select class="select" name="operation" data-bulk-operation>
+          <option value="">Выберите действие</option>
+          <option value="fill">Заполнить только пустые</option>
+          <option value="set">Установить значение</option>
+          <option value="clear">Очистить значение</option>
+          <option value="replace">Найти и заменить</option>
+          <option value="move">Перенести в другую рубрику</option>
+          <option value="publish">Опубликовать</option>
+          <option value="unpublish">Снять с публикации</option>
+          <option value="recalculate">Пересчитать поля и индексы</option>
+        </select></label>
+
+        <label class="field" data-bulk-target-wrap hidden><span>Поле</span><select class="select" name="target" data-bulk-target>
+          <optgroup label="Основные данные документа">
+            {% for key, item in bulk_options.document_fields %}
+            <option value="{{ key }}" data-help="{{ item.help|default('') }}">{{ item.label }}</option>
+            {% endfor %}
+          </optgroup>
+          <optgroup label="Поля выбранной рубрики" data-bulk-field-options></optgroup>
+        </select></label>
+
+        <label class="field" data-bulk-search-wrap hidden><span>Что найти</span><input class="input" type="text" name="search" placeholder="Точное вхождение"></label>
+        <label class="field documents-bulk-value" data-bulk-value-wrap hidden><span>Новое значение</span><textarea class="textarea" name="value" rows="3" placeholder="Введите значение"></textarea></label>
+
+        <label class="field" data-bulk-rubric-target-wrap hidden><span>Новая рубрика</span><select class="select" name="target_rubric_id">
+          <option value="0">Выберите рубрику</option>
+          {% for rubric in bulk_options.rubrics %}
+          <option value="{{ rubric.Id }}">{{ rubric.rubric_title }}</option>
+          {% endfor %}
+        </select></label>
+      </div>
+      <div class="documents-bulk-target-help" data-bulk-target-help hidden>
+        <i class="ti ti-info-circle"></i><span></span>
+      </div>
+      <div class="documents-bulk-step-footer">
+        <span class="text-secondary"><i class="ti ti-info-circle"></i>Ничего не сохранится до подтверждения результата проверки.</span>
+        <button class="btn btn-primary" type="submit" data-bulk-preview><i class="ti ti-eye"></i>Проверить изменения</button>
+      </div>
+    </section>
+  </form>
+
+  <section class="card documents-bulk-preview" data-bulk-preview-panel hidden>
+    <div class="documents-section-head">
+      <div class="documents-section-title">
+        <span class="icon-tile documents-head-icon" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-list-check"></i></span>
+        <div><h2>3. Предпросмотр</h2><p class="text-secondary" data-bulk-preview-summary></p></div>
+      </div>
+      <span class="badge badge-blue" data-bulk-preview-count>0</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table documents-bulk-table">
+        <thead><tr><th>ID и документ</th><th>Рубрика</th><th>Было</th><th>Станет</th><th>Результат</th></tr></thead>
+        <tbody data-bulk-preview-rows></tbody>
+      </table>
+    </div>
+    <div class="documents-bulk-run">
+      <div>
+        <b>Проверьте примеры перед запуском</b>
+        <span>В таблице показаны первые 20 изменений. В очередь попадут только документы, где значение действительно изменится.</span>
+      </div>
+      <button class="btn btn-primary" type="button" data-bulk-run><i class="ti ti-player-play"></i>Применить ко всему набору</button>
+    </div>
+  </section>
+
+  <section class="card documents-bulk-progress" data-bulk-progress-panel hidden>
+    <div class="documents-bulk-progress-head">
+      <div><b data-bulk-progress-title>Обрабатываем документы</b><span data-bulk-progress-message>Подготовка...</span></div>
+      <strong data-bulk-progress-percent>0%</strong>
+    </div>
+    <div class="progress"><span data-bulk-progress-bar style="width:0%"></span></div>
+    <div class="documents-bulk-progress-stats">
+      <span><b data-bulk-progress-processed>0</b> обработано</span>
+      <span><b data-bulk-progress-done>0</b> изменено</span>
+      <span><b data-bulk-progress-skipped>0</b> без изменений</span>
+      <span><b data-bulk-progress-errors>0</b> ошибок</span>
+    </div>
+    <div class="documents-bulk-progress-actions">
+      <button class="btn btn-secondary" type="button" data-bulk-cancel><i class="ti ti-player-stop"></i>Остановить</button>
+      <a class="btn btn-primary" href="{{ ADMINX_BASE }}/documents" data-bulk-finish hidden><i class="ti ti-check"></i>Вернуться к документам</a>
+    </div>
+    <div class="documents-bulk-errors" data-bulk-errors hidden></div>
+  </section>
+</div>
+
+{% endblock %}

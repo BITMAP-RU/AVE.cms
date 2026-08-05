@@ -13,4 +13,9 @@
 	<phrase data="runtime_4ffa62424067c80f">Too many tries. Repeat after</phrase>
 	<phrase data="runtime_7cc36c1848c1e707">The account has been disabled.</phrase>
 	<phrase data="runtime_46a81a92e59e6d10">sec.</phrase>
+	<phrase data="auth_login_rate_limited">Too many login attempts. Try again in</phrase>
+	<phrase data="auth_current_password_invalid">The current password is incorrect.</phrase>
+	<phrase data="auth_new_password_short">The new password must contain at least 6 characters.</phrase>
+	<phrase data="auth_new_password_mismatch">The new passwords do not match.</phrase>
+	<phrase data="auth_new_password_same">The new password must differ from the temporary one.</phrase>
 </language>

@@ -22,6 +22,14 @@
 
 	class Repository
 	{
+		public function active()
+		{
+			$rows = DB::query('SELECT * FROM ' . Schema::table('definitions') . ' WHERE status=1 ORDER BY id')->getAll() ?: array();
+			$result = array();
+			foreach ($rows as $row) { $result[] = $this->hydrate((array) $row); }
+			return $result;
+		}
+
 		public function findByAlias($alias)
 		{
 			$row = DB::query('SELECT * FROM ' . Schema::table('definitions') . ' WHERE alias=%s AND status=1 LIMIT 1', (string) $alias)->getAssoc();

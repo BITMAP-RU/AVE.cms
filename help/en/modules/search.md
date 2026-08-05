@@ -98,9 +98,15 @@ modules/search/app/view/
 modules/search/app/assets/
 ```
 
-The files contain the functional shell of the page, the form and regular assets.
-The markup of the results themselves is stored in the module settings. For different cards
-It is more convenient for sections to use queries.
+The files contain the functional page shell, form, and bundled assets. Use the
+**Page shell** button in the module header to edit the form, complete page,
+AJAX fragment, and pagination. Saving creates an active-theme override, checks
+Twig syntax, records a theme revision, and invalidates the public cache.
+
+Result-card markup remains on the **Output templates** tab. The page-shell
+editor controls where the form and result fragment live; output templates
+control the contents of each result. Existing requests remain the best option
+when different sections require different cards.
 
 In **Modules → Site Search → Output Templates** the built-in markup can be changed
 without editing files. Four templates are available:
@@ -199,8 +205,43 @@ The area defines its own categories, algorithm, output and API fields. For examp
 | Articles | `articles` | Blog, Instructions | Request with article card |
 | Products | `products` | Product headings | Request with product card |
 
-An empty rubric set means all rubrics. An area can inherit the main one
-request and a set of API fields or override them.
+An empty rubric set means all rubrics. An area can inherit the main request and
+API field set or override them.
+
+### Scope display conditions
+
+A scope can have additional restrictions without SQL and without fixed field
+IDs. Each condition stores a field alias, so it survives a site transfer as
+long as the rubric keeps the same system field names.
+
+To add a restriction:
+
+1. Open **Scopes** and the required scope.
+2. Under **Display conditions**, click **Add condition**.
+3. Select a field. Its alias is shown next to its title.
+4. Select a check and enter a value when required.
+5. Save the search settings.
+
+All rows must match. For example, a product scope may use:
+
+| Field | Check | Value | Meaning |
+| --- | --- | --- | --- |
+| Price (`price`) | Number is greater than | `0` | Include only items with a positive price. |
+| Hide (`noshow`) | Checkbox is off | — | Exclude manually hidden items. |
+| Not in price list (`noprice`) | Checkbox is off | — | Exclude items absent from a price list. |
+
+The aliases above are examples only. Another site selects its own fields. The
+module does not require product-specific aliases and does not add these rules to
+a clean installation.
+
+Available checks cover empty values, checkbox state, text equality, and numeric
+comparisons. For **Checkbox is off**, **Does not equal**, and **Is empty**, a
+missing field also matches. This is useful when one scope combines rubrics with
+slightly different field sets.
+
+Document state is checked independently. Disabled, deleted, and non-searchable
+documents stay out even when the search index is stale. Conditions are applied
+before counting, so totals, suggestions, and pagination match the actual output.
 
 The public page shows areas as radio buttons. Direct links:
 

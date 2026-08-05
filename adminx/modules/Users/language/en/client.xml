@@ -26,4 +26,22 @@
 	<phrase data="auto_f2d6a66eee4f2dba">average</phrase>
 	<phrase data="auto_f2f391cf89444519">excellent</phrase>
 	<phrase data="auto_f89814d87e446cdd">Change:</phrase>
+	<phrase data="users_browser">Browser</phrase>
+	<phrase data="users_device">Device</phrase>
+	<phrase data="users_never">Never</phrase>
+	<phrase data="users_no_data">No data</phrase>
+	<phrase data="users_password_change_clear">No mandatory change scheduled</phrase>
+	<phrase data="users_password_change_pending">A new password will be required at the next login</phrase>
+	<phrase data="users_revoke_all">End all sessions</phrase>
+	<phrase data="users_revoke_all_failed">Could not end the sessions</phrase>
+	<phrase data="users_revoke_failed">Could not end the session</phrase>
+	<phrase data="users_revoke_others">End other sessions</phrase>
+	<phrase data="users_revoke_session">End session</phrase>
+	<phrase data="users_session_activity">activity</phrase>
+	<phrase data="users_session_current">Current</phrase>
+	<phrase data="users_session_login">login</phrase>
+	<phrase data="users_sessions_empty">No active sessions</phrase>
+	<phrase data="users_sessions_empty_hint">The user can sign in again with a valid password.</phrase>
+	<phrase data="users_sessions_load_failed">Could not load sessions</phrase>
+	<phrase data="users_sessions_loading">Loading sessions</phrase>
 </language>

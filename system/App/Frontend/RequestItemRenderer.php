@@ -32,7 +32,7 @@
 	class RequestItemRenderer
 	{
 		/** Bump when request-item rendering semantics change to retire incompatible HTML caches. */
-		const CACHE_VERSION = 5;
+		const CACHE_VERSION = 6;
 
 		public function render($mixed, $template = '', $tparams = '', $context = null)
 		{
@@ -234,7 +234,7 @@
 				$item = str_replace('[tag:docid]', $row->Id, $item);
 				$item = str_replace('[tag:itemid]', $row->Id, $item);
 				$item = str_replace('[tag:docitemnum]', $context->itemNumber(), $item);
-				$adminLink = AdminLocation::url('content/documents/' . (int) $row->Id . '/edit') . '?quick_edit=1&pop=1';
+				$adminLink = AdminLocation::url('documents/' . (int) $row->Id . '/edit') . '?quick_edit=1&pop=1';
 				$item = str_replace('[tag:adminlink]', $adminLink, $item);
 				$item = str_replace('[tag:doctitle]', stripslashes(htmlspecialchars_decode($row->document_title)), $item);
 				$item = str_replace('[tag:docparent]', $row->document_parent, $item);

@@ -314,3 +314,31 @@
   font-size: 13px;
   font-weight: 600;
 }
+/* --- Ротация резервных копий ------------------------------------------ */
+.database-backup-keep {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 14px 16px;
+}
+.database-backup-keep-text {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+.database-backup-keep-text p {
+  margin: 4px 0 0;
+}
+.database-backup-keep-field {
+  flex: 0 0 auto;
+  width: 150px;
+  margin: 0;
+}
+@media (max-width: 700px) {
+  .database-backup-keep {
+    align-items: stretch;
+  }
+  .database-backup-keep-field {
+    width: 100%;
+  }
+}

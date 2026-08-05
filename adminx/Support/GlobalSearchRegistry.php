@@ -17,6 +17,7 @@
 	defined('BASEPATH') || die('Direct access to this location is not allowed.');
 
 	use App\Common\Permission;
+	use App\Common\Language;
 
 	/**
 	 * Реестр провайдеров административного поиска.
@@ -140,7 +141,7 @@
 
 			return array(
 				'type' => self::code(isset($row['type']) ? $row['type'] : $providerCode),
-				'group' => self::text(isset($row['group']) ? $row['group'] : 'Результаты', 80),
+				'group' => Language::translateSource(self::text(isset($row['group']) ? $row['group'] : 'Результаты', 80)),
 				'title' => $title,
 				'subtitle' => self::text(isset($row['subtitle']) ? $row['subtitle'] : '', 300),
 				'url' => $url,

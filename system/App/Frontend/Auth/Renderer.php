@@ -36,7 +36,7 @@
 			$displayUser = $user ?: $systemUser;
 			$accountLinks = Hooks::filter('auth.account.links', array());
 			if (!is_array($accountLinks)) { $accountLinks = array(); }
-			$html = Twig::twig()->render('@system_auth/panel.twig', array(
+			$html = (new FormTemplateRepository())->render('panel', array(
 				'base' => $base,
 				'csrf' => Session::csrfToken(),
 				'return_url' => self::returnUrl(),
@@ -76,21 +76,39 @@
 				'auth_urls' => Feature::urls(),
 				'page' => $page,
 				'config' => Feature::config(),
+				'registration_enabled' => Feature::registrationFormEnabled(),
 				'preview' => false,
 				'oauth_providers' => ProviderRegistry::publicItems(),
 				'phone_providers' => PhoneProviderRegistry::publicItems(),
+				'email_registration_enabled' => Feature::emailRegistrationEnabled(),
+				'phone_registration_enabled' => Feature::phoneRegistrationEnabled(),
+				'registration_phone_providers' => Feature::phoneRegistrationProviders(),
 			), $data);
 			$html = (new FormTemplateRepository())->render($template, $context);
+			if ($template === 'register' && empty($context['email_registration_enabled'])
+				&& preg_match('/name\s*=\s*["\']email["\']/i', $html)) {
+				$html = Twig::twig()->render('@system_auth/register.twig', $context);
+			}
+
+			if ($template === 'register' && !empty($context['phone_registration_enabled'])
+				&& !empty($context['registration_phone_providers']) && strpos($html, 'data-phone-auth') === false) {
+				$phoneContext = $context;
+				$phoneContext['phone_providers'] = $context['registration_phone_providers'];
+				$phoneContext['phone_auth_registration'] = true;
+				$phoneContext['return_url'] = Feature::url('profile');
+				$html .= (new FormTemplateRepository())->render('phone', $phoneContext);
+			}
+
 			if ($template === 'login' && !empty($context['oauth_providers']) && strpos($html, 'data-auth-oauth') === false) {
-				$html .= Twig::twig()->render('@system_auth/oauth.twig', $context);
+				$html .= (new FormTemplateRepository())->render('oauth', $context);
 			}
 
 			if ($template === 'login' && !empty($context['phone_providers']) && strpos($html, 'data-phone-auth') === false) {
-				$html .= Twig::twig()->render('@system_auth/phone.twig', $context);
+				$html .= (new FormTemplateRepository())->render('phone', $context);
 			}
 
 			if ($template === 'profile' && !empty($context['oauth_connections']) && strpos($html, 'data-auth-connections') === false) {
-				$html .= Twig::twig()->render('@system_auth/oauth_connections.twig', $context);
+				$html .= (new FormTemplateRepository())->render('oauth_connections', $context);
 			}
 
 			if (empty($context['preview'])) {

@@ -26,6 +26,7 @@
 	use App\Content\PublicShellTables;
 	use App\Content\PublicUserTables;
 	use App\Frontend\PublicSettings;
+	use App\Common\SiteOrigin;
 
 	/** Read-only production readiness checks. No mail, payment or data mutations. */
 	class ProductionDiagnostics
@@ -63,6 +64,14 @@
 
 		protected static function checkRuntime(array &$checks, array $database)
 		{
+			try { $publicUrl = SiteOrigin::configuredUrl(); } catch (\Throwable $e) { $publicUrl = ''; }
+			self::add(
+				$checks,
+				'Публичный адрес сайта',
+				$publicUrl !== '' ? 'ok' : 'error',
+				$publicUrl !== '' ? $publicUrl : 'задайте PUBLIC_SITE_URL: без него защищённые ссылки в письмах не отправляются',
+				'environment'
+			);
 			self::add($checks, 'PHP', PHP_VERSION_ID >= 70300 && PHP_VERSION_ID < 80000 ? 'ok' : 'warning', PHP_VERSION, 'environment');
 			self::add(
 				$checks,

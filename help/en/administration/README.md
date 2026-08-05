@@ -18,8 +18,9 @@ to [modular system](../modules/README.md).
 | Catalog | Universal partition trees and filters. | [Catalogue](../content/catalog.md) |
 | Media | Files, images, WebP and thumbnails. | [Media](../media/README.md) |
 | Roles and rights | Panel staff permissions. | [Users and access](users.md) |
+| Permission simulator | Explain effective access for a role or user. | [Permission simulator](permission-simulator.md) |
 | Users | Employees who can work in the panel. | [Users and access](users.md) |
-| Site users | Registration, personal account and public profile. | [Users and access](users.md) |
+| Site users | Registration, profile, and customer history. | [Users and access](users.md), [Customer center](customer-center.md) |
 | Settings | Site parameters, interface, security, cache and diagnostics. | [Settings](settings.md) |
 | Database | Schema, InnoDB, backups and migrations. | [Database and Events](operations.md) |
 | Events | Audit, runtime, 404, SQL errors and transitions. | [Database and Events](operations.md) |

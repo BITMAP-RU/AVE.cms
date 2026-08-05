@@ -21,6 +21,7 @@
         if (event.target.matches('[data-customer-field] [name="type"]')) { self.updateOptionsVisibility(); }
         if (event.target.matches('[data-auth-show]')) { self.syncAuthFieldRows(); }
         if (event.target.matches('[data-registration-mode]')) { self.syncAuthMode(); }
+        if (event.target.matches('[data-registration-gate]')) { self.syncRegistrationGate(); }
         if (event.target.matches('[data-customer-admin-access]')) { self.syncAdminAccess(); }
       });
 
@@ -29,6 +30,10 @@
       });
 
       document.addEventListener('click', function (event) {
+		var centerOpen = event.target.closest('[data-customer-center-open]');
+		if (centerOpen) { event.preventDefault(); self.openCustomerCenter(centerOpen.getAttribute('data-url')); return; }
+		var merge = event.target.closest('[data-customer-merge]');
+		if (merge) { event.preventDefault(); self.mergeCustomers(merge); return; }
         var customerEdit = event.target.closest('[data-customer-edit]');
         if (customerEdit) { event.preventDefault(); self.openCustomer(customerEdit); return; }
         var customerDelete = event.target.closest('[data-customer-delete]');
@@ -50,6 +55,13 @@
         var checkoutDefault = event.target.closest('[data-checkout-template-default]');
         if (checkoutDefault) { self.setCheckoutTemplate(checkoutDefault.getAttribute('data-template') || ''); }
       });
+
+	  document.addEventListener('submit', function (event) {
+		var note = event.target.closest('[data-customer-note]');
+		if (!note) { return; }
+		event.preventDefault();
+		self.request(note.action, new FormData(note)).then(function () { self.openCustomerCenter(note.getAttribute('data-refresh-url'), true); });
+	  });
 
       var form = document.querySelector('[data-customer-field]');
       if (form) {
@@ -95,6 +107,7 @@
         });
       }
       this.syncAuthFieldRows();
+      this.syncRegistrationGate();
       this.syncAuthMode();
       this.initSortable();
     },
@@ -112,6 +125,34 @@
         throw error;
       });
     },
+
+	openCustomerCenter: function (url, keepOpen) {
+	  var detail = document.querySelector('[data-customer-center-detail]');
+	  if (!detail || !url) { return; }
+	  detail.innerHTML = '<div class="skeleton" style="height:160px"></div>';
+	  if (!keepOpen && Adminx.Drawer) { Adminx.Drawer.open('customerCenterDrawer'); }
+	  Adminx.Loader.show();
+	  Adminx.Ajax.request(url, { method: 'GET' }).then(function (payload) {
+		Adminx.Loader.hide();
+		if (!payload.ok || !payload.data.success) { throw new Error(payload.data.message || Adminx.tr('Не удалось загрузить карточку')); }
+		detail.innerHTML = payload.data.html && payload.data.html.detail ? payload.data.html.detail : '<div class="empty-state">' + Adminx.tr('Нет данных') + '</div>';
+	  }).catch(function (error) { Adminx.Loader.hide(); detail.innerHTML = '<div class="empty-state">' + error.message + '</div>'; Adminx.Toast.show(error.message, 'error'); });
+	},
+
+	mergeCustomers: function (button) {
+	  var self = this;
+	  var target = Number(button.getAttribute('data-target-id')) || 0;
+	  var source = Number(button.getAttribute('data-source-id')) || 0;
+	  Adminx.Confirm.open({
+		kind: 'warning', title: Adminx.tr('Объединить аккаунты?'),
+		message: Adminx.tr('Данные исходного аккаунта будут перенесены в основной. Исходный аккаунт будет отключён и удалён.') + ' #' + source + ' → #' + target,
+		confirmLabel: Adminx.tr('Объединить'),
+		onConfirm: function () {
+		  var body = new FormData(); body.set('target_id', target); body.set('source_id', source);
+		  return self.request(Adminx.base() + '/system/customers/center/merge', body).then(function () { window.location.reload(); });
+		}
+	  });
+	},
 
     openCustomer: function (button) {
       var form = document.querySelector('[data-customer-editor]');
@@ -352,6 +393,26 @@
       var emailOnly = document.querySelector('[data-auth-email-only]');
       if (!mode || !emailOnly) { return; }
       emailOnly.hidden = mode.value !== 'email';
+    },
+
+    syncRegistrationGate: function () {
+      var gate = document.querySelector('[data-registration-gate]');
+      var hasEmail = gate && gate.value !== 'phone';
+      var emailAndPhone = gate && gate.value === 'email_phone';
+      var description = document.querySelector('[data-auth-email-field-description]');
+      var visibility = document.querySelector('[data-auth-email-visibility]');
+      var required = document.querySelector('[data-auth-email-required]');
+      if (!gate) { return; }
+      document.querySelectorAll('[data-auth-email-registration], [data-auth-email-form-fields], [data-auth-email-settings]').forEach(function (section) {
+        section.hidden = !hasEmail;
+      });
+      if (description) { description.textContent = emailAndPhone ? 'Запрашивается только при выборе регистрации по email' : 'Логин и канал подтверждения регистрации по email'; }
+      if (visibility) { visibility.textContent = emailAndPhone ? 'В email-форме' : 'Показывается'; }
+      if (required) {
+        required.textContent = emailAndPhone ? 'По выбору способа' : 'Обязательно';
+        required.classList.toggle('badge-blue', !emailAndPhone);
+        required.classList.toggle('badge-gray', emailAndPhone);
+      }
     },
 
     setCheckoutTemplate: function (value) {

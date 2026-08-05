@@ -62,6 +62,15 @@
 			if (!$row) { return null; }
 			$row = self::format($row);
 			$row['content'] = (string) $row['raw']['content'];
+			try {
+				$current = Model::file($row['theme'], $row['path']);
+				$row['current_exists'] = true;
+				$row['changed'] = (string) $current['content'] !== $row['content'];
+			} catch (\Throwable $e) {
+				$row['current_exists'] = false;
+				$row['changed'] = true;
+			}
+
 			unset($row['raw']);
 			return $row;
 		}

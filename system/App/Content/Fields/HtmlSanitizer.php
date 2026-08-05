@@ -21,7 +21,7 @@
 	{
 		protected static $tags = array(
 			'p', 'br', 'div', 'span', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-			'strong', 'b', 'em', 'i', 'u', 's', 'del', 'blockquote', 'ul', 'ol', 'li',
+			'strong', 'b', 'em', 'i', 'u', 's', 'del', 'small', 'blockquote', 'ul', 'ol', 'li',
 			'a', 'img', 'figure', 'figcaption', 'table', 'thead', 'tbody', 'tfoot',
 			'tr', 'th', 'td', 'caption', 'colgroup', 'col', 'pre', 'code', 'hr', 'sup', 'sub'
 		);
@@ -151,7 +151,7 @@
 		protected static function fallback($html)
 		{
 			$html = preg_replace('#<(script|style|iframe|object|embed|form|svg|math|template)\b[^>]*>.*?</\1>#is', '', (string) $html);
-			$html = strip_tags($html, '<p><br><div><span><h1><h2><h3><h4><h5><h6><strong><b><em><i><u><s><del><blockquote><ul><ol><li><a><img><figure><figcaption><table><thead><tbody><tfoot><tr><th><td><caption><colgroup><col><pre><code><hr><sup><sub>');
+			$html = strip_tags($html, '<p><br><div><span><h1><h2><h3><h4><h5><h6><strong><b><em><i><u><s><del><small><blockquote><ul><ol><li><a><img><figure><figcaption><table><thead><tbody><tfoot><tr><th><td><caption><colgroup><col><pre><code><hr><sup><sub>');
 			$html = preg_replace('/\s+on[a-z]+\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)/i', '', $html);
 			return preg_replace('/\s+(href|src)\s*=\s*(["\'])\s*(?:javascript|vbscript|data):.*?\2/i', '', $html);
 		}

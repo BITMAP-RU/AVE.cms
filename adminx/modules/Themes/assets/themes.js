@@ -360,10 +360,12 @@
         var item = response.data || {};
         self.currentRevisionId = item.id || 0;
         document.querySelector('[data-revision-title]').textContent = item.path || 'Ревизия';
-        document.querySelector('[data-revision-meta]').textContent = (item.action_label || '') + ' · ' + (item.author_name || 'Система') + ' · ' + (item.created_label || '');
+        document.querySelector('[data-revision-meta]').textContent = (item.action_label || '') + ' · ' + (item.author_name || 'Система') + ' · ' + (item.created_label || '') + ' · ' + (item.changed ? 'файл изменится' : 'совпадает с текущим');
         var textarea = document.querySelector('[data-revision-content]');
         textarea.value = item.content || '';
         if (textarea._adminxCodeMirror) { textarea._adminxCodeMirror.setValue(item.content || ''); }
+		var restore = document.querySelector('[data-theme-revision-restore]');
+		if (restore) { restore.disabled = !item.changed; }
         Adminx.Drawer.open('themeRevisionDrawer');
         window.setTimeout(function () { if (Adminx.CodeEditor) { Adminx.CodeEditor.refreshAll(); } }, 80);
       });

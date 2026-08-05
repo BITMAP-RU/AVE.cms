@@ -99,6 +99,25 @@
 			}
 		}
 
+		/** Каталог только из кеша: для колокольчика, без сетевого запроса. */
+		public static function cachedCatalog()
+		{
+			$settings = self::settings();
+			if (!$settings['enabled'] || $settings['url'] === '' || $settings['public_key'] === '') { return null; }
+			$key = 'module-repository:' . hash('sha256', $settings['url'] . "\0" . $settings['public_key']);
+			try {
+				$catalog = Cache::get($key);
+			} catch (\Throwable $e) {
+				return null;
+			}
+
+			if (!is_array($catalog) || !isset($catalog['items'])) { return null; }
+			$catalog['enabled'] = true;
+			$catalog['configured'] = true;
+			$catalog['error'] = '';
+			return self::withLocalState($catalog);
+		}
+
 		public static function install($code)
 		{
 			$code = strtolower(trim((string) $code));

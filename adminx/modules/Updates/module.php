@@ -19,7 +19,8 @@
 	return array(
 		'code' => 'updates',
 		'name' => 'Обновления',
-		'version' => '0.1.0',
+		'version' => '0.2.0',
+		'notifications' => array('provider' => array(\App\Adminx\Updates\NotificationProvider::class, 'items'), 'permission' => 'view_core_updates', 'sort_order' => 45),
 		'permissions' => array(
 			'key' => 'updates',
 			'items' => array(

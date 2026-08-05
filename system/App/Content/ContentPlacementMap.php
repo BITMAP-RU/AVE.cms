@@ -31,7 +31,7 @@
 	class ContentPlacementMap
 	{
 		const CACHE_TTL = 900;
-		const CACHE_VERSION = 2;
+		const CACHE_VERSION = 3;
 
 		public static function all($refresh = false)
 		{
@@ -67,6 +67,35 @@
 			return self::build();
 		}
 
+		/** List saved components and templates which have no active placement. */
+		public static function inventory(array $placements = null)
+		{
+			$placements = $placements === null ? self::all() : $placements;
+			$usage = array();
+			foreach ($placements as $row) {
+				if ((int) $row['component_id'] <= 0) { continue; }
+				$key = $row['component_type'] . ':' . (int) $row['component_id'];
+				$usage[$key] = isset($usage[$key]) ? $usage[$key] + max(1, (int) $row['occurrences']) : max(1, (int) $row['occurrences']);
+			}
+
+			$items = array();
+			self::appendInventory($items, 'template', ContentTables::table('templates'),
+				'SELECT t.Id id,t.template_title title,\'\' alias,COUNT(r.Id) usage_count FROM %s t LEFT JOIN ' . ContentTables::table('rubrics') . ' r ON r.rubric_template_id=t.Id GROUP BY t.Id,t.template_title', $usage);
+			self::appendInventory($items, 'rubric_template', ContentTables::table('rubric_templates'),
+				'SELECT t.id,t.title,\'\' alias,t.rubric_id,COUNT(d.Id) usage_count FROM %s t LEFT JOIN ' . ContentTables::table('documents') . " d ON d.rubric_tmpl_id=t.id AND d.document_deleted!='1' GROUP BY t.id,t.title,t.rubric_id", $usage);
+			self::appendInventory($items, 'block', ContentTables::table('sysblocks'),
+				'SELECT id,sysblock_name title,sysblock_alias alias,0 usage_count FROM %s', $usage);
+			self::appendInventory($items, 'request', ContentTables::table('request'),
+				'SELECT Id id,request_title title,request_alias alias,0 usage_count FROM %s', $usage);
+			self::appendInventory($items, 'navigation', ContentTables::table('navigation'),
+				'SELECT navigation_id id,title,alias,0 usage_count FROM %s', $usage);
+			$items = array_values(array_filter($items, function ($item) { return (int) $item['usage_count'] === 0; }));
+			usort($items, function ($left, $right) {
+				return array($left['type_title'], $left['title'], $left['id']) <=> array($right['type_title'], $right['title'], $right['id']);
+			});
+			return $items;
+		}
+
 		/**
 		 * Extract native component references from one saved fragment.
 		 *
@@ -80,7 +109,7 @@
 			}
 
 			$pattern = '#'
-				. '\[tag:(sysblock|block|request|navigation):([^\]:\]]+)(?:[^\]]*)\]'
+				. '\[tag:(sysblock|block|request|navigation|fld|rfld):([^\]:\]]+)(?:[^\]]*)\]'
 				. '|'
 				. '\[mod_([a-z][a-z0-9_]*)(?::[^\]]*)?\]'
 				. '#i';
@@ -100,7 +129,7 @@
 					$key = strtolower(trim((string) $match[3][0]));
 				} else {
 					$tagType = strtolower(trim(isset($match[1][0]) ? (string) $match[1][0] : ''));
-					$type = $tagType === 'sysblock' ? 'block' : $tagType;
+					$type = $tagType === 'sysblock' ? 'block' : (in_array($tagType, array('fld', 'rfld'), true) ? 'field' : $tagType);
 					$key = trim(isset($match[2][0]) ? (string) $match[2][0] : '');
 				}
 
@@ -183,7 +212,8 @@
 						$reference['component_type'],
 						$reference['component_key'],
 						$components,
-						$reference['tag']
+						$reference['tag'],
+						$source
 					);
 					$placements[] = array_merge($reference, $component, array(
 						'source_type' => $source['type'],
@@ -258,6 +288,7 @@
 				$sources[] = array(
 					'type' => 'rubric',
 					'id' => (int) $row['Id'],
+					'rubric_id' => (int) $row['Id'],
 					'title' => $row['rubric_title'],
 					'fragments' => array(
 						self::fragment('header', 'Шаблон до документа', 'before_content', $row['rubric_header_template']),
@@ -306,13 +337,14 @@
 			}
 
 			$rows = DB::query(
-				'SELECT Id,request_title,request_template_main,request_template_item FROM ' . $table . ' ORDER BY Id'
+				'SELECT Id,rubric_id,request_title,request_template_main,request_template_item FROM ' . $table . ' ORDER BY Id'
 			)->getAll() ?: array();
 			$sources = array();
 			foreach ($rows as $row) {
 				$sources[] = array(
 					'type' => 'request',
 					'id' => (int) $row['Id'],
+					'rubric_id' => (int) $row['rubric_id'],
 					'title' => $row['request_title'],
 					'fragments' => array(
 						self::fragment('wrapper', 'Общий шаблон результата', 'main', $row['request_template_main']),
@@ -409,7 +441,25 @@
 					ContentTables::table('navigation'),
 					'SELECT navigation_id id,alias,title,1 active FROM %s ORDER BY navigation_id'
 				),
+				'field' => self::fieldIndex(),
 			);
+		}
+
+		protected static function fieldIndex()
+		{
+			$table = ContentTables::table('rubric_fields');
+			$index = array('rubrics' => array());
+			if (!self::available($table)) { return $index; }
+			$rows = DB::query('SELECT Id id,rubric_id,rubric_field_alias alias,rubric_field_title title FROM ' . $table . ' ORDER BY rubric_id,rubric_field_position,Id')->getAll() ?: array();
+			foreach ($rows as $row) {
+				$rubricId = (int) $row['rubric_id'];
+				$item = array('id' => (int) $row['id'], 'rubric_id' => $rubricId, 'alias' => trim((string) $row['alias']), 'title' => self::decode($row['title']), 'active' => true);
+				if (!isset($index['rubrics'][$rubricId])) { $index['rubrics'][$rubricId] = array(); }
+				$index['rubrics'][$rubricId][(string) $item['id']] = $item;
+				if ($item['alias'] !== '') { $index['rubrics'][$rubricId][strtolower($item['alias'])] = $item; }
+			}
+
+			return $index;
 		}
 
 		protected static function indexedComponents($table, $sql)
@@ -435,12 +485,16 @@
 			return $index;
 		}
 
-		protected static function resolveComponent($type, $key, array $components, $tag = '')
+		protected static function resolveComponent($type, $key, array $components, $tag = '', array $source = array())
 		{
 			$type = (string) $type;
 			$key = trim((string) $key);
 			if ($type === 'module') {
 				return self::resolveModuleComponent($key, $tag);
+			}
+
+			if ($type === 'field') {
+				return self::resolveFieldComponent($key, isset($source['rubric_id']) ? (int) $source['rubric_id'] : 0, $components);
 			}
 
 			$lookup = ctype_digit($key) ? (string) (int) $key : strtolower($key);
@@ -463,6 +517,34 @@
 				'component_status' => $item['active'] ? 'active' : 'disabled',
 				'component_status_title' => $item['active'] ? 'ссылка работает' : 'компонент выключен',
 				'component_url' => self::componentUrl($type, $item),
+			);
+		}
+
+		protected static function resolveFieldComponent($key, $rubricId, array $components)
+		{
+			$lookup = ctype_digit((string) $key) ? (string) (int) $key : strtolower((string) $key);
+			if ($rubricId <= 0) {
+				return array(
+					'component_id' => 0, 'component_alias' => ctype_digit((string) $key) ? '' : (string) $key,
+					'component_title' => 'Поле текущего документа «' . $key . '»', 'component_status' => 'contextual',
+					'component_status_title' => 'проверяется в контексте документа', 'component_url' => '',
+				);
+			}
+
+			$item = isset($components['field']['rubrics'][$rubricId][$lookup]) ? $components['field']['rubrics'][$rubricId][$lookup] : null;
+			if (!$item) {
+				return array(
+					'component_id' => 0, 'component_alias' => ctype_digit((string) $key) ? '' : (string) $key,
+					'component_title' => 'Поле «' . $key . '»', 'component_status' => 'broken',
+					'component_status_title' => 'поля нет в типе контента', 'component_url' => '/rubrics/' . $rubricId . '/fields',
+				);
+			}
+
+			return array(
+				'component_id' => $item['id'], 'component_alias' => $item['alias'],
+				'component_title' => $item['title'] !== '' ? $item['title'] : 'Поле #' . $item['id'],
+				'component_status' => 'active', 'component_status_title' => 'поле существует',
+				'component_url' => '/rubrics/' . $rubricId . '/fields',
 			);
 		}
 
@@ -582,6 +664,24 @@
 			);
 		}
 
+		protected static function appendInventory(array &$items, $type, $table, $sql, array $usage)
+		{
+			if (!self::available($table)) { return; }
+			foreach (DB::query(sprintf($sql, $table))->getAll() ?: array() as $row) {
+				$id = (int) $row['id'];
+				$count = isset($row['usage_count']) ? (int) $row['usage_count'] : 0;
+				$key = $type . ':' . $id;
+				if (isset($usage[$key])) { $count += (int) $usage[$key]; }
+				$source = array('type' => $type, 'id' => $id, 'title' => $row['title']);
+				if ($type === 'rubric_template') { $source['rubric_id'] = (int) $row['rubric_id']; }
+				$items[] = array(
+					'type' => $type, 'type_title' => self::sourceTypeTitle($type), 'id' => $id,
+					'title' => self::decode($row['title']), 'alias' => isset($row['alias']) ? (string) $row['alias'] : '',
+					'usage_count' => $count, 'url' => self::sourceUrl($source),
+				);
+			}
+		}
+
 		protected static function sourceUrl(array $source)
 		{
 			switch ($source['type']) {
@@ -636,6 +736,7 @@
 				'request' => 'Подборка',
 				'navigation' => 'Навигация',
 				'module' => 'Модуль',
+				'field' => 'Поле',
 			);
 			return isset($titles[$type]) ? $titles[$type] : (string) $type;
 		}

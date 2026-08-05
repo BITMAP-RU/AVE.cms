@@ -22,6 +22,8 @@
         if (edit) { self.fillEdit(edit.closest('tr')); }
         var del = e.target.closest('[data-role-delete]');
         if (del) { self.remove(del.closest('tr')); }
+        var copy = e.target.closest('[data-role-copy]');
+        if (copy) { self.copy(copy.closest('tr')); }
         if (e.target.closest('[data-perms-all]'))  { self.setAll(true); }
         if (e.target.closest('[data-perms-none]')) { self.setAll(false); }
       });
@@ -119,6 +121,30 @@
       }).catch(function () {
         Adminx.Loader.hide();
         Adminx.Toast.show('Ошибка сети', 'error');
+      });
+    },
+
+    copy: function (row) {
+      var id = row.dataset.id;
+      var base = this.base();
+      Adminx.Confirm.open({
+        kind: 'info',
+        title: 'Создать копию роли?',
+        message: 'Новая роль получит те же права, что и «' + row.dataset.name + '». Пользователи не переносятся, набор прав можно поправить сразу после создания.',
+        confirmLabel: 'Создать копию',
+        onConfirm: function () {
+          Adminx.Loader.show();
+          Adminx.Ajax.post(base + '/roles/' + id + '/copy').then(function (payload) {
+            Adminx.Loader.hide();
+            var d = payload.data || {};
+            if (d.success === false) { Adminx.Toast.show(d.message || 'Не удалось скопировать', 'error'); return; }
+            Adminx.Toast.show(d.message || 'Роль скопирована', 'success');
+            window.location.reload();
+          }).catch(function () {
+            Adminx.Loader.hide();
+            Adminx.Toast.show('Ошибка сети', 'error');
+          });
+        }
       });
     },
 

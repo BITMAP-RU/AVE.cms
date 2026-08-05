@@ -720,6 +720,8 @@
       var fields = document.querySelector('[data-revision-fields]');
       var restore = document.querySelector('[data-revision-restore]');
       var remove = document.querySelector('[data-revision-delete]');
+	  var comparison = item.comparison || {};
+	  var changed = comparison.summary ? parseInt(comparison.summary.total_changed || 0, 10) : 0;
       var clear = document.querySelector('[data-revisions-clear]');
 
       if (title) { title.textContent = 'Ревизии: ' + (row.dataset.name || ('#' + row.dataset.id)); }
@@ -831,7 +833,7 @@
 
       if (title) { title.textContent = '#' + item.id + ' · ' + (item.action_label || item.action || 'Ревизия'); }
       if (meta) {
-        meta.textContent = (item.created_label || '-') + (item.author_name ? ' · ' + item.author_name : '') + (item.text_size_label ? ' · ' + item.text_size_label : '');
+        meta.textContent = (item.created_label || '-') + (item.author_name ? ' · ' + item.author_name : '') + (item.text_size_label ? ' · ' + item.text_size_label : '') + ' · ' + (changed ? ('изменений: ' + changed) : 'совпадает с текущим');
       }
       if (fields) {
         fields.innerHTML =
@@ -845,7 +847,7 @@
           (String(snapshot.sysblock_visual) === '1' ? ', visual' : '') +
           '</em></span>';
       }
-      if (restore) { restore.disabled = !this.currentRevisionId; }
+      if (restore) { restore.disabled = !this.currentRevisionId || !changed; }
       if (remove) {
         remove.disabled = !this.currentRevisionId;
         if (this.currentRevisionId) { remove.setAttribute('data-revision-delete', String(this.currentRevisionId)); }

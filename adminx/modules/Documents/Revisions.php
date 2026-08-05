@@ -19,6 +19,7 @@
 	use DB;
 	use App\Common\SystemTables;
 	use App\Content\Documents\DocumentRevisionPayload;
+	use App\Content\Revisions\JsonRevisionStore;
 
 	class Revisions
 	{
@@ -168,6 +169,27 @@
 			$payload = self::decodePayload((string) $row['doc_data']);
 			$values = $withData ? $payload['fields'] : null;
 			$document = $withData ? $payload['document'] : null;
+			$documentPreview = $withData ? self::documentPreview($payload['document']) : array();
+			$fieldPreview = $withData && is_array($values) ? self::preview($values) : array();
+			$comparison = array('document' => array(), 'fields' => array());
+			if ($withData) {
+				$currentDocument = Model::one((int) $row['doc_id']);
+				$currentFields = Model::currentFieldValues((int) $row['doc_id']);
+				$comparison['document'] = JsonRevisionStore::compareSnapshots($currentDocument ?: array(), $payload['document']);
+				$comparison['fields'] = JsonRevisionStore::compareSnapshots($currentFields, $payload['fields']);
+				foreach ($documentPreview as &$item) {
+					$item['changed'] = !empty($comparison['document']['items'][$item['key']]['changed']);
+				}
+
+				unset($item);
+				foreach ($fieldPreview as &$item) {
+					$key = (string) $item['field_id'];
+					$item['changed'] = !empty($comparison['fields']['items'][$key]['changed']);
+				}
+
+				unset($item);
+			}
+
 			return array(
 				'id' => (int) $row['Id'],
 				'doc_id' => (int) $row['doc_id'],
@@ -181,8 +203,9 @@
 				'size_label' => self::formatBytes(strlen((string) $row['doc_data'])),
 				'values' => $values,
 				'document' => $document,
-				'document_preview' => $withData ? self::documentPreview($payload['document']) : array(),
-				'preview' => $withData && is_array($values) ? self::preview($values) : array(),
+				'document_preview' => $documentPreview,
+				'preview' => $fieldPreview,
+				'comparison' => $comparison,
 			);
 		}
 

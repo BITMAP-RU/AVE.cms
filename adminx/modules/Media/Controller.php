@@ -20,11 +20,15 @@
 	use App\Common\Auth;
 	use App\Common\Controller as BaseController;
 	use App\Common\Permission;
+	use App\Adminx\Support\SavedViews;
 	use App\Content\Documents\DocumentMediaDraft;
 	use App\Helpers\Request;
 
 	class Controller extends BaseController
 	{
+		protected function savedViewFields() { return array('dir', 'q', 'type', 'view'); }
+		protected function savedViewGuard() { if (($error = $this->csrfGuard()) !== null) { return $error; } return Permission::check('view_media') ? null : $this->error('Недостаточно прав', array(), 403); }
+
 		public function index(array $params = array())
 		{
 			AdminAssets::addStyle($this->base() . '/modules/Media/assets/media.css', 50);
@@ -54,7 +58,86 @@
 				'total' => $listing['total'],
 				'per_page' => $perPage,
 				'can_manage' => Permission::check('manage_media'),
+				'saved_views' => SavedViews::all('media', Auth::id(), $this->savedViewFields()),
 			));
+		}
+
+		public function saveSavedView(array $params = array())
+		{
+			if (($error = $this->savedViewGuard()) !== null) { return $error; }
+			$filters = json_decode(Request::postStr('filters', '{}'), true);
+			if (!is_array($filters)) { return $this->error('Некорректный набор фильтров', array(), 422); }
+			try { $views = SavedViews::save('media', Auth::id(), Request::postStr('title', ''), $filters, $this->savedViewFields()); }
+			catch (\InvalidArgumentException $e) { return $this->error($e->getMessage(), array(), 422); }
+			return $this->success('Представление сохранено', array('data' => array('views' => $views)));
+		}
+
+		public function deleteSavedView(array $params = array())
+		{
+			if (($error = $this->savedViewGuard()) !== null) { return $error; }
+			try { $views = SavedViews::delete('media', Auth::id(), isset($params['id']) ? $params['id'] : '', $this->savedViewFields()); }
+			catch (\InvalidArgumentException $e) { return $this->error($e->getMessage(), array(), 404); }
+			return $this->success('Представление удалено', array('data' => array('views' => $views)));
+		}
+
+		public function audit(array $params = array())
+		{
+			AdminAssets::addStyle($this->base() . '/modules/Media/assets/media.css', 50);
+			AdminAssets::addScript($this->base() . '/modules/Media/assets/media.js', 50);
+
+			$report = MediaAudit::report();
+			$kind = Request::getStr('kind', 'unused');
+			$allowedKinds = array('unused', 'duplicates', 'missing_originals', 'missing_previews', 'large', 'invalid', 'files');
+			if (!in_array($kind, $allowedKinds, true)) {
+				$kind = 'unused';
+			}
+
+			$query = trim(Request::getStr('q', ''));
+			$page = max(1, Request::getInt('page', 1));
+			$perPage = 100;
+			$rows = $report && isset($report[$kind]) && is_array($report[$kind]) ? $report[$kind] : array();
+			if ($query !== '') {
+				$needle = function_exists('mb_strtolower') ? mb_strtolower($query) : strtolower($query);
+				$rows = array_values(array_filter($rows, function ($row) use ($needle) {
+					$haystack = isset($row['path']) ? (string) $row['path'] : json_encode($row);
+					$haystack = function_exists('mb_strtolower') ? mb_strtolower($haystack) : strtolower($haystack);
+					return strpos($haystack, $needle) !== false;
+				}));
+			}
+
+			$total = count($rows);
+			$pages = max(1, (int) ceil($total / $perPage));
+			$page = min($page, $pages);
+			$rows = array_slice($rows, ($page - 1) * $perPage, $perPage);
+
+			return $this->render('@media/audit.twig', array(
+				'title' => 'Анализатор медиа',
+				'report' => $report,
+				'kind' => $kind,
+				'rows' => $rows,
+				'filters' => array('q' => $query),
+				'total' => $total,
+				'page' => $page,
+				'pages' => $pages,
+				'can_manage' => Permission::check('manage_media'),
+			));
+		}
+
+		public function runAudit(array $params = array())
+		{
+			if (($err = $this->guard()) !== null) {
+				return $err;
+			}
+
+			try {
+				$report = MediaAudit::run();
+				return $this->success('Анализ медиа завершён', array(
+					'data' => array('summary' => $report['summary']),
+					'redirect' => $this->base() . '/media/audit',
+				));
+			} catch (\Throwable $e) {
+				return $this->error($e->getMessage(), array(), 422);
+			}
 		}
 
 		public function file(array $params = array())
@@ -74,6 +157,18 @@
 				'can_manage' => Permission::check('manage_media'),
 				'supports_webp' => Model::supportsWebp(),
 				'presets' => ImagePresets::options(),
+				'usage' => MediaUsageIndex::usage($file['path']),
+			));
+		}
+
+		public function trash(array $params = array())
+		{
+			AdminAssets::addStyle($this->base() . '/modules/Media/assets/media.css', 50);
+			AdminAssets::addScript($this->base() . '/modules/Media/assets/media.js', 50);
+			return $this->render('@media/trash.twig', array(
+				'title' => 'Корзина медиа',
+				'items' => MediaTrash::all(),
+				'can_manage' => Permission::check('manage_media'),
 			));
 		}
 
@@ -215,14 +310,71 @@
 			$path = Request::postStr('path', '');
 			$parent = Model::parentDir($path);
 			try {
-				Model::delete($path);
+				$usage = MediaAudit::inspectUsage($path);
+
+				if ((int) $usage['use_count'] > 0 && Request::postInt('confirm_usage', 0) !== 1) {
+					throw new \RuntimeException('Объект используется. Подтвердите перенос в корзину после просмотра связей');
+				}
+
+				Model::trash($path);
 			} catch (\RuntimeException $e) {
 				return $this->error($e->getMessage(), array(), 422);
 			}
 
-			return $this->success('Удалено', array(
+			return $this->success('Перемещено в корзину', array(
 				'redirect' => $this->base() . '/media?dir=' . rawurlencode($parent ?: Model::ROOT),
 			));
+		}
+
+		public function deleteCheck(array $params = array())
+		{
+			if (($err = $this->guard()) !== null) { return $err; }
+			$path = Request::postStr('path', '');
+			if (Model::isProtectedPath($path)) { return $this->error('Этот путь нельзя удалить', array(), 422); }
+			try { $usage = MediaAudit::inspectUsage($path); }
+			catch (\RuntimeException $e) { return $this->error($e->getMessage(), array(), 422); }
+
+			return $this->success('', array('data' => array('usage' => $usage)));
+		}
+
+		public function emptyFolder(array $params = array())
+		{
+			if (($err = $this->guard()) !== null) { return $err; }
+			$path = Request::postStr('path', '');
+			try {
+				$usage = MediaAudit::inspectUsage($path);
+				if ((int) $usage['use_count'] > 0 && Request::postInt('confirm_usage', 0) !== 1) {
+					throw new \RuntimeException('В папке есть используемые файлы. Подтвердите очистку после просмотра предупреждения');
+				}
+
+				$entry = Model::trashContents($path);
+			} catch (\RuntimeException $e) {
+				return $this->error($e->getMessage(), array(), 422);
+			}
+
+			return $this->success('Содержимое папки перемещено в корзину', array(
+				'data' => array('count' => isset($entry['count']) ? (int) $entry['count'] : 0),
+				'redirect' => $this->base() . '/media?dir=' . rawurlencode($path),
+			));
+		}
+
+		public function restoreTrash(array $params = array())
+		{
+			if (($err = $this->guard()) !== null) { return $err; }
+			try {
+				$entry = MediaTrash::restore(isset($params['token']) ? $params['token'] : '');
+				foreach ($entry['paths'] as $path) { MediaSearchIndex::indexPath($path); }
+			}
+			catch (\RuntimeException $e) { return $this->error($e->getMessage(), array(), 422); }
+			return $this->success('Объект восстановлен', array('redirect' => $this->base() . '/media/trash'));
+		}
+
+		public function purgeTrash(array $params = array())
+		{
+			if (($err = $this->guard()) !== null) { return $err; }
+			try { MediaTrash::purge(isset($params['token']) ? $params['token'] : ''); }
+			catch (\RuntimeException $e) { return $this->error($e->getMessage(), array(), 422); }
+			return $this->success('Объект удалён окончательно', array('redirect' => $this->base() . '/media/trash'));
 		}
 
 		public function clearThumbnails(array $params = array())

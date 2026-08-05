@@ -56,3 +56,10 @@ it, and the API will reject the entry according to the channel rules.
 Filter `ratings.rendering` receives `target_type`, `target_key`, `average`,
 `count`, `own`, `scale` and the finished `html`. The handler can return the modified
 HTML without interfering with the calculation.
+
+## Reviewing and removing ratings
+
+The action in **Most rated** opens individual votes for a target. A user with
+`manage_ratings` may remove one invalid vote or reset the whole target. The
+aggregate is rebuilt in the same operation and moderation is written to the
+audit log. The document, poll, or gallery itself is not deleted.

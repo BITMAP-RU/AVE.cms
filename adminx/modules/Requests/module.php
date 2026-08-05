@@ -22,7 +22,7 @@
 	return [
 		'code'    => 'requests',
 		'name'    => 'Запросы',
-		'version' => '0.1.0',
+		'version' => '0.2.0',
 
 		'permissions' => [
 			'key'      => 'requests',
@@ -75,6 +75,7 @@
 			['id' => '011_order_tiebreaker', 'file' => 'migrations/011_order_tiebreaker.php'],
 			['id' => '012_condition_value_sources', 'file' => 'migrations/012_condition_value_sources.php'],
 			['id' => '013_sort_rules', 'file' => 'migrations/013_sort_rules.php'],
+			['id' => '014_request_revisions', 'file' => 'migrations/014_request_revisions.sql'],
 		],
 
 		'routes' => array(
@@ -88,6 +89,9 @@
 			array('GET', '/requests/documents/picker', array(\App\Adminx\Requests\Controller::class, 'documentPicker'), array('permission' => 'manage_requests')),
 			array('POST', '/requests', array(\App\Adminx\Requests\Controller::class, 'store'), array('permission' => 'manage_requests', 'sensitive' => 'stored_php.write', 'reauth' => true)),
 			array('POST', '/requests/lint', array(\App\Adminx\Requests\Controller::class, 'lint')),
+			array('GET', '/requests/{id}/revisions', array(\App\Adminx\Requests\Controller::class, 'revisions')),
+			array('GET', '/requests/revisions/{revision}', array(\App\Adminx\Requests\Controller::class, 'revision')),
+			array('POST', '/requests/revisions/{revision}/restore', array(\App\Adminx\Requests\Controller::class, 'restoreRevision'), array('permission' => 'manage_requests', 'sensitive' => 'stored_php.write', 'reauth' => true)),
 			array('POST', '/requests/conditions/{id}/delete', array(\App\Adminx\Requests\Controller::class, 'conditionDelete')),
 			array('POST', '/requests/{id}/conditions/reorder', array(\App\Adminx\Requests\Controller::class, 'conditionReorder')),
 			array('POST', '/requests/{id}/condition-groups', array(\App\Adminx\Requests\Controller::class, 'groupSave')),

@@ -15,6 +15,7 @@
       <p class="text-secondary" style="margin-top:5px" data-document-edit-meta>{{ is_new ? (catalog_mode ? 'Заполните основные данные. Характеристики, варианты и доставка откроются после первого сохранения.' : 'Создание базовой карточки документа.') : 'ID ' ~ document.Id ~ ', ' ~ (document.state_label|admin_trans) ~ ', изменён: ' ~ document.changed_label }}</p>
     </div>
     <div class="cluster">
+      {% if catalog_mode and not is_new and can_manage and product_copy_url %}<button class="btn btn-secondary" type="button" data-catalog-product-copy data-url="{{ product_copy_url }}" data-csrf="{{ csrf_token }}"><i class="ti ti-copy"></i>Создать копию</button>{% endif %}
       <a class="btn btn-ghost" href="{{ return_url|default(ADMINX_BASE ~ '/documents') }}"><i class="ti ti-arrow-left"></i>К списку</a>
     </div>
   </div>
@@ -363,7 +364,7 @@
             {% else %}
             <div class="ax-document-field-body documents-field-control">{{ field.html|raw }}</div>
             {% endif %}
-            {% if field.rubric_field_description %}<p class="documents-field-description">{{ field.rubric_field_description }}</p>{% endif %}
+            {% if field.rubric_field_description_html %}<div class="documents-field-description">{{ field.rubric_field_description_html|raw }}</div>{% endif %}
           </div>
           {% endfor %}
         </div>

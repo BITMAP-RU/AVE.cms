@@ -30,6 +30,19 @@
   display: grid;
   gap: 14px;
 }
+.users-editor-tabs {
+  margin: 0;
+}
+.users-editor-panel {
+  display: grid;
+  gap: 14px;
+}
+.users-editor-panel[hidden] {
+  display: none;
+}
+.users-drawer [data-user-save][hidden] {
+  display: none;
+}
 .users-field-input {
   width: 100%;
 }
@@ -100,6 +113,16 @@
   gap: 12px;
   align-items: end;
 }
+.users-password-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.8fr);
+  gap: 16px;
+  align-items: start;
+}
+.users-password-required {
+  min-height: 76px;
+  margin-top: 22px;
+}
 .users-active-card {
   display: flex;
   align-items: center;
@@ -134,6 +157,67 @@
   align-items: center;
   gap: 6px;
 }
+.users-security-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.users-security-stats > div {
+  display: flex;
+  min-height: 92px;
+  flex-direction: column;
+  gap: 5px;
+  padding: 13px 14px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background: var(--background-inset);
+}
+.users-security-stats span,
+.users-security-stats small {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+.users-security-stats b {
+  font-size: 16px;
+}
+.users-sessions-head .btn {
+  margin-left: auto;
+}
+.users-session-list {
+  display: grid;
+  gap: 8px;
+}
+.users-session {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+}
+.users-session.is-current {
+  border-color: var(--green-500);
+  background: var(--green-50);
+}
+.users-session-main {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 4px;
+}
+.users-session-main > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.users-session-main > span {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 @media (max-width: 680px) {
   .users-filter {
     width: 100%;
@@ -152,5 +236,26 @@
   }
   .users-access-grid {
     grid-template-columns: 1fr;
+  }
+  .users-password-grid,
+  .users-security-stats {
+    grid-template-columns: 1fr;
+  }
+  .users-password-required {
+    margin-top: 0;
+  }
+  .users-sessions-head {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .users-sessions-head .btn {
+    width: 100%;
+    margin-left: 0;
+  }
+  .users-session {
+    align-items: flex-start;
+  }
+  .users-session-main > span {
+    white-space: normal;
   }
 }

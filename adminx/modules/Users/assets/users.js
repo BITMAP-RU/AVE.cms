@@ -8,8 +8,13 @@
 
   var Adminx = window.Adminx || (window.Adminx = {});
 
-  Adminx.Users = {
-    form: null,
+	Adminx.Users = {
+		form: null,
+		currentId: '',
+
+		t: function (key, fallback) {
+			return typeof Adminx.t === 'function' ? Adminx.t(key, fallback) : fallback;
+		},
 
     init: function () {
       this.form = document.getElementById('userForm');
@@ -22,10 +27,15 @@
         if (editBtn) { self.fillEdit(editBtn.closest('tr')); }
         var delBtn = e.target.closest('[data-user-delete]');
         if (delBtn) { self.remove(delBtn.closest('tr')); }
-        var pwBtn = e.target.closest('[data-pw-toggle]');
+			var pwBtn = e.target.closest('[data-pw-toggle]');
         if (pwBtn) { self.togglePw(pwBtn); }
         if (e.target.closest('[data-pw-generate]')) { self.generatePassword(); }
-        if (e.target.closest('[data-pw-copy]')) { self.copyPassword(); }
+			if (e.target.closest('[data-pw-copy]')) { self.copyPassword(); }
+			var tab = e.target.closest('[data-user-tab]');
+			if (tab) { self.activateTab(tab.getAttribute('data-user-tab')); }
+			var revoke = e.target.closest('[data-session-revoke]');
+			if (revoke) { self.revokeSession(revoke); }
+			if (e.target.closest('[data-user-revoke-others]')) { self.revokeOthers(); }
       });
 
       document.addEventListener('change', function (e) {
@@ -61,11 +71,15 @@
       if (el) { el.value = value; }
     },
 
-    fillNew: function () {
+		fillNew: function () {
       this.clearErrors();
       this.form.reset();
-      this.setField('id', '');
-      this.form.querySelector('[name="is_active"]').checked = true;
+			this.setField('id', '');
+			this.currentId = '';
+			this.form.querySelector('[name="is_active"]').checked = true;
+			this.form.querySelector('[name="must_change_password"]').checked = true;
+			this.form.querySelector('[data-user-tab="security"]').hidden = true;
+			this.activateTab('account');
       this.setSelfLock(false);
       this.resetPassword();
       document.getElementById('userDrawerTitle').textContent = 'Новый пользователь';
@@ -76,10 +90,11 @@
       this.updatePreview();
     },
 
-    fillEdit: function (row) {
+		fillEdit: function (row) {
       if (!row) { return; }
       this.clearErrors();
-      this.setField('id', row.dataset.id);
+			this.setField('id', row.dataset.id);
+			this.currentId = row.dataset.id;
       this.setField('name', row.dataset.name);
       this.setField('email', row.dataset.email);
       this.setField('login', row.dataset.login || '');
@@ -87,7 +102,10 @@
       this.setField('role', row.dataset.role);
       this.setField('password', '');
       this.resetPassword();
-      this.form.querySelector('[name="is_active"]').checked = row.dataset.active === '1';
+			this.form.querySelector('[name="is_active"]').checked = row.dataset.active === '1';
+			this.form.querySelector('[name="must_change_password"]').checked = row.dataset.mustChangePassword === '1';
+			this.form.querySelector('[data-user-tab="security"]').hidden = false;
+			this.activateTab('account');
       this.setSelfLock(row.hasAttribute('data-self'));
       document.getElementById('userDrawerTitle').textContent = 'Изменение: ' + row.dataset.name;
       var hint = this.form.querySelector('[data-pass-hint]');
@@ -98,8 +116,117 @@
       var updated = this.form.querySelector('[data-user-updated]');
       if (created) { created.textContent = this.formatDate(row.dataset.created); }
       if (updated) { updated.textContent = this.formatDate(row.dataset.updated); }
-      this.updatePreview(row.dataset.roleLabel || row.dataset.role);
-    },
+			this.updatePreview(row.dataset.roleLabel || row.dataset.role);
+			this.loadSecurity();
+		},
+
+		activateTab: function (name) {
+			name = name === 'security' && this.currentId ? 'security' : 'account';
+			this.form.querySelectorAll('[data-user-tab]').forEach(function (button) {
+				var active = button.getAttribute('data-user-tab') === name;
+				button.classList.toggle('active', active);
+				button.setAttribute('aria-selected', active ? 'true' : 'false');
+			});
+			this.form.querySelectorAll('[data-user-panel]').forEach(function (panel) {
+				panel.hidden = panel.getAttribute('data-user-panel') !== name;
+			});
+			var save = this.form.querySelector('[data-user-save]');
+			if (save) { save.hidden = name !== 'account'; }
+		},
+
+		loadSecurity: function () {
+			if (!this.currentId) { return; }
+			var list = this.form.querySelector('[data-user-sessions]');
+			if (list) { list.innerHTML = '<div class="empty-state"><i class="ti ti-loader-2"></i><b>' + this.t('users_sessions_loading', 'Загружаем сессии') + '</b></div>'; }
+			var self = this;
+			Adminx.Ajax.request(this.base() + '/users/' + this.currentId + '/security').then(function (payload) {
+				var response = payload.data || {};
+				if (!response.success) {
+					if (list) { list.innerHTML = '<div class="empty-state"><i class="ti ti-alert-triangle"></i><b>' + self.t('users_sessions_load_failed', 'Не удалось загрузить сессии') + '</b></div>'; }
+					return;
+				}
+				self.renderSecurity(response.data || {});
+			});
+		},
+
+		renderSecurity: function (data) {
+			var failed = data.failed || {};
+			var set = function (selector, value) {
+				var node = Adminx.Users.form.querySelector(selector);
+				if (node) { node.textContent = value; }
+			};
+			set('[data-user-failed-count]', String(failed.count_24h || 0));
+			set('[data-user-failed-last]', failed.last_at ? this.formatDate(failed.last_at) : this.t('users_never', 'Не было'));
+			set('[data-user-failed-ip]', failed.last_ip ? 'IP ' + failed.last_ip : '');
+			set('[data-user-password-changed]', data.password_changed_at ? this.formatDate(data.password_changed_at) : this.t('users_no_data', 'Нет данных'));
+			set('[data-user-password-state]', data.must_change_password
+				? this.t('users_password_change_pending', 'При следующем входе потребуется новый пароль')
+				: this.t('users_password_change_clear', 'Обязательная смена не назначена'));
+			set('[data-user-revoke-label]', data.is_self
+				? this.t('users_revoke_others', 'Завершить остальные')
+				: this.t('users_revoke_all', 'Завершить все'));
+
+			var list = this.form.querySelector('[data-user-sessions]');
+			if (!list) { return; }
+			list.innerHTML = '';
+			var sessions = Array.isArray(data.sessions) ? data.sessions : [];
+			if (!sessions.length) {
+				list.innerHTML = '<div class="empty-state"><i class="ti ti-devices-off"></i><b>'
+					+ this.t('users_sessions_empty', 'Активных сессий нет') + '</b><span>'
+					+ this.t('users_sessions_empty_hint', 'Пользователь войдёт снова с действующим паролем.') + '</span></div>';
+				return;
+			}
+
+			var self = this;
+			sessions.forEach(function (session) {
+				var item = document.createElement('article');
+				item.className = 'users-session' + (session.is_current ? ' is-current' : '');
+				var icon = document.createElement('span');
+				icon.className = 'icon-tile';
+				icon.innerHTML = '<i class="ti ti-' + (session.device === 'mobile' ? 'device-mobile' : 'device-desktop') + '"></i>';
+				var content = document.createElement('div');
+				content.className = 'users-session-main';
+				var title = document.createElement('div');
+				var strong = document.createElement('b');
+				strong.textContent = (session.browser || self.t('users_browser', 'Браузер')) + ' · '
+					+ (session.platform || self.t('users_device', 'Устройство'));
+				title.appendChild(strong);
+				if (session.is_current) {
+					var badge = document.createElement('span'); badge.className = 'badge badge-green'; badge.textContent = self.t('users_session_current', 'Текущая'); title.appendChild(badge);
+				}
+				var meta = document.createElement('span');
+				meta.textContent = 'IP ' + (session.ip || '—') + ' · ' + self.t('users_session_login', 'вход') + ' '
+					+ self.formatDate(session.created_at) + ' · ' + self.t('users_session_activity', 'активность') + ' '
+					+ self.formatDate(session.last_active);
+				content.appendChild(title); content.appendChild(meta);
+				var button = document.createElement('button');
+				button.type = 'button'; button.className = 'btn btn-ghost btn-icon ax-act ax-act-danger';
+				button.setAttribute('data-session-revoke', String(session.id)); button.setAttribute('data-tooltip', self.t('users_revoke_session', 'Завершить сессию'));
+				button.setAttribute('aria-label', self.t('users_revoke_session', 'Завершить сессию')); button.innerHTML = '<i class="ti ti-logout"></i>';
+				item.appendChild(icon); item.appendChild(content); item.appendChild(button); list.appendChild(item);
+			});
+		},
+
+		revokeSession: function (button) {
+			if (!this.currentId) { return; }
+			var self = this;
+			var sessionId = button.getAttribute('data-session-revoke');
+			Adminx.Ajax.post(this.base() + '/users/' + this.currentId + '/sessions/' + sessionId + '/revoke').then(function (payload) {
+				var data = payload.data || {};
+				if (data.success) { Adminx.Ajax.handle(payload); if (!data.redirect) { self.loadSecurity(); } }
+				else { Adminx.Toast.show(data.message || self.t('users_revoke_failed', 'Не удалось завершить сессию'), 'error'); }
+			});
+		},
+
+		revokeOthers: function () {
+			if (!this.currentId) { return; }
+			var self = this;
+			Adminx.Ajax.post(this.base() + '/users/' + this.currentId + '/sessions/revoke-others').then(function (payload) {
+				var data = payload.data || {};
+				if (data.success) { Adminx.Toast.show(data.message, 'success'); self.loadSecurity(); }
+				else { Adminx.Toast.show(data.message || self.t('users_revoke_all_failed', 'Не удалось завершить сессии'), 'error'); }
+			});
+		},
 
     setSelfLock: function (locked) {
       var role = this.form.querySelector('[name="role"]');
@@ -159,7 +286,7 @@
       }
 
       var s = 0;
-      if (value.length >= 6) { s++; }
+	  if (value.length >= 8) { s++; }
       if (value.length >= 10) { s++; }
       if (/[a-z]/.test(value) && /[A-Z]/.test(value)) { s++; }
       if (/\d/.test(value) && /[^A-Za-z0-9]/.test(value)) { s++; }

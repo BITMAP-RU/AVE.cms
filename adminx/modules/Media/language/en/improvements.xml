@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+	<phrase data="media_usage_title">Where this file is used</phrase>
+	<phrase data="media_usage_description">Data from the latest media analyzer run.</phrase>
+	<phrase data="media_usage_not_checked">The analyzer has not run yet.</phrase>
+	<phrase data="media_usage_run_check">Run media check</phrase>
+	<phrase data="media_usage_run_check_help">to view references and enable deletion.</phrase>
+	<phrase data="media_usage_links">references</phrase>
+	<phrase data="media_usage_none">No explicit references found.</phrase>
+	<phrase data="media_usage_checked_at">Checked</phrase>
+	<phrase data="media_usage_dynamic_warning">Dynamically composed paths may not be detected.</phrase>
+	<phrase data="media_usage_open_source">Open source</phrase>
+	<phrase data="media_trash_title">Media trash</phrase>
+	<phrase data="media_trash_description">Files are outside the public directory and can be restored.</phrase>
+	<phrase data="media_trash_items">Deleted files and folders</phrase>
+	<phrase data="media_trash_items_help">Restore returns an item to its original path. Permanent deletion cannot be undone.</phrase>
+	<phrase data="media_trash_empty">Media trash is empty</phrase>
+	<phrase data="media_restore">Restore</phrase>
+	<phrase data="media_purge">Delete permanently</phrase>
+	<phrase data="media_to_trash">Move to trash</phrase>
+	<phrase data="media_usage_check_failed">Failed to check usage</phrase>
+	<phrase data="media_usage_error">Media check failed</phrase>
+	<phrase data="media_restore_confirm">Restore item?</phrase>
+	<phrase data="media_purge_confirm">Delete permanently?</phrase>
+	<phrase data="media_purge_forever">Delete forever</phrase>
+</language>

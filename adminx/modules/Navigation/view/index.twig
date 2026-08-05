@@ -136,6 +136,7 @@
               <div class="cluster navigation-actions">
                 <button class="btn btn-ghost btn-icon btn-sm navigation-action-edit" type="button" data-navigation-edit data-open-drawer="navigationDrawer" data-tooltip="Изменить" aria-label="Изменить"><i class="ti ti-pencil"></i></button>
                 <button class="btn btn-ghost btn-icon btn-sm navigation-action-items" type="button" data-navigation-items data-open-drawer="navigationItemsDrawer" data-tooltip="Пункты меню" aria-label="Пункты меню"><i class="ti ti-list-tree"></i></button>
+				<button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-view" type="button" data-navigation-revisions data-tooltip="Ревизии" aria-label="Ревизии"><i class="ti ti-history"></i></button>
                 <button class="btn btn-ghost btn-icon btn-sm navigation-action-copy" type="button" data-navigation-copy data-tooltip="Копировать" aria-label="Копировать"><i class="ti ti-copy"></i></button>
                 <button class="btn btn-ghost btn-icon btn-sm navigation-action-cache" type="button" data-navigation-cache data-tooltip="Очистить кеш" aria-label="Очистить кеш"><i class="ti ti-refresh"></i></button>
                 {% if item.can_delete %}
@@ -252,6 +253,7 @@
                   <span class="navigation-template-step">{{ loop.index }}</span>
                   <div><label class="field-label" for="navigation-template-{{ field[0] }}">{{ field[1] }}</label><p>{{ field[2] }}</p></div>
                   <button class="btn btn-ghost btn-icon btn-sm navigation-tags-button" type="button" data-navigation-tags-toggle data-tooltip-left="Вставить тег" aria-label="Вставить тег"><i class="ti ti-brackets-contain"></i></button>
+				  <button class="btn btn-ghost btn-icon btn-sm" type="button" data-navigation-lint data-tooltip-left="Проверить синтаксис" aria-label="Проверить синтаксис"><i class="ti ti-code-check"></i></button>
                 </div>
                 <textarea class="textarea mono" id="navigation-template-{{ field[0] }}" name="{{ field[0] }}" rows="6" placeholder="{{ field[3]|e('html_attr') }}" data-code-editor data-mode="htmlmixed" data-height="168"></textarea>
                 <span class="field-error" data-error="{{ field[0] }}"></span>
@@ -299,6 +301,21 @@
       <button class="btn btn-primary" type="submit"><i class="ti ti-check"></i>Сохранить</button>
     </div>
   </form>
+</aside>
+
+<aside class="drawer drawer-right drawer-lg navigation-revisions-drawer" id="navigationRevisionsDrawer" role="dialog" aria-modal="true" aria-labelledby="navigationRevisionsTitle" hidden>
+  <div class="drawer-header">
+	<div><h3 id="navigationRevisionsTitle">Ревизии навигации</h3><p class="text-secondary text-sm" data-navigation-revisions-meta>История сохранений шаблонов меню.</p></div>
+	<button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
+  </div>
+  <div class="drawer-body navigation-revisions-layout">
+	<div class="navigation-revisions-list" data-navigation-revisions-list><div class="empty-state">Выберите навигацию.</div></div>
+	<div class="navigation-revision-detail" data-navigation-revision-detail><div class="empty-state">Выберите ревизию слева.</div></div>
+  </div>
+  <div class="drawer-footer">
+	<button class="btn btn-secondary" type="button" data-close-drawer>Закрыть</button>
+	<button class="btn btn-primary" type="button" data-navigation-revision-restore disabled style="margin-left:auto"><i class="ti ti-restore"></i>Восстановить</button>
+  </div>
 </aside>
 
 <aside class="drawer drawer-right drawer-lg navigation-builder-drawer-panel" id="navigationItemsDrawer" role="dialog" aria-modal="true" aria-labelledby="navigationItemsDrawerTitle" hidden>

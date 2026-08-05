@@ -5,6 +5,23 @@ renaming, deleting, converting images and automatic
 miniatures. To view, you need the `Media: view` right, for changes -
 `Media: file management`.
 
+Use the [Media analyzer](analyzer.md) to inspect unused and duplicate files,
+missing originals or previews, oversized images, invalid paths, and usage.
+
+## Search, references, and trash
+
+The admin global search (`Ctrl+K`) finds media by file name and path. Uploads,
+renames, and restores update the index immediately. After importing an existing
+media library, run **Media → Analyzer** once to index all files.
+
+The file page shows references found during the latest analyzer run. Deleting
+from the file browser always moves the object to **Media Trash**. A separate
+live check reads current references before confirmation and repeats immediately
+before the move, so a previous analyzer report is not required. Trash can
+restore the original path or permanently purge the item.
+
+Folder, query, file type, and view mode can be stored as a personal saved view.
+
 SVG and other active web formats are not accepted in custom storage:
 when opened directly from a site's domain, they are capable of executing embedded code.
 Store vector icons of the theme in its own assets, and for the media library

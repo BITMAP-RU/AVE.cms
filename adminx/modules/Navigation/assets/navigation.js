@@ -27,6 +27,8 @@
     dragOrderSnapshot: '',
     orderSaving: false,
     activeTemplateEditor: null,
+	currentRevisionNavigationId: 0,
+	currentRevisionId: 0,
 
     init: function () {
       this.form = document.getElementById('navigationForm');
@@ -42,6 +44,13 @@
 
         var items = e.target.closest('[data-navigation-items]');
         if (items) { self.openItems(items.closest('[data-navigation-row]')); }
+		var revisions = e.target.closest('[data-navigation-revisions]');
+		if (revisions) { self.openRevisions(revisions.closest('[data-navigation-row]')); }
+		var revisionOpen = e.target.closest('[data-navigation-revision-open]');
+		if (revisionOpen) { self.loadRevision(revisionOpen.getAttribute('data-navigation-revision-open')); }
+		if (e.target.closest('[data-navigation-revision-restore]')) { self.restoreRevision(); }
+		var lint = e.target.closest('[data-navigation-lint]');
+		if (lint) { self.lintTemplate(lint.closest('.navigation-code-field')); }
 
         if (e.target.closest('[data-navigation-item-new]')) { self.fillItemNew(); }
         if (e.target.closest('[data-navigation-item-reset]')) { self.reloadCurrentItem(); }
@@ -290,6 +299,110 @@
         .catch(function (err) { Adminx.Toast.show(err.message || 'Не удалось загрузить навигацию', 'error'); })
         .finally(function () { Adminx.Loader.hide(); });
     },
+
+	lintTemplate: function (field) {
+	  if (!field) { return; }
+	  var textarea = field.querySelector('textarea');
+	  if (!textarea) { return; }
+	  if (textarea._adminxCodeMirror) { textarea._adminxCodeMirror.save(); }
+	  var data = new FormData();
+	  data.set('_csrf', this.csrf());
+	  data.set('code', textarea.value || '');
+	  Adminx.Loader.show();
+	  this.post(this.base() + '/navigation/lint', data).then(function (payload) {
+		Adminx.Loader.hide();
+		Adminx.Toast.show(payload.message || 'Синтаксис без ошибок', 'success');
+	  }).catch(function (error) {
+		Adminx.Loader.hide();
+		Adminx.Toast.show(error.message || 'В шаблоне есть ошибка', 'error');
+	  });
+	},
+
+	openRevisions: function (row) {
+	  if (!row) { return; }
+	  this.currentRevisionNavigationId = parseInt(row.getAttribute('data-id'), 10) || 0;
+	  this.currentRevisionId = 0;
+	  var title = document.getElementById('navigationRevisionsTitle');
+	  var meta = document.querySelector('[data-navigation-revisions-meta]');
+	  var list = document.querySelector('[data-navigation-revisions-list]');
+	  var detail = document.querySelector('[data-navigation-revision-detail]');
+	  var restore = document.querySelector('[data-navigation-revision-restore]');
+	  if (title) { title.textContent = 'Ревизии: ' + (row.getAttribute('data-title') || ('#' + this.currentRevisionNavigationId)); }
+	  if (meta) { meta.textContent = 'Загрузка истории шаблонов меню...'; }
+	  if (list) { list.innerHTML = '<div class="empty-state">Загрузка...</div>'; }
+	  if (detail) { detail.innerHTML = '<div class="empty-state">Выберите ревизию слева.</div>'; }
+	  if (restore) { restore.disabled = true; }
+	  if (Adminx.Drawer) { Adminx.Drawer.open('navigationRevisionsDrawer'); }
+	  this.refreshRevisions();
+	},
+
+	refreshRevisions: function () {
+	  var self = this;
+	  this.jsonRequest(this.base() + '/navigation/' + this.currentRevisionNavigationId + '/revisions').then(function (payload) {
+		self.renderRevisions((payload.data && payload.data.revisions) || []);
+	  }).catch(function (error) { Adminx.Toast.show(error.message || 'Не удалось загрузить ревизии', 'error'); });
+	},
+
+	renderRevisions: function (items) {
+	  var self = this;
+	  var list = document.querySelector('[data-navigation-revisions-list]');
+	  var meta = document.querySelector('[data-navigation-revisions-meta]');
+	  if (meta) { meta.textContent = items.length ? ('Снимков: ' + items.length) : 'История пока пуста'; }
+	  if (!list) { return; }
+	  if (!items.length) { list.innerHTML = '<div class="empty-state">Первый снимок появится после сохранения навигации.</div>'; return; }
+	  list.innerHTML = items.map(function (item) {
+		return '<button class="navigation-revision-row" type="button" data-navigation-revision-open="' + item.id + '"><span class="icon-tile"><i class="ti ti-history"></i></span><span><b>Ревизия #' + item.id + '</b><small>' + self.esc(item.created_label || '-') + (item.author_name ? ' · ' + self.esc(item.author_name) : '') + '</small></span><em class="badge ' + self.esc(item.badge || 'badge-gray') + '">' + self.esc(item.action_label || item.action || '') + '</em></button>';
+	  }).join('');
+	  this.loadRevision(items[0].id);
+	},
+
+	loadRevision: function (id) {
+	  var self = this;
+	  id = parseInt(id, 10) || 0;
+	  if (!id) { return; }
+	  this.jsonRequest(this.base() + '/navigation/revisions/' + id).then(function (payload) {
+		self.showRevision(payload.data || {});
+	  }).catch(function (error) { Adminx.Toast.show(error.message || 'Не удалось загрузить ревизию', 'error'); });
+	},
+
+	showRevision: function (item) {
+	  this.currentRevisionId = parseInt(item.id, 10) || 0;
+	  document.querySelectorAll('[data-navigation-revision-open]').forEach(function (row) {
+		row.classList.toggle('is-active', row.getAttribute('data-navigation-revision-open') === String(item.id));
+	  });
+	  var labels = { alias: 'Алиас', title: 'Название', user_group: 'Группы доступа', expand_ext: 'Разворачивание', begin: 'Обёртка: начало', end: 'Обёртка: конец', level1_begin: 'Уровень 1: начало', level1: 'Уровень 1: пункт', level1_active: 'Уровень 1: активный', level1_end: 'Уровень 1: конец', level2_begin: 'Уровень 2: начало', level2: 'Уровень 2: пункт', level2_active: 'Уровень 2: активный', level2_end: 'Уровень 2: конец', level3_begin: 'Уровень 3: начало', level3: 'Уровень 3: пункт', level3_active: 'Уровень 3: активный', level3_end: 'Уровень 3: конец' };
+	  var comparison = item.comparison || {};
+	  var entries = Object.keys(comparison.items || {}).filter(function (key) { return comparison.items[key].changed; });
+	  var detail = document.querySelector('[data-navigation-revision-detail]');
+	  if (detail) {
+		detail.innerHTML = '<div class="navigation-revision-detail-head"><div><h4>Ревизия #' + this.currentRevisionId + '</h4><p>' + this.esc(item.created_label || '-') + (item.author_name ? ' · ' + this.esc(item.author_name) : '') + '</p></div><span class="badge ' + (entries.length ? 'badge-amber' : 'badge-green') + '">' + (entries.length ? ('изменений: ' + entries.length) : 'совпадает') + '</span></div>' + (entries.length ? entries.map(function (key) {
+		  var value = comparison.items[key] || {};
+		  return '<article class="navigation-revision-change"><div><b>' + selfEsc(labels[key] || key) + '</b><span class="badge badge-amber">изменится</span></div><pre>' + selfEsc(value.after == null ? '' : (typeof value.after === 'string' ? value.after : JSON.stringify(value.after, null, 2))) + '</pre></article>';
+		}).join('') : '<div class="empty-state">Эта ревизия совпадает с текущей навигацией.</div>');
+	  }
+	  var restore = document.querySelector('[data-navigation-revision-restore]');
+	  if (restore) { restore.disabled = !this.currentRevisionId || !entries.length; }
+	  function selfEsc(value) { return Adminx.Navigation.esc(value); }
+	},
+
+	restoreRevision: function () {
+	  if (!this.currentRevisionId) { return; }
+	  var self = this;
+	  Adminx.Confirm.open({
+		kind: 'warning', title: 'Восстановить навигацию?', message: 'Текущее состояние будет сохранено отдельной резервной ревизией.', confirmLabel: 'Восстановить',
+		onConfirm: function () {
+		  var data = new FormData(); data.set('_csrf', self.csrf());
+		  self.post(self.base() + '/navigation/revisions/' + self.currentRevisionId + '/restore', data).then(function (payload) {
+			Adminx.Toast.show(payload.message || 'Навигация восстановлена', 'success');
+			window.location.reload();
+		  }).catch(function (error) { Adminx.Toast.show(error.message || 'Не удалось восстановить навигацию', 'error'); });
+		}
+	  });
+	},
+
+	jsonRequest: function (url) {
+	  return fetch(url, { headers: { 'Accept': 'application/json' }, credentials: 'same-origin' }).then(this.json);
+	},
 
     setGroupAccess: function (value) {
       var selected = String(value || '').split(',').map(function (id) { return String(parseInt(id, 10) || ''); });

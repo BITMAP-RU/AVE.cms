@@ -19,6 +19,7 @@
 	use App\Frontend\Auth\Registration\RegistrationGateRegistry;
 	use App\Frontend\Auth\Registration\CheckoutRegistrationGateInterface;
 	use App\Common\Lifecycle;
+	use App\Common\SiteOrigin;
 
 	class AuthService
 	{
@@ -35,6 +36,10 @@
 
 		public function register(array $data)
 		{
+			if (!\App\Common\PublicAuthSettings::allowsRegistrationMethod('email', $this->config)) {
+				throw new \RuntimeException('Регистрация по email отключена.');
+			}
+
 			$registering = Lifecycle::event('auth.user.registering', 'user', 'registering', null, array(
 				'data' => $data,
 			), null, array(), 'auth_service');
@@ -43,7 +48,7 @@
 			}
 
 			$data = $registering->value('data', $data);
-			$gate = RegistrationGateRegistry::get($this->setting('registration_gate', 'email'));
+			$gate = RegistrationGateRegistry::get('email');
 			if (!$gate) {
 				throw new \RuntimeException('Канал регистрации не настроен.');
 			}
@@ -83,12 +88,42 @@
 
 		public function verifyRegistration($token)
 		{
+			return $this->verifyEmailToken($token) !== false;
+		}
+
+		public function verifyEmailToken($token)
+		{
 			$row = $this->tokens->consume($token, 'registration');
-			if (!$row) {
-				return false;
+			if ($row) {
+				$this->users->verifyEmail((int) $row['user_id']);
+				return 'registration';
 			}
 
-			$this->users->verifyEmail((int) $row['user_id']);
+			$row = $this->tokens->consume($token, 'email_change');
+			if (!$row) { return false; }
+			$user = $this->users->find((int) $row['user_id']);
+			$email = $user && isset($user['email']) ? mb_strtolower(trim((string) $user['email'])) : '';
+			$channel = $this->emailVerificationChannel($email);
+			if ($email === '' || !hash_equals((string) $row['channel'], $channel)) { return false; }
+			$this->users->confirmEmail((int) $row['user_id']);
+			return 'email_change';
+		}
+
+		public function sendEmailVerification($userId)
+		{
+			$user = $this->users->find((int) $userId);
+			$email = $user && isset($user['email']) ? mb_strtolower(trim((string) $user['email'])) : '';
+			if (!$user || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+				throw new \InvalidArgumentException('Укажите корректный email.');
+			}
+
+			$channel = $this->emailVerificationChannel($email);
+			$raw = $this->tokens->issue((int) $user['Id'], 'email_change', $channel, $this->setting('verification_ttl', 86400));
+			$url = SiteOrigin::absolute(Feature::url('verify'), true) . '?token=' . rawurlencode($raw);
+			$html = '<h2>Подтверждение email</h2><p><a href="'
+				. htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '">Подтвердить email</a></p>';
+			$sent = \App\Frontend\PublicMailer::send($email, $html, 'Подтверждение email', '', '', 'text/html', array(), false, false);
+			if ($sent !== true) { throw new \RuntimeException('Не удалось отправить письмо подтверждения.'); }
 			return true;
 		}
 
@@ -170,8 +205,13 @@
 				return;
 			}
 
+			if (empty($user['email_verified_at']) && !empty($user['phone_verified_at'])
+				&& mb_strtolower((string) $user['user_name']) !== mb_strtolower((string) $user['email'])) {
+				return;
+			}
+
 			$raw = $this->tokens->issue((int) $user['Id'], 'password_reset', 'email', $this->setting('reset_ttl', 3600));
-			$url = rtrim(defined('HOST') ? HOST : '', '/') . Feature::url('reset') . '?token=' . rawurlencode($raw);
+			$url = SiteOrigin::absolute(Feature::url('reset'), true) . '?token=' . rawurlencode($raw);
 			$html = '<h2>Восстановление пароля</h2><p><a href="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '">Задать новый пароль</a></p>';
 			$sent = \App\Frontend\PublicMailer::send(
 				(string) $user['email'], $html, 'Восстановление пароля', '', '', 'text/html', array(), false, false
@@ -201,13 +241,22 @@
 
 		protected function checkoutGate()
 		{
-			$gate = RegistrationGateRegistry::get($this->setting('registration_gate', 'email'));
+			if (!\App\Common\PublicAuthSettings::allowsRegistrationMethod('email', $this->config)) {
+				return null;
+			}
+
+			$gate = RegistrationGateRegistry::get('email');
 			return $gate instanceof CheckoutRegistrationGateInterface ? $gate : null;
 		}
 
 		protected function setting($key, $default)
 		{
 			return isset($this->config[$key]) ? $this->config[$key] : $default;
+		}
+
+		protected function emailVerificationChannel($email)
+		{
+			return 'email:' . substr(hash('sha256', mb_strtolower(trim((string) $email))), 0, 18);
 		}
 
 		protected function defaultGroup()

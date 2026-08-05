@@ -42,6 +42,8 @@
 				'tables'     => Model::tables(),
 				'stats'      => Model::stats(),
 				'backups'    => Backup::all(),
+				'backup_keep' => Backup::keep(),
+				'backup_keep_max' => Backup::KEEP_MAX,
 				'schema'     => ModuleManager::coreSchemaStatus(),
 				'can_manage' => Permission::check('manage_database'),
 			]);
@@ -94,9 +96,27 @@
 				return $this->error('Не удалось создать бэкап: ' . $e->getMessage(), [], 500);
 			}
 
-			return $this->success('Бэкап создан: ' . $info['name'] . ' (' . $info['tables'] . ' таблиц)', [
+			$message = 'Бэкап создан: ' . $info['name'] . ' (' . $info['tables'] . ' таблиц)';
+			if (!empty($info['pruned'])) {
+				$message .= '. Удалено старых копий: ' . (int) $info['pruned'];
+			}
+
+			return $this->success($message, [
 				'redirect' => $this->base() . '/database?tab=backups',
 			]);
+		}
+
+		/** POST /database/backup/keep — сколько копий хранить. */
+		public function backupKeep(array $params = array())
+		{
+			if (($resp = $this->guard()) !== null) { return $resp; }
+			$keep = Backup::setKeep(Request::postInt('keep', Backup::KEEP_DEFAULT));
+			$pruned = Backup::prune();
+			$message = $keep > 0
+				? 'Хранить последних копий: ' . $keep
+				: 'Ротация выключена, копии не удаляются';
+			if ($pruned['deleted'] > 0) { $message .= '. Удалено сейчас: ' . (int) $pruned['deleted']; }
+			return $this->success($message, array('redirect' => $this->base() . '/database?tab=backups'));
 		}
 
 		/** POST /database/backup/upload — загрузить и проверить внешний файл дампа. */

@@ -12,6 +12,7 @@
     activeField: null,
     dragRow: null,
 	explainSearchTimer: null,
+	currentRevisionId: 0,
 
     init: function () {
       this.form = document.getElementById('requestForm');
@@ -79,6 +80,11 @@
     },
 
     base: function () { return (this.form && this.form.getAttribute('data-base')) || Adminx.base(); },
+	escape: function (value) {
+	  return String(value == null ? '' : value).replace(/[&<>"']/g, function (character) {
+		return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[character];
+	  });
+	},
 
 	initEditorMode: function () {
 	  if (!document.querySelector('[data-request-editor-mode]')) { return; }
@@ -331,6 +337,10 @@
       if (copy) { return this.copy(copy.closest('tr')); }
       var del = e.target.closest('[data-request-delete]');
       if (del) { return this.remove(del.closest('tr')); }
+	  if (e.target.closest('[data-request-revisions]')) { return this.openRevisions(); }
+	  var revision = e.target.closest('[data-request-revision-open]');
+	  if (revision) { return this.loadRevision(revision.getAttribute('data-request-revision-open')); }
+	  if (e.target.closest('[data-request-revision-restore]')) { return this.restoreRevision(); }
 
       // массовая сверка Legacy и Native
       var auditOne = e.target.closest('[data-native-audit-one]');
@@ -683,6 +693,91 @@
         }
       });
     },
+
+	openRevisions: function () {
+	  var id = parseInt(this.form ? this.form.getAttribute('data-id') : '0', 10) || 0;
+	  if (!id) { return; }
+	  this.currentRevisionId = 0;
+	  var list = document.querySelector('[data-request-revisions-list]');
+	  var detail = document.querySelector('[data-request-revision-detail]');
+	  var restore = document.querySelector('[data-request-revision-restore]');
+	  if (list) { list.innerHTML = '<div class="empty-state">Загрузка...</div>'; }
+	  if (detail) { detail.innerHTML = '<div class="empty-state">Выберите ревизию слева.</div>'; }
+	  if (restore) { restore.disabled = true; }
+	  if (Adminx.Drawer) { Adminx.Drawer.open('requestRevisionsDrawer'); }
+	  var self = this;
+	  Adminx.Ajax.request(this.base() + '/requests/' + id + '/revisions').then(function (payload) {
+		var response = payload.data || {};
+		if (!response.success) { throw new Error(response.message || 'Не удалось загрузить ревизии'); }
+		self.renderRevisions((response.data && response.data.revisions) || []);
+	  }).catch(function (error) { Adminx.Toast.show(error.message || 'Не удалось загрузить ревизии', 'error'); });
+	},
+
+	renderRevisions: function (items) {
+	  var self = this;
+	  var list = document.querySelector('[data-request-revisions-list]');
+	  var meta = document.querySelector('[data-request-revisions-meta]');
+	  if (meta) { meta.textContent = items.length ? ('Снимков: ' + items.length + '. Параметры, группы и условия сохраняются вместе.') : 'История пока пуста'; }
+	  if (!list) { return; }
+	  if (!items.length) { list.innerHTML = '<div class="empty-state">Первый снимок появится после сохранения запроса.</div>'; return; }
+	  list.innerHTML = items.map(function (item) {
+		return '<button class="request-revision-row" type="button" data-request-revision-open="' + item.id + '"><span class="icon-tile"><i class="ti ti-history"></i></span><span><b>Ревизия #' + item.id + '</b><small>' + self.escape(item.created_label || '-') + (item.author_name ? ' · ' + self.escape(item.author_name) : '') + '</small></span><em class="badge ' + self.escape(item.badge || 'badge-gray') + '">' + self.escape(item.action_label || item.action || '') + '</em></button>';
+	  }).join('');
+	  this.loadRevision(items[0].id);
+	},
+
+	loadRevision: function (id) {
+	  var self = this;
+	  id = parseInt(id, 10) || 0;
+	  if (!id) { return; }
+	  Adminx.Ajax.request(this.base() + '/requests/revisions/' + id).then(function (payload) {
+		var response = payload.data || {};
+		if (!response.success) { throw new Error(response.message || 'Не удалось загрузить ревизию'); }
+		self.showRevision(response.data || {});
+	  }).catch(function (error) { Adminx.Toast.show(error.message || 'Не удалось загрузить ревизию', 'error'); });
+	},
+
+	showRevision: function (item) {
+	  this.currentRevisionId = parseInt(item.id, 10) || 0;
+	  document.querySelectorAll('[data-request-revision-open]').forEach(function (row) {
+		row.classList.toggle('is-active', row.getAttribute('data-request-revision-open') === String(item.id));
+	  });
+	  var snapshot = item.snapshot || {};
+	  var comparison = item.comparison || {};
+	  var parts = [
+		{key: 'request', title: 'Параметры и шаблоны', count: Object.keys(snapshot.request || {}).length},
+		{key: 'groups', title: 'Группы условий', count: (snapshot.groups || []).length},
+		{key: 'conditions', title: 'Условия', count: (snapshot.conditions || []).length}
+	  ];
+	  var changedCount = parts.filter(function (part) { return comparison.items && comparison.items[part.key] && comparison.items[part.key].changed; }).length;
+	  var detail = document.querySelector('[data-request-revision-detail]');
+	  var self = this;
+	  if (detail) {
+		detail.innerHTML = '<div class="request-revision-detail-head"><div><h4>Ревизия #' + this.currentRevisionId + '</h4><p>' + this.escape(item.created_label || '-') + (item.author_name ? ' · ' + this.escape(item.author_name) : '') + '</p></div><span class="badge ' + (changedCount ? 'badge-amber' : 'badge-green') + '">' + (changedCount ? ('изменятся разделы: ' + changedCount) : 'совпадает') + '</span></div><div class="request-revision-parts">' + parts.map(function (part) {
+		  var changed = !!(comparison.items && comparison.items[part.key] && comparison.items[part.key].changed);
+		  return '<article class="' + (changed ? 'is-changed' : 'is-unchanged') + '"><span class="icon-tile"><i class="ti ' + (part.key === 'request' ? 'ti-template' : (part.key === 'groups' ? 'ti-folders' : 'ti-filter')) + '"></i></span><div><b>' + self.escape(part.title) + '</b><small>Элементов: ' + part.count + '</small></div><span class="badge ' + (changed ? 'badge-amber' : 'badge-gray') + '">' + (changed ? 'изменится' : 'совпадает') + '</span></article>';
+		}).join('') + '</div>';
+	  }
+	  var restore = document.querySelector('[data-request-revision-restore]');
+	  if (restore) { restore.disabled = !this.currentRevisionId || !changedCount; }
+	},
+
+	restoreRevision: function () {
+	  if (!this.currentRevisionId) { return; }
+	  var self = this;
+	  Adminx.Confirm.open({
+		kind: 'warning', title: 'Восстановить запрос?', message: 'Параметры, шаблоны и всё дерево условий будут возвращены вместе. Текущее состояние сохранится резервной ревизией.', confirmLabel: 'Восстановить',
+		onConfirm: function () {
+		  var data = new FormData(); data.set('_csrf', Adminx.csrf());
+		  Adminx.Ajax.post(self.base() + '/requests/revisions/' + self.currentRevisionId + '/restore', data).then(function (payload) {
+			var response = payload.data || {};
+			if (!response.success) { throw new Error(response.message || 'Не удалось восстановить запрос'); }
+			Adminx.Toast.show(response.message || 'Запрос восстановлен', 'success');
+			window.location.reload();
+		  }).catch(function (error) { Adminx.Toast.show(error.message || 'Не удалось восстановить запрос', 'error'); });
+		}
+	  });
+	},
 
     filterList: function (query) {
       var root = document.querySelector('[data-requests-page]');

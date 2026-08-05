@@ -166,6 +166,37 @@
 			return round($bytes / 1048576, 1) . ' MB';
 		}
 
+		/** Flat comparison used by revision previews before a restore. */
+		public static function compareSnapshots(array $current, array $target)
+		{
+			$keys = array_values(array_unique(array_merge(array_keys($current), array_keys($target))));
+			sort($keys, SORT_STRING);
+			$items = array();
+			$summary = array('changed' => 0, 'unchanged' => 0, 'added' => 0, 'removed' => 0, 'total_changed' => 0);
+			foreach ($keys as $key) {
+				$hasCurrent = array_key_exists($key, $current);
+				$hasTarget = array_key_exists($key, $target);
+				if (!$hasCurrent) { $state = 'added'; }
+				elseif (!$hasTarget) { $state = 'removed'; }
+				else { $state = self::sameValue($current[$key], $target[$key]) ? 'unchanged' : 'changed'; }
+				$summary[$state]++;
+				if ($state !== 'unchanged') { $summary['total_changed']++; }
+				$items[$key] = array(
+					'key' => (string) $key,
+					'state' => $state,
+					'changed' => $state !== 'unchanged',
+					'before' => $hasCurrent ? $current[$key] : null,
+					'after' => $hasTarget ? $target[$key] : null,
+				);
+			}
+
+			return array(
+				'items' => $items,
+				'summary' => $summary,
+				'has_changes' => $summary['total_changed'] > 0,
+			);
+		}
+
 		protected static function authorName($id)
 		{
 			if ((int) $id <= 0) {
@@ -189,6 +220,16 @@
 			}
 
 			return !empty($row['email']) ? (string) $row['email'] : '#' . (int) $id;
+		}
+
+		protected static function sameValue($left, $right)
+		{
+			if (is_array($left) || is_array($right)) {
+				return Json::encode($left, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+					=== Json::encode($right, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+			}
+
+			return $left === $right || (is_scalar($left) && is_scalar($right) && (string) $left === (string) $right);
 		}
 
 		protected static function identifier($value)
