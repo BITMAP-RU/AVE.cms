@@ -4,7 +4,7 @@
 
 <nav class="breadcrumbs" aria-label="Хлебные крошки">
   <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i>
-  {% if catalog_mode %}<a href="{{ ADMINX_BASE }}/catalog">Каталог</a><i class="ti ti-chevron-right"></i><a href="{{ return_url }}">Товары</a>{% else %}<a href="{{ ADMINX_BASE }}/documents">Документы</a>{% endif %}<i class="ti ti-chevron-right"></i>
+  {% if catalog_mode %}<a href="{{ ADMINX_BASE }}/catalog">Каталог</a><i class="ti ti-chevron-right"></i><a href="{{ return_url }}">{{ return_label|default('Товары') }}</a>{% else %}<a href="{{ ADMINX_BASE }}/documents">Документы</a>{% endif %}<i class="ti ti-chevron-right"></i>
   <span>{{ is_new ? 'новый' : '#' ~ document.Id }}</span>
 </nav>
 
@@ -15,7 +15,7 @@
       <p class="text-secondary" style="margin-top:5px" data-document-edit-meta>{{ is_new ? (catalog_mode ? 'Заполните основные данные. Характеристики, варианты и доставка откроются после первого сохранения.' : 'Создание базовой карточки документа.') : 'ID ' ~ document.Id ~ ', ' ~ (document.state_label|admin_trans) ~ ', изменён: ' ~ document.changed_label }}</p>
     </div>
     <div class="cluster">
-      {% if catalog_mode and not is_new and can_manage and product_copy_url %}<button class="btn btn-secondary" type="button" data-catalog-product-copy data-url="{{ product_copy_url }}" data-csrf="{{ csrf_token }}"><i class="ti ti-copy"></i>Создать копию</button>{% endif %}
+      {% if catalog_mode and not is_new and can_manage and product_copy_url %}<button class="btn btn-secondary" type="button" data-catalog-product-copy data-url="{{ product_copy_url }}" data-csrf="{{ csrf_token }}" data-confirm-copy="1"><i class="ti ti-copy"></i>Создать копию</button>{% endif %}
       <a class="btn btn-ghost" href="{{ return_url|default(ADMINX_BASE ~ '/documents') }}"><i class="ti ti-arrow-left"></i>К списку</a>
     </div>
   </div>
@@ -30,6 +30,7 @@
       <button class="tab" type="button" role="tab" aria-selected="false" data-document-workspace-tab="attributes"{{ is_new ? ' aria-disabled="true" data-tooltip="Доступно после первого сохранения"' : '' }}><i class="ti ti-list-details"></i>Характеристики</button>
       <button class="tab" type="button" role="tab" aria-selected="false" data-document-workspace-tab="variants"{{ is_new ? ' aria-disabled="true" data-tooltip="Доступно после первого сохранения"' : '' }}><i class="ti ti-box-multiple"></i>Варианты</button>
       <button class="tab" type="button" role="tab" aria-selected="false" data-document-workspace-tab="shipping"{{ is_new ? ' aria-disabled="true" data-tooltip="Доступно после первого сохранения"' : '' }}><i class="ti ti-truck-delivery"></i>Доставка</button>
+	  {% if product_search_aliases_available %}<button class="tab" type="button" role="tab" aria-selected="false" data-document-workspace-tab="search"><i class="ti ti-search"></i>Поиск</button>{% endif %}
       {% endif %}
       <button class="tab" type="button" role="tab" aria-selected="false" data-document-workspace-tab="additional"><i class="ti ti-adjustments-horizontal"></i>Дополнительно</button>
     </div>
@@ -41,8 +42,9 @@
         <option value="promotions"{{ is_new ? ' disabled' : '' }}>Акции{{ is_new ? ' · после сохранения' : '' }}</option>
         <option value="attributes"{{ is_new ? ' disabled' : '' }}>Характеристики{{ is_new ? ' · после сохранения' : '' }}</option>
         <option value="variants"{{ is_new ? ' disabled' : '' }}>Варианты{{ is_new ? ' · после сохранения' : '' }}</option>
-        <option value="shipping"{{ is_new ? ' disabled' : '' }}>Доставка{{ is_new ? ' · после сохранения' : '' }}</option>
-        {% endif %}
+		<option value="shipping"{{ is_new ? ' disabled' : '' }}>Доставка{{ is_new ? ' · после сохранения' : '' }}</option>
+		{% if product_search_aliases_available %}<option value="search">Поиск</option>{% endif %}
+		{% endif %}
         <option value="additional">Дополнительно</option>
       </select>
     </label>
@@ -71,6 +73,11 @@
   <input type="hidden" name="id" value="{{ document.Id }}">
   <input type="hidden" name="document_version" value="{{ document.document_version|default(1) }}">
   <input type="hidden" name="media_draft_token" value="{{ media_draft_token|default('')|e('html_attr') }}">
+  {% if field_groups %}
+  {% for source in field_groups[0].condition_sources|default([]) %}
+  <input type="hidden" value="{{ source.field_value|e('html_attr') }}" data-document-condition-source data-field-id="{{ source.Id }}" data-field-alias="{{ source.rubric_field_alias|e('html_attr') }}">
+  {% endfor %}
+  {% endif %}
 
   <section class="documents-draft-recovery" data-document-draft-recovery hidden>
 	<span class="icon-tile" style="--tile-bg:var(--amber-100);--tile-fg:var(--amber-700)"><i class="ti ti-device-floppy"></i></span>
@@ -298,7 +305,7 @@
             <label class="field col-12"><span class="field-label">Автор</span><select class="select" name="document_author_id">{% for author in authors %}<option value="{{ author.id }}"{{ document.document_author_id == author.id ? ' selected' : '' }}>{{ author.name }}{% if not author.active %} · отключён{% endif %}</option>{% endfor %}</select></label>
             <div class="field col-12">
               <span class="field-label">Родительский документ</span>
-              <div class="documents-picker-input">
+              <div class="documents-picker-input" data-document-picker-scope="parent" data-document-picker-exclude="{{ document.Id }}">
                 <input class="input" type="number" name="document_parent" value="{{ document.document_parent }}" placeholder="ID документа" min="0" data-document-parent-id>
                 <button class="btn btn-secondary btn-icon btn-sm" type="button" data-document-parent-pick data-tooltip="Выбрать документ" aria-label="Выбрать документ"><i class="ti ti-file-search"></i></button>
               </div>

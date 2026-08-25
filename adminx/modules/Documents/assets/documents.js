@@ -1124,6 +1124,13 @@
 
     documentFieldConditionContext: function () {
       var context = {};
+	  this.form.querySelectorAll('[data-document-condition-source]').forEach(function (source) {
+		var id = String(parseInt(source.getAttribute('data-field-id'), 10) || 0);
+		var alias = String(source.getAttribute('data-field-alias') || '').trim().toLowerCase();
+		var values = [String(source.value == null ? '' : source.value)];
+		context['id:' + id] = values;
+		if (alias) { context['alias:' + alias] = values; }
+	  });
       this.form.querySelectorAll('.ax-document-field[data-rubric-field-id]').forEach(function (field) {
         var values = [];
         var controls = Array.prototype.slice.call(field.querySelectorAll('input[name], select[name], textarea[name]'));
@@ -1349,9 +1356,24 @@
 
     searchCatalog: function (catalog, value) {
       if (!catalog) { return; }
-      value = String(value || '').trim().toLowerCase();
-      catalog.querySelectorAll('[data-document-catalog-node]').forEach(function (node) {
-        node.classList.toggle('is-filtered', value && String(node.getAttribute('data-search') || '').toLowerCase().indexOf(value) < 0);
+      var normalize = function (input) {
+        return String(input || '').toLowerCase().replace(/ё/g, 'е').replace(/[^0-9a-zа-я]+/gi, ' ').trim();
+      };
+      var query = normalize(value);
+      var tokens = query ? query.split(/\s+/) : [];
+      var nodes = Array.prototype.slice.call(catalog.querySelectorAll('[data-document-catalog-node]'));
+      nodes.forEach(function (node) {
+        var haystack = normalize(node.getAttribute('data-search'));
+        var matches = !tokens.length || tokens.every(function (token) { return haystack.indexOf(token) >= 0; });
+        node.classList.toggle('is-filtered', !matches);
+      });
+      nodes.forEach(function (node) {
+        if (node.classList.contains('is-filtered')) { return; }
+        var parent = node.parentElement ? node.parentElement.closest('[data-document-catalog-node]') : null;
+        while (parent) {
+          parent.classList.remove('is-filtered');
+          parent = parent.parentElement ? parent.parentElement.closest('[data-document-catalog-node]') : null;
+        }
       });
     },
 
@@ -1496,7 +1518,7 @@
 	saveActiveWorkspace: function () {
 	  var workspace = document.querySelector('[data-document-workspace]');
 	  var panel = workspace ? workspace.getAttribute('data-active-panel') || 'main' : 'main';
-	  if (panel === 'attributes' || panel === 'shipping' || panel === 'promotions') {
+	  if (panel === 'attributes' || panel === 'shipping' || panel === 'promotions' || panel === 'search') {
 		var form = workspace.querySelector('[data-document-workspace-panel="' + panel + '"] form');
 		if (form && typeof form.requestSubmit === 'function') { form.requestSubmit(); }
 		else if (form) { form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); }
@@ -1772,6 +1794,16 @@
         if (textarea._adminxCodeMirror) { textarea._adminxCodeMirror.save(); }
       });
       this.form.querySelectorAll('textarea[data-rich-editor]').forEach(function (textarea) {
+        if (window.Adminx && Adminx.RichEditor && typeof Adminx.RichEditor.syncTextarea === 'function') {
+          Adminx.RichEditor.syncTextarea(textarea, textarea._adminxTiptap || null);
+          return;
+        }
+        var root = textarea.closest('.rich-editor');
+        if (root && root.classList.contains('rich-editor-source-open') && root._richSourceEditor) {
+          root._richSourceEditor.save();
+          textarea.value = root._richSourceEditor.getValue();
+          return;
+        }
         if (textarea._adminxTiptap && textarea.getAttribute('data-rich-editor-dirty') === '1') {
           textarea.value = textarea._adminxTiptap.getHTML();
         }
@@ -2467,7 +2499,11 @@
 
     applyPickedMedia: function (target, file) {
       var input = target ? target.querySelector('[data-document-media-url]') : null;
-      if (input && file && file.url) { input.value = file.url; input.dispatchEvent(new Event('input', { bubbles: true })); }
+      if (input && file && file.url) {
+        input.value = file.url;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        this.sortMediaRowsByName(target.closest('[data-document-media-list]'));
+      }
     },
 
     mediaPickerType: function (target) {
@@ -2507,25 +2543,40 @@
 
     uploadMediaFiles: function (container, files, replace) {
       if (!container || !files || !files.length) { return; }
-      var data = new FormData();
-      data.append('_csrf', this.csrf());
-      data.append('dir', container.getAttribute('data-upload-dir') || '/uploads');
-      data.append('field_id', container.getAttribute('data-field-id') || '0');
-      data.append('document_id', (this.field('id') || {}).value || '0');
-      data.append('media_draft_token', (this.field('media_draft_token') || {}).value || '');
-      Array.prototype.forEach.call(files, function (file) { data.append('files[]', file); });
       var self = this;
-      this.ajax(container.getAttribute('data-upload-url') || (this.base() + '/media/upload'), data, function (payload) {
-        var uploaded = ((payload.data || {}).files) || [];
-		if (replace && uploaded.length) {
-			self.prepareMediaReplacement(container);
+      var buttons = container.querySelectorAll('[data-document-media-upload]');
+      buttons.forEach(function (button) { button.disabled = true; });
+      Adminx.Loader.show();
+      Adminx.Upload.files(
+		container.getAttribute('data-upload-url') || (this.base() + '/media/upload'),
+		files,
+		function (chunk) {
+		  var data = new FormData();
+		  data.append('_csrf', self.csrf());
+		  data.append('dir', container.getAttribute('data-upload-dir') || '/uploads');
+		  data.append('field_id', container.getAttribute('data-field-id') || '0');
+		  data.append('document_id', (self.field('id') || {}).value || '0');
+		  data.append('media_draft_token', (self.field('media_draft_token') || {}).value || '');
+		  chunk.forEach(function (file) { data.append('files[]', file); });
+		  return data;
 		}
+      ).then(function (result) {
+		var uploaded = result.files || [];
+		if (replace && uploaded.length) { self.prepareMediaReplacement(container); }
         if (container.matches('[data-document-media-single]')) {
           self.applyUploadedSingle(container, uploaded[0] || null);
         } else {
           self.appendMediaFiles(container, uploaded);
         }
-        Adminx.Toast.show(payload.message || 'Файлы загружены', 'success');
+		Adminx.Toast.show('Загружено файлов: ' + uploaded.length, 'success');
+	  }).catch(function (error) {
+		var uploaded = error && error.uploaded ? error.uploaded.length : 0;
+		var message = (error && error.message) || 'Не удалось загрузить файлы';
+		if (uploaded) { message += '. До ошибки загружено: ' + uploaded; }
+		Adminx.Toast.show(message, 'error');
+	  }).finally(function () {
+		Adminx.Loader.hide();
+		buttons.forEach(function (button) { button.disabled = false; });
       });
     },
 
@@ -2606,8 +2657,41 @@
         seen[url] = true;
         added++;
       });
+      if (added) { this.sortMediaRowsByName(list); }
       this.updateMediaListEmpty(list);
       if (!added && files.length) { Adminx.Toast.show('Эти файлы уже есть в поле', 'info'); }
+    },
+
+    sortMediaRowsByName: function (list) {
+      if (!list || list.getAttribute('data-media-accept') !== 'image') { return; }
+      var box = list.querySelector('[data-document-media-items]');
+      if (!box) { return; }
+      var rows = Array.prototype.slice.call(box.querySelectorAll('[data-document-media-row]'));
+      if (rows.length < 2) { return; }
+      var self = this;
+      var collator = window.Intl && window.Intl.Collator
+        ? new window.Intl.Collator(undefined, { numeric: true, sensitivity: 'base' })
+        : null;
+      rows.sort(function (left, right) {
+        var leftName = self.mediaRowFileName(left);
+        var rightName = self.mediaRowFileName(right);
+        if (!leftName && !rightName) { return 0; }
+        if (!leftName) { return 1; }
+        if (!rightName) { return -1; }
+        return collator ? collator.compare(leftName, rightName) : leftName.localeCompare(rightName);
+      });
+      rows.forEach(function (row) { box.appendChild(row); });
+      this.reindexMediaList(list);
+    },
+
+    mediaRowFileName: function (row) {
+      var input = row ? row.querySelector('[data-media-key="url"]') : null;
+      var value = input ? String(input.value || '').trim() : '';
+      if (!value) { return ''; }
+      value = value.split(/[?#]/, 1)[0].replace(/\\/g, '/');
+      var name = value.slice(value.lastIndexOf('/') + 1);
+      try { name = decodeURIComponent(name); } catch (e) {}
+      return name;
     },
 
     createMediaRow: function (list) {
@@ -3016,11 +3100,15 @@
       var rubricEl = target ? (target.querySelector && target.querySelector('[data-document-picker-rubric]')) : null;
       if (!rubricEl && target && target.matches && target.matches('[data-document-picker-rubric]')) { rubricEl = target; }
       var rubric = rubricEl ? (rubricEl.getAttribute('data-document-picker-rubric') || '') : '';
+      var scope = target && target.getAttribute ? (target.getAttribute('data-document-picker-scope') || '') : '';
+      var excludeId = target && target.getAttribute ? (target.getAttribute('data-document-picker-exclude') || '') : '';
       var load = function () {
         var params = new URLSearchParams();
         params.set('q', search.value.trim());
         params.set('limit', 20);
         if (rubric) { params.set('rubric_id', rubric); }
+        if (scope) { params.set('scope', scope); }
+        if (excludeId) { params.set('exclude_id', excludeId); }
         status.textContent = 'Загрузка...';
         status.hidden = false;
         fetch(self.base() + '/documents/picker?' + params.toString(), { headers: { 'Accept': 'application/json' }, credentials: 'same-origin' })

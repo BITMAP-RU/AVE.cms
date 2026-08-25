@@ -17,7 +17,7 @@
 	return array(
 		'code' => 'rubrics',
 		'name' => 'Рубрики и поля',
-		'version' => '0.3.4',
+		'version' => '0.3.6',
 		'field_sets' => \App\Adminx\Rubrics\RubricFieldPresets::definitions(),
 		'hook_definitions' => array(
 			array(

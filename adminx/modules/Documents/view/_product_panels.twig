@@ -1,3 +1,26 @@
+{% if catalog_mode and not is_new and product_search_aliases_available %}
+<section class="card documents-card product-search-aliases" data-document-workspace-panel="search" data-product-search-aliases data-suggestions-url="{{ ADMINX_BASE }}/catalog/search-alias-suggestions" data-document-id="{{ document.Id }}">
+  <form method="post" action="{{ ADMINX_BASE }}/catalog/products/{{ document.Id }}/search-aliases" data-product-search-alias-form>
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+    <div class="documents-section-head">
+      <div class="documents-head-left"><span class="icon-tile documents-head-icon" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-vocabulary"></i></span><div><h2>Поисковые названия</h2><p>Другие названия только этого товара: народные, прежние или разговорные.</p></div></div>
+      <span class="badge badge-blue" data-product-search-alias-count>{{ product_search_aliases|length }}</span>
+    </div>
+    <div class="documents-card-body product-search-aliases-body">
+      <div class="alert alert-info"><i class="ti ti-info-circle"></i><div><b>Название товара не изменится</b><p>Например, «кушетка» или «стол-чемодан» помогут найти товар, но не появятся в карточке на сайте.</p></div></div>
+      <div class="product-search-alias-list" data-product-search-alias-list>
+        {% for alias in product_search_aliases %}
+        <div class="product-search-alias-row" data-product-search-alias-row><div class="combobox product-search-alias-control"><span class="input-wrap"><i class="ti ti-search"></i><input class="input" name="aliases[]" value="{{ alias|e('html_attr') }}" maxlength="190" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="Поисковое название" data-product-search-alias-input></span><div class="combo-list product-search-alias-suggestions" role="listbox" hidden data-product-search-alias-suggestions></div></div><button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-danger" type="button" data-product-search-alias-remove data-tooltip="Удалить название" aria-label="Удалить название"><i class="ti ti-trash"></i></button></div>
+        {% endfor %}
+      </div>
+      <div class="product-search-alias-empty" data-product-search-alias-empty{{ product_search_aliases ? ' hidden' : '' }}><i class="ti ti-vocabulary-off"></i><span>Дополнительных названий пока нет</span></div>
+      <div class="product-search-alias-actions"><button class="btn btn-secondary" type="button" data-product-search-alias-add><i class="ti ti-plus"></i>Добавить название</button><button class="btn btn-primary" type="submit"><i class="ti ti-device-floppy"></i>Сохранить</button></div>
+    </div>
+  </form>
+  <template data-product-search-alias-template><div class="product-search-alias-row" data-product-search-alias-row><div class="combobox product-search-alias-control"><span class="input-wrap"><i class="ti ti-search"></i><input class="input" name="aliases[]" value="" maxlength="190" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="Поисковое название" placeholder="Например, кушетка" data-product-search-alias-input></span><div class="combo-list product-search-alias-suggestions" role="listbox" hidden data-product-search-alias-suggestions></div></div><button class="btn btn-ghost btn-icon btn-sm ax-act ax-act-danger" type="button" data-product-search-alias-remove data-tooltip="Удалить название" aria-label="Удалить название"><i class="ti ti-trash"></i></button></div></template>
+</section>
+{% endif %}
+
 {% if catalog_mode and not is_new %}
 <section class="product-promotions-panel" data-document-workspace-panel="promotions" data-product-promotions data-base="{{ ADMINX_BASE }}" data-product-id="{{ document.Id }}" data-product-title="{{ document.document_title|e('html_attr') }}" data-search-url="{{ ADMINX_BASE }}/catalog/product-relations/products" data-csrf="{{ csrf_token }}">
   <header class="section-header blocks-panel-header product-promotions-header">
@@ -88,18 +111,34 @@
 
 {% if catalog_mode and not is_new %}
 <section class="card documents-card catalog-product-variant-bridge" data-document-workspace-panel="variants">
-  <div class="documents-section-head"><h2>Варианты товара</h2>{% if variant_group %}<span class="badge badge-blue">Группа #{{ variant_group.id }}</span>{% endif %}</div>
-  <div class="documents-card-body between">
+  <div class="documents-section-head"><div class="documents-head-left"><span class="icon-tile documents-head-icon" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-box-multiple"></i></span><div><h2>Варианты товара</h2><p>Цвета, комплектации и другие исполнения одной модели.</p></div></div>{% if variant_group %}<span class="badge badge-blue">Группа #{{ variant_group.id }}</span>{% endif %}</div>
+  <div class="documents-card-body product-variant-bridge-body">
     {% if variant_group %}
-    <div><b>{{ variant_group.title }}</b><p class="text-secondary">{{ variant_group.is_primary ? 'Основной вариант группы' : 'Вариант группы' }}</p></div>
-    <a class="btn btn-secondary" href="{{ ADMINX_BASE }}/catalog/variant-groups/{{ variant_group.id }}"><i class="ti ti-box-multiple"></i>Управление вариантами</a>
+    <div class="product-variant-current"><span class="icon-tile"><i class="ti ti-stack-2"></i></span><div><b>{{ variant_group.title }}</b><p class="text-secondary">{{ variant_group.is_primary ? 'Основной вариант группы' : 'Вариант группы' }}</p></div></div>
+    <div class="product-variant-bridge-actions">
+      <form method="post" action="{{ ADMINX_BASE }}/catalog/variant-groups/{{ variant_group.id }}/products/{{ document.Id }}/copy" data-variant-action data-confirm="Создать выключенную копию товара и сразу добавить её в эту группу?" data-confirm-kind="info" data-confirm-label="Создать вариант">
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        <button class="btn btn-secondary" type="submit"><i class="ti ti-copy"></i>Создать вариант копированием</button>
+      </form>
+      <a class="btn btn-primary" href="{{ ADMINX_BASE }}/catalog/variant-groups/{{ variant_group.id }}?focus={{ document.Id }}#variant-{{ document.Id }}"><i class="ti ti-adjustments-horizontal"></i>Открыть матрицу</a>
+    </div>
     {% else %}
-    <div><b>Товар пока не объединён с вариантами</b><p class="text-secondary">Создайте группу на основе текущего товара.</p></div>
-    <form method="post" action="{{ ADMINX_BASE }}/catalog/products/{{ document.Id }}/variant-group" data-variant-action>
-      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-      <input type="hidden" name="title" value="{{ document.document_title|e('html_attr') }}">
-      <button class="btn btn-secondary" type="submit"><i class="ti ti-plus"></i>Создать группу вариантов</button>
-    </form>
+    <div class="product-variant-start-copy"><b>Товар пока не входит в группу</b><p class="text-secondary">Создайте новую группу для этой модели или добавьте товар в уже существующую.</p></div>
+    <div class="product-variant-start-grid">
+      <form class="product-variant-start-option" method="post" action="{{ ADMINX_BASE }}/catalog/products/{{ document.Id }}/variant-group" data-variant-action>
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        <span class="product-variant-start-head"><i class="ti ti-library-plus"></i><span><b>Новая группа</b><small>Текущий товар станет первым и основным вариантом.</small></span></span>
+        <label class="field"><span class="field-label">Название группы</span><span class="input-wrap"><i class="ti ti-box-multiple"></i><input class="input" name="title" value="{{ document.document_title|e('html_attr') }}" required></span></label>
+        <button class="btn btn-primary" type="submit"><i class="ti ti-plus"></i>Создать группу</button>
+      </form>
+      <form class="product-variant-start-option" method="post" action="{{ ADMINX_BASE }}/catalog/products/{{ document.Id }}/variant-group/attach" data-variant-action>
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        <span class="product-variant-start-head"><i class="ti ti-link-plus"></i><span><b>Существующая группа</b><small>Подходит, если другие исполнения модели уже добавлены.</small></span></span>
+        <label class="field"><span class="field-label">Группа вариантов</span><select class="select" name="group_id" required><option value="">Выберите группу</option>{% for group in variant_groups %}<option value="{{ group.id }}">{{ group.title }} · {{ group.variants_count }} вариантов</option>{% endfor %}</select></label>
+        <button class="btn btn-secondary" type="submit"{{ variant_groups ? '' : ' disabled' }}><i class="ti ti-link"></i>Добавить в группу</button>
+        {% if not variant_groups %}<small class="field-hint">Других групп пока нет.</small>{% endif %}
+      </form>
+    </div>
     {% endif %}
   </div>
 </section>

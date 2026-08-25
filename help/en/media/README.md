@@ -84,6 +84,11 @@ the file remains in its folder. When transferring a JPG or PNG, the adjacent Web
 the same base name is transferred along with the original; automatic thumbnails
 will be rebuilt using the new URL.
 
+One selection may contain more than 20 files. The panel automatically splits
+them into batches compatible with PHP's standard `max_file_uploads` limit and
+shows aggregate progress. The same behaviour is used by **Media**, the shared
+picker, and document or product media fields.
+
 ## Automatic generation
 
 The thumbnail is created lazily - on the first HTTP request to its URL. Until the first

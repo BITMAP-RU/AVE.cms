@@ -96,7 +96,7 @@
 				throw new \RuntimeException('SQL-дамп оборван или содержит незавершённую команду');
 			}
 
-			if ($meta['format'] !== 'adminx full dump') {
+			if ($meta['format'] !== 'ave.cms full dump') {
 				throw new \RuntimeException('Файл не является полным дампом AVE.cms');
 			}
 
@@ -309,8 +309,9 @@
 		protected static function readMetadata($line, array &$meta)
 		{
 			$value = trim(substr(ltrim((string) $line), 2));
-			if (strcasecmp($value, 'adminx full dump') === 0) {
-				$meta['format'] = 'adminx full dump';
+			if (strcasecmp($value, 'AVE.cms full dump') === 0
+				|| strcasecmp($value, 'adminx full dump') === 0) {
+				$meta['format'] = 'ave.cms full dump';
 				return;
 			}
 

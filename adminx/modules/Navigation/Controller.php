@@ -17,10 +17,12 @@
 	defined('BASEPATH') || die('Direct access to this location is not allowed.');
 
 	use App\Adminx\Support\CodeEditor;
+	use App\Adminx\Support\AdminLocale;
 	use App\Common\AdminAssets;
 	use App\Common\Auth;
 	use App\Common\Controller as BaseController;
 	use App\Common\Permission;
+	use App\Helpers\Hooks;
 	use App\Helpers\Request;
 
 	class Controller extends BaseController
@@ -32,12 +34,22 @@
 			CodeEditor::useCodeMirror('htmlmixed');
 
 			$q = Request::getStr('q', '');
+			$panelSources = Hooks::filter('navigation.item.panel_sources', array());
+			if (!is_array($panelSources)) { $panelSources = array(); }
+			$panelSources = array_values(array_filter(array_map(function ($source) {
+				if (!is_array($source)) { return null; }
+				$code = strtolower(trim(isset($source['code']) ? (string) $source['code'] : ''));
+				$title = trim(isset($source['title']) ? (string) $source['title'] : '');
+				if (!preg_match('/^[a-z][a-z0-9_-]{1,31}$/', $code) || $title === '') { return null; }
+				return array('code' => $code, 'title' => AdminLocale::translateMarkup($title));
+			}, $panelSources)));
 
 			return $this->render('@navigation/index.twig', array(
 				'navigation_items' => Model::all($q),
 				'stats' => Model::stats(),
 				'filters' => array('q' => $q),
 				'access_groups' => Model::accessGroups(),
+				'navigation_panel_sources' => $panelSources,
 				'can_manage' => Permission::check('manage_navigation'),
 			));
 		}

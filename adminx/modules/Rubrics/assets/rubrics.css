@@ -1129,7 +1129,8 @@
   overflow-x: hidden;
 }
 .rubrics-extra-template-panel {
-  width: min(66vw, 980px);
+  width: 66.6667vw;
+  max-width: 66.6667vw;
   overflow-x: hidden;
 }
 .rubrics-drawer {
@@ -1140,6 +1141,63 @@
 }
 .rubrics-drawer .drawer-body {
   overflow-x: hidden;
+}
+.rubrics-extra-template-body {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  gap: 16px;
+}
+.rubrics-extra-template-help {
+  flex: 0 0 auto;
+  align-items: center;
+  margin: 0;
+}
+.rubrics-extra-template-help > i {
+  flex: 0 0 auto;
+  color: var(--blue-600);
+  font-size: 20px;
+}
+.rubrics-extra-template-help > div {
+  display: grid;
+  flex: 1 1 auto;
+  gap: 3px;
+  min-width: 0;
+}
+.rubrics-extra-template-help b,
+.rubrics-extra-template-help span {
+  display: block;
+}
+.rubrics-extra-template-help span {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.45;
+}
+.rubrics-extra-template-help .btn {
+  flex: 0 0 auto;
+  max-width: 42%;
+}
+.rubrics-extra-template-help .btn span {
+  overflow: hidden;
+  color: inherit;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.rubrics-extra-template-fields {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+}
+.rubrics-extra-template-fields > .rubrics-code-field {
+  flex: 1 1 auto;
+  min-height: 360px;
+}
+.rubrics-extra-template-fields > .rubrics-code-field > .CodeMirror {
+  flex: 1 1 auto;
+  min-height: 320px;
+  height: auto !important;
 }
 /* Секции формы настроек поля: цветные плашки-заголовки и визуальное разделение */
 .rubrics-field-form {
@@ -3859,12 +3917,24 @@
   .rubrics-group-panel {
     width: min(96vw, 980px);
   }
+  .rubrics-extra-template-panel {
+    max-width: min(96vw, 980px);
+  }
   #rubricDrawer {
     width: 96vw;
     max-width: 96vw;
   }
 }
 @media (max-width: 760px) {
+  .rubrics-extra-template-help {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .rubrics-extra-template-help .btn {
+    justify-content: center;
+    max-width: none;
+    width: 100%;
+  }
   .rubrics-builder-runtime {
     grid-template-columns: 40px minmax(0, 1fr) auto;
   }

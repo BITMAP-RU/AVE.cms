@@ -337,9 +337,13 @@
 		/** Заменяет префикс только внутри SQL-идентификаторов, не затрагивая данные строк. */
 		protected static function portableDdl($ddl)
 		{
+			$ddl = preg_replace_callback('/\bCONSTRAINT\s+`([^`]+)`/i', function ($match) {
+				return 'CONSTRAINT `{{prefix}}_fk_' . substr(hash('sha256', (string) $match[1]), 0, 16) . '`';
+			}, (string) $ddl);
+
 			$ddl = preg_replace_callback('/`([^`]+)`/', function ($match) {
 				return '`' . Model::portableTableName($match[1]) . '`';
-			}, (string) $ddl);
+			}, $ddl);
 
 			//-- MariaDB выводит DEFAULT NULL у TEXT/BLOB, тогда как MySQL 5.7
 			//-- запрещает default для этих типов. NULL и без clause остаётся default.

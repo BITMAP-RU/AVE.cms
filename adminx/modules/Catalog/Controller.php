@@ -90,12 +90,15 @@
 				'state' => Request::getStr('state', ''),
 				'issue' => Request::getStr('issue', ''),
 				'payment' => Request::getStr('payment', ''),
+				'view' => Request::getStr('view', 'table') === 'cards' ? 'cards' : 'table',
 				'page' => Request::getInt('page', 1),
 				'per_page' => Request::getInt('per_page', 25),
 			);
+			$statsSnapshot = Model::productStatsSnapshot();
 			return $this->render('@products/products.twig', array(
 				'result' => Model::products($filters),
-				'stats' => Model::productStats(),
+				'stats' => $statsSnapshot['stats'],
+				'stats_loaded' => $statsSnapshot['loaded'],
 				'filters' => $filters,
 				'saved_views' => SavedViews::all('catalog_products', Auth::id(), $this->savedViewFields('products')),
 				'can_manage' => Permission::check('manage_products'),
@@ -104,26 +107,32 @@
 			));
 		}
 
+		public function productStats(array $params = array())
+		{
+			if (!Permission::check('view_products')) { return $this->error('Недостаточно прав', array(), 403); }
+			$stats = Model::productStats();
+			$stats['indexed_label'] = !empty($stats['indexed_at']) ? date('d.m H:i', (int) $stats['indexed_at']) : '—';
+			return $this->success('', array('data' => array('stats' => $stats)));
+		}
+
 		public function productQuality(array $params = array())
 		{
 			if (!Permission::check('view_products')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
 			if (!Model::hasCommerceCatalogs()) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Товарные каталоги не настроены'), 404); }
 			$this->assets();
-			$stats = Model::productStats();
+			$stats = Model::productQualityStats();
 			$issues = Model::productQualityIssues($stats);
 			$allowed = array();
 			foreach ($issues as $item) { $allowed[(string) $item['code']] = true; }
 			$issue = Request::getStr('issue', '');
 			if ($issue !== '' && !isset($allowed[$issue])) { $issue = ''; }
-			$state = Request::getStr('state', '');
-			if (!in_array($state, array('', 'active', 'inactive'), true)) { $state = ''; }
 			$filters = array(
 				'q' => Request::getStr('q', ''),
 				'issue' => $issue,
-				'state' => $state,
 				'page' => Request::getInt('page', 1),
 				'per_page' => Request::getInt('per_page', 25),
 				'include_quality' => true,
+				'quality_scope' => true,
 			);
 			return $this->render('@products/product-quality.twig', array(
 				'result' => Model::products($filters),
@@ -1050,6 +1059,7 @@
 			$search = Request::getStr('q', '');
 			return $this->render('@products/variant-group.twig', array(
 				'group' => $group, 'search' => $search,
+				'focus_product_id' => Request::getInt('focus', 0),
 				'variant_fields' => VariantGroups::fields((int) $group['id']),
 				'variant_attributes' => VariantGroups::nativeAttributes(),
 				'package_templates' => ShippingPackageTemplates::all(),
@@ -1169,6 +1179,7 @@
 		public function copyVariantProduct(array $params = array())
 		{
 			if (($error = $this->productGuard()) !== null) { return $error; }
+			if (!Request::postBool('confirmed', false)) { return $this->error('Подтвердите создание варианта', array(), 409); }
 			$sourceId = (int) $params['product'];
 			$newId = 0;
 			try {
@@ -1181,12 +1192,15 @@
 			}
 
 			$this->audit('catalog.variant_copied', (int) $params['id'], array('source_id' => $sourceId, 'product_id' => $newId));
-			return $this->success('Вариант создан копированием', array('redirect' => $this->base() . '/catalog/products/' . $newId . '/edit'));
+			return $this->success('Вариант создан копированием', array(
+				'redirect' => $this->base() . '/catalog/products/' . $newId . '/edit?variant_group=' . (int) $params['id'],
+			));
 		}
 
 		public function copyProduct(array $params = array())
 		{
 			if (($error = $this->guardPermission('manage_products', 'manage_documents')) !== null) { return $error; }
+			if (!Request::postBool('confirmed', false)) { return $this->error('Подтвердите создание копии товара', array(), 409); }
 			$sourceId = isset($params['id']) ? (int) $params['id'] : 0;
 			try {
 				$copy = ProductDuplicator::copy($sourceId, Auth::id());
@@ -1269,7 +1283,23 @@
 				VariantGroups::add($groupId, $productId);
 			} catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
 			$this->audit('catalog.variant_group_created_from_product', $groupId, array('product_id' => $productId));
-			return $this->success('Группа вариантов создана', array('redirect' => $this->base() . '/catalog/variant-groups/' . $groupId));
+			return $this->success('Группа вариантов создана', array('redirect' => $this->variantGroupUrl($groupId, $productId)));
+		}
+
+		public function attachProductVariantGroup(array $params = array())
+		{
+			if (($error = $this->productGuard()) !== null) { return $error; }
+			$productId = isset($params['id']) ? (int) $params['id'] : 0;
+			$groupId = Request::postInt('group_id', 0);
+			if (!Model::product($productId)) { return $this->error('Товар не найден', array(), 404); }
+			if ($groupId <= 0) { return $this->error('Выберите группу вариантов', array(), 422); }
+			if (VariantGroups::membership($productId)) { return $this->error('Товар уже состоит в группе', array(), 422); }
+			try { VariantGroups::add($groupId, $productId); }
+			catch (\Throwable $e) { return $this->error($e->getMessage(), array(), 422); }
+			$this->audit('catalog.variant_added_from_product', $groupId, array('product_id' => $productId));
+			return $this->success('Товар добавлен в группу вариантов', array(
+				'redirect' => $this->variantGroupUrl($groupId, $productId),
+			));
 		}
 
 		public function editProduct(array $params = array())
@@ -1287,8 +1317,17 @@
 			CodeEditor::useRichEditor();
 			$this->attributeAssets();
 			$variantGroup = VariantGroups::membership($id);
+			$returnUrl = $this->base() . '/catalog/products';
+			$returnLabel = 'Товары';
+			$returnGroupId = Request::getInt('variant_group', 0);
+			if ($variantGroup && $returnGroupId === (int) $variantGroup['id']) {
+				$returnUrl = $this->variantGroupUrl((int) $variantGroup['id'], $id);
+				$returnLabel = 'Группа вариантов';
+			}
+
 			$shippingProfile = ProductShipping::profile($id);
 			$nativeAttributes = Attributes::productEditor($id);
+			$searchAliasesAvailable = $this->productSearchAliasesAvailable();
 			$mediaDraftToken = DocumentMediaDraft::issue(Auth::id(), $id);
 			return $this->render('@documents/edit.twig', array(
 				'document' => $document,
@@ -1301,6 +1340,7 @@
 				'is_new' => false, 'can_manage' => true, 'quick_edit' => Request::getBool('quick_edit', false),
 				'actor_id' => Auth::id(),
 				'catalog_mode' => true, 'product' => $product, 'variant_group' => $variantGroup,
+				'variant_groups' => $variantGroup ? array() : VariantGroups::all(),
 					'shipping_profile' => $shippingProfile,
 					'package_templates' => ShippingPackageTemplates::all(),
 					'native_attributes' => $nativeAttributes,
@@ -1308,7 +1348,12 @@
 					'product_promotions_available' => Promotions::available(),
 					'product_promotions' => Promotions::forProduct($id),
 					'can_manage_product_promotions' => Permission::check('manage_orders'),
-				'return_url' => $this->base() . '/catalog/products',
+					'product_search_aliases_available' => $searchAliasesAvailable,
+					'product_search_aliases' => $searchAliasesAvailable
+						? \App\Modules\Search\DocumentAliases::forDocument($id)
+						: array(),
+				'return_url' => $returnUrl,
+				'return_label' => $returnLabel,
 				'product_copy_url' => $this->base() . '/catalog/products/' . $id . '/copy',
 				'submit_url' => $this->base() . '/documents/' . $id,
 			));
@@ -1419,6 +1464,47 @@
 			if(($error=$this->productGuard())!==null){return $error;}$productId=isset($params['id'])?(int)$params['id']:0;if(!Model::product($productId)){return $this->error('Товар не найден',array(),404);}try{$data=Attributes::saveProductValues($productId,Request::postAll(),Auth::id());}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}$this->audit('catalog.product_attributes_saved',$productId,$data);return $this->success('Характеристики товара сохранены',array('data'=>$data));
 		}
 
+		public function saveProductSearchAliases(array $params = array())
+		{
+			if (($error = $this->productGuard()) !== null) { return $error; }
+			$productId = isset($params['id']) ? (int) $params['id'] : 0;
+			if (!Model::product($productId)) { return $this->error('Товар не найден', array(), 404); }
+			if (!$this->productSearchAliasesAvailable()) {
+				return $this->error('Обновите и включите модуль «Поиск по сайту»', array(), 409);
+			}
+
+			try {
+				$aliases = \App\Modules\Search\DocumentAliases::saveDocument(
+					$productId,
+					(array) Request::post('aliases', array()),
+					Auth::id()
+				);
+			} catch (\Throwable $e) {
+				return $this->error($e->getMessage(), array(), 422);
+			}
+
+			$this->audit('catalog.product_search_aliases_saved', $productId, array('count' => count($aliases)));
+			return $this->success('Поисковые названия сохранены', array('data' => array('aliases' => $aliases)));
+		}
+
+		public function productSearchAliasSuggestions(array $params = array())
+		{
+			if (!Permission::check('manage_products')) {
+				return $this->error('Недостаточно прав', array(), 403);
+			}
+
+			if (!$this->productSearchAliasesAvailable()) {
+				return $this->error('Обновите и включите модуль «Поиск по сайту»', array(), 409);
+			}
+
+			$query = Request::getStr('q', '');
+			$documentId = Request::getInt('document_id', 0);
+			$items = mb_strlen(trim($query), 'UTF-8') >= 2
+				? \App\Modules\Search\DocumentAliases::suggestions($query, $documentId, 12)
+				: array();
+			return $this->success('', array('data' => array('items' => $items)));
+		}
+
 		public function copyProductShippingToVariants(array $params = array())
 		{
 			if (($error = $this->productGuard()) !== null) { return $error; }
@@ -1521,14 +1607,24 @@
 
 			$allowed = Model::productRubrics();
 			$rubricId = Request::getInt('rubric_id', 0);
-			if (!in_array($rubricId, $allowed, true)) { $rubricId = !empty($allowed) ? (int) reset($allowed) : 0; }
-			if ($rubricId <= 0) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Товарная рубрика не настроена'), 404); }
+			if (!$allowed) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Товарная рубрика не настроена'), 404); }
+			if (!in_array($rubricId, $allowed, true)) {
+				$this->assets();
+				return $this->render('@products/product-create.twig', array(
+					'rubrics' => Model::productRubricOptions(),
+					'return_url' => $this->base() . '/catalog/products',
+				));
+			}
+
 			$document = DocumentsModel::blank($rubricId);
+			$mediaDraftToken = DocumentMediaDraft::issue(Auth::id(), 0);
 			AdminAssets::addStyle($this->base() . '/modules/Documents/assets/documents.css', 50);
 			AdminAssets::addScript($this->base() . '/modules/Documents/assets/documents.js', 50);
 			CodeEditor::useRichEditor(); $this->assets();
 			return $this->render('@documents/edit.twig', array(
-				'document' => $document, 'field_groups' => DocumentsModel::fieldsForRubric($rubricId, 0),
+				'document' => $document,
+				'field_groups' => DocumentsModel::fieldsForRubric($rubricId, 0, $mediaDraftToken),
+				'media_draft_token' => $mediaDraftToken,
 				'rubrics' => array_values(array_filter(DocumentsModel::rubrics(), function ($rubric) use ($allowed) { return in_array((int) $rubric['Id'], $allowed, true); })),
 				'templates' => DocumentsModel::rubricTemplates($rubricId), 'navigation_items' => DocumentsModel::navigationItems(),
 				'authors' => DocumentsModel::authors(), 'is_new' => true, 'can_manage' => true,
@@ -1774,8 +1870,8 @@
 		protected function savedViewFields($scope)
 		{
 			return $scope === 'quality'
-				? array('q', 'issue', 'state', 'per_page')
-				: array('q', 'state', 'issue', 'payment', 'per_page');
+				? array('q', 'issue', 'per_page')
+				: array('q', 'state', 'issue', 'payment', 'per_page', 'view');
 		}
 
 		protected function quickEditData()
@@ -1799,6 +1895,16 @@
 				'quick_profile' => array_merge($activeProfile, array('columns' => $columns)),
 				'quick_column_groups' => QuickEditorColumns::groups(),
 				'quick_profiles_available' => QuickEditorProfiles::available());
+		}
+
+		protected function variantGroupUrl($groupId, $productId = 0)
+		{
+			$url = $this->base() . '/catalog/variant-groups/' . (int) $groupId;
+			if ((int) $productId > 0) {
+				$url .= '?focus=' . (int) $productId . '#variant-' . (int) $productId;
+			}
+
+			return $url;
 		}
 
 		protected function assets()
@@ -1825,6 +1931,16 @@
 				&& !empty($module['enabled'])
 				&& is_file(BASEPATH . '/modules/products/app/module.php')
 				&& is_file(BASEPATH . '/modules/products/admin/module.php');
+		}
+
+		protected function productSearchAliasesAvailable()
+		{
+			$module = ModuleManager::get('search');
+			return is_array($module)
+				&& !empty($module['installed'])
+				&& !empty($module['enabled'])
+				&& class_exists('App\\Modules\\Search\\DocumentAliases')
+				&& \App\Modules\Search\DocumentAliases::available();
 		}
 
 		protected function attributeAssets()

@@ -12,7 +12,7 @@
   overflow: hidden;
   border: 1px solid var(--border-default);
   border-radius: var(--radius-lg);
-  background: var(--background-card);
+  background: var(--surface-card);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 .view-override-list-head {
@@ -163,6 +163,23 @@
 .view-override-form {
   padding: 16px 18px 18px;
 }
+body.view-override-fullscreen-open {
+  overflow: hidden;
+}
+.view-override-form.is-fullscreen {
+  position: fixed;
+  inset: 12px;
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  width: auto;
+  height: auto;
+  overflow: hidden;
+  padding: 16px 18px 18px;
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  box-shadow: 0 18px 56px rgba(15, 23, 42, 0.2), 0 0 0 1px rgba(15, 23, 42, 0.08);
+}
 .view-override-toolbar,
 .view-override-footer {
   display: flex;
@@ -193,6 +210,23 @@
   border-radius: var(--radius-md);
   font-size: 13px;
   line-height: 1.55;
+}
+.view-override-form.is-fullscreen .CodeMirror {
+  flex: 1 1 auto;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0;
+}
+.view-override-form.is-fullscreen .CodeMirror-scroll {
+  height: 100% !important;
+}
+.view-override-form.is-fullscreen .view-override-toolbar,
+.view-override-form.is-fullscreen .view-override-lint,
+.view-override-form.is-fullscreen .view-override-footer {
+  flex: none;
+}
+.view-override-form.is-fullscreen .view-override-variables {
+  display: none;
 }
 .view-override-lint {
   display: block;
@@ -356,6 +390,14 @@
   .view-override-form .CodeMirror {
     height: 520px !important;
     min-height: 360px;
+  }
+  .view-override-form.is-fullscreen {
+    inset: 6px;
+    padding: 12px;
+  }
+  .view-override-form.is-fullscreen .CodeMirror {
+    height: auto !important;
+    min-height: 0;
   }
   .view-override-save-state {
     width: 100%;

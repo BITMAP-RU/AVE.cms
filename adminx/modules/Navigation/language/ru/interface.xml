@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <language>
+	<phrase data="navigation_catalog_panel_behavior">Поведение в меню каталога</phrase>
+	<phrase data="navigation_catalog_panel_link">Обычная ссылка</phrase>
+	<phrase data="navigation_catalog_panel_children">Показать справа дочерние пункты</phrase>
+	<phrase data="navigation_catalog_panel_hint">Используется только навигацией, подключённой к товарному каталогу.</phrase>
 	<phrase data="navigation_parity_tag">[tag:if_every:2]чётный[tag:if_else]нечётный[tag:/if]</phrase>
 	<phrase data="auto_bf209b0159668b33">, а обычный и активный пункты — элементы</phrase>
 	<phrase data="auto_3475d30e6543216b">, начало и конец уровня — список</phrase>

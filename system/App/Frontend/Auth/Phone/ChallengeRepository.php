@@ -67,6 +67,16 @@
 			return $row ? (array) $row : null;
 		}
 
+		public function findForSession($publicId, $sessionHash)
+		{
+			$row = DB::query(
+				'SELECT * FROM `' . $this->table . '` WHERE public_id=%s AND session_hash=%s LIMIT 1',
+				(string) $publicId,
+				(string) $sessionHash
+			)->getAssoc();
+			return $row ? (array) $row : null;
+		}
+
 		public function registerAttempt(array $challenge)
 		{
 			DB::query(

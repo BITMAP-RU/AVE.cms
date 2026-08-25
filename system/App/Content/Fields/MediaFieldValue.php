@@ -28,6 +28,18 @@
 	 */
 	class MediaFieldValue
 	{
+		/** Returns the first media URL from native JSON or any supported legacy value. */
+		public static function firstImageUrl($value)
+		{
+			$images = self::imageMega($value);
+			if (!empty($images[0]['url'])) {
+				return (string) $images[0]['url'];
+			}
+
+			$image = self::imageSingle($value);
+			return isset($image['url']) ? (string) $image['url'] : '';
+		}
+
 		public static function imageSingle($value)
 		{
 			if (is_array($value)) {

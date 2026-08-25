@@ -46,6 +46,18 @@
 			));
 		}
 
+		public function templateMap(array $params = array())
+		{
+			if (!Permission::check('view_public_site')) {
+				return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403);
+			}
+
+			AdminAssets::addStyle($this->base() . '/modules/PublicSite/assets/public-site.css', 50);
+			return $this->render('@public_site/template-map.twig', array(
+				'template_map' => TemplateMap::build(),
+			));
+		}
+
 		public function placements(array $params = array())
 		{
 			if (!Permission::check('view_public_site')) {
@@ -217,6 +229,7 @@
 		protected function publicTemplateAssets()
 		{
 			CodeEditor::useCodeMirror('htmlmixed');
+			AdminAssets::addStyle($this->base() . '/modules/PublicSite/assets/public-site.css', 50);
 			AdminAssets::addStyle(ADMINX_BASE . '/modules/Themes/assets/view-overrides.css', 56);
 			AdminAssets::addScript(ADMINX_BASE . '/modules/Themes/assets/view-overrides.js', 56);
 		}

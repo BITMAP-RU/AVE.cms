@@ -419,15 +419,21 @@
 			$status = $value('status', 'document_status', 0);
 			if (is_string($status)) { $status = in_array(strtolower($status), array('published', 'active', '1', 'true'), true) ? 1 : 0; }
 			$title = trim((string) $value('title', 'document_title', ''));
+			$parentId = (int) $value('parent_id', 'document_parent', 0);
 			$alias = DocumentAliasRegistry::normalize($value('alias', 'document_alias', ''));
 			if (empty($base) && ($alias === '' || strpos($alias, '/') === false)) {
 				$leaf = $alias !== '' ? $alias : Str::slug($title);
-				$alias = DocumentAliasTemplate::compose((string) $rubric['rubric_alias'], $leaf !== '' ? $leaf : 'document', $published);
+				$alias = DocumentAliasTemplate::compose(
+					(string) $rubric['rubric_alias'],
+					$leaf !== '' ? $leaf : 'document',
+					$published,
+					$this->parentAliasPath($parentId)
+				);
 			}
 
 			return array(
 				'rubric_id' => (int) $rubric['Id'], 'rubric_tmpl_id' => (int) $value('template_id', 'rubric_tmpl_id', 0),
-				'document_parent' => (int) $value('parent_id', 'document_parent', 0), 'document_alias' => DocumentAliasRegistry::normalize($alias),
+				'document_parent' => $parentId, 'document_alias' => DocumentAliasRegistry::normalize($alias),
 				'document_alias_header' => in_array((int) $value('redirect_code', 'document_alias_header', 301), array(301,302,307,308), true) ? (int) $value('redirect_code', 'document_alias_header', 301) : 301,
 				'document_alias_history' => (string) max(0, min(2, (int) $value('alias_history', 'document_alias_history', (int) $rubric['rubric_alias_history']))),
 				'document_short_alias' => substr(trim((string) $value('short_alias', 'document_short_alias', '')), 0, 10),
@@ -455,6 +461,18 @@
 			if ($data['document_short_alias'] !== '' && !preg_match('/^[A-Za-z0-9_\-]+$/', $data['document_short_alias'])) { $errors['short_alias'] = 'Короткий alias содержит недопустимые символы'; }
 			elseif ($data['document_short_alias'] !== '' && DocumentAliasRegistry::conflict($data['document_short_alias'], (int) $documentId)) { $errors['short_alias'] = 'Такой короткий alias уже используется'; }
 			return $errors;
+		}
+
+		protected function parentAliasPath($parentId)
+		{
+			$parentId = (int) $parentId;
+			if ($parentId <= 0) { return ''; }
+
+			return trim((string) DB::query(
+				'SELECT document_alias FROM ' . ContentTables::table('documents')
+					. " WHERE Id=%i AND document_deleted!='1' LIMIT 1",
+				$parentId
+			)->getValue(), '/');
 		}
 
 		protected function writeDocument($id, array $data, array $rubric, $actorId, $existing, $bumpVersion = true)

@@ -40,6 +40,12 @@
         event.preventDefault();
         event.returnValue = '';
       });
+      document.addEventListener('keydown', function (event) {
+        if (event.key !== 'Escape' || !self.form.classList.contains('is-fullscreen')) { return; }
+        event.preventDefault();
+        self.fullscreen(false);
+      });
+      window.setTimeout(function () { self.bindEditorKeys(); }, 0);
     },
 
     request: function (url, data) {
@@ -91,9 +97,44 @@
         });
     },
 
-    fullscreen: function () {
-      if (!this.field._adminxCodeMirror || !Adminx.CodeEditor) { return; }
-      Adminx.CodeEditor.toggleFullscreen(this.field._adminxCodeMirror);
+    bindEditorKeys: function () {
+      var self = this;
+      var editor = this.field._adminxCodeMirror;
+      if (!editor) { return; }
+      var keys = editor.getOption('extraKeys') || {};
+      keys.F11 = function () { self.fullscreen(); };
+      keys['Cmd-F11'] = function () { self.fullscreen(); };
+      keys.Esc = function () { self.fullscreen(false); };
+      editor.setOption('extraKeys', keys);
+    },
+
+    fullscreen: function (force) {
+      var editor = this.field._adminxCodeMirror;
+      if (!editor) { return; }
+      var active = this.form.classList.contains('is-fullscreen');
+      var next = typeof force === 'boolean' ? force : !active;
+      if (next === active) { return; }
+
+      if (Adminx.CodeEditor) { Adminx.CodeEditor.closeFullscreen(editor); }
+      this.form.classList.toggle('is-fullscreen', next);
+      document.body.classList.toggle('view-override-fullscreen-open', next);
+      this.updateFullscreenButton(next);
+      window.setTimeout(function () {
+        editor.refresh();
+        if (next) { editor.focus(); }
+      }, 0);
+    },
+
+    updateFullscreenButton: function (active) {
+      var button = this.form.querySelector('[data-view-override-fullscreen]');
+      if (!button) { return; }
+      var label = active ? 'Вернуться к обычному размеру' : 'На весь экран';
+      var icon = button.querySelector('i');
+      button.setAttribute('aria-label', label);
+      button.setAttribute('data-tooltip', label);
+      button.setAttribute('title', label);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+      if (icon) { icon.className = active ? 'ti ti-arrows-minimize' : 'ti ti-arrows-maximize'; }
     },
 
     removeOverride: function () {

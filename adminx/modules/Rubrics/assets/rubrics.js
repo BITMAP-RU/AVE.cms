@@ -1339,6 +1339,7 @@
       this.extraTemplateForm.elements.rubric_id.value = this.currentRubricId;
       this.setCodeValue(this.extraTemplateForm.elements.template, '');
       document.getElementById('rubricExtraTemplateTitle').textContent = 'Новый дополнительный шаблон';
+      this.updateExtraTemplateDocumentLink({ rubric_id: this.currentRubricId, docs_count: 0 });
       this.activeTemplateTextarea = this.extraTemplateForm.elements.template;
       if (Adminx.Drawer) { Adminx.Drawer.open('rubricExtraTemplateDrawer'); }
       this.refreshEditors();
@@ -1357,9 +1358,27 @@
           self.extraTemplateForm.elements.title.value = item.title || '';
           self.setCodeValue(self.extraTemplateForm.elements.template, item.template || '');
           document.getElementById('rubricExtraTemplateTitle').textContent = 'Редактирование шаблона #' + item.id;
+          self.updateExtraTemplateDocumentLink(item);
           self.activeTemplateTextarea = self.extraTemplateForm.elements.template;
           self.refreshEditors();
         });
+    },
+
+    updateExtraTemplateDocumentLink: function (item) {
+      var link = document.querySelector('[data-extra-template-document-link]');
+      var label;
+      if (!link) { return; }
+      item = item || {};
+      if ((parseInt(item.docs_count, 10) || 0) === 1 && (parseInt(item.first_document_id, 10) || 0) > 0) {
+        link.href = this.base() + '/documents/' + parseInt(item.first_document_id, 10) + '/edit';
+        label = item.first_document_title
+          ? (link.getAttribute('data-edit-prefix') || '') + item.first_document_title
+          : link.getAttribute('data-edit-content');
+      } else {
+        link.href = this.base() + '/documents?rubric_id=' + (parseInt(item.rubric_id, 10) || this.currentRubricId || 0);
+        label = link.getAttribute('data-documents-label');
+      }
+      link.querySelector('span').textContent = label;
     },
 
     submitExtraTemplate: function () {

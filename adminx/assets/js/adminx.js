@@ -222,6 +222,87 @@
   };
 
   // ------------------------------------------------------------------ //
+  //  Простые формы модулей: стандартный Ajax-контракт без отдельного JS.
+  // ------------------------------------------------------------------ //
+  Adminx.initAjaxForms = function () {
+    document.addEventListener('submit', function (event) {
+      var form = event.target.closest ? event.target.closest('form[data-ax-ajax-form]') : null;
+      if (!form || form.getAttribute('data-ax-submitting') === '1') { return; }
+      event.preventDefault();
+
+      var submit = event.submitter || form.querySelector('button[type="submit"],input[type="submit"]');
+      var data = new FormData(form);
+      if (submit && submit.name && !data.has(submit.name)) { data.append(submit.name, submit.value || '1'); }
+
+      form.setAttribute('data-ax-submitting', '1');
+      form.setAttribute('aria-busy', 'true');
+      if (submit) { submit.disabled = true; }
+      Adminx.Loader.show();
+
+      Adminx.Ajax.request(form.getAttribute('action') || window.location.href, {
+        method: (form.getAttribute('method') || 'POST').toUpperCase(),
+        body: data
+      }).then(function (payload) {
+        var response = Adminx.Ajax.handle(payload);
+        if (payload.ok && response.success !== false) {
+          form.dispatchEvent(new CustomEvent('adminx:form-saved', { bubbles: true, detail: response }));
+          if (form.hasAttribute('data-ax-reset-on-success')) { form.reset(); }
+        }
+      }).catch(function (error) {
+        Adminx.Toast.show(error && error.message ? error.message : Adminx.t('server_unavailable', 'Сервер недоступен. Повторите попытку.'), 'error');
+      }).then(function () {
+        Adminx.Loader.hide();
+        form.removeAttribute('data-ax-submitting');
+        form.removeAttribute('aria-busy');
+        if (submit) { submit.disabled = false; }
+      });
+    });
+  };
+
+  // ------------------------------------------------------------------ //
+  //  Пакетная загрузка обходит серверный max_file_uploads без изменения php.ini.
+  // ------------------------------------------------------------------ //
+  Adminx.Upload = {
+    BATCH_SIZE: 20,
+
+    files: function (url, files, makeData, onProgress) {
+      files = Array.prototype.slice.call(files || []);
+      if (!files.length) { return Promise.resolve({ files: [], batches: 0, total: 0 }); }
+
+      var self = this;
+      var uploaded = [];
+      var batches = Math.ceil(files.length / self.BATCH_SIZE);
+      var run = function (batch) {
+        if (batch >= batches) {
+          return Promise.resolve({ files: uploaded, batches: batches, total: files.length });
+        }
+
+        var start = batch * self.BATCH_SIZE;
+        var chunk = files.slice(start, start + self.BATCH_SIZE);
+        var data = makeData(chunk, batch, batches);
+        return Adminx.Ajax.post(url, data).then(function (payload) {
+          var response = payload.data || {};
+          if (!payload.ok || response.success === false) {
+            var error = new Error(response.message || 'Не удалось загрузить файлы');
+            error.uploaded = uploaded.slice();
+            error.batch = batch;
+            throw error;
+          }
+
+          var result = response.data || {};
+          uploaded = uploaded.concat(result.files || []);
+          if (typeof onProgress === 'function') {
+            onProgress(Math.min(start + chunk.length, files.length), files.length, uploaded.length, response);
+          }
+          return run(batch + 1);
+        });
+      };
+
+      return run(0);
+    }
+  };
+
+  // ------------------------------------------------------------------ //
   Adminx.Sidebar = {
     KEY: 'adminx-sidebar',
     GROUPS_KEY: 'adminx-sidebar-groups',
@@ -900,6 +981,7 @@
     Adminx.Tabs.init();
     Adminx.Drawer.init();
     Adminx.Tooltip.init();
+    Adminx.initAjaxForms();
     Adminx.initLogout();
     Adminx.initCopyTag();
     Adminx.initSectionHelp();

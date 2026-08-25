@@ -1,0 +1,262 @@
+{% extends '@adminx/main.twig' %}
+{% block title %}Карта шаблонов{% endblock %}
+{% block content %}
+
+<nav class="breadcrumbs" aria-label="Хлебные крошки">
+  <a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i>
+  <a href="{{ ADMINX_BASE }}/public-site">Публичный сайт</a><i class="ti ti-chevron-right"></i>
+  <span>Карта шаблонов</span>
+</nav>
+
+<div class="page-header">
+  <div class="between public-site-page-head">
+    <div>
+      <h1>Карта шаблонов</h1>
+      <p class="text-secondary">Из чего собираются страницы и где редактируется каждый слой.</p>
+    </div>
+    <div class="cluster public-site-page-actions">
+      <a class="btn btn-secondary" href="{{ ADMINX_BASE }}/themes?theme={{ template_map.theme.code|url_encode }}"><i class="ti ti-palette"></i>Активная тема</a>
+      <a class="btn btn-primary" href="{{ ADMINX_BASE }}/templates"><i class="ti ti-template"></i>Шаблоны сайта</a>
+    </div>
+  </div>
+</div>
+
+{% set public_site_tab = 'template_map' %}
+{% include '@public_site/_tabs.twig' %}
+
+<div class="alert alert-info public-template-map-notice">
+  <i class="ti ti-info-circle"></i>
+  <div>
+    <b>Это навигатор, а не новый конструктор</b>
+    <span>Карта ничего не переключает и не сохраняет. Она показывает действующую цепочку AVE.cms и ведёт в штатный редактор нужного шаблона.</span>
+  </div>
+</div>
+
+<div class="public-site-summary public-template-map-summary">
+  <div class="card public-site-stat">
+    <span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-template"></i></span>
+    <div><b>{{ template_map.summary.site_templates }}</b><span>Общих шаблонов</span></div>
+  </div>
+  <div class="card public-site-stat">
+    <span class="icon-tile" style="--tile-bg:var(--green-100);--tile-fg:var(--green-600)"><i class="ti ti-folders"></i></span>
+    <div><b>{{ template_map.summary.rubrics }}</b><span>Рубрик</span></div>
+  </div>
+  <div class="card public-site-stat">
+    <span class="icon-tile" style="--tile-bg:var(--violet-100);--tile-fg:var(--violet-600)"><i class="ti ti-components"></i></span>
+    <div><b>{{ template_map.summary.components }}</b><span>Публичных компонентов</span></div>
+  </div>
+  <div class="card public-site-stat">
+    <span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-checks"></i></span>
+    <div><b>{{ template_map.summary.active_overrides }}</b><span>Действующих источников</span></div>
+  </div>
+</div>
+
+<section class="public-site-panel public-template-map-mode">
+  <div class="section-header public-site-panel-header">
+    <div class="section-icon"><i class="ti ti-adjustments-horizontal"></i></div>
+    <div>
+      <div class="section-eyebrow">Текущая установка</div>
+      <h2>Как сайт собирается сейчас</h2>
+      <p class="section-desc">Режим читается из активной темы, поэтому на карте показана фактическая, а не предполагаемая схема.</p>
+    </div>
+  </div>
+
+  <div class="public-template-mode-row">
+    <div class="public-template-mode-main">
+      <span class="icon-tile" style="--tile-bg:var(--blue-100);--tile-fg:var(--blue-600)"><i class="ti ti-stack-2"></i></span>
+      <div>
+        <span class="text-secondary">Способ сборки</span>
+        <h3>{{ template_map.theme.mode_label }}</h3>
+        <p>{{ template_map.theme.mode_note }}</p>
+      </div>
+    </div>
+    <div class="public-template-mode-theme">
+      <span class="text-secondary">Активная тема</span>
+      <b>{{ template_map.theme.name }}</b>
+      <small><code>{{ template_map.theme.code }}</code>{% if template_map.theme.version %} · версия {{ template_map.theme.version }}{% endif %}</small>
+    </div>
+    <div class="public-template-mode-shell">
+      <span class="text-secondary">Файловая оболочка</span>
+      {% if template_map.theme.page_shell %}<code>{{ template_map.theme.page_shell }}</code>{% else %}<b>Не задана</b>{% endif %}
+      <small class="{{ template_map.theme.page_shell_active ? 'is-active' : '' }}">{{ template_map.theme.page_shell_active ? 'Используется' : 'Не заменяет общий шаблон' }}</small>
+    </div>
+    <a class="btn btn-ghost btn-icon" href="{{ ADMINX_BASE }}{{ template_map.theme.url }}" data-tooltip-left="Открыть настройки темы" aria-label="Открыть настройки темы"><i class="ti ti-arrow-up-right"></i></a>
+  </div>
+
+  <div class="public-template-rules">
+    {% for rule in template_map.rules %}
+    <div class="public-template-rule">
+      <i class="{{ rule.icon }}"></i>
+      <div><b>{{ rule.title }}</b><span>{{ rule.text }}</span></div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="public-site-panel public-template-scenarios">
+  <div class="section-header public-site-panel-header">
+    <div class="section-icon"><i class="ti ti-route-square"></i></div>
+    <div>
+      <div class="section-eyebrow">Типовые страницы</div>
+      <h2>Цепочки сборки</h2>
+      <p class="section-desc">Читайте слева направо: данные выбираются, оформляются своим шаблоном и затем попадают в общий каркас сайта.</p>
+    </div>
+  </div>
+
+  <div class="public-template-flow-list">
+    {% for scenario in template_map.scenarios %}
+    <article class="public-template-flow">
+      <header>
+        <span class="icon-tile"><i class="{{ scenario.icon }}"></i></span>
+        <div><h3>{{ scenario.title }}</h3><p>{{ scenario.description }}</p></div>
+      </header>
+      <div class="public-template-flow-steps" style="--flow-columns:{{ scenario.steps|length }}">
+        {% for step in scenario.steps %}
+        <div class="public-template-flow-step is-{{ step.tone }}">
+          <div class="public-template-flow-number">{{ loop.index }}</div>
+          <div class="public-template-flow-copy">
+            <div class="public-template-flow-title"><b>{{ step.title }}</b><span class="badge badge-{{ step.tone == 'gray' ? 'gray' : step.tone }}">{{ step.state }}</span></div>
+            <p>{{ step.text }}</p>
+          </div>
+          {% if step.url %}<a class="btn btn-ghost btn-icon btn-sm" href="{{ ADMINX_BASE }}{{ step.url }}" data-tooltip-left="Открыть редактор" aria-label="Открыть редактор"><i class="ti ti-arrow-up-right"></i></a>{% endif %}
+        </div>
+        {% if not loop.last %}<i class="ti ti-chevron-right public-template-flow-arrow"></i>{% endif %}
+        {% endfor %}
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="public-site-panel public-template-inventory">
+  <div class="section-header public-site-panel-header">
+    <div class="section-icon"><i class="ti ti-link"></i></div>
+    <div>
+      <div class="section-eyebrow">Фактические назначения</div>
+      <h2>Общие шаблоны и рубрики</h2>
+      <p class="section-desc">Здесь видно, какой общий шаблон назначен каждому типу контента и есть ли у рубрики собственная разметка документа.</p>
+    </div>
+  </div>
+
+  <div class="public-template-inventory-grid">
+    <div class="card public-site-card public-template-site-templates">
+      <div class="public-site-card-head">
+        <div class="public-site-card-title"><span class="icon-tile"><i class="ti ti-browser"></i></span><div><h2>Общие шаблоны сайта</h2><p class="text-secondary">Каркас страницы и место [tag:maincontent]</p></div></div>
+        <a class="btn btn-ghost btn-icon" href="{{ ADMINX_BASE }}/templates" data-tooltip-left="Все шаблоны" aria-label="Все шаблоны"><i class="ti ti-arrow-up-right"></i></a>
+      </div>
+      <div class="table-scroll">
+        <table class="table table-compact">
+          <thead><tr><th>Шаблон</th><th>Назначен</th><th></th></tr></thead>
+          <tbody>
+            {% for item in template_map.site_templates %}
+            <tr>
+              <td><div class="public-site-name"><b>{{ item.title }}</b><span>ID {{ item.id }}</span></div></td>
+              <td><span class="badge {{ item.usage_count ? 'badge-green' : 'badge-gray' }}">{{ item.usage_count }} рубрик</span></td>
+              <td><a class="btn btn-ghost btn-icon btn-sm" href="{{ ADMINX_BASE }}{{ item.url }}" data-tooltip-left="Редактировать" aria-label="Редактировать"><i class="ti ti-pencil"></i></a></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3"><div class="empty-state"><i class="ti ti-template-off"></i><b>Общих шаблонов нет</b><span>Создайте шаблон сайта и назначьте его рубрике.</span></div></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card public-site-card public-template-product-layer">
+      <div class="public-site-card-head">
+        <div class="public-site-card-title"><span class="icon-tile"><i class="ti ti-package"></i></span><div><h2>Товарное оформление</h2><p class="text-secondary">Отдельные представления карточек и фильтров</p></div></div>
+        {% if template_map.product.available %}<span class="badge badge-green">Подключено</span>{% else %}<span class="badge badge-gray">Не установлено</span>{% endif %}
+      </div>
+      {% if template_map.product.available %}
+      <div class="public-template-product-links">
+        <a href="{{ ADMINX_BASE }}{{ template_map.product.cards.url }}">
+          <span class="icon-tile"><i class="ti ti-layout-cards"></i></span>
+          <span><b>Карточки товаров</b><small>{{ template_map.product.cards.published }} опубликовано · {{ template_map.product.cards.used }} используется</small></span>
+          <i class="ti ti-arrow-up-right"></i>
+        </a>
+        <a href="{{ ADMINX_BASE }}{{ template_map.product.filters.url }}">
+          <span class="icon-tile"><i class="ti ti-adjustments-horizontal"></i></span>
+          <span><b>Вид фильтров</b><small>{{ template_map.product.filters.published }} опубликовано · {{ template_map.product.filters.used }} используется</small></span>
+          <i class="ti ti-arrow-up-right"></i>
+        </a>
+        <a href="{{ ADMINX_BASE }}/catalog/public-templates">
+          <span class="icon-tile"><i class="ti ti-template"></i></span>
+          <span><b>Шаблоны страницы товара</b><small>Категория, выдача, карточка и полная страница</small></span>
+          <i class="ti ti-arrow-up-right"></i>
+        </a>
+      </div>
+      {% else %}
+      <div class="empty-state public-template-product-empty">
+        <i class="ti ti-package-off"></i><b>Товарный слой не установлен</b>
+        <span>После установки модуля «Товары» здесь появятся карточки, фильтры и шаблоны страницы товара.</span>
+        <a class="btn btn-secondary" href="{{ ADMINX_BASE }}/modules"><i class="ti ti-package-import"></i>Открыть модули</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card public-site-card public-template-rubrics-card">
+    <div class="public-site-card-head">
+      <div class="public-site-card-title"><span class="icon-tile"><i class="ti ti-folders"></i></span><div><h2>Рубрики и их шаблоны</h2><p class="text-secondary">{{ template_map.rubrics|length }} типов контента в текущей установке</p></div></div>
+      <a class="btn btn-ghost btn-icon" href="{{ ADMINX_BASE }}/rubrics" data-tooltip-left="Все рубрики" aria-label="Все рубрики"><i class="ti ti-arrow-up-right"></i></a>
+    </div>
+    <div class="table-scroll">
+      <table class="table table-compact public-template-rubrics-table">
+        <thead><tr><th>Рубрика</th><th>Назначение</th><th>Общий шаблон</th><th>Шаблон документа</th><th>Документы</th><th></th></tr></thead>
+        <tbody>
+          {% for item in template_map.rubrics %}
+          <tr>
+            <td data-label="Рубрика"><div class="public-site-name"><b>{{ item.title }}</b><span><code>{{ item.alias ?: 'без alias' }}</code> · ID {{ item.id }}</span></div></td>
+            <td data-label="Назначение"><span class="badge {{ item.purpose == 'Каталог' ? 'badge-violet' : (item.purpose == 'Документы и подборки' ? 'badge-blue' : 'badge-gray') }}">{{ item.purpose }}</span></td>
+            <td data-label="Общий шаблон">{% if item.template_title %}<div class="public-site-template"><b>{{ item.template_title }}</b><span>ID {{ item.template_id }}</span></div>{% else %}<span class="badge badge-red">Не назначен</span>{% endif %}</td>
+            <td data-label="Шаблон документа"><div class="public-template-rubric-state"><span class="badge {{ item.has_main_template ? 'badge-green' : 'badge-red' }}">{{ item.has_main_template ? 'Основной задан' : 'Основной пуст' }}</span>{% if item.extra_templates_count %}<small>+ {{ item.extra_templates_count }} дополнительных</small>{% endif %}</div></td>
+            <td data-label="Документы"><b>{{ item.documents_count }}</b></td>
+            <td data-label="Действия"><a class="btn btn-ghost btn-icon btn-sm" href="{{ ADMINX_BASE }}{{ item.url }}" data-tooltip-left="Открыть шаблоны рубрики" aria-label="Открыть шаблоны рубрики"><i class="ti ti-pencil"></i></a></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6"><div class="empty-state"><i class="ti ti-folders-off"></i><b>Рубрик пока нет</b><span>После создания они появятся на карте автоматически.</span></div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="public-site-panel public-template-components">
+  <div class="section-header public-site-panel-header">
+    <div class="section-icon"><i class="ti ti-components"></i></div>
+    <div>
+      <div class="section-eyebrow">Файловое оформление</div>
+      <h2>Компоненты активной темы</h2>
+      <p class="section-desc">Это не отдельные страницы. Компонент работает только тогда, когда его вызывает шаблон рубрики, запрос, блок или модуль.</p>
+    </div>
+  </div>
+
+  <div class="public-template-component-groups">
+    {% for group in template_map.component_groups %}
+    <details class="card public-template-component-group"{{ loop.index <= 2 ? ' open' : '' }}>
+      <summary>
+        <span><i class="ti ti-folder-code"></i><b>{{ group.title }}</b><small>{{ group.items|length }} компонентов</small></span>
+        <i class="ti ti-chevron-down"></i>
+      </summary>
+      <div class="public-template-component-list">
+        {% for item in group.items %}
+        <div class="public-template-component-row">
+          <span class="icon-tile"><i class="{{ item.icon }}"></i></span>
+          <div class="public-template-component-copy">
+            <div><b>{{ item.title }}</b><span class="badge {{ item.state_class }}">{{ item.source_label }}</span></div>
+            <p>{{ item.description }}</p>
+            <code>{{ item.path ?: item.namespace ~ '/' ~ item.file }}</code>
+          </div>
+          <a class="btn btn-ghost btn-icon" href="{{ ADMINX_BASE }}{{ item.url }}" data-tooltip-left="Открыть шаблон" aria-label="Открыть шаблон"><i class="ti ti-arrow-up-right"></i></a>
+        </div>
+        {% endfor %}
+      </div>
+    </details>
+    {% else %}
+    <div class="card"><div class="empty-state"><i class="ti ti-template-off"></i><b>Компоненты темы не найдены</b><span>Проверьте реестр активной темы.</span></div></div>
+    {% endfor %}
+  </div>
+</section>
+
+{% endblock %}

@@ -87,15 +87,24 @@
 				return array();
 			}
 
-			$variants = array($text);
-			$variants[] = self::containsRussian($text) ? self::toLatin($text) : self::toRussian($text);
+			$semanticVariants = array($text);
+			$semanticVariants[] = self::containsRussian($text) ? self::toLatin($text) : self::toRussian($text);
 
 			$keyboard = self::switchKeyboardLayout($text);
-			$variants[] = $keyboard;
+			$semanticVariants[] = $keyboard;
 			if ($keyboard !== '') {
-				$variants[] = self::containsRussian($keyboard)
+				$semanticVariants[] = self::containsRussian($keyboard)
 					? self::toLatin($keyboard)
 					: self::toRussian($keyboard);
+			}
+
+			$variants = array();
+			foreach (self::unique($semanticVariants) as $variant) {
+				$variants[] = $variant;
+				$separated = self::separateIdentifierParts($variant);
+				if ($separated !== $variant) {
+					$variants[] = $separated;
+				}
 			}
 
 			return self::unique($variants);
@@ -165,6 +174,16 @@
 			}
 
 			return $result;
+		}
+
+		/** Adds a conventional dash at letter/number boundaries in model codes. */
+		protected static function separateIdentifierParts($value)
+		{
+			return (string) preg_replace(
+				array('/(?<=\p{L})(?=\p{N})/u', '/(?<=\p{N})(?=\p{L})/u'),
+				'-',
+				(string) $value
+			);
 		}
 
 		protected static function englishKeyboardMap()

@@ -304,10 +304,21 @@
 				if (!empty($allowed)) { $catalogAllowed = array_values(array_unique(array_merge($catalogAllowed, $allowed))); }
 			}
 
+			$conditionReferences = $conditionsEnabled ? self::conditionReferences($rows) : array();
+			$conditionSources = array();
 			$groups = array();
 			foreach ($rows as $row) {
 				$settings = FieldSettings::effective($row);
-				if (array_key_exists('placed', $settings) && empty($settings['placed'])) { continue; }
+				if (array_key_exists('placed', $settings) && empty($settings['placed'])) {
+					$idReference = 'id:' . (int) $row['Id'];
+					$aliasReference = 'alias:' . strtolower(trim((string) $row['rubric_field_alias']));
+					if (isset($conditionReferences[$idReference]) || isset($conditionReferences[$aliasReference])) {
+						$conditionSources[(int) $row['Id']] = self::conditionSourceRow($row);
+					}
+
+					continue;
+				}
+
 				$groupId = (int) $row['rubric_field_group'];
 				if (!isset($groups[$groupId])) {
 					$groups[$groupId] = array(
@@ -324,7 +335,12 @@
 				$groups[$groupId]['items'][] = $field;
 			}
 
-			return array_values($groups);
+			$groups = array_values($groups);
+			if (!empty($groups) && !empty($conditionSources)) {
+				$groups[0]['condition_sources'] = array_values($conditionSources);
+			}
+
+			return $groups;
 		}
 
 		/**
@@ -338,13 +354,11 @@
 				return array();
 			}
 
-			$fields = array();
+			$fieldGroups = self::resolveFieldGroups($rubricId, (int) $documentId, $fieldGroups);
+			$fields = self::conditionAwareFields($fieldGroups);
 			$effectiveValues = array();
-			foreach (self::resolveFieldGroups($rubricId, (int) $documentId, $fieldGroups) as $group) {
-				foreach ($group['items'] as $field) {
-					$fields[] = $field;
-					$effectiveValues[(int) $field['Id']] = isset($field['field_value']) ? $field['field_value'] : '';
-				}
+			foreach ($fields as $field) {
+				$effectiveValues[(int) $field['Id']] = isset($field['field_value']) ? $field['field_value'] : '';
 			}
 
 			foreach ($values as $id => $value) {
@@ -356,14 +370,14 @@
 
 		public static function computedFieldValues($rubricId, array $values, array $document = array(), $documentId = 0, $fieldGroups = null)
 		{
+			$fieldGroups = self::resolveFieldGroups((int) $rubricId, (int) $documentId, $fieldGroups);
+			$fields = self::conditionAwareFields($fieldGroups);
 			$definitions = array();
 			$effectiveValues = array();
-			foreach (self::resolveFieldGroups((int) $rubricId, (int) $documentId, $fieldGroups) as $group) {
-				foreach ($group['items'] as $field) {
-					$fieldId = (int) $field['Id'];
-					$definitions[$fieldId] = $field;
-					$effectiveValues[$fieldId] = isset($field['field_value']) ? $field['field_value'] : '';
-				}
+			foreach ($fields as $field) {
+				$fieldId = (int) $field['Id'];
+				$definitions[$fieldId] = $field;
+				$effectiveValues[$fieldId] = isset($field['field_value']) ? $field['field_value'] : '';
 			}
 
 			foreach ($values as $fieldId => $value) {
@@ -387,18 +401,19 @@
 				return $values;
 			}
 
-			$fields = array();
+			$fieldGroups = self::resolveFieldGroups((int) $rubricId, (int) $documentId, $fieldGroups);
+			$fields = self::conditionAwareFields($fieldGroups);
 			$fieldMap = array();
 			$storedValues = array();
 			$effectiveValues = array();
-			foreach (self::resolveFieldGroups((int) $rubricId, (int) $documentId, $fieldGroups) as $group) {
-				foreach ($group['items'] as $field) {
-					$fields[] = $field;
+			foreach ($fields as $field) {
 					$fieldId = (int) $field['Id'];
+					if (empty($field['_condition_source'])) {
 					$fieldMap[$fieldId] = $field;
+					}
+
 					$storedValues[$fieldId] = (int) $documentId > 0 && isset($field['field_value']) ? $field['field_value'] : '';
 					$effectiveValues[$fieldId] = isset($field['field_value']) ? $field['field_value'] : '';
-				}
 			}
 
 			foreach ($values as $id => $value) {
@@ -819,6 +834,29 @@
 			return is_array($fieldGroups)
 				? $fieldGroups
 				: self::fieldsForRubric((int) $rubricId, (int) $documentId);
+		}
+
+		protected static function conditionAwareFields(array $fieldGroups)
+		{
+			$fields = array();
+			$seen = array();
+			foreach ($fieldGroups as $group) {
+				foreach (isset($group['condition_sources']) && is_array($group['condition_sources']) ? $group['condition_sources'] : array() as $field) {
+					$fieldId = isset($field['Id']) ? (int) $field['Id'] : 0;
+					if ($fieldId <= 0 || isset($seen[$fieldId])) { continue; }
+					$seen[$fieldId] = true;
+					$fields[] = $field;
+				}
+
+				foreach (isset($group['items']) && is_array($group['items']) ? $group['items'] : array() as $field) {
+					$fieldId = isset($field['Id']) ? (int) $field['Id'] : 0;
+					if ($fieldId <= 0 || isset($seen[$fieldId])) { continue; }
+					$seen[$fieldId] = true;
+					$fields[] = $field;
+				}
+			}
+
+			return $fields;
 		}
 
 		public static function delete($id)
@@ -1331,6 +1369,33 @@
 			return (new \App\Content\Documents\DocumentPickerRepository())->search($q, $rubricId, $limit);
 		}
 
+		public static function parentDocumentPicker($q, $limit = 20, $excludeId = 0)
+		{
+			$limit = max(1, min(50, (int) $limit));
+			$excludeId = max(0, (int) $excludeId);
+			$items = CatalogModel::searchParentDocuments($q, $limit);
+			$seen = array();
+			$result = array();
+			foreach ($items as $item) {
+				$id = (int) $item['id'];
+				if ($id <= 0 || $id === $excludeId || isset($seen[$id])) { continue; }
+				$seen[$id] = true;
+				$result[] = $item;
+				if (count($result) >= $limit) { return $result; }
+			}
+
+			$documents = (new \App\Content\Documents\DocumentPickerRepository())->search($q, array(), $limit);
+			foreach ($documents as $item) {
+				$id = (int) $item['id'];
+				if ($id <= 0 || $id === $excludeId || isset($seen[$id])) { continue; }
+				$seen[$id] = true;
+				$result[] = $item;
+				if (count($result) >= $limit) { break; }
+			}
+
+			return $result;
+		}
+
 		/** Existing keywords/tags for the searchable tag inputs in document editor. */
 		public static function termSuggestions($kind, $q = '', $rubricId = 0, $limit = 12)
 		{
@@ -1673,11 +1738,7 @@
 		{
 			$type = (string) $row['rubric_field_type'];
 			$hasInitialValue = array_key_exists('__initial_value', $row);
-			$raw = $hasInitialValue
-				? (string) $row['__initial_value']
-				: ($row['document_field_id']
-					? (string) $row['field_value'] . (string) $row['field_value_more']
-					: self::initialFieldValue($type, (string) $row['rubric_field_default']));
+			$raw = self::rawFieldValue($row);
 			$editor = FieldAdminEditors::describe($type);
 			$kind = self::documentEditorKind($editor);
 			$settings = FieldSettings::effective($row);
@@ -1775,6 +1836,60 @@
 				? self::renderCatalogField($field, CatalogModel::parseValue($raw))
 				: FieldAdminEditors::renderEdit($type, $field);
 			return $field;
+		}
+
+		protected static function rawFieldValue(array $row)
+		{
+			if (array_key_exists('__initial_value', $row)) { return (string) $row['__initial_value']; }
+			if (!empty($row['document_field_id'])) {
+				return (string) $row['field_value'] . (string) $row['field_value_more'];
+			}
+
+			return self::initialFieldValue((string) $row['rubric_field_type'], (string) $row['rubric_field_default']);
+		}
+
+		protected static function conditionSourceRow(array $row)
+		{
+			return array(
+				'Id' => (int) $row['Id'],
+				'rubric_id' => (int) $row['rubric_id'],
+				'rubric_field_group' => (int) $row['rubric_field_group'],
+				'rubric_field_title' => self::decode($row['rubric_field_title']),
+				'rubric_field_alias' => (string) $row['rubric_field_alias'],
+				'rubric_field_type' => (string) $row['rubric_field_type'],
+				'rubric_field_settings' => isset($row['rubric_field_settings']) ? (string) $row['rubric_field_settings'] : '',
+				'group_settings' => isset($row['group_settings']) ? (string) $row['group_settings'] : '',
+				'field_value' => self::rawFieldValue($row),
+				'_condition_source' => true,
+			);
+		}
+
+		protected static function conditionReferences(array $rows)
+		{
+			$references = array();
+			foreach ($rows as $row) {
+				foreach (array(FieldConditionEvaluator::condition($row), FieldConditionEvaluator::groupCondition($row)) as $condition) {
+					if (!empty($condition['tree']) && is_array($condition['tree'])) {
+						self::collectConditionReferences($condition['tree'], $references);
+					}
+				}
+			}
+
+			return $references;
+		}
+
+		protected static function collectConditionReferences(array $node, array &$references)
+		{
+			if (isset($node['items']) && is_array($node['items'])) {
+				foreach ($node['items'] as $item) {
+					if (is_array($item)) { self::collectConditionReferences($item, $references); }
+				}
+
+				return;
+			}
+
+			$reference = isset($node['field']) ? strtolower(trim((string) $node['field'])) : '';
+			if ($reference !== '') { $references[$reference] = true; }
 		}
 
 		protected static function hasGroupSettingsColumn()
@@ -1941,7 +2056,9 @@
 			}
 
 			if ($kind === 'relation') {
-				return isset($parsed['document_id']) ? (string) $parsed['document_id'] : (string) $raw;
+				return array(
+					'document_id' => isset($parsed['document_id']) ? (string) $parsed['document_id'] : (string) $raw,
+				);
 			}
 
 			if (in_array($kind, array('lines', 'relation_list'), true)) {

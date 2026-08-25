@@ -40,6 +40,7 @@
 			$states = $conditionsEnabled ? FieldConditionEvaluator::states($fields, $values) : array();
 			foreach ($fields as $field) {
 				$field = (array) $field;
+				if (!empty($field['_condition_source'])) { continue; }
 				$id = isset($field['Id']) ? (int) $field['Id'] : 0;
 				if (isset($states[$id]) && empty($states[$id]['visible'])) { continue; }
 				if (isset($states[$id])) {

@@ -361,13 +361,22 @@
 				return $this->error('Недостаточно прав', array(), 403);
 			}
 
+			$scope = Request::getStr('scope', 'document');
+			$items = $scope === 'parent'
+				? Model::parentDocumentPicker(
+					Request::getStr('q', ''),
+					Request::getInt('limit', 20),
+					Request::getInt('exclude_id', 0)
+				)
+				: Model::documentPicker(
+					Request::getStr('q', ''),
+					Request::getStr('rubric_id', ''),
+					Request::getInt('limit', 20)
+				);
+
 			return $this->success('', array(
 				'data' => array(
-					'items' => Model::documentPicker(
-						Request::getStr('q', ''),
-						Request::getStr('rubric_id', ''),
-						Request::getInt('limit', 20)
-					),
+					'items' => $items,
 				),
 			));
 		}

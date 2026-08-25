@@ -17,7 +17,7 @@
 	return array(
 		'code' => 'public_site',
 		'name' => 'Публичный сайт',
-		'version' => '0.5.0',
+		'version' => '0.5.2',
 		'permissions' => array(
 			'key' => 'public_site',
 			'items' => array(
@@ -56,6 +56,7 @@
 		),
 		'routes' => array(
 			array('GET', '/public-site', array(\App\Adminx\PublicSite\Controller::class, 'index')),
+			array('GET', '/public-site/template-map', array(\App\Adminx\PublicSite\Controller::class, 'templateMap')),
 			array('GET', '/public-site/map', array(\App\Adminx\PublicSite\Controller::class, 'siteMap')),
 			array('GET', '/public-site/placements', array(\App\Adminx\PublicSite\Controller::class, 'placements')),
 			array('GET', '/public-site/diagnostics', array(\App\Adminx\PublicSite\Controller::class, 'diagnostics')),

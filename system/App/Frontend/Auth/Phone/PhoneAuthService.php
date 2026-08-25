@@ -38,6 +38,7 @@
 
 			$phone = Phone::normalize($phone);
 			if ($phone === '') {
+				$this->recordProviderEvent($provider, 'request_rejected', array('reason' => 'Передан некорректный номер телефона'));
 				throw new \InvalidArgumentException('Укажите корректный номер телефона.');
 			}
 
@@ -47,18 +48,21 @@
 			if (!empty($options['allow_registration'])
 				&& PublicAuthSettings::allowsRegistrationMethod('phone', $settings)
 				&& !$consent) {
+				$this->recordProviderEvent($provider, 'request_rejected', array('phone' => $phone, 'reason' => 'Не подтверждено согласие с политикой'));
 				throw new \InvalidArgumentException('Подтвердите согласие с политикой конфиденциальности.');
 			}
 
 			$resendKey = 'phone-auth-resend:' . $this->sessionHash() . ':' . $phoneKey;
 			if (!RateLimiter::attempt($resendKey, 1, $options['resend_after'])) {
 				$wait = max(1, RateLimiter::availableIn($resendKey));
+				$this->recordProviderEvent($provider, 'rate_limited', array('phone' => $phone, 'reason' => 'Повторный запрос раньше срока'));
 				throw new \InvalidArgumentException('Новый код можно запросить через ' . $wait . ' сек.');
 			}
 
 			if (!RateLimiter::attempt('phone-auth-ip:' . Request::ip(), 10, 900)
 				|| !RateLimiter::attempt('phone-auth-phone:' . $phoneKey, 3, 900)
 				|| !RateLimiter::attempt('phone-auth-day:' . $phoneKey, $options['daily_limit'], 86400)) {
+				$this->recordProviderEvent($provider, 'rate_limited', array('phone' => $phone, 'reason' => 'Превышен лимит запросов'));
 				throw new \InvalidArgumentException('Слишком много запросов кода. Попробуйте позже.');
 			}
 
@@ -79,12 +83,20 @@
 			);
 			if ($deliver) {
 				try {
-					$provider->sendCode($phone, $code);
+					$delivery = $provider->sendCode($phone, $code);
+					$this->recordProviderEvent($provider, 'code_sent', array(
+						'phone' => $phone,
+						'challenge' => $publicId,
+						'smsc_id' => is_array($delivery) && isset($delivery['id']) ? $delivery['id'] : '',
+					));
 				} catch (\Throwable $e) {
+					$this->recordProviderEvent($provider, 'send_failed', array('phone' => $phone, 'challenge' => $publicId, 'reason' => $e->getMessage()));
 					$repository->deleteByPublicId($publicId);
 					RateLimiter::clear($resendKey);
 					throw $e;
 				}
+			} else {
+				$this->recordProviderEvent($provider, 'delivery_skipped', array('phone' => $phone, 'challenge' => $publicId, 'reason' => 'Аккаунт не найден, регистрация выключена'));
 			}
 
 			if (random_int(1, 100) === 1) {
@@ -114,17 +126,41 @@
 			}
 
 			if (!preg_match('/^[a-f0-9]{32}$/', (string) $publicId) || !preg_match('/^[0-9]{4,8}$/', (string) $code)) {
+				$this->recordProviderEvent($provider, 'code_invalid', array('reason' => 'Некорректный формат кода или запроса'));
 				throw new \InvalidArgumentException('Проверьте код подтверждения.');
 			}
 
 			$repository = new ChallengeRepository($provider->challengeTable());
 			$challenge = $repository->findActive($publicId, $this->sessionHash());
-			if (!$challenge || !$repository->registerAttempt($challenge)
-				|| !password_verify((string) $code, (string) $challenge['code_hash'])) {
+			if (!$challenge) {
+				$previous = $repository->findForSession($publicId, $this->sessionHash());
+				$event = $previous && (int) $previous['consumed_at'] > 0 ? 'code_used' : 'code_expired';
+				$this->recordProviderEvent($provider, $event, array(
+					'phone' => $previous ? $previous['phone'] : '', 'challenge' => $publicId,
+					'attempts' => $previous ? $previous['attempts'] : 0,
+					'reason' => $previous ? ($event === 'code_used' ? 'Код уже использован' : 'Срок действия кода истёк') : 'Проверка не найдена',
+				));
+				throw new \InvalidArgumentException('Код неверен или срок его действия истёк.');
+			}
+
+			if (!$repository->registerAttempt($challenge)) {
+				$this->recordProviderEvent($provider, 'code_invalid', array(
+					'phone' => $challenge['phone'], 'challenge' => $publicId,
+					'attempts' => (int) $challenge['attempts'], 'reason' => 'Исчерпаны попытки ввода',
+				));
+				throw new \InvalidArgumentException('Код неверен или срок его действия истёк.');
+			}
+
+			if (!password_verify((string) $code, (string) $challenge['code_hash'])) {
+				$this->recordProviderEvent($provider, 'code_invalid', array(
+					'phone' => $challenge['phone'], 'challenge' => $publicId,
+					'attempts' => (int) $challenge['attempts'] + 1, 'reason' => 'Введён неверный код',
+				));
 				throw new \InvalidArgumentException('Код неверен или срок его действия истёк.');
 			}
 
 			if (!$repository->consume($challenge)) {
+				$this->recordProviderEvent($provider, 'code_used', array('phone' => $challenge['phone'], 'challenge' => $publicId, 'reason' => 'Код уже использован'));
 				throw new \InvalidArgumentException('Код уже использован.');
 			}
 
@@ -137,6 +173,7 @@
 				if (empty($options['allow_registration'])
 					|| !PublicAuthSettings::allowsRegistrationMethod('phone', $settings)
 					|| empty($challenge['consent'])) {
+					$this->recordProviderEvent($provider, 'account_missing', array('phone' => $challenge['phone'], 'challenge' => $publicId, 'reason' => 'Регистрация новых аккаунтов недоступна'));
 					throw new \InvalidArgumentException('Аккаунт с таким телефоном не найден.');
 				}
 
@@ -146,6 +183,7 @@
 					'mode' => 'phone',
 				), null, array(), 'phone_auth');
 				if ($registering->cancelled()) {
+					$this->recordProviderEvent($provider, 'auth_failed', array('phone' => $challenge['phone'], 'challenge' => $publicId, 'reason' => $registering->message()));
 					throw new \RuntimeException($registering->message() !== '' ? $registering->message() : 'Регистрация отменена модулем.');
 				}
 
@@ -155,6 +193,7 @@
 				} catch (\Throwable $e) {
 					$user = $users->findByPhone((string) $challenge['phone']);
 					if (!$user) {
+						$this->recordProviderEvent($provider, 'auth_failed', array('phone' => $challenge['phone'], 'challenge' => $publicId, 'reason' => $e->getMessage()));
 						throw $e;
 					}
 				}
@@ -167,11 +206,13 @@
 			}
 
 			if ((string) $user['status'] !== '1' || (string) $user['deleted'] === '1') {
+				$this->recordProviderEvent($provider, 'account_blocked', array('phone' => $challenge['phone'], 'challenge' => $publicId, 'user_id' => $user['Id'], 'reason' => 'Учётная запись отключена или удалена'));
 				throw new \InvalidArgumentException('Этот аккаунт недоступен.');
 			}
 
 			$users->verifyPhone((int) $user['Id'], (string) $challenge['phone']);
 			if (!Auth::publicLoginById((int) $user['Id'], !empty($remember))) {
+				$this->recordProviderEvent($provider, 'auth_failed', array('phone' => $challenge['phone'], 'challenge' => $publicId, 'user_id' => $user['Id'], 'reason' => 'Не удалось открыть пользовательскую сессию'));
 				throw new \RuntimeException('Не удалось открыть пользовательскую сессию.');
 			}
 
@@ -183,6 +224,9 @@
 				'target_type' => 'public_user',
 				'target_id' => (int) $user['Id'],
 				'meta' => array('provider' => $provider->code(), 'phone' => Phone::mask((string) $challenge['phone'])),
+			));
+			$this->recordProviderEvent($provider, $created ? 'registered' : 'authenticated', array(
+				'phone' => $challenge['phone'], 'challenge' => $publicId, 'user_id' => $user['Id'],
 			));
 			return array(
 				'user' => $user,
@@ -207,5 +251,15 @@
 			}
 
 			return hash('sha256', (string) $id);
+		}
+
+		protected function recordProviderEvent($provider, $event, array $context = array())
+		{
+			if (!is_object($provider) || !method_exists($provider, 'recordAuthEvent')) { return; }
+			try {
+				$provider->recordAuthEvent((string) $event, $context);
+			} catch (\Throwable $e) {
+				// Журнал провайдера не должен мешать входу пользователя.
+			}
 		}
 	}

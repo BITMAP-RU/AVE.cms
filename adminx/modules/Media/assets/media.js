@@ -446,32 +446,32 @@
       }
 
       function upload(files) {
-        var fd;
-        var i;
         if (!files || !files.length) {
           setStatus('Файлы не выбраны', 'error');
           return;
         }
-        fd = new FormData(form);
-        fd.delete('files[]');
-        for (i = 0; i < files.length; i++) {
-          fd.append('files[]', files[i]);
-        }
+        var total = files.length;
         form.classList.add('is-loading');
-        setStatus('Загрузка: ' + files.length, 'progress');
-        Adminx.Ajax.post(self.base() + '/media/upload', fd).then(function (payload) {
+        setStatus('Подготовка к загрузке: ' + total, 'progress');
+        Adminx.Upload.files(self.base() + '/media/upload', files, function (chunk) {
+          var fd = new FormData(form);
+          fd.delete('files[]');
+          chunk.forEach(function (file) { fd.append('files[]', file); });
+          return fd;
+        }, function (processed, count) {
+          setStatus('Загружено: ' + processed + ' из ' + count, 'progress');
+        }).then(function (result) {
           form.classList.remove('is-loading');
-          var d = payload.data || {};
-          if (d.success) {
-            setStatus(d.message || 'Готово', 'success');
-            Adminx.Ajax.handle(payload);
-          } else {
-            setStatus(d.message || 'Ошибка загрузки', 'error');
-            Adminx.Toast.show(d.message || 'Ошибка загрузки', 'error');
-          }
-        }).catch(function () {
+          setStatus('Загружено файлов: ' + result.files.length, 'success');
+          Adminx.Toast.show('Загружено файлов: ' + result.files.length, 'success');
+          window.location.href = self.base() + '/media?dir=' + encodeURIComponent(form.getAttribute('data-dir') || '/uploads');
+        }).catch(function (error) {
           form.classList.remove('is-loading');
-          setStatus('Ошибка сети', 'error');
+          var uploaded = error && error.uploaded ? error.uploaded.length : 0;
+          var message = (error && error.message) || 'Ошибка сети';
+          if (uploaded) { message += '. До ошибки загружено: ' + uploaded; }
+          setStatus(message, 'error');
+          Adminx.Toast.show(message, 'error');
         });
       }
 

@@ -665,6 +665,12 @@
 				return $this->error('Шаблон рубрики не найден', array(), 404);
 			}
 
+			if (!$this->wantsJson()) {
+				$this->redirect($this->base() . '/rubrics?templates=' . (int) $item['rubric_id']
+					. '&template=' . (int) $item['id']);
+				return null;
+			}
+
 			return $this->success('', array('data' => $item));
 		}
 

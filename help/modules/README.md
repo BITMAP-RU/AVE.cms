@@ -88,6 +88,7 @@ Manifest с вычисляемым runtime-содержимым объявляе
 | [Комментарии](comments.md) | Обсуждения, премодерация, три шаблона, API и антиспам. |
 | [Опросы](polls.md) | Одиночные и множественные голосования, архив, теги и API. |
 | [Галереи](galleries.md) | Медиаколлекции, сетка, слайдер, миниатюры и шаблонные теги. |
+| [Слайдеры](sliders.md) | Визуальные слайды, текст, кнопки, расписание, анимация и публичный тег. |
 | [Поиск по сайту](search.md) | Индекс, области, вывод через запросы, JSON/HTML API, живой поиск и хуки. |
 | [Подбор товара](quiz.md) | Пошаговый подбор по фильтрам каталога и шаблон публичной страницы. |
 | [Публичные виджеты](public-widgets.md) | Курсы валют, подписка и Twig-override активной темы. |
@@ -143,6 +144,7 @@ Manifest с вычисляемым runtime-содержимым объявляе
 | `content_packages` | Панель | `view_content_packages`, `export_content_packages`, `import_content_packages` | [Пакеты контента](content-packages.md) |
 | `faq` | Паблик + панель | `view_faq`, `manage_faq` | [Вопросы и ответы](faq.md) |
 | `galleries` | Паблик + панель | `view_galleries`, `manage_galleries` | [Галереи](galleries.md) |
+| `sliders` | Паблик + панель | `view_sliders`, `manage_sliders` | [Слайдеры](sliders.md) |
 | `polls` | Паблик + панель | `view_polls`, `manage_polls` | [Опросы](polls.md) |
 | `ratings` | Паблик + панель | `view_ratings`, `manage_ratings` | [Рейтинги](ratings.md) |
 | `related` | Паблик + панель | `view_related`, `manage_related` | [Похожие материалы](related.md) |

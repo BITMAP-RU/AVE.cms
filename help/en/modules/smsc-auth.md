@@ -25,6 +25,10 @@ simultaneously belong to two profiles.
 3. If necessary, register the sender's name.
 4. Top up your balance and check if sending to the desired destinations is allowed.
 
+The sender name must contain Latin letters and digits and be no longer than 11
+characters, or be a numeric sender up to 15 digits. Register it in SMSC and wait
+until it is approved. If the field is empty, SMSC uses its default sender.
+
 You do not need to enter your account login and password in AVE.cms. Use a separate
 An API key that can be revoked without changing the SMSC owner's password.
 
@@ -54,6 +58,7 @@ leaving existing users logged in.
 | Resubmission | Minimum pause before a new SMS in the current session. |
 | Input attempts | How many invalid inputs are allowed per challenge. |
 | SMS per day | Daily limit for one room. |
+| Keep history | Number of days to retain send and login events. |
 
 Additionally, the kernel limits the frequency of requests by IP and number. New code
 cancels the previous one, is associated with the current PHP session and can be used
@@ -63,7 +68,23 @@ If account creation is disabled and the number is not found, the public response
 looks like a successful request, but the SMS is not sent. It doesn't allow iterating
 registered phones and does not spend balance on unknown numbers.
 
-## Secrets and environment variablesDefault settings are in private storage
+## Balance and login history
+
+The `Settings` tab shows the current SMSC balance, connection state,
+and the selected sender status. `Refresh SMSC data` requests fresh information;
+the result is cached for one minute between checks.
+
+The separate `Login history` tab records successful and failed sends, rate limits, invalid, expired,
+or reused codes, successful logins, and account creation. It includes the date,
+masked and hashed phone, IP, browser, user, and SMSC message ID. The one-time code
+and full phone number are never stored in this history.
+
+Filters search by the phone mask, IP, or SMSC ID and narrow the list by event and
+outcome. Old rows are removed automatically according to `Keep history`.
+
+## Secrets and environment variables
+
+Default settings are in private storage
 `storage/secrets/modules/smsc_auth.php`. They can be overridden:
 
 ```dotenv
@@ -94,7 +115,7 @@ forms and rate limit.
 
 ## Removing a module
 
-When deleted, SMSC settings and the history of incomplete codes are erased. Users,
+When deleted, SMSC settings, incomplete challenges, and login history are erased. Users,
 confirmed phone numbers, orders and profiles are saved because they are shared
 AVE.cms data. Without an installed SMS provider, the phone login form is simple
 not shown.

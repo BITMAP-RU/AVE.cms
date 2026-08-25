@@ -571,6 +571,40 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.documents-public-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  max-width: 100%;
+  width: fit-content;
+  color: var(--blue-600);
+  font-size: 11.5px;
+  line-height: 1.35;
+  text-decoration: none;
+}
+.documents-public-link i {
+  flex: 0 0 auto;
+  color: var(--blue-600);
+  font-size: 13px;
+}
+.documents-public-link span {
+  overflow: hidden;
+  min-width: 0;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.documents-public-link:hover,
+.documents-public-link:focus-visible {
+  color: var(--blue-700);
+}
+.documents-public-alias-empty {
+  color: var(--text-muted);
+  font-size: 11.5px;
+}
+.documents-admin-card-title .documents-public-link {
+  margin-top: 3px;
+}
 .documents-search-flag {
   display: inline-flex;
   align-items: center;
@@ -1462,13 +1496,15 @@
 .documents-editor-workspace[data-active-panel="attributes"] #documentForm,
 .documents-editor-workspace[data-active-panel="promotions"] #documentForm,
 .documents-editor-workspace[data-active-panel="variants"] #documentForm,
-.documents-editor-workspace[data-active-panel="shipping"] #documentForm {
+.documents-editor-workspace[data-active-panel="shipping"] #documentForm,
+.documents-editor-workspace[data-active-panel="search"] #documentForm {
   display: none;
 }
 .documents-editor-workspace[data-active-panel="attributes"] [data-document-workspace-panel="attributes"],
 .documents-editor-workspace[data-active-panel="promotions"] [data-document-workspace-panel="promotions"],
 .documents-editor-workspace[data-active-panel="variants"] [data-document-workspace-panel="variants"],
-.documents-editor-workspace[data-active-panel="shipping"] [data-document-workspace-panel="shipping"] {
+.documents-editor-workspace[data-active-panel="shipping"] [data-document-workspace-panel="shipping"],
+.documents-editor-workspace[data-active-panel="search"] [data-document-workspace-panel="search"] {
   display: block;
 }
 .documents-editor-workspace [data-document-workspace-panel] {

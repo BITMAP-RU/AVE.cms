@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <language>
+	<phrase data="navigation_catalog_panel_behavior">Catalog menu behavior</phrase>
+	<phrase data="navigation_catalog_panel_link">Regular link</phrase>
+	<phrase data="navigation_catalog_panel_children">Show child items on the right</phrase>
+	<phrase data="navigation_catalog_panel_hint">Used only by navigation connected to the product catalog.</phrase>
 	<phrase data="navigation_parity_tag">[tag:if_every:2]even[tag:if_else]odd[tag:/if]</phrase>
 	<phrase data="auto_bf209b0159668b33">, and normal and active items are elements</phrase>
 	<phrase data="auto_3475d30e6543216b">, start and end of level - list</phrase>

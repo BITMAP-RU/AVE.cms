@@ -55,7 +55,7 @@
 				'SESSION_LIFETIME' => self::item('_CONST_SESSIONS', 86400, 'int', 'Время жизни сессии в секундах.'),
 				'COOKIE_LIFETIME' => self::item('_CONST_SESSIONS', 1209600, 'int', 'Время жизни cookie автоматического входа в секундах.'),
 				'DEV_MODE' => self::item('_CONST_DEV', false, 'bool', 'Режим разработки без SQL-кеша.'),
-				'PROFILING' => self::item('_CONST_DEV', 'full', 'select', 'Режим публичной панели отладки.', array('off', 'light', 'full', 'dev')),
+				'PROFILING' => self::item('_CONST_DEV', 'off', 'select', 'Режим публичной панели отладки: off полностью выключает панель.', array('off', 'light', 'full', 'dev')),
 				'SQL_PROFILING' => self::item('_CONST_DEV', true, 'bool', 'Собирать статистику SQL-запросов.'),
 				'PHP_DEBUGGING' => self::item('_CONST_DEV', false, 'bool', 'Собирать ошибки PHP средствами framework.'),
 				'PHP_DEBUGGING_FILE' => self::item('_CONST_DEV', false, 'bool', 'Записывать ошибки PHP в системный журнал.'),

@@ -78,17 +78,21 @@ receive cached pages and cards.
 
 ## Enable
 
-Public debugging is configured in `configs/public.config.php`:
+The `PROFILING` runtime constant controls public debugging globally. Open
+**Settings → Constants → Development**, find `PROFILING`, and select a value:
+
+- `off` fully disables the toolbar and its diagnostic collectors;
+- `light`, `full`, or `dev` enables the protected toolbar.
+
+Access to the enabled toolbar is additionally restricted in
+`configs/public.config.php`:
 
 ```php
 'debug' => array(
-    'enabled' => true,
     'groups' => array(),
 ),
 ```
 
-- `enabled` - general switch. With `false` the panel is not accessible even
-  administrator.
 - `groups` — ID of **public user groups** to which Debug is allowed
   Toolbar without system rights.
 - empty `groups` leaves access only to system users with the right
@@ -128,7 +132,7 @@ Detailed use cases and limitations are on the page
 
 ## When the panel does not appear
 
-1. Check `debug.enabled` to `configs/public.config.php`.
+1. Check that `PROFILING` is not `off` under **Settings → Constants**.
 2. Check the right `view_public_debug` of the current system role or public ID
    groups in `debug.groups`.
 3. Make sure that you are logged into the control panel in the same browser and on the same

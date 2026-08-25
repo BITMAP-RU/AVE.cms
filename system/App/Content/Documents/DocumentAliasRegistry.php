@@ -69,8 +69,23 @@
 			}
 
 			if ($alias === '/') { return null; }
+			if (self::ownedByDocument($path, $exceptId)) { return null; }
 
 			return PublicRouteRegistry::conflict($alias);
+		}
+
+		protected static function ownedByDocument($alias, $documentId)
+		{
+			$documentId = (int) $documentId;
+			if ($documentId <= 0 || $alias === '') { return false; }
+
+			return (int) DB::query(
+				'SELECT COUNT(*) FROM ' . ContentTables::table('documents')
+					. " WHERE Id = %i AND (TRIM(BOTH '/' FROM document_alias) = %s OR document_short_alias = %s)",
+				$documentId,
+				$alias,
+				$alias
+			)->getValue() > 0;
 		}
 
 		public static function available($alias, $exceptId = 0)

@@ -290,6 +290,13 @@ listings. The detail page gets the full gallery from the document's media field,
 therefore additional photos do not require re-saving the item or
 directory reindexing.
 
+The native medical-bed attribute set contains a dedicated **Mattress included**
+flag. Set it to **Yes** only when the mattress is included in the bed's base
+price. When it is **No** or not set, the standard product template tells the
+customer that the mattress is sold separately. A discount on a compatible
+mattress or a “bed + mattress” offer remains a promotion or bundle and does not
+enable this flag automatically.
+
 ### Product selections
 
 In **Products → Collections** managed product feeds are created for the main,
@@ -386,7 +393,9 @@ returns to the previous conclusion.
 The quantity of products is transferred to the template in `option.count`. Standard class
 counter - `.filter_checkbox-quantity`; its appearance can be changed in CSS
 presentations. The behavior of options with a zero result is also selected there:
-show, disable or hide.
+show, disable or hide. Zero-result options are hidden by default so customers do
+not see choices that cannot return a product. A selected option remains visible
+so it can always be cleared.
 
 The Twig technical contract is described in
 `docs/development/catalog-filter-templates.md`.
@@ -404,6 +413,15 @@ In Twig, `context.code` is available: `catalog`, `favorites`, `viewed`, `search`
 `related`. Through it you can show different commands without copying everything
 template. The complete contract is described in
 `docs/development/catalog-card-templates.md`.
+
+Use the **Card caption** field for a short distinction between similar products,
+for example `60 cm wide`, `Heavy-duty`, or `With pedal`. It does not replace the
+product title or description. The standard theme shows it at the bottom of the
+card image and below the heading on the product page.
+
+Custom Twig views can read `item.caption` in a card and `product.caption` on a
+product page. Both values are empty and produce no extra markup when the field
+is not filled in.
 
 ### Colors and product options
 
@@ -493,6 +511,21 @@ Custom product-card templates can use:
 
 ### How to quickly fill out options
 
+You can start directly from a product editor. Open the product and switch to
+**Variants**:
+
+- **New group** creates a group for the current model; the open product becomes
+  its first and primary variant;
+- **Existing group** adds the product to a group that already exists, without
+  returning to the full group list.
+
+When the product already belongs to a group, **Create variant from copy** creates
+a disabled draft, adds it to the same group and opens it for editing. The panel
+always asks for confirmation first, so an accidental click does not create an
+extra product. A regular save returns to that group's matrix, where you can set
+the new variant's color, configuration and other distinguishing values. **Save
+and stay** keeps the editor open.
+
 Go to **Products → Option Groups** and select a group. In the table
 **Option matrix** each row corresponds to a separate product:
 
@@ -559,6 +592,8 @@ product page template:
 [mod_product_relations:alternative]
 [mod_product_relations:together]
 [mod_product_bundles]
+[mod_product_bundles:offers]
+[mod_product_bundles:manual]
 ```
 
 An unqualified tag first displays relationships that the administrator has manually specified.
@@ -567,6 +602,11 @@ the same directory sections. Therefore, the “Similar Products” block can be 
 a general template for a product category, and gradually clarify important connections in the panel.
 Tags with a specific type only display manual links of the selected type and not
 replace them with automatic selection.
+
+`[mod_product_bundles]` renders both manual bundles and offers from active
+promotions. Use `[mod_product_bundles:offers]` for promotional pairs only and
+`[mod_product_bundles:manual]` for manually assembled bundles only when these
+blocks need different positions in the product page template.
 
 Related products use the same center cards as the catalog. Button
 kit adds each item to the regular cart with the current price. If the product

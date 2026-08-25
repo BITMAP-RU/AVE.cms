@@ -16,6 +16,7 @@
 
 	defined('BASEPATH') || die('Direct access to this location is not allowed.');
 
+	use App\Common\FileCacheInvalidator;
 	use App\Content\ContentTables;
 	use App\Content\PublicUserTables;
 	use App\Helpers\Dir;
@@ -234,6 +235,10 @@
 				}
 
 				$navigationId = (int) $current['navigation_id'];
+				if (!array_key_exists('status', $input)) {
+					$data['status'] = (string) $current['status'];
+				}
+
 				self::assertItemParent($navigationId, (int) $id, (int) $data['parent_id']);
 				$data['navigation_id'] = $navigationId;
 				DB::startTransaction();
@@ -406,6 +411,7 @@
 
 		public static function clearCache($id, $alias = '')
 		{
+			$id = (int) $id;
 			$keys = array((string) (int) $id);
 			$alias = trim((string) $alias);
 			if ($alias !== '') {
@@ -417,6 +423,8 @@
 				self::removeFile(self::cacheDir($key) . '/items.cache');
 				self::removeDir(self::cacheDir($key));
 			}
+
+			FileCacheInvalidator::navigation($id, $alias);
 		}
 
 		protected static function input(array $input)
@@ -485,6 +493,11 @@
 			}
 
 			$parentId = isset($input['parent_id']) ? (int) $input['parent_id'] : 0;
+			$cssClass = isset($input['css_class']) ? (string) $input['css_class'] : '';
+			if (array_key_exists('panel_source', $input)) {
+				$cssClass = self::applyPanelSource($cssClass, (string) $input['panel_source']);
+			}
+
 			return array(
 				'document_id' => isset($input['document_id']) && (int) $input['document_id'] > 0 ? (int) $input['document_id'] : null,
 				'alias' => $alias,
@@ -494,12 +507,31 @@
 				'image' => isset($input['image']) ? (string) $input['image'] : '',
 				'css_style' => isset($input['css_style']) ? (string) $input['css_style'] : '',
 				'css_id' => isset($input['css_id']) ? (string) $input['css_id'] : '',
-				'css_class' => isset($input['css_class']) ? (string) $input['css_class'] : '',
+				'css_class' => $cssClass,
 				'parent_id' => $parentId,
 				'level' => '1',
 				'position' => isset($input['position']) ? (int) $input['position'] : 1,
 				'status' => trim($alias) === '' ? '0' : '1',
 			);
+		}
+
+		protected static function applyPanelSource($cssClass, $source)
+		{
+			$classes = preg_split('/\s+/', trim((string) $cssClass)) ?: array();
+			$classes = array_values(array_filter($classes, function ($class) {
+				return $class !== 'catalog-menu-link'
+					&& $class !== 'catalog-menu-panel'
+					&& strpos($class, 'catalog-menu-source-') !== 0;
+			}));
+
+			$source = strtolower(trim((string) $source));
+			if ($source === 'children') {
+				$classes[] = 'catalog-menu-panel';
+			} elseif (preg_match('/^[a-z][a-z0-9_-]{1,31}$/', $source)) {
+				$classes[] = 'catalog-menu-source-' . $source;
+			}
+
+			return implode(' ', array_values(array_unique(array_filter($classes))));
 		}
 
 		protected static function row(array $row, $withCode = false)
@@ -530,6 +562,7 @@
 			$row['id'] = $row['navigation_item_id'];
 			$row['navigation_id'] = isset($row['navigation_id']) ? (int) $row['navigation_id'] : 0;
 			$row['document_id'] = isset($row['document_id']) ? (int) $row['document_id'] : 0;
+			$row['panel_source'] = self::panelSource(isset($row['css_class']) ? $row['css_class'] : '');
 			$row['parent_id'] = isset($row['parent_id']) ? (int) $row['parent_id'] : 0;
 			$row['level'] = isset($row['level']) ? (string) $row['level'] : '1';
 			$row['position'] = isset($row['position']) ? (int) $row['position'] : 1;
@@ -539,6 +572,16 @@
 			}
 
 			return $row;
+		}
+
+		protected static function panelSource($cssClass)
+		{
+			$cssClass = trim((string) $cssClass);
+			if (preg_match('/(?:^|\s)catalog-menu-source-([a-z][a-z0-9_-]{1,31})(?:\s|$)/', $cssClass, $match)) {
+				return (string) $match[1];
+			}
+
+			return preg_match('/(?:^|\s)catalog-menu-panel(?:\s|$)/', $cssClass) ? 'children' : 'link';
 		}
 
 		protected static function decode($value)

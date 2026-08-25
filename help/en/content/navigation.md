@@ -29,6 +29,23 @@ to consciously open a new tab - `_blank`.
 The level is determined by the position of the item in the tree. Drag changes parent,
 level and order; A separate numeric position field is not required for this.
 
+### Product catalog side panel
+
+When this navigation is selected in product catalog settings, every item gets a
+**Catalog menu behavior** field:
+
+- **Regular link** opens the assigned document or URL.
+- **Show child items on the right** displays manually maintained child links.
+- **Sections with sale products** displays non-empty sections where the current
+  product price is lower than its old price.
+- **Sections with SFR products** displays non-empty sections containing products
+  enabled for the SFR payment program.
+
+Dynamic sources read the product index, preserve the catalog tree order, and do
+not require duplicate navigation items. Disabled, deleted, and hidden products
+are ignored. The main item URL remains available as the link to all sales or to
+the SFR information page.
+
 ## Level templates
 
 Rendering is performed in the following order:

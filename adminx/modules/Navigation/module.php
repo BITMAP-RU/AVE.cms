@@ -17,7 +17,14 @@
 	return array(
 		'code' => 'navigation',
 		'name' => 'Навигация',
-		'version' => '0.2.0',
+		'version' => '0.2.2',
+
+		'hook_definitions' => array(
+			array(
+				'name' => 'navigation.item.panel_sources',
+				'description' => 'Дополнительные источники правой панели для пункта навигации товарного каталога.',
+			),
+		),
 
 		'permissions' => array(
 			'key' => 'navigation',

@@ -30,6 +30,17 @@
 	/** Protected, dependency-free profiler injected into public HTML responses. */
 	class PublicDebugToolbar
 	{
+		public static function mode()
+		{
+			$mode = defined('PROFILING') ? strtolower(trim((string) PROFILING)) : 'off';
+			return in_array($mode, array('light', 'full', 'dev'), true) ? $mode : 'off';
+		}
+
+		public static function enabled()
+		{
+			return self::mode() !== 'off';
+		}
+
 		public static function boot()
 		{
 			if (!self::allowed()) {
@@ -61,10 +72,13 @@
 
 		protected static function allowed()
 		{
+			if (!self::enabled()) {
+				return false;
+			}
+
 			$config = PublicConfiguration::all();
 			$debug = isset($config['debug']) && is_array($config['debug']) ? $config['debug'] : array();
-			if (empty($debug['enabled'])) { return false; }
-			$groups = isset($debug['groups']) && is_array($debug['groups']) ? array_map('intval', $debug['groups']) : array(1);
+			$groups = isset($debug['groups']) && is_array($debug['groups']) ? array_map('intval', $debug['groups']) : array();
 			$user = Auth::publicUser();
 			if (is_array($user) && in_array((int) $user['group'], $groups, true)) {
 				return true;

@@ -197,6 +197,7 @@
 					'pages' => $listing['pages'],
 					'total' => $listing['total'],
 					'per_page' => $perPage,
+					'can_manage' => Permission::check('manage_media'),
 				),
 			));
 		}
@@ -278,6 +279,7 @@
 			}
 
 			return $this->success('Папка создана', array(
+				'data' => array('path' => $path),
 				'redirect' => $this->base() . '/media?dir=' . rawurlencode($path),
 			));
 		}

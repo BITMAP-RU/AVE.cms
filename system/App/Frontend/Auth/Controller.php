@@ -142,6 +142,7 @@
 
 			$user = Auth::publicUser();
 			Auth::publicLogout();
+			Auth::logout();
 			Lifecycle::event('auth.user.logged_out', 'user', 'logged_out', is_array($user) && isset($user['id']) ? (int) $user['id'] : 0, array(
 				'user' => $user,
 			), null, array(), 'auth_controller');

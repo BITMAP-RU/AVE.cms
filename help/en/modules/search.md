@@ -399,6 +399,28 @@ If the client needs a ready-made card, use `format=html`. For
 simultaneously obtain structured data and ready-made markup, use
 `format=both`.
 
+## Dictionaries and typo correction
+
+Search first executes the visitor's exact query. Only an empty result may be
+retried with a conservative correction learned from indexed document titles and
+their additional search names. The corrector handles a wrong keyboard layout,
+`e/yo`, a missing or extra letter, and adjacent transpositions. Equally likely
+matches are offered as links instead of being replaced at random. Product
+codes, numbers and mixed letter-number identifiers are never corrected.
+
+Use the **Dictionary** tab to map a visitor phrase to the canonical phrase.
+A rule can be global or limited to one configured search scope. Rules can be
+previewed, disabled, edited and deleted.
+
+When the Products module is installed, a product editor also has a **Search**
+section. It stores additional searchable names for that product only. These
+names do not change the visible product title. After two characters, the field
+suggests matching names already used by products and matching shared-dictionary
+entries. A new value can still be entered manually. Rebuild the search index
+once after upgrading; later document saves keep the typo vocabulary current.
+Shared terminology remains explicit on the **Dictionary** tab; automatic typo
+correction does not try to infer semantic synonyms.
+
 ## Algorithms and weights
 
 Staff strategies:

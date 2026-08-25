@@ -16,6 +16,14 @@
     {% endif %}
   </div>
 {% endmacro %}
+{% macro public_link(item) %}
+  {% if item.document_alias %}
+    {% set public_url = item.document_alias == '/' ? '/' : '/' ~ item.document_alias|trim('/') %}
+    <a class="documents-public-link mono" href="{{ public_url }}" target="_blank" rel="noopener" aria-label="Открыть страницу в новой вкладке" data-tooltip="Открыть на сайте"><i class="ti ti-external-link"></i><span>{{ item.document_alias }}</span></a>
+  {% else %}
+    <span class="documents-public-alias-empty">без alias</span>
+  {% endif %}
+{% endmacro %}
 {% import _self as document_ui %}
 {% block title %}Документы{% endblock %}
 {% block content %}
@@ -136,7 +144,7 @@
       <article class="documents-admin-card {{ item.document_deleted ? 'is-deleted' : (item.document_status ? 'is-published' : 'is-draft') }}" data-document-row data-id="{{ item.Id }}" data-title="{{ item.document_title|e('html_attr') }}">
         <header>
           {% if can_manage %}<input type="checkbox" value="{{ item.Id }}" data-document-check aria-label="Выбрать документ #{{ item.Id }}">{% endif %}
-          <div class="documents-admin-card-title"><a href="{{ ADMINX_BASE }}/documents/{{ item.Id }}/edit">{{ item.document_title }}</a><small>#{{ item.Id }} · {{ item.document_alias ? item.document_alias : 'без alias' }}</small></div>
+          <div class="documents-admin-card-title"><a href="{{ ADMINX_BASE }}/documents/{{ item.Id }}/edit">{{ item.document_title }}</a><small>#{{ item.Id }}</small>{{ document_ui.public_link(item) }}</div>
           <span class="badge badge-{{ item.state_badge }}">{{ item.state_label }}</span>
         </header>
         <div class="documents-admin-card-body">
@@ -172,7 +180,7 @@
           <tr class="documents-row {{ item.document_deleted ? 'is-deleted' : (item.document_status ? 'is-published' : 'is-draft') }}" data-document-row data-id="{{ item.Id }}" data-title="{{ item.document_title|e('html_attr') }}">
             {% if can_manage %}<td><input type="checkbox" value="{{ item.Id }}" data-document-check aria-label="Выбрать документ #{{ item.Id }}"></td>{% endif %}
             <td class="mono text-muted">{{ item.Id }}</td>
-            <td><div class="documents-name"><b title="{{ item.document_title|e('html_attr') }}">{{ item.document_title }}</b><small>{{ item.document_alias ? item.document_alias : 'без alias' }}</small></div></td>
+            <td><div class="documents-name"><b title="{{ item.document_title|e('html_attr') }}">{{ item.document_title }}</b>{{ document_ui.public_link(item) }}</div></td>
             {% for display in item.admin_view_values %}
             <td class="documents-admin-value is-{{ display.width }}">
               {% if display.format == 'image' %}{% if display.value.image %}<img src="{{ display.value.image }}" alt="">{% else %}<span class="text-muted">—</span>{% endif %}
@@ -218,7 +226,7 @@
             <td class="documents-cell-title">
               <div class="documents-name">
                 <b title="{{ item.document_title|e('html_attr') }}">{{ item.document_title }}</b>
-                <span class="documents-title-meta"><span><i class="ti ti-eye"></i>{{ item.document_count_view|number_format(0, '.', ' ') }} просмотров</span><span class="mono"><i class="ti ti-link"></i>{{ item.document_alias ? item.document_alias : 'без alias' }}</span></span>
+                <span class="documents-title-meta"><span><i class="ti ti-eye"></i>{{ item.document_count_view|number_format(0, '.', ' ') }} просмотров</span><span>{{ document_ui.public_link(item) }}</span></span>
               </div>
             </td>
             <td class="documents-cell-rubric">

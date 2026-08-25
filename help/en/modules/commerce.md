@@ -35,6 +35,20 @@ The order snapshot stores original and final prices, the promotion name, and
 the gift marker. The usage journal keeps this information even when the rule is
 later changed or deleted.
 
+A fixed-price promotion between specific products is also exposed as a bundle
+offer on both public product pages. The condition product page shows eligible
+discounted products, while the discounted product page shows the products that
+activate its special price. **Add bundle to cart** submits both products, and the server
+revalidates the active promotion before applying the discount.
+
+The block is rendered by `[mod_product_bundles]`. Use
+`[mod_product_bundles:offers]` for promotional pairs only and
+`[mod_product_bundles:manual]` for manual bundles only. Its markup is editable
+under `Products -> Templates -> Product bundles`. `promotion_offers` contains offers
+derived from active promotions, while `bundles` contains manually configured
+product bundles, so the storefront markup does not require a PHP or theme
+override.
+
 ## Online payment journal
 
 The **Payment journal** tab shows the complete gateway sequence: payment

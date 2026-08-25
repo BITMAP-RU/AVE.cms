@@ -100,6 +100,7 @@
 			}
 
 			try {
+				ThemeAssets::registerViewOverrides();
 				Twig::twig()->createTemplate($content, 'public_view_' . preg_replace('/[^a-z0-9_]/i', '_', (string) $code));
 			} catch (\Throwable $e) {
 				return array('ok' => false, 'message' => 'Ошибка Twig: ' . $e->getMessage());

@@ -168,6 +168,7 @@
 				'catalog.product_shipping_saved' => 'Упаковка товара изменена',
 				'catalog.product_shipping_copied' => 'Упаковка скопирована вариантам',
 				'catalog.product_shipping_bulk_status' => 'Расчёт доставки у товаров изменён',
+				'catalog.product_search_aliases_saved' => 'Поисковые названия товара изменены',
 				'catalog.shipping_template_created' => 'Шаблон упаковки создан',
 				'catalog.shipping_template_saved' => 'Шаблон упаковки изменён',
 				'catalog.shipping_template_deleted' => 'Шаблон упаковки удалён',

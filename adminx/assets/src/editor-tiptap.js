@@ -290,18 +290,27 @@ var EnhancedImage = Image.extend({
 
     bindForm: function (textarea, editor) {
       var form = textarea.closest('form');
+      var self = this;
       if (!form) { return; }
       form.addEventListener('submit', function () {
-        var root = textarea.closest('.rich-editor');
-        if (root && root.classList.contains('rich-editor-source-open') && root._richSourceEditor) {
-          root._richSourceEditor.save();
-          textarea.value = root._richSourceEditor.getValue();
-          return;
-        }
-        if (textarea.getAttribute('data-rich-editor-dirty') === '1') {
-          textarea.value = editor.getHTML();
-        }
+        self.syncTextarea(textarea, editor);
       });
+    },
+
+    syncTextarea: function (textarea, editor) {
+      var root;
+      if (!textarea) { return ''; }
+      root = textarea.closest('.rich-editor');
+      if (root && root.classList.contains('rich-editor-source-open') && root._richSourceEditor) {
+        root._richSourceEditor.save();
+        textarea.value = root._richSourceEditor.getValue();
+        textarea.setAttribute('data-rich-editor-dirty', '1');
+        return textarea.value;
+      }
+      if (editor && textarea.getAttribute('data-rich-editor-dirty') === '1') {
+        textarea.value = editor.getHTML();
+      }
+      return textarea.value;
     },
 
     openSource: function (editor) {

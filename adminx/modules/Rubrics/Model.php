@@ -840,7 +840,10 @@
 			}
 
 			$rows = DB::query(
-				'SELECT t.*, (SELECT COUNT(*) FROM ' . self::docsTable() . ' d WHERE d.rubric_id = t.rubric_id AND d.rubric_tmpl_id = t.id) AS docs_count'
+				'SELECT t.*,'
+				. ' (SELECT COUNT(*) FROM ' . self::docsTable() . ' d WHERE d.rubric_id = t.rubric_id AND d.rubric_tmpl_id = t.id) AS docs_count,'
+				. ' (SELECT d.Id FROM ' . self::docsTable() . ' d WHERE d.rubric_id = t.rubric_id AND d.rubric_tmpl_id = t.id ORDER BY d.Id ASC LIMIT 1) AS first_document_id,'
+				. ' (SELECT d.document_title FROM ' . self::docsTable() . ' d WHERE d.rubric_id = t.rubric_id AND d.rubric_tmpl_id = t.id ORDER BY d.Id ASC LIMIT 1) AS first_document_title'
 				. ' FROM ' . self::templatesTable() . ' t WHERE t.rubric_id = %i ORDER BY t.id ASC',
 				(int) $rubricId
 			)->getAll();
@@ -882,7 +885,10 @@
 		public static function extraTemplate($id)
 		{
 			$row = DB::query(
-				'SELECT t.*, (SELECT COUNT(*) FROM ' . self::docsTable() . ' d WHERE d.rubric_id = t.rubric_id AND d.rubric_tmpl_id = t.id) AS docs_count'
+				'SELECT t.*,'
+				. ' (SELECT COUNT(*) FROM ' . self::docsTable() . ' d WHERE d.rubric_id = t.rubric_id AND d.rubric_tmpl_id = t.id) AS docs_count,'
+				. ' (SELECT d.Id FROM ' . self::docsTable() . ' d WHERE d.rubric_id = t.rubric_id AND d.rubric_tmpl_id = t.id ORDER BY d.Id ASC LIMIT 1) AS first_document_id,'
+				. ' (SELECT d.document_title FROM ' . self::docsTable() . ' d WHERE d.rubric_id = t.rubric_id AND d.rubric_tmpl_id = t.id ORDER BY d.Id ASC LIMIT 1) AS first_document_title'
 				. ' FROM ' . self::templatesTable() . ' t WHERE t.id = %i LIMIT 1',
 				(int) $id
 			)->getAssoc();
@@ -1457,6 +1463,8 @@
 			$row['author_id'] = (int) $row['author_id'];
 			$row['created'] = (int) $row['created'];
 			$row['docs_count'] = isset($row['docs_count']) ? (int) $row['docs_count'] : 0;
+			$row['first_document_id'] = isset($row['first_document_id']) ? (int) $row['first_document_id'] : 0;
+			$row['first_document_title'] = isset($row['first_document_title']) ? (string) $row['first_document_title'] : '';
 			$row['created_label'] = $row['created'] > 0 ? date('d.m.Y H:i', $row['created']) : 'не задано';
 			$row['size_label'] = self::formatBytes(strlen((string) $row['template']));
 			$row['can_delete'] = $row['docs_count'] === 0;

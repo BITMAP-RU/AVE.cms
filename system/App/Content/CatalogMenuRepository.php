@@ -37,8 +37,8 @@
 
 		/**
 		 * Additional top-level menu items are managed by the navigation selected
-		 * in catalog settings. Navigation classes only describe presentation:
-		 * catalog-menu-panel opens a pane, catalog-menu-sale/tcr set an accent.
+		 * in catalog settings. Navigation classes describe presentation and an
+		 * optional catalog-menu-source-* provider for dynamic panel contents.
 		 */
 		public static function navigation($purpose = 'commerce', $ttl = 600)
 		{
@@ -180,6 +180,17 @@
 			$classes = preg_split('/\s+/', trim(isset($row['css_class']) ? (string) $row['css_class'] : '')) ?: array();
 			$mode = in_array('catalog-menu-panel', $classes, true) ? 'panel' : 'link';
 			$tone = '';
+			$source = '';
+			foreach ($classes as $class) {
+				if (strpos($class, 'catalog-menu-source-') !== 0) { continue; }
+				$candidate = substr($class, strlen('catalog-menu-source-'));
+				if (preg_match('/^[a-z][a-z0-9_-]{1,31}$/', $candidate)) {
+					$source = $candidate;
+					break;
+				}
+			}
+
+			if ($source !== '') { $mode = 'panel'; }
 			foreach (array('sale', 'tcr') as $candidate) {
 				if (in_array('catalog-menu-' . $candidate, $classes, true)) {
 					$tone = $candidate;
@@ -206,6 +217,7 @@
 				'image' => trim(isset($row['image']) ? (string) $row['image'] : ''),
 				'mode' => $mode,
 				'tone' => $tone,
+				'source' => $source,
 				'children' => array(),
 			);
 		}

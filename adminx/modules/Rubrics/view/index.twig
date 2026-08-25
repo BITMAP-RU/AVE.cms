@@ -783,12 +783,17 @@
     </div>
     <button class="btn btn-ghost btn-icon" type="button" data-close-drawer aria-label="Закрыть"><i class="ti ti-x"></i></button>
   </div>
-  <form id="rubricExtraTemplateForm" class="rubrics-drawer">
+  <form id="rubricExtraTemplateForm" class="rubrics-drawer rubrics-extra-template-form">
     <input type="hidden" name="_csrf" value="{{ csrf_token }}">
     <input type="hidden" name="id" value="">
     <input type="hidden" name="rubric_id" value="">
-    <div class="drawer-body">
-      <div class="form-grid">
+    <div class="drawer-body rubrics-extra-template-body">
+      <div class="alert alert-info rubrics-extra-template-help">
+        <i class="ti ti-info-circle"></i>
+        <div><b>Шаблон отвечает за оформление</b><span>Заголовки, тексты и другие данные меняются в документе, который использует этот шаблон.</span></div>
+        {% if can_view_documents %}<a class="btn btn-secondary btn-sm" href="{{ ADMINX_BASE }}/documents" data-extra-template-document-link data-edit-prefix="Редактировать: " data-edit-content="Редактировать содержимое" data-documents-label="Открыть документы"><i class="ti ti-file-pencil"></i><span>Открыть документы</span></a>{% endif %}
+      </div>
+      <div class="form-grid rubrics-extra-template-fields">
         <label class="field col-12"><span class="field-label">Название</span><input class="input" type="text" name="title" required><span class="field-error" data-error="title"></span></label>
         {{ ui.code_field('Код шаблона', 'template', 560, 'col-12', true) }}
       </div>

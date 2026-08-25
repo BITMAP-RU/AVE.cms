@@ -47,8 +47,14 @@
         + '<div class="media-picker-tools">'
         + '<div class="input-wrap media-picker-search"><i class="ti ti-search"></i><input class="input" type="search" placeholder="' + placeholder + '" data-mp-search></div>'
         + '<button class="btn btn-ghost btn-icon" type="button" data-mp-up data-tooltip="На уровень выше" aria-label="На уровень выше"><i class="ti ti-arrow-up"></i></button>'
+        + '<div class="media-picker-manage" data-mp-manage hidden>'
+        + '<button class="btn btn-secondary btn-icon" type="button" data-mp-folder-toggle data-tooltip="Создать папку" aria-label="Создать папку"><i class="ti ti-folder-plus"></i></button>'
+        + '<button class="btn btn-primary" type="button" data-mp-upload><i class="ti ti-upload"></i>' + (type === 'image' ? 'Загрузить изображения' : 'Загрузить файлы') + '</button>'
+        + '<input type="file" data-mp-upload-input multiple hidden' + (type === 'image' ? ' accept="image/*"' : '') + '>'
+        + '</div>'
         + (onUrl ? '<button class="btn btn-ghost btn-sm" type="button" data-mp-url-toggle><i class="ti ti-link"></i>По ссылке</button>' : '')
         + '</div>'
+        + '<div class="media-picker-folder-form" data-mp-folder-form hidden><span class="input-wrap"><i class="ti ti-folder"></i><input class="input" type="text" maxlength="120" placeholder="Название новой папки" data-mp-folder-name></span><button class="btn btn-primary btn-sm" type="button" data-mp-folder-create><i class="ti ti-check"></i>Создать</button><button class="btn btn-ghost btn-icon btn-sm" type="button" data-mp-folder-cancel aria-label="Отмена" data-tooltip="Отмена"><i class="ti ti-x"></i></button></div>'
         + (onUrl ? '<div class="media-picker-url" data-mp-url hidden><input class="input" type="url" placeholder="https://…" data-mp-url-input><button class="btn btn-primary btn-sm" type="button" data-mp-url-apply><i class="ti ti-check"></i>Вставить</button></div>' : '')
         + '<div class="media-picker-crumbs" data-mp-crumbs></div>'
         + '<div class="media-picker-status" data-mp-status>Загрузка…</div>'
@@ -63,12 +69,16 @@
       document.body.appendChild(overlay);
       window.requestAnimationFrame(function () { overlay.classList.add('show'); });
 
-      var state = { dir: options.dir || '/uploads', parent: '', page: 1, pages: 1, q: '', type: type };
+      var state = { dir: options.dir || '/uploads', parent: '', page: 1, pages: 1, q: '', type: type, canManage: false, busy: false };
       var grid = overlay.querySelector('[data-mp-grid]');
       var crumbs = overlay.querySelector('[data-mp-crumbs]');
       var status = overlay.querySelector('[data-mp-status]');
       var count = overlay.querySelector('[data-mp-count]');
       var search = overlay.querySelector('[data-mp-search]');
+      var manage = overlay.querySelector('[data-mp-manage]');
+      var uploadInput = overlay.querySelector('[data-mp-upload-input]');
+      var folderForm = overlay.querySelector('[data-mp-folder-form]');
+      var folderName = overlay.querySelector('[data-mp-folder-name]');
       var timer = null;
 
       function close() {
@@ -89,6 +99,8 @@
         var folders = data.folders || [];
         var files = data.files || [];
         renderCrumbs(data.breadcrumbs || []);
+        state.canManage = !!data.can_manage;
+        manage.hidden = !state.canManage;
         grid.innerHTML = '';
         folders.forEach(function (folder) {
           var folderMeta = state.q
@@ -111,6 +123,74 @@
         overlay.querySelector('[data-mp-up]').disabled = !state.parent;
       }
 
+      function responseData(payload) {
+        var response = payload && payload.data ? payload.data : {};
+        if (!payload || !payload.ok || response.success === false) {
+          throw new Error(response.message || (response.error && response.error.message) || 'Не удалось выполнить действие');
+        }
+        return response;
+      }
+
+      function setBusy(value, message) {
+        state.busy = !!value;
+        manage.querySelectorAll('button').forEach(function (button) { button.disabled = state.busy; });
+        status.hidden = !message;
+        if (message) { status.textContent = message; }
+      }
+
+      function clearSearch() {
+        state.q = '';
+        search.value = '';
+      }
+
+      function createFolder() {
+        var name = folderName.value.trim();
+        if (!name || state.busy) { folderName.focus(); return; }
+        var data = new FormData();
+        data.set('_csrf', Adminx.csrf());
+        data.set('dir', state.dir);
+        data.set('name', name);
+        setBusy(true, 'Создаём папку…');
+        Adminx.Ajax.post(base + '/media/folders', data).then(responseData).then(function (response) {
+          var result = response.data || {};
+          folderForm.hidden = true;
+          folderName.value = '';
+          clearSearch();
+          Adminx.Toast.show(response.message || 'Папка создана', 'success');
+          load(result.path || state.dir, 1);
+        }).catch(function (error) {
+          setBusy(false, '');
+          Adminx.Toast.show(error.message || 'Не удалось создать папку', 'error');
+          folderName.focus();
+        });
+      }
+
+      function upload(files) {
+        if (!files || !files.length || state.busy) { return; }
+        setBusy(true, 'Подготовка к загрузке: ' + files.length + '…');
+        Adminx.Upload.files(base + '/media/upload', files, function (chunk) {
+          var data = new FormData();
+          data.set('_csrf', Adminx.csrf());
+          data.set('dir', state.dir);
+          chunk.forEach(function (file) { data.append('files[]', file); });
+          return data;
+        }, function (processed, total) {
+          status.textContent = 'Загружено: ' + processed + ' из ' + total + '…';
+        }).then(function (result) {
+          uploadInput.value = '';
+          clearSearch();
+          Adminx.Toast.show('Загружено файлов: ' + result.files.length, 'success');
+          load(state.dir, 1);
+        }).catch(function (error) {
+          uploadInput.value = '';
+          setBusy(false, '');
+          var uploaded = error && error.uploaded ? error.uploaded.length : 0;
+          var message = error.message || 'Не удалось загрузить файлы';
+          if (uploaded) { message += '. До ошибки загружено: ' + uploaded; }
+          Adminx.Toast.show(message, 'error');
+        });
+      }
+
       function load(dir, page) {
         state.dir = dir || state.dir;
         state.page = page || 1;
@@ -131,9 +211,10 @@
             state.parent = data.parent_dir || '';
             state.page = data.page || 1;
             state.pages = data.pages || 1;
+            setBusy(false, '');
             render(data);
           })
-          .catch(function () { status.textContent = 'Не удалось загрузить медиа'; status.hidden = false; });
+          .catch(function () { setBusy(false, ''); status.textContent = 'Не удалось загрузить медиа'; status.hidden = false; });
       }
 
       overlay.addEventListener('click', function (e) {
@@ -146,6 +227,10 @@
         if (e.target.closest('[data-mp-prev]') && state.page > 1) { load(state.dir, state.page - 1); }
         if (e.target.closest('[data-mp-next]') && state.page < state.pages) { load(state.dir, state.page + 1); }
         if (e.target.closest('[data-mp-up]') && state.parent) { load(state.parent, 1); }
+        if (e.target.closest('[data-mp-folder-toggle]')) { folderForm.hidden = !folderForm.hidden; if (!folderForm.hidden) { folderName.focus(); } return; }
+        if (e.target.closest('[data-mp-folder-cancel]')) { folderForm.hidden = true; folderName.value = ''; return; }
+        if (e.target.closest('[data-mp-folder-create]')) { createFolder(); return; }
+        if (e.target.closest('[data-mp-upload]')) { uploadInput.click(); return; }
         if (onUrl) {
           if (e.target.closest('[data-mp-url-toggle]')) {
             var box = overlay.querySelector('[data-mp-url]');
@@ -163,6 +248,10 @@
         window.clearTimeout(timer);
         timer = window.setTimeout(function () { state.q = search.value.trim(); load(state.dir, 1); }, 220);
       });
+      folderName.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); createFolder(); }
+      });
+      uploadInput.addEventListener('change', function () { upload(uploadInput.files); });
       document.addEventListener('keydown', onKey);
       load(state.dir, 1);
       search.focus();

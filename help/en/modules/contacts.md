@@ -23,6 +23,12 @@ fields are shown in the editor and look like `[tag:fld:<id>]`.
 The form can also be opened at `/contacts/<alias>`. Business address
 `/callback` uses the form with alias `callback` if it exists.
 
+For a Russian phone number, add
+`type="tel" inputmode="tel" autocomplete="tel" data-contact-phone-mask` to the
+field attributes. The public form formats typed or pasted input as
+`+7 (900) 000-00-00` and rejects an incomplete number. The mask is opt-in, so
+regular text fields and international phone numbers remain unchanged.
+
 ## Reception and protection
 
 Public submission checks for CSRF, required values, field types, and uploads.

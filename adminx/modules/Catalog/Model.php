@@ -257,8 +257,8 @@
 
 		protected static function filterTemplateSettings(array $input, $submitted = false)
 		{
-			$zero = isset($input['zero_behavior']) ? (string) $input['zero_behavior'] : 'disable';
-			if (!in_array($zero, array('show', 'disable', 'hide'), true)) { $zero = 'disable'; }
+			$zero = isset($input['zero_behavior']) ? (string) $input['zero_behavior'] : 'hide';
+			if (!in_array($zero, array('show', 'disable', 'hide'), true)) { $zero = 'hide'; }
 			return array(
 				'show_counts' => $submitted ? !empty($input['show_counts']) : (!array_key_exists('show_counts', $input) || !empty($input['show_counts'])),
 				'zero_behavior' => $zero,
@@ -519,6 +519,47 @@
 			return $out;
 		}
 
+		/** Разделы каталога, доступные как родители в редакторе документа. */
+		public static function searchParentDocuments($query, $limit = 30)
+		{
+			$query = trim((string) $query);
+			$limit = max(1, min(50, (int) $limit));
+			$sql = 'SELECT i.id AS catalog_item_id,i.name,i.status AS catalog_status,i.document_id,d.rubric_id,'
+				. ' d.document_title,d.document_alias,r.rubric_title'
+				. ' FROM ' . self::itemsTable() . ' i'
+				. ' INNER JOIN ' . self::documentsTable() . ' d ON d.Id=i.document_id'
+				. ' LEFT JOIN ' . self::rubricsTable() . ' r ON r.Id=d.rubric_id'
+				. " WHERE i.document_id>0 AND d.document_deleted!='1'";
+			$args = array();
+			if ($query !== '') {
+				$sql .= ' AND (i.name LIKE %ss OR d.document_title LIKE %ss'
+					. ' OR d.document_alias LIKE %ss OR d.Id=%i)';
+				$args[] = $query;
+				$args[] = $query;
+				$args[] = $query;
+				$args[] = (int) $query;
+			}
+
+			$sql .= ' ORDER BY i.level ASC,i.position ASC,i.name ASC LIMIT ' . $limit;
+			$rows = call_user_func_array(array('DB', 'query'), array_merge(array($sql), $args))->getAll();
+			$out = array();
+			foreach ($rows ?: array() as $row) {
+				$out[] = array(
+					'id' => (int) $row['document_id'],
+					'rubric_id' => (int) $row['rubric_id'],
+					'title' => self::decode($row['name']),
+					'alias' => (string) $row['document_alias'],
+					'status' => (int) $row['catalog_status'],
+					'rubric_title' => 'Раздел каталога'
+						. ((int) $row['catalog_status'] === 1 ? '' : ' · выключен')
+						. ' · ' . self::decode($row['rubric_title']),
+					'catalog_item_id' => (int) $row['catalog_item_id'],
+				);
+			}
+
+			return $out;
+		}
+
 		public static function parseValue($value)
 		{
 			$data = FieldValueCodec::decodeStructured($value, array());
@@ -543,7 +584,35 @@
 		{
 			return self::productsAvailable()
 				? ProductIndexer::stats()
-				: array('total' => 0, 'active' => 0, 'inactive' => 0, 'categories' => 0);
+				: self::emptyProductStats();
+		}
+
+		public static function productQualityStats()
+		{
+			return self::productsAvailable()
+				? ProductIndexer::qualityStats()
+				: self::emptyProductStats();
+		}
+
+		public static function productStatsSnapshot()
+		{
+			$stats = self::productsAvailable() ? ProductIndexer::cachedStats() : self::emptyProductStats();
+			return array(
+				'loaded' => is_array($stats),
+				'stats' => array_merge(self::emptyProductStats(), is_array($stats) ? $stats : array()),
+			);
+		}
+
+		protected static function emptyProductStats()
+		{
+			return array(
+				'total'=>0,'quality_total'=>0,'active'=>0,'inactive'=>0,'without_category'=>0,
+				'without_image'=>0,'without_article'=>0,'without_price'=>0,'without_stock'=>0,
+				'without_excerpt'=>0,'without_seo'=>0,'stale'=>0,'shipping_incomplete'=>0,
+				'shipping_disabled'=>0,'duplicate_articles'=>0,'legacy_attributes'=>0,
+				'filter_index_errors'=>0,'registration_incomplete'=>0,'without_video'=>0,
+				'variant_errors'=>0,'description_markup'=>0,'sfr'=>0,'issues'=>0,'recommendations'=>0,'indexed_at'=>0,
+			);
 		}
 
 		public static function productQualityIssues(array $stats)
@@ -559,6 +628,14 @@
 		public static function productRubrics()
 		{
 			return self::productsAvailable() ? ProductIndexer::productRubrics() : array();
+		}
+
+		public static function productRubricOptions()
+		{
+			$allowed = array_flip(self::productRubrics());
+			return array_values(array_filter(self::rubricOptions(), function ($rubric) use ($allowed) {
+				return isset($allowed[(int) $rubric['id']]);
+			}));
 		}
 
 		public static function reindexProducts($limit = 0)

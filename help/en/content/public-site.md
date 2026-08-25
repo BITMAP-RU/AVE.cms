@@ -40,6 +40,31 @@ Each row represents one category. It shows its site template, document and field
 counts, related requests and catalogs, and clear structural problems. The
 diagnostics are informative and never repair data automatically.
 
+## Template map
+
+The **Template map** answers one practical question: where should a particular
+part of a public page be edited? It reads the current installation and never
+saves or switches anything by itself.
+
+The current composition mode is shown first:
+
+- **AVE.cms templates** means that the site template and rubric template build
+  the page, while the active theme supplies assets and selected component
+  overrides;
+- **Theme shell** means that the configured Twig file builds the outer page
+  shell, with rubric inheritance controlled by the theme manifest.
+
+The page then shows actual chains for a text document, a content list, a
+catalog category, a product card, and a full product page. Every step links to
+the editor that owns it. The rubric table shows site-template assignments and
+whether the main or additional rubric templates exist. Component groups show
+whether markup comes from the active theme, a system fallback, or a missing
+file.
+
+A theme component is not an independent page. It works only when a rubric
+template, request, block, or module calls it. Document content should therefore
+remain in document fields rather than in a theme Twig file.
+
 ## Presentations
 
 A **presentation** is an optional visual layer for already prepared data. It

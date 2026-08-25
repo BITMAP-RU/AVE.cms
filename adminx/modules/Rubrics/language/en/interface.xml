@@ -1140,4 +1140,8 @@
 	<phrase data="auto_a4bb945f71c3e11d">Replace all</phrase>
 	<phrase data="auto_582dbae7c8ee21b0">The old file will be moved to the trash after saving.</phrase>
 	<phrase data="auto_434e952b35fa2970">The current set will be moved to the trash after saving.</phrase>
+	<phrase data="rubrics_extra_template_help_title">The template controls presentation</phrase>
+	<phrase data="rubrics_extra_template_help_text">Headings, text, and other data are edited in the document that uses this template.</phrase>
+	<phrase data="rubrics_extra_template_edit_content">Edit content</phrase>
+	<phrase data="rubrics_extra_template_edit_prefix">Edit: </phrase>
 </language>

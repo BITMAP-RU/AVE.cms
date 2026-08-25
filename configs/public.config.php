@@ -39,7 +39,6 @@
 		// Дополнительные домены, разрешённые помимо PUBLIC_SITE_URL.
 		'allowed_hosts' => array(),
 		'debug' => array(
-			'enabled' => true,
 			'groups' => array(1),
 		),
 	);

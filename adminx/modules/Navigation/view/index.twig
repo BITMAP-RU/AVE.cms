@@ -391,6 +391,17 @@
               <label class="field col-12"><span class="field-label">CSS style</span><input class="input" type="text" name="css_style"></label>
               <label class="field col-6"><span class="field-label">CSS class</span><input class="input" type="text" name="css_class"></label>
               <label class="field col-6"><span class="field-label">CSS ID</span><input class="input" type="text" name="css_id"></label>
+			  {% if navigation_panel_sources %}
+			  <label class="field col-12">
+				<span class="field-label">Поведение в меню каталога</span>
+				<select class="select" name="panel_source">
+				  <option value="link">Обычная ссылка</option>
+				  <option value="children">Показать справа дочерние пункты</option>
+				  {% for source in navigation_panel_sources %}<option value="{{ source.code }}">{{ source.title }}</option>{% endfor %}
+				</select>
+				<span class="field-hint">Используется только навигацией, подключённой к товарному каталогу.</span>
+			  </label>
+			  {% endif %}
             </div>
           </div>
         </form>
