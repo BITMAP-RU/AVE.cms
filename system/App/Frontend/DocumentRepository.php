@@ -131,7 +131,7 @@
 
 		public function findNotFoundPage($documentId, $userGroupId)
 		{
-			return $this->findWithPageContext($documentId, $userGroupId, false);
+			return $this->findForPage($documentId, $userGroupId);
 		}
 
 		protected function findWithPageContext($documentId, $userGroupId, $includeAlternateTemplate)

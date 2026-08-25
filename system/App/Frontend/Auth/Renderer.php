@@ -36,7 +36,7 @@
 			$displayUser = $user ?: $systemUser;
 			$accountLinks = Hooks::filter('auth.account.links', array());
 			if (!is_array($accountLinks)) { $accountLinks = array(); }
-			$html = (new FormTemplateRepository())->render('panel', array(
+			$context = array(
 				'base' => $base,
 				'csrf' => Session::csrfToken(),
 				'return_url' => self::returnUrl(),
@@ -49,20 +49,26 @@
 				'admin_url' => AdminLocation::url('/'),
 				'registration_enabled' => Feature::registrationFormEnabled(),
 				'password_reset_enabled' => !empty(Feature::config()['password_reset_enabled']),
+				'password_login_enabled' => Feature::passwordLoginEnabled(),
 				'auth_urls' => Feature::urls(),
 				'login_page' => Feature::page('login'),
 				'oauth_providers' => ProviderRegistry::publicItems(),
 				'phone_providers' => PhoneProviderRegistry::publicItems(),
 				'account_extension_links' => $accountLinks,
 				'error' => (string) $error,
-			));
+			);
+			$html = (new FormTemplateRepository())->render('panel', $context);
+			if (empty($context['password_login_enabled'])
+				&& preg_match('/name\s*=\s*["\']user_login["\']/i', $html)) {
+				$html = Twig::twig()->render('@system_auth/panel.twig', $context);
+			}
 
 			if (!$includeAssets) {
 				return $html;
 			}
 
-			return '<link rel="stylesheet" href="' . $base . '/system/App/Frontend/Auth/assets/auth.css">'
-				. '<script src="' . $base . '/system/App/Frontend/Auth/assets/auth.js" defer></script>'
+			return '<link rel="stylesheet" href="' . $base . '/system/App/Frontend/Auth/assets/auth.css?v=' . self::assetVersion('auth.css') . '">'
+				. '<script src="' . $base . '/system/App/Frontend/Auth/assets/auth.js?v=' . self::assetVersion('auth.js') . '" defer></script>'
 				. $html;
 		}
 
@@ -80,11 +86,17 @@
 				'preview' => false,
 				'oauth_providers' => ProviderRegistry::publicItems(),
 				'phone_providers' => PhoneProviderRegistry::publicItems(),
+				'password_login_enabled' => Feature::passwordLoginEnabled(),
 				'email_registration_enabled' => Feature::emailRegistrationEnabled(),
 				'phone_registration_enabled' => Feature::phoneRegistrationEnabled(),
 				'registration_phone_providers' => Feature::phoneRegistrationProviders(),
 			), $data);
 			$html = (new FormTemplateRepository())->render($template, $context);
+			if ($template === 'login' && empty($context['password_login_enabled'])
+				&& preg_match('/name\s*=\s*["\']user_login["\']/i', $html)) {
+				$html = Twig::twig()->render('@system_auth/login.twig', $context);
+			}
+
 			if ($template === 'register' && empty($context['email_registration_enabled'])
 				&& preg_match('/name\s*=\s*["\']email["\']/i', $html)) {
 				$html = Twig::twig()->render('@system_auth/register.twig', $context);
@@ -120,8 +132,8 @@
 				$html = '<div class="system-auth-preview"><b>Предпросмотр формы</b><span>Отправка данных отключена.</span></div>' . $html;
 			}
 
-			$html = '<link rel="stylesheet" href="' . $base . '/system/App/Frontend/Auth/assets/auth.css">'
-				. '<script src="' . $base . '/system/App/Frontend/Auth/assets/auth.js" defer></script>'
+			$html = '<link rel="stylesheet" href="' . $base . '/system/App/Frontend/Auth/assets/auth.css?v=' . self::assetVersion('auth.css') . '">'
+				. '<script src="' . $base . '/system/App/Frontend/Auth/assets/auth.js?v=' . self::assetVersion('auth.js') . '" defer></script>'
 				. $html;
 			PublicModuleRuntime::deferPage($html, array(
 				'title' => isset($context['title']) ? (string) $context['title'] : (isset($page['title']) ? (string) $page['title'] : ''),
@@ -130,6 +142,13 @@
 				'template_id' => isset($page['template_id']) ? (int) $page['template_id'] : 1,
 			));
 			return '';
+		}
+
+		protected static function assetVersion($name)
+		{
+			$file = __DIR__ . '/assets/' . basename((string) $name);
+			$modified = is_file($file) ? @filemtime($file) : false;
+			return $modified === false ? '1' : (string) $modified;
 		}
 
 		protected static function returnUrl()

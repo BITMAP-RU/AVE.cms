@@ -17,7 +17,7 @@
 	use App\Adminx\Customers\GlobalSearchProvider;
 
 	return array(
-		'code' => 'customers', 'name' => 'Пользователи сайта', 'version' => '0.10.2',
+		'code' => 'customers', 'name' => 'Пользователи сайта', 'version' => '0.10.3',
 		'permissions' => array('key' => 'customers', 'items' => array(
 			array(
 				'code' => 'view_customers',

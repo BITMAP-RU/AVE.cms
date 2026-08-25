@@ -32,6 +32,7 @@
         <li>
           <div class="panel m-b-none">
             <div class="panel-body">
+              {% if password_login_enabled %}
               <form class="form" method="post" action="{{ base }}{{ auth_urls.login }}" accept-charset="UTF-8" id="form-login-top" data-auth-login>
                 <input type="hidden" name="_csrf" value="{{ csrf|e }}">
                 <input type="hidden" name="_return" value="{{ return_url|e }}">
@@ -48,6 +49,9 @@
                 <div class="form-group"><button type="submit" class="btn btn-purple btn-sm btn-block">{{ login_page.submit_label }}</button></div>
                 <div class="checkbox"><label><input type="checkbox" name="keep_in" value="1"> Запомнить меня</label></div>
               </form>
+              {% else %}
+                <a class="btn btn-purple btn-sm btn-block" href="{{ base }}{{ auth_urls.login }}">Войти по телефону</a>
+              {% endif %}
             </div>
             {% if registration_enabled %}
               <div class="panel-footer bottom text-center">Нет аккаунта? <a href="{{ base }}{{ auth_urls.register }}"><b>Зарегистрироваться</b></a></div>

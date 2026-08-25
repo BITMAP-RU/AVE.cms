@@ -78,6 +78,18 @@
 			return $gate === $method || $gate === 'email_phone';
 		}
 
+		/** Password login is disabled when public access is configured as phone-only. */
+		public static function allowsPasswordLogin(array $settings = null)
+		{
+			$settings = $settings === null ? self::all() : $settings;
+			$gate = isset($settings['registration_gate'])
+				? strtolower(trim((string) $settings['registration_gate']))
+				: 'email';
+			if ($gate === 'both') { $gate = 'email_phone'; }
+
+			return $gate !== 'phone';
+		}
+
 		protected static function defaults(array $fallback)
 		{
 			return array(

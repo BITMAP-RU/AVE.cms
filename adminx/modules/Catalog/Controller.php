@@ -50,6 +50,7 @@
 	use App\Adminx\Packages\Products\ProductCollections;
 	use App\Adminx\Packages\Products\ProductDemands;
 	use App\Adminx\Packages\Products\ProductDuplicator;
+	use App\Adminx\Packages\Products\QualitySnapshot;
 	use App\Adminx\Packages\Products\ProductReadiness;
 	use App\Adminx\Packages\Products\PublicViewTemplates;
 	use App\Adminx\Packages\Products\ShippingPackageTemplates;
@@ -141,6 +142,28 @@
 				'filters' => $filters,
 				'saved_views' => SavedViews::all('catalog_quality', Auth::id(), $this->savedViewFields('quality')),
 				'can_manage' => Permission::check('manage_products'),
+			));
+		}
+
+		public function refreshProductQualitySnapshot(array $params = array())
+		{
+			if (($error = $this->csrfGuard()) !== null) { return $error; }
+			if (!Permission::check('view_products')) { return $this->error('Недостаточно прав', array(), 403); }
+
+			try {
+				$snapshot = QualitySnapshot::refresh();
+			} catch (\Throwable $e) {
+				error_log('[products.quality] ' . $e->getMessage());
+				return $this->error('Не удалось рассчитать качество товаров', array(), 500);
+			}
+
+			return $this->success('Сводка качества обновлена', array(
+				'data' => array(
+					'generated_label' => (string) $snapshot['generated_label'],
+					'quality_total' => (int) $snapshot['stats']['quality_total'],
+					'required' => (int) $snapshot['required'],
+					'score' => (int) $snapshot['stats']['score'],
+				),
 			));
 		}
 

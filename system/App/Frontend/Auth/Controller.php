@@ -47,6 +47,10 @@
 				return $this->redirect(Feature::url('overview'));
 			}
 
+			if (!Feature::passwordLoginEnabled()) {
+				return $this->loginError('Вход по паролю отключён. Используйте код из SMS.', 403);
+			}
+
 			if (!$this->verifyCsrf()) {
 				return $this->loginError('Сессия устарела. Обновите страницу.', 403);
 			}

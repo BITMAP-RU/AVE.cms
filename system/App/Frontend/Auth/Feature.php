@@ -100,6 +100,11 @@
 			}));
 		}
 
+		public static function passwordLoginEnabled()
+		{
+			return PublicAuthSettings::allowsPasswordLogin(self::$config);
+		}
+
 		public static function page($key)
 		{
 			return isset(self::$config['pages'][$key]) ? self::$config['pages'][$key] : array();

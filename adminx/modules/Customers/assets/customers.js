@@ -398,6 +398,7 @@
     syncRegistrationGate: function () {
       var gate = document.querySelector('[data-registration-gate]');
       var hasEmail = gate && gate.value !== 'phone';
+      var phoneOnly = gate && gate.value === 'phone';
       var emailAndPhone = gate && gate.value === 'email_phone';
       var description = document.querySelector('[data-auth-email-field-description]');
       var visibility = document.querySelector('[data-auth-email-visibility]');
@@ -406,12 +407,16 @@
       document.querySelectorAll('[data-auth-email-registration], [data-auth-email-form-fields], [data-auth-email-settings]').forEach(function (section) {
         section.hidden = !hasEmail;
       });
-      if (description) { description.textContent = emailAndPhone ? 'Запрашивается только при выборе регистрации по email' : 'Логин и канал подтверждения регистрации по email'; }
-      if (visibility) { visibility.textContent = emailAndPhone ? 'В email-форме' : 'Показывается'; }
+      if (description) { description.textContent = phoneOnly ? 'Не используется для входа; можно добавить в профиле как контакт' : (emailAndPhone ? 'Запрашивается только при выборе регистрации по email' : 'Логин и канал подтверждения регистрации по email'); }
+      if (visibility) {
+        visibility.textContent = phoneOnly ? 'Только в профиле' : (emailAndPhone ? 'В email-форме' : 'Показывается');
+        visibility.classList.toggle('badge-blue', !phoneOnly);
+        visibility.classList.toggle('badge-gray', phoneOnly);
+      }
       if (required) {
-        required.textContent = emailAndPhone ? 'По выбору способа' : 'Обязательно';
-        required.classList.toggle('badge-blue', !emailAndPhone);
-        required.classList.toggle('badge-gray', emailAndPhone);
+        required.textContent = phoneOnly ? 'Необязательно' : (emailAndPhone ? 'По выбору способа' : 'Обязательно');
+        required.classList.toggle('badge-blue', !phoneOnly && !emailAndPhone);
+        required.classList.toggle('badge-gray', phoneOnly || emailAndPhone);
       }
     },
 
