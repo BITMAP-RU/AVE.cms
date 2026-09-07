@@ -19,7 +19,7 @@
 	return array(
 		'code' => 'updates',
 		'name' => 'Обновления',
-		'version' => '0.2.0',
+		'version' => '0.2.1',
 		'notifications' => array('provider' => array(\App\Adminx\Updates\NotificationProvider::class, 'items'), 'permission' => 'view_core_updates', 'sort_order' => 45),
 		'permissions' => array(
 			'key' => 'updates',
@@ -32,7 +32,7 @@
 			'priority' => 42,
 		),
 		'navigation' => array(
-			array('code' => 'core_updates', 'label' => 'Обновления', 'url' => '/system/updates', 'icon' => 'ti ti-refresh', 'permission' => 'view_core_updates', 'group' => 'Система', 'sort_order' => 38, 'match' => array('/system/updates')),
+			array('code' => 'core_updates', 'label' => 'Обновления', 'url' => '/system/updates', 'icon' => 'ti ti-refresh', 'permission' => 'view_core_updates', 'group' => 'Система', 'parent' => 'settings', 'sort_order' => 90, 'match' => array('/system/updates')),
 		),
 		'routes' => array(
 			array('GET', '/system/updates', array(\App\Adminx\Updates\Controller::class, 'index')),

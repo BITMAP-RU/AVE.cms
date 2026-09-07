@@ -18,6 +18,7 @@
 
 	use DB;
 	use App\Content\ContentTables;
+	use App\Content\Documents\DocumentVisibility;
 
 	class Repository
 	{
@@ -54,6 +55,8 @@
 				. ' FROM `' . $documents . '` doc'
 				. ' INNER JOIN `' . $rubrics . '` rub ON rub.Id = doc.rubric_id'
 				. " WHERE doc.document_status = '1' AND doc.document_deleted = '0'"
+				. " AND doc.document_in_sitemap = 1"
+				. ' AND ' . DocumentVisibility::publicSql('doc', 'rub')
 				. " AND doc.Id != '1' AND doc.Id != '" . (int) PAGE_NOT_FOUND_ID . "'"
 				. " AND doc.document_meta_robots NOT LIKE '%noindex%'"
 				. " AND (rub.rubric_template != '' OR EXISTS (SELECT 1 FROM `" . $templates . "` rt"

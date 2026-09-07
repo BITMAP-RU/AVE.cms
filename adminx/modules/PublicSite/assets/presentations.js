@@ -92,6 +92,12 @@
         self.save().catch(function () {});
       });
       setTimeout(function () { self.bindEditors(); }, 120);
+      this.openFromLocation();
+    },
+
+    openFromLocation: function () {
+      var id = Number(new URLSearchParams(window.location.search).get('edit'));
+      if (Number.isInteger(id) && id > 0) { this.open(id); }
     },
 
     base: function () { return this.form.getAttribute('data-base') || ''; },

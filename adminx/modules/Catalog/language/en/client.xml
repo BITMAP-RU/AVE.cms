@@ -20,6 +20,7 @@
 	<phrase data="auto_944019ea5d01e63a">hidden</phrase>
 	<phrase data="auto_9729bca62f6c558e">Request Error</phrase>
 	<phrase data="auto_99d406eeba4f9acb">Section</phrase>
+	<phrase data="auto_9b62723a4333bb4a">Find section</phrase>
 	<phrase data="auto_9f8bfc6bf2339426">&lt;div class=&quot;alert alert-error&quot;&gt;&lt;i class=&quot;ti ti-alert-triangle&quot;&gt;&lt;/i&gt;&lt;div&gt;Errors:</phrase>
 	<phrase data="auto_a456fd20d54a422c">&lt;/p&gt;&lt;/div&gt;&lt;button class=&quot;modal-close&quot; type=&quot;button&quot; data-catalog-recompile-close aria-label=&quot;Close&quot; disabled&gt;&lt;i class=&quot;ti ti-x&quot;&gt;&lt;/i&gt;&lt;/button&gt;&lt;/div&gt;&lt;div class=&quot;modal-body&quot;&gt;&lt;div class=&quot;catalog-recompile-status&quot; data-catalog-recompile-status&gt;Preparing...&lt;/div&gt;&lt;div class=&quot;progress&quot;&gt;&lt;div class=&quot;progress-bar&quot; data-catalog-recompile-progress style=&quot;width:0%;--progress-color:var(--blue-500)&quot;&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;catalog-recompile-errors&quot; data-catalog-recompile-errors&gt;&lt;/div&gt;&lt;/div&gt;&lt;div class=&quot;modal-footer&quot;&gt;&lt;button class=&quot;btn btn-ghost&quot; type=&quot;button&quot; data-catalog-recompile-stop&gt;Stop&lt;/button&gt;&lt;button class=&quot;btn btn-primary&quot; type=&quot;button&quot; data-catalog-recompile-close disabled&gt;Close&lt;/button&gt;&lt;/div&gt;&lt;/div&gt;</phrase>
 	<phrase data="auto_a4c0ae2fa076f2fd">Hide section</phrase>
@@ -36,6 +37,11 @@
 	<phrase data="auto_f61de80bf0ca15a4">No document selected</phrase>
 	<phrase data="auto_f6bde2876efe2658">Not included</phrase>
 	<phrase data="auto_fda18205701b609b">Replace condition?</phrase>
+	<phrase data="catalog_roles_more">more</phrase>
+	<phrase data="catalog_roles_no">No</phrase>
+	<phrase data="catalog_selection_catalog">Catalog</phrase>
+	<phrase data="catalog_selection_category">Category</phrase>
+	<phrase data="catalog_selection_search">Search</phrase>
 	<phrase data="runtime_6291ecb1784ea2de">Catalog created</phrase>
 	<phrase data="runtime_6b3607219bc8c7f0">different</phrase>
 	<phrase data="runtime_d0ef3540b088bbf6">Catalog</phrase>

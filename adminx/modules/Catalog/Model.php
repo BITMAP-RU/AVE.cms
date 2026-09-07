@@ -23,10 +23,14 @@
 	use App\Common\DatabaseSchema;
 	use App\Common\FileCacheInvalidator;
 	use App\Common\ModuleManager;
+	use App\Common\ModuleSettings;
+	use App\Common\Registry;
+	use App\Modules\Products\ProductRoles;
 	use App\Content\CatalogTables;
 	use App\Content\ContentTables;
 	use App\Content\Fields\FieldValueCodec;
 	use App\Content\Requests\RequestConditionValue;
+	use App\Frontend\Feeds\Service as FeedService;
 	use App\Helpers\Json;
 	use App\Adminx\Rubrics\Model as RubricsModel;
 	use App\Adminx\Documents\Model as DocumentsModel;
@@ -147,7 +151,20 @@
 
 		public static function saveSettings($rubricId, $fieldId, array $input)
 		{
+			if (DB::$transaction_in_progress) {
+				throw new \LogicException('Catalog settings must be saved outside an existing transaction');
+			}
+
+			$throwOnError = DB::$throw_exception_on_error;
+			DB::$throw_exception_on_error = true;
+			try { return self::saveSettingsOwned($rubricId, $fieldId, $input); }
+			finally { DB::$throw_exception_on_error = $throwOnError; }
+		}
+
+		protected static function saveSettingsOwned($rubricId, $fieldId, array $input)
+		{
 			self::requireCatalog($rubricId, $fieldId);
+			$existing = self::settings($rubricId, $fieldId);
 			$data = array();
 			$data['purpose'] = isset($input['purpose']) && $input['purpose'] === 'commerce' ? 'commerce' : 'content';
 			if ($data['purpose'] === 'commerce' && !self::productsAvailable()) {
@@ -162,7 +179,24 @@
 				throw new \InvalidArgumentException('У рубрики уже есть товарный каталог');
 			}
 
-			foreach(array('product_title_field_id','product_article_field_id','product_price_field_id','product_old_price_field_id','product_stock_field_id','product_images_field_id') as $key){$data[$key]=isset($input[$key])?max(0,(int)$input[$key]):0;if($data[$key]&&!DB::query('SELECT Id FROM '.self::fieldsTable().' WHERE Id=%i AND rubric_id=%i LIMIT 1',$data[$key],(int)$rubricId)->getValue()){throw new \InvalidArgumentException('Коммерческое поле не принадлежит рубрике');}}
+			foreach (array('product_title_field_id','product_article_field_id','product_price_field_id','product_old_price_field_id','product_stock_field_id','product_images_field_id') as $key) {
+				$data[$key] = isset($input[$key]) ? max(0, (int) $input[$key]) : (int) $existing[$key];
+				if (isset($input[$key]) && $data[$key] && !DB::query('SELECT Id FROM ' . self::fieldsTable() . ' WHERE Id=%i AND rubric_id=%i LIMIT 1', $data[$key], (int) $rubricId)->getValue()) {
+					throw new \InvalidArgumentException('Коммерческое поле не принадлежит рубрике');
+				}
+			}
+
+			$roleInput = null;
+			if ($data['purpose'] === 'commerce' && isset($input['product_roles']) && is_array($input['product_roles'])) {
+				$roleFields = ProductRoles::fields($rubricId);
+				$roleInput = array_replace(ProductRoles::configured($rubricId), ProductRoles::validate($input['product_roles'], $roleFields));
+				$roleSettings = self::settings($rubricId, $fieldId);
+				$resolved = ProductRoles::resolve($roleFields, $roleSettings, $roleInput);
+				foreach (ProductRoles::definitions() as $role => $definition) {
+					if (isset($definition['column'])) { $data[$definition['column']] = $resolved[$role]; }
+				}
+			}
+
 			$data['product_card_template_id'] = isset($input['product_card_template_id']) ? max(0, (int) $input['product_card_template_id']) : 0;
 			if ($data['product_card_template_id'] > 0 && !DB::query(
 				'SELECT id FROM ' . CatalogTables::table('catalog_card_templates') . ' WHERE id=%i LIMIT 1',
@@ -215,30 +249,41 @@
 				);
 			}
 
-			$existing = self::settings($rubricId, $fieldId);
-			if ((int) $existing['id'] > 0) {
-				DB::Update(self::settingsTable(), $data, 'id = %i', (int) $existing['id']);
-				if ($data['purpose'] !== $existing['purpose'] && self::productsAvailable()) {
-					try { ProductIndexer::rebuild(); }
-					catch (\Throwable $e) { DB::Update(self::settingsTable(), array('purpose'=>$existing['purpose']), 'id=%i', (int) $existing['id']); throw $e; }
+			$reindex = $data['purpose'] !== $existing['purpose'];
+			foreach ($data as $key => $value) {
+				if (preg_match('/^product_.*_field_id$/', $key) && (int) $value !== (int) $existing[$key]) { $reindex = true; }
+			}
+
+			if ($roleInput !== null && $resolved !== ProductRoles::resolve($roleFields, $existing, ProductRoles::configured($rubricId))) { $reindex = true; }
+			$registrySettings = Registry::get('settings');
+			DB::startTransaction();
+			try {
+				$settingsId = (int) $existing['id'];
+				if ($settingsId > 0) {
+					DB::Update(self::settingsTable(), $data, 'id=%i', $settingsId);
+				} else {
+					$data['rubric_id'] = (int) $rubricId;
+					$data['field_id'] = (int) $fieldId;
+					DB::Insert(self::settingsTable(), $data);
+					$settingsId = (int) DB::insertId();
 				}
 
-				Cache::forgetTag(CacheKey::tag('catalog'));
-				FileCacheInvalidator::publicPresentation();
-				return (int) $existing['id'];
+				if ($roleInput !== null) { ModuleSettings::set('field_roles_' . (int) $rubricId, $roleInput, 'products', 'json'); }
+				if (self::productsAvailable()) { ProductRoles::reset(); }
+				if ($reindex && self::productsAvailable()) { ProductIndexer::reindexRubric($rubricId, $existing['purpose'] === 'commerce' && $data['purpose'] === 'commerce'); }
+				DB::afterCommit(function () {
+					DB::clearTags(array('settings'));
+					Cache::forgetTag(CacheKey::tag('catalog'));
+					FileCacheInvalidator::publicPresentation();
+				});
+				DB::commit();
+			} catch (\Throwable $e) {
+				DB::rollback();
+				Registry::set('settings', $registrySettings);
+				if (self::productsAvailable()) { ProductRoles::reset(); }
+				throw $e;
 			}
 
-			$data['rubric_id'] = (int) $rubricId;
-			$data['field_id'] = (int) $fieldId;
-			DB::Insert(self::settingsTable(), $data);
-			$settingsId = (int) DB::insertId();
-			if ($data['purpose'] === 'commerce') {
-				try { ProductIndexer::rebuild(); }
-				catch (\Throwable $e) { DB::Delete(self::settingsTable(), 'id=%i', $settingsId); throw $e; }
-			}
-
-			Cache::forgetTag(CacheKey::tag('catalog'));
-			FileCacheInvalidator::publicPresentation();
 			return $settingsId;
 		}
 
@@ -358,6 +403,33 @@
 			return $tree;
 		}
 
+		public static function sourceOptions($rubricId, $fieldId)
+		{
+			$items = self::items($rubricId, $fieldId);
+			$map = array();
+			foreach ($items as $item) { $map[(int) $item['id']] = $item; }
+			$out = array();
+			foreach ($items as $item) {
+				$parts = array((string) $item['name']);
+				$parentId = (int) $item['parent_id'];
+				$visited = array((int) $item['id'] => true);
+				while ($parentId > 0 && isset($map[$parentId]) && empty($visited[$parentId])) {
+					$visited[$parentId] = true;
+					array_unshift($parts, (string) $map[$parentId]['name']);
+					$parentId = (int) $map[$parentId]['parent_id'];
+				}
+
+				$out[] = array(
+					'id' => (int) $item['id'],
+					'name' => (string) $item['name'],
+					'path' => implode(' / ', $parts),
+					'status' => (int) $item['status'],
+				);
+			}
+
+			return $out;
+		}
+
 		public static function item($id)
 		{
 			$row = DB::query(
@@ -385,6 +457,12 @@
 			if ($documentId > 0 && !self::documentExists($documentId)) { throw new \RuntimeException('Выбранный документ не найден'); }
 			$filterIds = self::ids(isset($input['filters_use']) ? $input['filters_use'] : array());
 			$filterIds = self::orderedIds(isset($input['filters_order']) ? $input['filters_order'] : array(), $filterIds);
+			$sourceIds = self::validSourceItemIds(
+				isset($input['source_item_ids']) ? $input['source_item_ids'] : array(),
+				$id,
+				$rubricId,
+				$fieldId
+			);
 			$data = array(
 				'rubric_id' => (int) $rubricId, 'field_id' => (int) $fieldId,
 				'name' => $name, 'parent_id' => $parentId,
@@ -396,6 +474,12 @@
 				'filters_use' => implode(',', $filterIds),
 				'filters_settings' => serialize(self::filterStyles(isset($input['filter_style']) ? $input['filter_style'] : array(), $filterIds)),
 			);
+			if (self::sourceItemsAvailable()) {
+				$data['source_item_ids'] = implode(',', $sourceIds);
+			} elseif ($sourceIds) {
+				throw new \RuntimeException('Сначала примените миграцию каталога для источников товаров');
+			}
+
 			if ($id > 0) {
 				DB::Update(self::itemsTable(), $data, 'id = %i', $id);
 			} else {
@@ -608,7 +692,7 @@
 			return array(
 				'total'=>0,'quality_total'=>0,'active'=>0,'inactive'=>0,'without_category'=>0,
 				'without_image'=>0,'without_article'=>0,'without_price'=>0,'without_stock'=>0,
-				'without_excerpt'=>0,'without_seo'=>0,'stale'=>0,'shipping_incomplete'=>0,
+				'without_description'=>0,'without_seo'=>0,'stale'=>0,'shipping_incomplete'=>0,
 				'shipping_disabled'=>0,'duplicate_articles'=>0,'legacy_attributes'=>0,
 				'filter_index_errors'=>0,'registration_incomplete'=>0,'without_video'=>0,
 				'variant_errors'=>0,'description_markup'=>0,'sfr'=>0,'issues'=>0,'recommendations'=>0,'indexed_at'=>0,
@@ -1084,6 +1168,7 @@
 		protected static function clearCache()
 		{
 			DB::clearTags(array('documents', 'requests', 'modules', 'catalog'));
+			(new FeedService())->clearAll();
 			Cache::forgetTag(CacheKey::tag('catalog'));
 		}
 
@@ -1123,6 +1208,28 @@
 		}
 
 		protected static function idsString($value) { return implode(',', self::ids($value)); }
+
+		public static function sourceItemsAvailable()
+		{
+			return DatabaseSchema::columnExists(self::itemsTable(), 'source_item_ids');
+		}
+
+		protected static function validSourceItemIds($value, $itemId, $rubricId, $fieldId)
+		{
+			$ids = array_values(array_diff(self::ids($value), array((int) $itemId)));
+			if (!$ids) { return array(); }
+			$rows = DB::query(
+				'SELECT id FROM ' . self::itemsTable()
+					. ' WHERE rubric_id=%i AND field_id=%i AND id IN (' . implode(',', $ids) . ')',
+				(int) $rubricId,
+				(int) $fieldId
+			)->getAll() ?: array();
+			$allowed = array();
+			foreach ($rows as $row) { $allowed[(int) $row['id']] = true; }
+			return array_values(array_filter($ids, function ($id) use ($allowed) {
+				return isset($allowed[(int) $id]);
+			}));
+		}
 
 		protected static function orderedIds($order, array $selected)
 		{
@@ -1164,6 +1271,7 @@
 				'level' => (int) $row['level'], 'position' => (int) $row['position'],
 				'fields_use' => self::ids(isset($row['fields_use']) ? $row['fields_use'] : ''),
 				'filters_use' => self::ids(isset($row['filters_use']) ? $row['filters_use'] : ''),
+				'source_item_ids' => self::ids(isset($row['source_item_ids']) ? $row['source_item_ids'] : ''),
 				'filter_styles' => is_array($styles) ? $styles : array(),
 				'attribute_set_id' => isset($row['attribute_set_id']) ? (int) $row['attribute_set_id'] : 0,
 				'attributes_runtime' => isset($row['attributes_runtime']) ? (string) $row['attributes_runtime'] : 'legacy',

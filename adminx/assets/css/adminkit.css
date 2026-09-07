@@ -537,6 +537,16 @@ hr {
 .notif-head b {
   font-size: 13px;
 }
+.notif-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.notif-head-actions .btn {
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+}
 .notif-list {
   max-height: 60vh;
   overflow-y: auto;
@@ -590,6 +600,66 @@ hr {
   font-size: 28px;
   margin-bottom: 6px;
   color: var(--color-success);
+}
+.notif-settings {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 6px;
+  background: var(--background-subtle);
+  border-top: 1px solid var(--border-default);
+}
+.notif-settings-copy {
+  padding: 8px 8px 6px;
+}
+.notif-settings-copy b,
+.notif-settings-copy small {
+  display: block;
+}
+.notif-settings-copy b {
+  font-size: 12px;
+}
+.notif-settings-copy small {
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+.notif-setting-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-card);
+  cursor: pointer;
+}
+.notif-setting-row + .notif-setting-row {
+  margin-top: 5px;
+}
+.notif-setting-row > span:first-child {
+  min-width: 0;
+}
+.notif-setting-row b,
+.notif-setting-row small {
+  display: block;
+}
+.notif-setting-row b {
+  font-size: 12.5px;
+}
+.notif-setting-row small {
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 10.5px;
+  line-height: 1.3;
+  text-wrap: pretty;
+}
+.notif-setting-row .switch {
+  min-width: 40px;
+  min-height: 40px;
+  justify-content: center;
 }
 /* Заголовок в меню пользователя */
 #userMenu > .dropdown-menu {
@@ -3137,18 +3207,27 @@ table.table {
   gap: 12px;
   padding: var(--space-5) var(--space-5) 0;
 }
+.modal-header > div {
+  min-width: 0;
+  flex: 1 1 auto;
+}
 .modal-header h3 {
   flex: 1;
 }
 .modal-close {
+  display: grid;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  place-items: center;
   border: none;
   background: none;
   cursor: pointer;
   color: var(--text-muted);
   font-size: 18px;
-  padding: 4px;
+  padding: 0;
   border-radius: var(--radius-xs);
-  margin: -4px -4px 0 0;
+  margin: -4px -4px 0 auto;
 }
 .modal-close:hover {
   color: var(--text-primary);

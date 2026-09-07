@@ -17,7 +17,7 @@
 	return array(
 		'code' => 'settings',
 		'name' => 'Настройки',
-		'version' => '0.1.2',
+		'version' => '0.1.4',
 
 		'permissions' => array(
 			'key' => 'settings',
@@ -54,6 +54,7 @@
 					'/settings',
 					'/security/ip-blocks',
 					'/system/console',
+					'/system/updates',
 				),
 			),
 			array(
@@ -185,6 +186,7 @@
 			array('POST', '/settings', array(\App\Adminx\Settings\Controller::class, 'save')),
 			array('POST', '/settings/interface', array(\App\Adminx\Settings\Controller::class, 'saveInterface')),
 			array('POST', '/settings/security', array(\App\Adminx\Settings\Controller::class, 'saveSecurity')),
+			array('POST', '/settings/notifications', array(\App\Adminx\Settings\Controller::class, 'saveNotificationPreference')),
 			array('GET', '/settings/paginations/{id}', array(\App\Adminx\Settings\Controller::class, 'pagination')),
 			array('POST', '/settings/paginations', array(\App\Adminx\Settings\Controller::class, 'savePagination')),
 			array('POST', '/settings/paginations/{id}', array(\App\Adminx\Settings\Controller::class, 'savePagination')),

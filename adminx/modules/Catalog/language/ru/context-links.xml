@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+  <phrase data="catalog_context_title">Связанные настройки</phrase>
+  <phrase data="catalog_context_filters">Фильтры раздела</phrase>
+  <phrase data="catalog_context_attribute_set">Набор характеристик</phrase>
+  <phrase data="catalog_context_card">Шаблон карточки в каталоге</phrase>
+  <phrase data="catalog_context_page">Шаблон страницы</phrase>
+</language>

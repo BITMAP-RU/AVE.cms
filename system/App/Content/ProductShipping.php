@@ -95,14 +95,16 @@
 			}
 
 			if (count($normalized) > 50) { throw new \InvalidArgumentException('У товара может быть не более 50 грузовых мест'); }
-			$now = time(); DB::startTransaction();
+			$now = time(); $owned = !DB::$transaction_in_progress;
+			if ($owned) { DB::startTransaction(); }
 			try {
 				DB::query('INSERT INTO ' . self::profilesTable() . ' (product_id,shipping_enabled,created_at,updated_at) VALUES (%i,%i,%i,%i)'
 					. ' ON DUPLICATE KEY UPDATE shipping_enabled=VALUES(shipping_enabled),updated_at=VALUES(updated_at)', $productId, $enabled ? 1 : 0, $now, $now);
 				DB::Delete(self::packagesTable(), 'product_id=%i', $productId);
 				foreach ($normalized as $row) { DB::Insert(self::packagesTable(), array_merge(array('product_id'=>$productId,'created_at'=>$now,'updated_at'=>$now), $row)); }
-				DB::commit();
-			} catch (\Throwable $e) { DB::rollback(); throw $e; }
+				if ($owned) { DB::commit(); }
+			} catch (\Throwable $e) { if ($owned) { DB::rollback(); } throw $e; }
+			ProductDerivedCacheInvalidator::invalidate(array($productId));
 			return self::profile($productId);
 		}
 
@@ -141,6 +143,7 @@
 				if (!DB::query('SELECT product_id FROM ' . CatalogTables::table('catalog_product_index') . ' WHERE product_id=%i LIMIT 1',$productId)->getValue()) { continue; }
 				DB::query('INSERT INTO ' . self::profilesTable() . ' (product_id,shipping_enabled,created_at,updated_at) VALUES (%i,%i,%i,%i)'
 					. ' ON DUPLICATE KEY UPDATE shipping_enabled=VALUES(shipping_enabled),updated_at=VALUES(updated_at)', $productId,$enabled?1:0,$now,$now); $done++;
+				ProductDerivedCacheInvalidator::invalidate(array($productId));
 			}
 
 			return $done;

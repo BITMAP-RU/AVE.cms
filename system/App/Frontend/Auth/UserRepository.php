@@ -29,7 +29,7 @@
 				return null;
 			}
 
-			$row = DB::query('SELECT * FROM `' . PublicUserTables::table('users') . '` WHERE LOWER(email)=LOWER(%s) AND deleted!=%s LIMIT 1', trim((string) $email), '1')->getAssoc();
+			$row = DB::query('SELECT * FROM `' . PublicUserTables::table('users') . '` WHERE LOWER(email)=LOWER(%s) AND COALESCE(deleted,0)!=%s LIMIT 1', trim((string) $email), '1')->getAssoc();
 			return $row ? (array) $row : null;
 		}
 
@@ -46,7 +46,7 @@
 
 			$row = DB::query(
 				'SELECT * FROM `' . PublicUserTables::table('users') . '`'
-					. ' WHERE phone_normalized=%s AND deleted!=%s LIMIT 1',
+					. ' WHERE phone_normalized=%s AND COALESCE(deleted,0)!=%s LIMIT 1',
 				$phone,
 				'1'
 			)->getAssoc();
@@ -59,7 +59,7 @@
 
 		public function find($id)
 		{
-			$row = DB::query('SELECT * FROM `' . PublicUserTables::table('users') . '` WHERE Id=%i AND deleted!=%s LIMIT 1', (int) $id, '1')->getAssoc();
+			$row = DB::query('SELECT * FROM `' . PublicUserTables::table('users') . '` WHERE Id=%i AND COALESCE(deleted,0)!=%s LIMIT 1', (int) $id, '1')->getAssoc();
 			return $row ? (array) $row : null;
 		}
 
@@ -239,7 +239,7 @@
 			}
 
 			$currentPhone = $current ? Phone::normalize(isset($current['phone']) ? $current['phone'] : '') : '';
-			if ($current && empty($current['email']) && !empty($current['phone_verified_at']) && $currentPhone !== $phone) {
+			if ($current && !empty($current['phone_verified_at']) && $currentPhone !== $phone) {
 				throw new \InvalidArgumentException('Подтверждённый телефон нельзя изменить без повторной проверки.');
 			}
 

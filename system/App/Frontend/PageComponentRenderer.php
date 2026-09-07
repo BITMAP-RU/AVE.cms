@@ -16,16 +16,31 @@
 
 	defined('BASEPATH') || die('Direct access to this location is not allowed.');
 
+	use App\Frontend\Media\ThumbnailUrl;
+
 	/** Renders nested public components before shell/meta tag replacement. */
 	class PageComponentRenderer
 	{
 		public function render($content, $documentId, $owner = null, $document = null)
 		{
 			$requestFields = new RequestFieldRenderer();
+			$documentFields = new DocumentFieldRenderer();
 			$requestItems = new RequestItemRenderer();
 			$requests = new RequestRenderer();
 			$blocks = new BlockRenderer();
 
+			$content = preg_replace_callback(
+				'/\[tag:fld:([a-zA-Z0-9-_]+)]\[img]/',
+				function ($match) use ($documentId, $requestFields) {
+					return $requestFields->render(
+						$match[1],
+						$documentId,
+						'img',
+						defined('RUB_ID') ? RUB_ID : 0
+					);
+				},
+				(string) $content
+			);
 			$content = preg_replace_callback(
 				'/\[tag:rfld:([a-zA-Z0-9-_]+)]\[(more|esc|img|[0-9-]+)]/',
 				function ($match) use ($documentId, $requestFields) {
@@ -36,9 +51,22 @@
 						defined('RUB_ID') ? RUB_ID : 0
 					);
 				},
-				(string) $content
+				$content
 			);
+			$content = preg_replace_callback(
+				'/\[tag:fld:([a-zA-Z0-9-_]+)(|[:(\d)])+?\]/',
+				function ($match) use ($documentId, $documentFields) {
+					return $documentFields->render($match, $documentId);
+				},
+				$content
+			);
+			$content = preg_replace('/\[tag:fld:\w*\]/', '', $content);
 			$content = preg_replace('/\[tag:rfld:\w*\]/', '', $content);
+			$content = preg_replace_callback(
+				'/\[tag:([rcfts]\d+x\d+r*):(.*?)]/',
+				array(ThumbnailUrl::class, 'fromTag'),
+				$content
+			);
 			$content = $this->renderPrintConditions($content);
 
 			$content = preg_replace_callback(

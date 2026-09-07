@@ -62,6 +62,7 @@
 	//-- Ядро: автозагрузчик, БД, сессии, настройки, Twig, хуки.
 	include BASEPATH . DS . 'system' . DS . 'bootstrap.php';
 	App::init();
+	\App\Common\ResponseSecurityHeaders::apply(array('http://127.0.0.1:*', 'http://localhost:*'));
 
 	use App\Common\AdminAssets;
 	use App\Common\Auth;
@@ -207,6 +208,20 @@
 		}
 	}
 
+	if (isset($navFlat['modules']['children'])) {
+		usort($navFlat['modules']['children'], function ($left, $right) {
+			$leftRegistry = isset($left['code']) && (string) $left['code'] === 'modules_registry';
+			$rightRegistry = isset($right['code']) && (string) $right['code'] === 'modules_registry';
+			if ($leftRegistry !== $rightRegistry) { return $leftRegistry ? -1 : 1; }
+			$leftLabel = isset($left['label']) ? (string) $left['label'] : '';
+			$rightLabel = isset($right['label']) ? (string) $right['label'] : '';
+			$leftCyrillic = preg_match('/^\p{Cyrillic}/u', $leftLabel) === 1;
+			$rightCyrillic = preg_match('/^\p{Cyrillic}/u', $rightLabel) === 1;
+			if ($leftCyrillic !== $rightCyrillic) { return $leftCyrillic ? -1 : 1; }
+			return strnatcasecmp($leftLabel, $rightLabel);
+		});
+	}
+
 	$commandPaletteItems = array();
 	foreach ($navigationItems as $navItem) {
 		if (!isset($navItem['url']) || (string) $navItem['url'] === '#') { continue; }
@@ -249,7 +264,9 @@
 
 	//-- Сводка уведомлений в шапке (новые заказы/письма) — только для админа.
 	$notifications = array('total' => 0, 'orders' => 0, 'messages' => 0, 'items' => array());
+	$notificationPreferences = array();
 	if ($canAdmin) {
+		$notificationPreferences = \App\Adminx\Support\ModuleExtensions::notificationPreferences();
 		$notificationKey = 'adminx.notifications.' . (int) Auth::id() . '.' . md5((string) ADMINX_BASE);
 		$notifications = Cache::remember($notificationKey, 15, function () {
 			$summary = \App\Adminx\Support\Notifications::summary(ADMINX_BASE);
@@ -257,7 +274,11 @@
 		});
 	}
 
-	Twig::addGlobal('notifications', $notifications);
+	Twig::addGlobals(array(
+		'notifications' => $notifications,
+		'notification_preferences' => $notificationPreferences,
+		'can_manage_notification_preferences' => Permission::check('manage_settings'),
+	));
 
 	if (!$isPublic && !$canAdmin) {
 		if (Request::isAjax()) {

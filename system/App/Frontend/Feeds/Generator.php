@@ -17,6 +17,7 @@
 	defined('BASEPATH') || die('Direct access to this location is not allowed.');
 
 	use App\Content\Fields\FieldValueCodec;
+	use App\Content\Fields\HtmlSanitizer;
 	use DB;
 
 	class Generator
@@ -49,7 +50,7 @@
 		protected function writeOffer(\XMLWriter $writer, array $feed, array $product)
 		{
 			$map = $feed['mappings']; $price = $this->value(isset($map['price']) ? $map['price'] : 'index:price', $product, $feed);
-			if ((float) $price < (float) $feed['min_price']) { return false; }
+			if ((float) $price > 0 && (float) $price < (float) $feed['min_price']) { return false; }
 			$writer->startElement('offer'); $writer->writeAttribute('id', (string) $product['product_id']); $writer->writeAttribute('available', (float) $product['stock'] > 0 ? 'true' : 'false');
 			$this->element($writer, 'url', $this->value(isset($map['url']) ? $map['url'] : 'document:url', $product, $feed));
 			$this->element($writer, 'price', $price); $old = $this->value(isset($map['oldprice']) ? $map['oldprice'] : 'index:old_price', $product, $feed); if ((float) $old > 0) { $this->element($writer, 'oldprice', $old); }
@@ -60,8 +61,27 @@
 				$this->element($writer, 'name', $this->value(isset($map['name']) ? $map['name'] : 'index:title', $product, $feed));
 				$vendor = $this->value(isset($map['vendor']) ? $map['vendor'] : 'static:' . $feed['site_name'], $product, $feed); if ($vendor !== '') { $this->element($writer, 'vendor', $vendor); }
 				$this->element($writer, 'vendorCode', $this->value(isset($map['vendorCode']) ? $map['vendorCode'] : 'index:article', $product, $feed));
-				$description = $this->value(isset($map['description']) ? $map['description'] : '', $product, $feed); if ($description !== '') { $writer->startElement('description'); $writer->writeCdata($this->clean($description)); $writer->endElement(); }
-				foreach ($feed['params'] as $param) { $fieldId = isset($param['field_id']) ? (int) $param['field_id'] : 0; $value = $fieldId && isset($product['fields'][$fieldId]) ? $this->clean($product['fields'][$fieldId]) : ''; if ($value === '' && !empty($param['skip_empty'])) { continue; } $writer->startElement('param'); $writer->writeAttribute('name', isset($param['name']) ? $param['name'] : 'Поле ' . $fieldId); if (!empty($param['unit'])) { $writer->writeAttribute('unit', $param['unit']); } $writer->text($value); $writer->endElement(); }
+				$description = $this->value(isset($map['description']) ? $map['description'] : '', $product, $feed); if ($description !== '') { $writer->startElement('description'); $writer->writeCdata($this->description($description)); $writer->endElement(); }
+				foreach ($feed['params'] as $param) {
+					$attributeId = isset($param['attribute_id']) ? (int) $param['attribute_id'] : 0;
+					$fieldId = isset($param['field_id']) ? (int) $param['field_id'] : 0;
+					if ($attributeId > 0) {
+						$value = isset($product['attributes'][$attributeId])
+							? $this->clean($product['attributes'][$attributeId])
+							: '';
+					} else {
+						$value = $fieldId && isset($product['fields'][$fieldId])
+							? $this->clean($product['fields'][$fieldId])
+							: '';
+					}
+
+					if ($value === '' && !empty($param['skip_empty'])) { continue; }
+					$writer->startElement('param');
+					$writer->writeAttribute('name', isset($param['name']) ? $param['name'] : 'Характеристика');
+					if (!empty($param['unit'])) { $writer->writeAttribute('unit', $param['unit']); }
+					$writer->text($value);
+					$writer->endElement();
+				}
 			} else { $this->element($writer, 'name', $this->value(isset($map['name']) ? $map['name'] : 'index:title', $product, $feed)); $this->element($writer, 'vendorCode', $this->value(isset($map['vendorCode']) ? $map['vendorCode'] : 'index:article', $product, $feed)); }
 			$writer->endElement(); return true;
 		}
@@ -86,6 +106,7 @@
 		}
 
 		protected function absolute($path, array $feed) { return preg_match('#^https?://#i', (string) $path) ? $path : rtrim($feed['base_url'], '/') . '/' . ltrim($path, '/'); }
+		protected function description($value) { return trim(HtmlSanitizer::clean((string) $value)); }
 		protected function clean($value) { return trim(html_entity_decode(strip_tags((string) $value), ENT_QUOTES, 'UTF-8')); }
 		protected function element(\XMLWriter $writer, $name, $value) { if ((string) $value === '') { return; } $writer->writeElement($name, (string) $value); }
 		protected function record($feedId, $status, $offers, $skipped, $bytes, $started, $message) { DB::Insert(Schema::table('runs'), array('feed_id'=>(int)$feedId,'status'=>$status,'offers_count'=>(int)$offers,'skipped_count'=>(int)$skipped,'bytes'=>(int)$bytes,'duration_ms'=>(int)round((microtime(true)-$started)*1000),'message'=>(string)$message,'created_at'=>time())); }

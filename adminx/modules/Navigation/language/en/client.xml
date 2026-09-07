@@ -3,18 +3,22 @@
 	<phrase data="auto_11609834a799e96c">editing</phrase>
 	<phrase data="auto_141924f7e6e6cff8">Menu item</phrase>
 	<phrase data="auto_1a4a85e95ad35531">Menu structure</phrase>
+	<phrase data="auto_1e9b9882dbfae49a">Access groups</phrase>
 	<phrase data="auto_22b85f14d5be7427">Drag item</phrase>
 	<phrase data="auto_29d2f0e6febdd8f5">Check item fields</phrase>
+	<phrase data="auto_2b7bc3187b5e647a">Unfolding</phrase>
 	<phrase data="auto_32b74a3c47908c1e">Untitled</phrase>
 	<phrase data="auto_3697bef0b3fc93f5">new</phrase>
 	<phrase data="auto_3757f7f85265ba50">Menu root</phrase>
 	<phrase data="auto_42039dbdd60cceb2">Check the form fields</phrase>
 	<phrase data="auto_4297c5c52ad0e7c1">Alias saved</phrase>
+	<phrase data="auto_50fa71be94dbeb13">Level 1</phrase>
 	<phrase data="auto_542e162a598ab71f">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm navigation-action-level&quot; type=&quot;button&quot; data-navigation-item-indent=&quot;1&quot; data-tooltip=&quot;Increase level&quot; aria-label=&quot;Increase level&quot;&gt;&lt;i class=&quot;ti ti-indent-increase&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
 	<phrase data="auto_650078bec041bcf9">Failed to load item</phrase>
 	<phrase data="auto_68ee41202091a86a">(copy)</phrase>
 	<phrase data="auto_6f6792553955fa39">New menu item</phrase>
 	<phrase data="auto_710b4d61663b2ab5">Drag</phrase>
+	<phrase data="auto_71a2dbf76a91220d">Level 3</phrase>
 	<phrase data="auto_7287413ae60a4181">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm navigation-action-level&quot; type=&quot;button&quot; data-navigation-item-indent=&quot;-1&quot; data-tooltip=&quot;Decrease level&quot; aria-label=&quot;Decrease level&quot;&gt;&lt;i class=&quot;ti ti-indent-decrease&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
 	<phrase data="auto_73dfa7ea85e8eb75">Alias</phrase>
 	<phrase data="auto_7e8692a57c2aa378">groups</phrase>
@@ -35,6 +39,7 @@
 	<phrase data="auto_c2b70c3bb20678a7">Failed to apply filters</phrase>
 	<phrase data="auto_c610cbf449544098">not selected</phrase>
 	<phrase data="auto_c6a433696290fb08">Select at least one group</phrase>
+	<phrase data="auto_cd0b995b4ac664c4">Level 2</phrase>
 	<phrase data="auto_d09bf6d4c36412be">&quot; data-tooltip=&quot;On/Off&quot; aria-label=&quot;On/Off&quot;&gt;&lt;i class=&quot;ti ti-power&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
 	<phrase data="auto_d32b8258ca6f9d3e">&quot; data-tooltip=&quot;Change&quot; aria-label=&quot;Change&quot;&gt;&lt;i class=&quot;ti ti-pencil&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
 	<phrase data="auto_d7d9310af67c647b">Select image</phrase>

@@ -396,6 +396,52 @@ To associate a service with a payment option:
 If the service is not selected, the method is considered payment without online transfer: for example,
 in cash, by card upon receipt or by bank transfer.
 
+## Abandoned carts and archive
+
+Open `Store -> Orders -> Abandoned carts` and select **Archive with contacts**
+in the state filter above the table. The view button opens the saved customer
+details, cart contents and traffic attribution, including any captured UTM tags.
+
+After three days without activity, carts with saved customer data move to the
+archive during cleanup. **Process overdue carts** runs this operation manually.
+Archived records are exempt from the regular cart retention period.
+
+**Path to order** covers sessions created in the last 30 days, including those
+that resulted in an order. The table filters do not restrict these counters.
+The contact counter records entry of a first name, last name, email or phone.
+Choosing delivery or payment does not imply that contacts were entered, and an
+empty phone mask does not count. Partial input counts, so this is not the number
+of completed forms or customers with a callable phone number.
+
+## Payment Attempts And Order Statuses
+
+Starting payment again first checks the existing attempt. A pending payment
+reuses its confirmation link; an ambiguous network failure reuses its original
+idempotency key. A new attempt starts after a confirmed cancellation. Previous
+attempts retain their order association. A late pending response cannot remove
+a confirmed paid flag. Cancelled orders cannot start payment.
+
+An order with an ongoing payment cannot have its amount or contents changed
+until that payment is checked. Each gateway declares additional required
+customer fields, such as email. Checkout and online payments currently use RUB;
+the feed currency neither changes the order currency nor converts its prices.
+
+Under `Shop -> Settings -> Statuses`, assign each status a stable purpose:
+new, processing, shipped, completed, cancelled, or other. Renaming a status does
+not change its behavior. Review the purpose of custom statuses after upgrading.
+
+## Checkout And Archived Carts
+
+Checkout checks current product publication and prices. Changed prices require
+the customer to confirm the recalculated cart; unavailable items must be removed.
+Submitting the same checkout again returns the existing order instead of
+creating a duplicate.
+
+The abandoned-cart table provides pagination while retaining filters and sort
+direction. Retention applies to the cart as a whole, so older lines do not expire
+individually in an active cart. Adding a product after checkout or archiving
+starts a new cart without overwriting the previous contact and traffic snapshot.
+
 ## Public pages
 
 Addresses for cart, checkout, favorites, viewed items and personal orders

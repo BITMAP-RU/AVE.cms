@@ -201,7 +201,7 @@
 		protected static function publicById($id)
 		{
 			$row = DB::query(
-				'SELECT * FROM ' . PublicUserTables::table('users') . ' WHERE Id = %i AND deleted != %s LIMIT 1',
+				'SELECT * FROM ' . PublicUserTables::table('users') . ' WHERE Id = %i AND COALESCE(deleted,0) != %s LIMIT 1',
 				(int) $id,
 				'1'
 			)->getAssoc();
@@ -217,7 +217,7 @@
 		protected static function publicByEmail($email)
 		{
 			$row = DB::query(
-				'SELECT * FROM ' . PublicUserTables::table('users') . ' WHERE LOWER(email) = LOWER(%s) AND deleted != %s LIMIT 1',
+				'SELECT * FROM ' . PublicUserTables::table('users') . ' WHERE LOWER(email) = LOWER(%s) AND COALESCE(deleted,0) != %s LIMIT 1',
 				trim((string) $email),
 				'1'
 			)->getAssoc();

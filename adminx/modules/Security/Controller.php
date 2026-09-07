@@ -23,16 +23,25 @@
 	use App\Common\IpBlocker;
 	use App\Common\Permission;
 	use App\Helpers\Request;
+	use App\Helpers\Response;
 
 	class Controller extends BaseController
 	{
 		public function index(array $params = array())
 		{
+			if (!Permission::check('view_ip_blocks')) {
+				Response::forbidden();
+				return '';
+			}
+
+			$type = Request::getStr('type', 'ip') === 'user_agent' ? 'user_agent' : 'ip';
+			$query = Request::getStr('q', '');
 			AdminAssets::addStyle($this->base() . '/modules/Security/assets/security.css', 50);
 			AdminAssets::addScript($this->base() . '/modules/Security/assets/security.js', 50);
 			return $this->render('@security/index.twig', array(
-				'rows' => IpBlocker::all(Request::getStr('q', '')),
-				'q' => Request::getStr('q', ''),
+				'rows' => $type === 'user_agent' ? IpBlocker::allUserAgents($query) : IpBlocker::all($query),
+				'q' => $query,
+				'active_type' => $type,
 				'current_ip' => Request::ip(),
 				'can_manage' => Permission::check('manage_ip_blocks'),
 			));
@@ -61,6 +70,41 @@
 			IpBlocker::unblock($id);
 			AuditLog::record('security.ip_unblocked', array('actor_id' => Auth::id(), 'target_type' => 'ip_block', 'target_id' => $id));
 			return $this->success('IP-адрес разблокирован', array('redirect' => $this->base() . '/security/ip-blocks'));
+		}
+
+		public function blockUserAgent(array $params = array())
+		{
+			if (($guard = $this->guard()) !== null) { return $guard; }
+			try {
+				$pattern = Request::postStr('pattern', '');
+				$matchType = Request::postStr('match_type', 'contains');
+				$reason = Request::postStr('reason', '');
+				$hours = Request::postInt('hours', 0);
+				$expires = $hours > 0 ? time() + min($hours, 87600) * 3600 : null;
+				$row = IpBlocker::blockUserAgent($pattern, $reason, $expires, Auth::id(), $matchType);
+				AuditLog::record('security.user_agent_blocked', array(
+					'actor_id' => Auth::id(), 'target_type' => 'user_agent', 'target_id' => $pattern,
+					'meta' => array('reason' => $reason, 'expires_at' => $expires, 'match_type' => $matchType),
+				));
+				return $this->success('User-Agent заблокирован', array(
+					'redirect' => $this->base() . '/security/ip-blocks?type=user_agent', 'data' => array('block' => $row),
+				));
+			} catch (\Throwable $e) {
+				return $this->error($e->getMessage(), array(), 422);
+			}
+		}
+
+		public function unblockUserAgent(array $params = array())
+		{
+			if (($guard = $this->guard()) !== null) { return $guard; }
+			$id = isset($params['id']) ? (int) $params['id'] : 0;
+			IpBlocker::unblockUserAgent($id);
+			AuditLog::record('security.user_agent_unblocked', array(
+				'actor_id' => Auth::id(), 'target_type' => 'user_agent_block', 'target_id' => $id,
+			));
+			return $this->success('User-Agent разблокирован', array(
+				'redirect' => $this->base() . '/security/ip-blocks?type=user_agent',
+			));
 		}
 
 		protected function guard()

@@ -3,18 +3,22 @@
 	<phrase data="auto_11609834a799e96c">редактирование</phrase>
 	<phrase data="auto_141924f7e6e6cff8">Пункт меню</phrase>
 	<phrase data="auto_1a4a85e95ad35531">Структура меню</phrase>
+	<phrase data="auto_1e9b9882dbfae49a">Группы доступа</phrase>
 	<phrase data="auto_22b85f14d5be7427">Перетащить пункт</phrase>
 	<phrase data="auto_29d2f0e6febdd8f5">Проверьте поля пункта</phrase>
+	<phrase data="auto_2b7bc3187b5e647a">Разворачивание</phrase>
 	<phrase data="auto_32b74a3c47908c1e">Без названия</phrase>
 	<phrase data="auto_3697bef0b3fc93f5">новый</phrase>
 	<phrase data="auto_3757f7f85265ba50">Корень меню</phrase>
 	<phrase data="auto_42039dbdd60cceb2">Проверьте поля формы</phrase>
 	<phrase data="auto_4297c5c52ad0e7c1">Алиас сохранён</phrase>
+	<phrase data="auto_50fa71be94dbeb13">Уровень 1</phrase>
 	<phrase data="auto_542e162a598ab71f">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm navigation-action-level&quot; type=&quot;button&quot; data-navigation-item-indent=&quot;1&quot; data-tooltip=&quot;Увеличить уровень&quot; aria-label=&quot;Увеличить уровень&quot;&gt;&lt;i class=&quot;ti ti-indent-increase&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
 	<phrase data="auto_650078bec041bcf9">Не удалось загрузить пункт</phrase>
 	<phrase data="auto_68ee41202091a86a">(копия)</phrase>
 	<phrase data="auto_6f6792553955fa39">Новый пункт меню</phrase>
 	<phrase data="auto_710b4d61663b2ab5">Перетащить</phrase>
+	<phrase data="auto_71a2dbf76a91220d">Уровень 3</phrase>
 	<phrase data="auto_7287413ae60a4181">&lt;button class=&quot;btn btn-ghost btn-icon btn-sm navigation-action-level&quot; type=&quot;button&quot; data-navigation-item-indent=&quot;-1&quot; data-tooltip=&quot;Уменьшить уровень&quot; aria-label=&quot;Уменьшить уровень&quot;&gt;&lt;i class=&quot;ti ti-indent-decrease&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
 	<phrase data="auto_73dfa7ea85e8eb75">Алиас</phrase>
 	<phrase data="auto_7e8692a57c2aa378">группы</phrase>
@@ -35,6 +39,7 @@
 	<phrase data="auto_c2b70c3bb20678a7">Не удалось применить фильтры</phrase>
 	<phrase data="auto_c610cbf449544098">не выбран</phrase>
 	<phrase data="auto_c6a433696290fb08">Выберите хотя бы одну группу</phrase>
+	<phrase data="auto_cd0b995b4ac664c4">Уровень 2</phrase>
 	<phrase data="auto_d09bf6d4c36412be">&quot; data-tooltip=&quot;Вкл/выкл&quot; aria-label=&quot;Вкл/выкл&quot;&gt;&lt;i class=&quot;ti ti-power&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
 	<phrase data="auto_d32b8258ca6f9d3e">&quot; data-tooltip=&quot;Изменить&quot; aria-label=&quot;Изменить&quot;&gt;&lt;i class=&quot;ti ti-pencil&quot;&gt;&lt;/i&gt;&lt;/button&gt;</phrase>
 	<phrase data="auto_d7d9310af67c647b">Выбрать изображение</phrase>

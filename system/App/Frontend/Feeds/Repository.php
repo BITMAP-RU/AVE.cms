@@ -18,6 +18,7 @@
 
 	use App\Content\CatalogTables;
 	use App\Content\ContentTables;
+	use App\Common\DatabaseSchema;
 	use DB;
 
 	class Repository
@@ -78,16 +79,64 @@
 
 		public function products(array $feed, $limit = 0)
 		{
+			$rows = $this->productRows($feed, $limit);
+			return $rows ? $this->attachAttributes($this->attachFields($rows, $feed), $feed) : array();
+		}
+
+		/** Same selection as export, without field hydration or XML generation. */
+		public function containsProduct(array $feed, $productId)
+		{
+			return (int) $productId > 0 && count($this->productRows($feed, 1, (int) $productId)) > 0;
+		}
+
+		protected function productRows(array $feed, $limit = 0, $productId = 0)
+		{
 			$selected = $this->selectedCategoryIds($feed);
-			$where = 'p.is_active=1 AND p.is_deleted=0 AND p.is_hidden=0 AND p.price>=%s';
-			$args = array((string) $feed['min_price']);
+			if (!$selected) { return array(); }
+			$conditions = $this->conditions($feed);
+			$where = 'p.is_active=1 AND p.is_deleted=0 AND p.is_hidden=0';
+			if (class_exists('App\\Modules\\Products\\ProductSnapshot')) {
+				$where .= ' AND ' . \App\Modules\Products\ProductSnapshot::publishedSql('p');
+			}
+
+			$args = array();
+			$priceRules = array();
+			if ($conditions['include_with_price']) {
+				$minimum = max(0, (float) $feed['min_price']);
+				if ($minimum > 0) {
+					$priceRules[] = 'p.price>=%s';
+					$args[] = (string) $minimum;
+				} else {
+					$priceRules[] = 'p.price>0';
+				}
+			}
+
+			if ($conditions['include_without_price']) { $priceRules[] = 'p.price<=0'; }
+			if (!$priceRules) { return array(); }
+			$where .= ' AND (' . implode(' OR ', $priceRules) . ')';
+			if ($conditions['include_in_price'] !== $conditions['include_not_in_price']) {
+				$notInPrice = 'EXISTS (SELECT 1 FROM ' . ContentTables::table('document_fields') . ' np'
+					. ' INNER JOIN ' . ContentTables::table('rubric_fields') . ' nrf'
+					. ' ON nrf.Id=np.rubric_field_id AND nrf.rubric_field_alias=%s'
+					. ' WHERE np.document_id=p.product_id AND ('
+					. 'COALESCE(np.field_number_value,0)>0 OR LOWER(TRIM(np.field_value)) IN (\'1\',\'true\',\'on\',\'yes\')))';
+				if (class_exists('App\\Modules\\Products\\ProductRoles')) {
+					$notInPrice = \App\Modules\Products\ProductRoles::enabledSql('exclude_from_price', 'p');
+				} else {
+					$args[] = 'noprice';
+				}
+
+				$where .= $conditions['include_not_in_price'] ? ' AND (' . $notInPrice . ')' : ' AND NOT (' . $notInPrice . ')';
+			}
+
 			if ((int) $feed['rubric_id'] > 0) { $where .= ' AND p.rubric_id=%i'; $args[] = (int) $feed['rubric_id']; }
 			if ($selected) { $where .= ' AND EXISTS (SELECT 1 FROM ' . CatalogTables::table('catalog_category_products') . ' cp WHERE cp.product_id=p.product_id AND cp.catalog_item_id IN (' . implode(',', $selected) . '))'; }
 			$categoryProjection = $selected ? ',(SELECT cp.catalog_item_id FROM ' . CatalogTables::table('catalog_category_products') . ' cp WHERE cp.product_id=p.product_id AND cp.catalog_item_id IN (' . implode(',', $selected) . ') ORDER BY cp.is_primary DESC,cp.position,cp.catalog_item_id LIMIT 1) feed_category_id' : ',0 feed_category_id';
+			if ((int) $productId > 0) { $where .= ' AND p.product_id=%i'; $args[] = (int) $productId; }
 			$sql = 'SELECT p.*' . $categoryProjection . ' FROM ' . CatalogTables::table('catalog_product_index') . ' p WHERE ' . $where . ' ORDER BY p.position,p.product_id';
 			if ((int) $limit > 0) { $sql .= ' LIMIT ' . (int) $limit; }
 			$rows = call_user_func_array(array('DB', 'query'), array_merge(array($sql), $args))->getAll() ?: array();
-			return $this->attachFields($rows, $feed);
+			return $rows;
 		}
 
 		public function outputCategories(array $feed)
@@ -165,11 +214,130 @@
 			return $products;
 		}
 
+		protected function attachAttributes(array $products, array $feed)
+		{
+			if (!$products) { return array(); }
+			$attributeIds = array();
+			foreach ($feed['params'] as $param) {
+				if (!empty($param['attribute_id'])) { $attributeIds[] = (int) $param['attribute_id']; }
+			}
+
+			$attributeIds = array_values(array_unique(array_filter($attributeIds)));
+			if (!$attributeIds) {
+				foreach ($products as &$product) { $product['attributes'] = array(); }
+				unset($product);
+				return $products;
+			}
+
+			$productIds = array_map('intval', array_column($products, 'product_id'));
+			$rows = DB::query(
+				'SELECT v.document_id,v.attribute_id,v.value_json,v.value_string,v.value_number,a.value_type'
+					. ' FROM ' . CatalogTables::table('catalog_product_attribute_values') . ' v'
+					. ' INNER JOIN ' . CatalogTables::table('catalog_attributes') . ' a ON a.id=v.attribute_id AND a.status=1'
+					. ' WHERE v.state=%s AND v.document_id IN (' . implode(',', $productIds) . ')'
+					. ' AND v.attribute_id IN (' . implode(',', $attributeIds) . ')',
+				'verified'
+			)->getAll() ?: array();
+			$options = $this->attributeOptions($rows);
+			$values = array();
+			foreach ($rows as $row) {
+				$row['options'] = isset($options[(int) $row['attribute_id']]) ? $options[(int) $row['attribute_id']] : array();
+				$values[(int) $row['document_id']][(int) $row['attribute_id']] = $this->attributeValue($row);
+			}
+
+			foreach ($products as &$product) {
+				$product['attributes'] = isset($values[(int) $product['product_id']])
+					? $values[(int) $product['product_id']]
+					: array();
+			}
+
+			unset($product);
+			return $products;
+		}
+
+		protected function attributeOptions(array $rows)
+		{
+			$ids = array();
+			foreach ($rows as $row) {
+				if (in_array($row['value_type'], array('choice', 'multi_choice'), true) && trim((string) $row['value_string']) === '') {
+					$ids[] = (int) $row['attribute_id'];
+				}
+			}
+
+			$table = CatalogTables::table('catalog_attribute_options');
+			if (!$ids || !DatabaseSchema::tableExists($table)) { return array(); }
+			$options = DB::query('SELECT attribute_id,value_key,label FROM ' . $table
+				. ' WHERE attribute_id IN (' . implode(',', array_unique($ids)) . ') ORDER BY position,id')->getAll() ?: array();
+			$result = array();
+			foreach ($options as $option) {
+				$result[(int) $option['attribute_id']][(string) $option['value_key']] = (string) $option['label'];
+			}
+
+			return $result;
+		}
+
+		protected function attributeValue(array $row)
+		{
+			if (class_exists(\App\Modules\Products\AttributeValueFormatter::class)) {
+				return \App\Modules\Products\AttributeValueFormatter::format($row, isset($row['options']) && is_array($row['options']) ? $row['options'] : array());
+			}
+
+			$value = trim(isset($row['value_string']) ? (string) $row['value_string'] : '');
+			$decoded = json_decode(isset($row['value_json']) ? (string) $row['value_json'] : '', true);
+			if (isset($row['value_type']) && (string) $row['value_type'] === 'boolean') {
+				if ($value === '' && $decoded === null && !isset($row['value_number'])) { return ''; }
+				$enabled = (isset($row['value_number']) && (float) $row['value_number'] > 0)
+					|| in_array(strtolower($value), array('1', 'true', 'on', 'yes', 'да'), true)
+					|| $decoded === true || $decoded === 1 || $decoded === '1';
+				return $enabled ? 'Да' : 'Нет';
+			}
+
+			if ($value !== '') { return $value; }
+			$options = isset($row['options']) && in_array(isset($row['value_type']) ? $row['value_type'] : '', array('choice', 'multi_choice'), true)
+				? $row['options'] : array();
+			if (is_array($decoded)) {
+				$flat = array();
+				array_walk_recursive($decoded, function ($item) use (&$flat, $options) {
+					if (is_scalar($item) && trim((string) $item) !== '') {
+						$key = trim((string) $item);
+						$flat[] = isset($options[$key]) ? $options[$key] : $key;
+					}
+				});
+				if ($flat) { $value = implode(', ', array_values(array_unique($flat))); }
+			} elseif (is_scalar($decoded) && trim((string) $decoded) !== '') {
+				$key = trim((string) $decoded);
+				$value = isset($options[$key]) ? $options[$key] : $key;
+			}
+
+			if ($value === '' && isset($row['value_number']) && $row['value_number'] !== null) {
+				$value = (string) $row['value_number'];
+				if (strpos($value, '.') !== false && stripos($value, 'e') === false) {
+					$value = rtrim(rtrim($value, '0'), '.');
+				}
+			}
+
+			return $value;
+		}
+
+		protected function conditions(array $feed)
+		{
+			$stored = isset($feed['conditions']) && is_array($feed['conditions']) ? $feed['conditions'] : array();
+			return array(
+				'include_with_price' => array_key_exists('include_with_price', $stored) ? !empty($stored['include_with_price']) : true,
+				'include_without_price' => array_key_exists('include_without_price', $stored) ? !empty($stored['include_without_price']) : false,
+				'include_in_price' => array_key_exists('include_in_price', $stored) ? !empty($stored['include_in_price']) : true,
+				'include_not_in_price' => array_key_exists('include_not_in_price', $stored) ? !empty($stored['include_not_in_price']) : false,
+			);
+		}
+
 		protected function hydrate(array $row)
 		{
 			$row['id'] = (int) $row['id']; $row['rubric_id'] = (int) $row['rubric_id']; $row['catalog_field_id']=isset($row['catalog_field_id'])?(int)$row['catalog_field_id']:0; $row['status'] = (int) $row['status'];
 			$row['include_descendants'] = (int) $row['include_descendants']; $row['min_price'] = (float) $row['min_price']; $row['cache_ttl'] = (int) $row['cache_ttl'];
-			$row['mappings'] = $this->json($row['mappings_json']); $row['params'] = $this->json($row['params_json']); $row['conditions'] = $this->json($row['conditions_json']);
+			$row['mappings'] = $this->json($row['mappings_json']);
+			$row['params'] = $this->json($row['params_json']);
+			$row['conditions'] = $this->json($row['conditions_json']);
+			$row['conditions'] = $this->conditions($row);
 			return $row;
 		}
 

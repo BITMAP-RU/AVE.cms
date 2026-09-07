@@ -230,6 +230,7 @@
 				'document_parent' => 'Родитель', 'rubric_tmpl_id' => 'Шаблон', 'document_linked_navi_id' => 'Навигация',
 				'document_position' => 'Позиция', 'document_published' => 'Дата публикации', 'document_expire' => 'Дата окончания',
 				'document_author_id' => 'Автор', 'document_sitemap_freq' => 'Sitemap: частота', 'document_sitemap_pr' => 'Sitemap: приоритет',
+				'document_in_sitemap' => 'Sitemap: участие', 'document_is_technical' => 'Служебный документ',
 			);
 			$out = array();
 			foreach ($document as $key => $value) {
@@ -238,8 +239,12 @@
 					$value = (int) $value > 0 ? date('d.m.Y H:i:s', (int) $value) : 'не задано';
 				} elseif ($key === 'document_status') {
 					$value = (int) $value === 1 ? 'Опубликован' : 'Черновик';
-				} elseif ($key === 'document_in_search') {
-					$value = (int) $value === 1 ? 'В поиске' : 'Скрыт';
+					} elseif ($key === 'document_in_search') {
+						$value = (int) $value === 1 ? 'В поиске' : 'Скрыт';
+					} elseif ($key === 'document_in_sitemap') {
+						$value = (int) $value === 1 ? 'Добавляется' : 'Не добавляется';
+					} elseif ($key === 'document_is_technical') {
+						$value = (int) $value === 1 ? 'Служебный' : 'Обычный';
 				}
 
 				$out[] = array('key' => $key, 'title' => $labels[$key], 'value' => (string) $value, 'value_preview' => self::shorten((string) $value, 420));

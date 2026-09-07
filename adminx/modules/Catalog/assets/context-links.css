@@ -1,0 +1,37 @@
+.catalog-context-links {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border-default);
+  min-width: 0;
+}
+.catalog-context-links h3 {
+  margin: 0 0 10px;
+  font-size: 14px;
+}
+.catalog-context-links nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+}
+.catalog-context-links a {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 6px;
+  max-width: 100%;
+  min-width: 0;
+  font-size: 13px;
+}
+.catalog-context-links a > i {
+  flex: none;
+  margin-top: 2px;
+}
+.catalog-context-links a > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.catalog-context-links small {
+  display: block;
+  color: var(--text-secondary);
+}
+.catalog-item-form > .catalog-context-links {
+  padding: 16px 20px;
+}

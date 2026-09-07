@@ -17,7 +17,7 @@
 	return array(
 		'code' => 'public_site',
 		'name' => 'Публичный сайт',
-		'version' => '0.5.2',
+		'version' => '0.5.3',
 		'permissions' => array(
 			'key' => 'public_site',
 			'items' => array(

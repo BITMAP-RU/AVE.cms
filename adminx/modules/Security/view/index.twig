@@ -1,24 +1,47 @@
 {% extends '@adminx/main.twig' %}
-{% block title %}IP-блокировки{% endblock %}
+{% block title %}Блокировки запросов{% endblock %}
 {% block content %}
-<nav class="breadcrumbs" aria-label="Хлебные крошки"><a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i><span>IP-блокировки</span></nav>
-<div class="page-header"><div><h1>IP-блокировки</h1><p class="text-secondary">Ручные блокировки доступа и автоматическая защита частоты запросов</p></div></div>
+<nav class="breadcrumbs" aria-label="Хлебные крошки"><a href="{{ ADMINX_BASE }}/">Главная</a><i class="ti ti-chevron-right"></i><span>Блокировки запросов</span></nav>
+<div class="page-header"><div><h1>Блокировки запросов</h1><p class="text-secondary">Ограничение доступа по IP-адресу или признаку в User-Agent</p></div></div>
+
+<nav class="tabs security-tabs" aria-label="Тип блокировки">
+  <a class="tab{{ active_type == 'ip' ? ' is-active' : '' }}" href="{{ ADMINX_BASE }}/security/ip-blocks?type=ip"><i class="ti ti-world"></i>IP-адреса</a>
+  <a class="tab{{ active_type == 'user_agent' ? ' is-active' : '' }}" href="{{ ADMINX_BASE }}/security/ip-blocks?type=user_agent"><i class="ti ti-robot-off"></i>User-Agent</a>
+</nav>
+
 <div class="security-layout">
   {% if can_manage %}<section class="card security-form-card">
-    <div class="settings-section-head"><span class="icon-tile" style="--tile-bg:var(--red-100);--tile-fg:var(--red-600)"><i class="ti ti-shield-plus"></i></span><div><h2>Заблокировать адрес</h2><p>Текущий адрес: <span class="mono">{{ current_ip }}</span></p></div></div>
-    <form data-ip-block-form action="{{ ADMINX_BASE }}/security/ip-blocks" method="post">
-      <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-      <label><span>IP-адрес</span><input class="input mono" name="ip" required placeholder="203.0.113.10"></label>
-      <label><span>Причина</span><input class="input" name="reason" maxlength="500" placeholder="Причина блокировки"></label>
-      <label><span>Срок</span><select class="select" name="hours"><option value="0">Бессрочно</option><option value="1">1 час</option><option value="24">24 часа</option><option value="168">7 дней</option><option value="720">30 дней</option></select></label>
-      <button class="btn btn-danger" type="submit"><i class="ti ti-ban"></i>Заблокировать</button>
-    </form>
+    {% if active_type == 'user_agent' %}
+      <div class="settings-section-head"><span class="icon-tile" style="--tile-bg:var(--red-100);--tile-fg:var(--red-600)"><i class="ti ti-robot-off"></i></span><div><h2>Заблокировать агента</h2><p>Правило действует на публичном сайте.</p></div></div>
+      <form data-user-agent-block-form action="{{ ADMINX_BASE }}/security/user-agent-blocks" method="post">
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        <label><span>Режим проверки</span><select class="select" name="match_type"><option value="contains">Содержит фрагмент</option><option value="exact">Полное совпадение</option></select></label>
+        <label><span>User-Agent или характерный фрагмент</span><textarea class="textarea mono" name="pattern" rows="4" maxlength="500" required placeholder="meta-externalagent/1.1"></textarea><small>Для робота обычно достаточно его уникального имени. Не используйте общие слова вроде Mozilla или Chrome.</small></label>
+        <label><span>Причина</span><input class="input" name="reason" maxlength="500" placeholder="Нежелательный робот"></label>
+        <label><span>Срок</span><select class="select" name="hours"><option value="0">Бессрочно</option><option value="1">1 час</option><option value="24">24 часа</option><option value="168">7 дней</option><option value="720">30 дней</option></select></label>
+        <button class="btn btn-danger" type="submit"><i class="ti ti-ban"></i>Заблокировать</button>
+      </form>
+    {% else %}
+      <div class="settings-section-head"><span class="icon-tile" style="--tile-bg:var(--red-100);--tile-fg:var(--red-600)"><i class="ti ti-shield-plus"></i></span><div><h2>Заблокировать адрес</h2><p>Ваш текущий адрес: <span class="mono">{{ current_ip }}</span></p></div></div>
+      <form data-ip-block-form action="{{ ADMINX_BASE }}/security/ip-blocks" method="post">
+        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+        <label><span>IP-адрес</span><input class="input mono" name="ip" required placeholder="203.0.113.10"></label>
+        <label><span>Причина</span><input class="input" name="reason" maxlength="500" placeholder="Причина блокировки"></label>
+        <label><span>Срок</span><select class="select" name="hours"><option value="0">Бессрочно</option><option value="1">1 час</option><option value="24">24 часа</option><option value="168">7 дней</option><option value="720">30 дней</option></select></label>
+        <button class="btn btn-danger" type="submit"><i class="ti ti-ban"></i>Заблокировать</button>
+      </form>
+    {% endif %}
   </section>{% endif %}
+
   <section class="security-list-section">
-    <div class="section-header"><div class="section-icon"><i class="ti ti-shield-lock"></i></div><div><div class="section-eyebrow">Безопасность</div><h2>Заблокированные IP</h2><p class="section-desc">Постоянные и ограниченные по времени блокировки.</p></div><div class="section-header-right"><form method="get" class="security-filter"><div class="input-wrap"><i class="ti ti-search"></i><input class="input" name="q" value="{{ q }}" placeholder="IP или причина"></div><button class="btn btn-secondary" type="submit"><i class="ti ti-filter"></i>Найти</button></form></div></div>
-    <div class="card security-table-card ax-list-card"><div class="ax-list-head"><div class="ax-list-title"><span class="icon-tile" style="--tile-bg:var(--red-100);--tile-fg:var(--red-600)"><i class="ti ti-shield-lock"></i></span><div><h2>Активные блокировки</h2><p class="text-secondary">Адреса, для которых ограничен доступ к сайту.</p></div></div><span class="badge badge-red">{{ rows|length }}</span></div><div class="table-responsive"><table class="table"><thead><tr><th>IP-адрес</th><th>Причина</th><th>Создано</th><th>Срок</th><th class="table-actions">Действия</th></tr></thead><tbody>
-    {% for row in rows %}<tr><td class="mono"><strong>{{ row.ip }}</strong></td><td>{{ row.reason ?: 'Без комментария' }}</td><td>{{ row.created_at|date('d.m.Y H:i') }}</td><td>{% if row.expires_at %}<span class="badge badge-amber">до {{ row.expires_at|date('d.m.Y H:i') }}</span>{% else %}<span class="badge badge-red">Бессрочно</span>{% endif %}</td><td class="table-actions">{% if can_manage %}<button class="btn btn-icon btn-danger-ghost" type="button" data-ip-unblock="{{ row.id }}" title="Разблокировать"><i class="ti ti-lock-open"></i></button>{% endif %}</td></tr>
-    {% else %}<tr><td colspan="5"><div class="empty-state"><i class="ti ti-shield-check"></i><p>Заблокированных адресов нет</p></div></td></tr>{% endfor %}
+    <div class="section-header"><div class="section-icon"><i class="ti {{ active_type == 'user_agent' ? 'ti-robot-off' : 'ti-shield-lock' }}"></i></div><div><div class="section-eyebrow">Безопасность</div><h2>{{ active_type == 'user_agent' ? 'Заблокированные агенты' : 'Заблокированные IP' }}</h2><p class="section-desc">{{ active_type == 'user_agent' ? 'Точные агенты и характерные фрагменты строк браузеров и роботов.' : 'Постоянные и ограниченные по времени блокировки адресов.' }}</p></div><div class="section-header-right"><form method="get" class="security-filter"><input type="hidden" name="type" value="{{ active_type }}"><div class="input-wrap"><i class="ti ti-search"></i><input class="input" name="q" value="{{ q }}" placeholder="{{ active_type == 'user_agent' ? 'Агент или причина' : 'IP или причина' }}"></div><button class="btn btn-secondary" type="submit"><i class="ti ti-filter"></i>Найти</button></form></div></div>
+    <div class="card security-table-card ax-list-card"><div class="ax-list-head"><div class="ax-list-title"><span class="icon-tile" style="--tile-bg:var(--red-100);--tile-fg:var(--red-600)"><i class="ti {{ active_type == 'user_agent' ? 'ti-robot-off' : 'ti-shield-lock' }}"></i></span><div><h2>Активные блокировки</h2><p class="text-secondary">Истёкшие правила удаляются автоматически.</p></div></div><span class="badge badge-red">{{ rows|length }}</span></div><div class="table-responsive"><table class="table"><thead>
+      {% if active_type == 'user_agent' %}<tr><th>Правило</th><th>Причина</th><th>Создано</th><th>Срок</th><th class="table-actions">Действия</th></tr>{% else %}<tr><th>IP-адрес</th><th>Причина</th><th>Создано</th><th>Срок</th><th class="table-actions">Действия</th></tr>{% endif %}
+    </thead><tbody>
+    {% for row in rows %}<tr>
+      {% if active_type == 'user_agent' %}<td><strong class="mono security-agent-pattern">{{ row.pattern }}</strong><small>{{ row.match_type == 'exact' ? 'Полное совпадение' : 'Содержит фрагмент' }}</small></td>{% else %}<td class="mono"><strong>{{ row.ip }}</strong></td>{% endif %}
+      <td>{{ row.reason ?: 'Без комментария' }}</td><td>{{ row.created_at|date('d.m.Y H:i') }}</td><td>{% if row.expires_at %}<span class="badge badge-amber">до {{ row.expires_at|date('d.m.Y H:i') }}</span>{% else %}<span class="badge badge-red">Бессрочно</span>{% endif %}</td><td class="table-actions">{% if can_manage %}<button class="btn btn-icon btn-danger-ghost" type="button" {% if active_type == 'user_agent' %}data-user-agent-unblock="{{ row.id }}" data-tooltip="Разблокировать User-Agent"{% else %}data-ip-unblock="{{ row.id }}" data-tooltip="Разблокировать IP"{% endif %} aria-label="Разблокировать"><i class="ti ti-lock-open"></i></button>{% endif %}</td></tr>
+    {% else %}<tr><td colspan="5"><div class="empty-state"><i class="ti ti-shield-check"></i><p>Активных блокировок нет</p></div></td></tr>{% endfor %}
     </tbody></table></div></div>
   </section>
 </div>

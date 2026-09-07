@@ -1,0 +1,4 @@
+<section class="catalog-context-links" data-catalog-context-links{{ context_links ? '' : ' hidden' }} aria-label="{{ lang.catalog_context_title|default('Связанные настройки') }}">
+  <h3>{{ lang.catalog_context_title|default('Связанные настройки') }}</h3>
+  <nav>{% for link in context_links %}<a href="{{ link.url }}" target="_blank" rel="noopener" data-context-kind="{{ link.kind }}"><i class="ti ti-external-link" aria-hidden="true"></i><span>{{ link.label }}{% if link.scope %}<small>{{ link.scope }}</small>{% endif %}</span></a>{% endfor %}</nav>
+</section>

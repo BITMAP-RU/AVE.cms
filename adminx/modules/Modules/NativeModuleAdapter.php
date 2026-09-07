@@ -17,6 +17,7 @@
 	defined('BASEPATH') || die('Direct access to this location is not allowed.');
 
 	use App\Adminx\Support\ModuleExtensions;
+	use App\Adminx\Support\InterfaceSettings;
 	use App\Common\AdminLocation;
 	use App\Common\ModuleManager;
 	use App\Common\ModuleMigrator;
@@ -115,6 +116,11 @@
 
 			if (!empty($item['has_dashboard'])) {
 				ModuleSettings::set('adminx_dashboard_enabled', (bool) $dashboardEnabled, $code, 'bool');
+				InterfaceSettings::setModuleDashboardVisibility(
+					$code,
+					(bool) $dashboardEnabled,
+					ModuleExtensions::dashboardDefinitions()
+				);
 			}
 
 			return self::one($code);

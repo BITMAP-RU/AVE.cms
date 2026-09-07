@@ -17,6 +17,7 @@
 	defined('BASEPATH') || die('Direct access to this location is not allowed.');
 
 	use App\Helpers\Str;
+	use App\Content\Fields\MediaFieldValue;
 	use App\Content\Fields\PublicFieldRuntime;
 	use App\Frontend\Media\ImageSourceExtractor;
 
@@ -46,9 +47,17 @@
 				return '';
 
 			$field_value = trim($document_fields[$field_id]['field_value']);
+			$field_type = (string) $document_fields[$field_id]['rubric_field_type'];
+
+			// [img] requests the original source, not the rendered request markup.
+			// Request cards intentionally suppress galleries, while metadata still
+			// needs the first image from image_multi/image_mega fields.
+			if ($maxlength === 'img' && in_array($field_type, array('image_single', 'image_multi', 'image_mega'), true)) {
+				return MediaFieldValue::firstImageUrl($field_value);
+			}
 
 			$field_value = PublicFieldRuntime::renderRequest(
-				$document_fields[$field_id]['rubric_field_type'],
+				$field_type,
 				$field_value,
 				$document_fields[$field_id]
 			);

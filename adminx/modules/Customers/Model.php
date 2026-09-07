@@ -35,15 +35,15 @@
 	{
 		public static function customers($q='')
 		{
-			$sql='SELECT Id AS id,email,firstname,lastname,user_name,phone,company,status,reg_time,last_visit FROM '.self::table('users').' WHERE deleted!=%s';$args=array('1');$q=trim((string)$q);
-			if($q!==''){$sql.=' AND (email LIKE %ss OR firstname LIKE %ss OR lastname LIKE %ss OR phone LIKE %ss OR company LIKE %ss)';for($i=0;$i<5;$i++){$args[]=$q;}}$sql.=' ORDER BY Id DESC LIMIT 500';return call_user_func_array(array('DB','query'),array_merge(array($sql),$args))->getAll()?:array();
+			$sql='SELECT Id AS id,email,firstname,lastname,user_name,phone,company,status,reg_time,last_visit FROM '.self::table('users').' WHERE COALESCE(deleted,0)!=%s';$args=array('1');$q=trim((string)$q);
+			if($q!==''){$sql.=' AND (email LIKE %ss OR firstname LIKE %ss OR lastname LIKE %ss OR user_name LIKE %ss OR phone LIKE %ss OR company LIKE %ss';for($i=0;$i<6;$i++){$args[]=$q;}if(ctype_digit($q)){$sql.=' OR Id=%i';$args[]=(int)$q;}$sql.=')';}$sql.=' ORDER BY Id DESC LIMIT 500';return call_user_func_array(array('DB','query'),array_merge(array($sql),$args))->getAll()?:array();
 		}
 
 		public static function exportChunk($q, $beforeId, $limit = 500)
 		{
-			$sql = 'SELECT Id AS id,email,firstname,lastname,user_name,phone,company,status,reg_time,last_visit FROM ' . self::table('users') . ' WHERE deleted!=%s';
+			$sql = 'SELECT Id AS id,email,firstname,lastname,user_name,phone,company,status,reg_time,last_visit FROM ' . self::table('users') . ' WHERE COALESCE(deleted,0)!=%s';
 			$args = array('1'); $q = trim((string) $q);
-			if ($q !== '') { $sql .= ' AND (email LIKE %ss OR firstname LIKE %ss OR lastname LIKE %ss OR phone LIKE %ss OR company LIKE %ss)'; for ($i = 0; $i < 5; $i++) { $args[] = $q; } }
+			if ($q !== '') { $sql .= ' AND (email LIKE %ss OR firstname LIKE %ss OR lastname LIKE %ss OR user_name LIKE %ss OR phone LIKE %ss OR company LIKE %ss)'; for ($i = 0; $i < 6; $i++) { $args[] = $q; } }
 			if ((int) $beforeId > 0) { $sql .= ' AND Id<%i'; $args[] = (int) $beforeId; }
 			$sql .= ' ORDER BY Id DESC LIMIT ' . max(1, min(1000, (int) $limit));
 			return call_user_func_array(array('DB', 'query'), array_merge(array($sql), $args))->getAll() ?: array();
@@ -51,7 +51,7 @@
 
 		public static function stats()
 		{
-			$table=self::table('users');return array('total'=>(int)DB::query('SELECT COUNT(*) FROM '.$table.' WHERE deleted!=%s','1')->getValue(),'active'=>(int)DB::query('SELECT COUNT(*) FROM '.$table.' WHERE deleted!=%s AND status=%s','1','1')->getValue(),'verified'=>(int)DB::query('SELECT COUNT(*) FROM '.$table.' WHERE deleted!=%s AND (email_verified_at>0 OR phone_verified_at>0)','1')->getValue(),'fields'=>count(self::fields()));
+			$table=self::table('users');return array('total'=>(int)DB::query('SELECT COUNT(*) FROM '.$table.' WHERE COALESCE(deleted,0)!=%s','1')->getValue(),'active'=>(int)DB::query('SELECT COUNT(*) FROM '.$table.' WHERE COALESCE(deleted,0)!=%s AND status=%s','1','1')->getValue(),'verified'=>(int)DB::query('SELECT COUNT(*) FROM '.$table.' WHERE COALESCE(deleted,0)!=%s AND (email_verified_at>0 OR phone_verified_at>0)','1')->getValue(),'fields'=>count(self::fields()));
 		}
 
 		public static function toggle($id, $currentSystemId = 0)
@@ -65,7 +65,7 @@
 				throw new \InvalidArgumentException('Нельзя отключить собственную учётную запись');
 			}
 
-			DB::query('UPDATE '.self::table('users')." SET status=IF(status='1','0','1') WHERE Id=%i AND deleted!=%s",(int)$id,'1');
+			DB::query('UPDATE '.self::table('users')." SET status=IF(status='1','0','1') WHERE Id=%i AND COALESCE(deleted,0)!=%s",(int)$id,'1');
 			$active=(string)DB::query('SELECT status FROM '.self::table('users').' WHERE Id=%i',(int)$id)->getValue()==='1';
 			if(!$active){self::invalidateCustomerSessions((int)$id);}
 			return $active;
@@ -73,9 +73,25 @@
 
 		public static function customer($id, $currentSystemId = 0)
 		{
-			$row=DB::query('SELECT Id AS id,email,email_verified_at,firstname,lastname,user_name,phone,phone_normalized,phone_verified_at,company,city,street,street_nr,zipcode,birthday,description,user_group,status,reg_time,last_visit FROM '.self::table('users').' WHERE Id=%i AND deleted!=%s LIMIT 1',(int)$id,'1')->getAssoc();
-			if(!$row){return null;}
-			$row=(array)$row;
+			$source = (new UserRepository())->find((int) $id);
+			if (!$source) { return null; }
+
+			$defaults = array(
+				'email' => null, 'email_verified_at' => 0, 'firstname' => '', 'lastname' => '',
+				'user_name' => '', 'phone' => '', 'phone_normalized' => null, 'phone_verified_at' => 0,
+				'company' => '', 'city' => '', 'street' => '', 'street_nr' => '', 'zipcode' => '',
+				'birthday' => '', 'description' => '', 'user_group' => 0, 'status' => '0',
+				'reg_time' => 0, 'last_visit' => 0,
+			);
+			$row = array('id' => (int) $source['Id']);
+			foreach ($defaults as $key => $default) {
+				$row[$key] = array_key_exists($key, $source) ? $source[$key] : $default;
+			}
+
+			if (empty($row['phone_normalized']) && !empty($row['phone'])) {
+				$row['phone_normalized'] = Phone::normalize($row['phone']);
+			}
+
 			$row['birthday']=(int)$row['birthday']>0?date('Y-m-d',(int)$row['birthday']):'';
 			$values=DB::query('SELECT field_id,value FROM '.self::table('user_profile_values').' WHERE user_id=%i',(int)$id)->getAll()?:array();
 			$extra=array();
@@ -137,9 +153,9 @@
 			if($email===''&&$phone===''){throw new \InvalidArgumentException('Укажите email или телефон');}
 			if($adminAccess&&$email===''){throw new \InvalidArgumentException('Для доступа в панель управления укажите email');}
 			if(mb_strlen($email)>100||mb_strlen($userName)>50||mb_strlen($firstName)>50||mb_strlen($lastName)>50){throw new \InvalidArgumentException('Имя, email или логин превышают допустимую длину');}
-			if($email!==''&&DB::query('SELECT Id FROM '.self::table('users').' WHERE LOWER(email)=LOWER(%s) AND Id!=%i AND deleted!=%s LIMIT 1',$email,$id,'1')->getValue()){throw new \InvalidArgumentException('Этот email уже используется');}
-			if($phone!==''&&DB::query('SELECT Id FROM '.self::table('users').' WHERE phone_normalized=%s AND Id!=%i AND deleted!=%s LIMIT 1',$phone,$id,'1')->getValue()){throw new \InvalidArgumentException('Этот телефон уже используется');}
-			if(DB::query('SELECT Id FROM '.self::table('users').' WHERE LOWER(user_name)=LOWER(%s) AND Id!=%i AND deleted!=%s LIMIT 1',$userName,$id,'1')->getValue()){throw new \InvalidArgumentException('Этот логин уже используется');}
+			if($email!==''&&DB::query('SELECT Id FROM '.self::table('users').' WHERE LOWER(email)=LOWER(%s) AND Id!=%i AND COALESCE(deleted,0)!=%s LIMIT 1',$email,$id,'1')->getValue()){throw new \InvalidArgumentException('Этот email уже используется');}
+			if($phone!==''&&DB::query('SELECT Id FROM '.self::table('users').' WHERE phone_normalized=%s AND Id!=%i AND COALESCE(deleted,0)!=%s LIMIT 1',$phone,$id,'1')->getValue()){throw new \InvalidArgumentException('Этот телефон уже используется');}
+			if(DB::query('SELECT Id FROM '.self::table('users').' WHERE LOWER(user_name)=LOWER(%s) AND Id!=%i AND COALESCE(deleted,0)!=%s LIMIT 1',$userName,$id,'1')->getValue()){throw new \InvalidArgumentException('Этот логин уже используется');}
 			$groupIds=array_map(function($item){return (int)$item['id'];},self::groups());
 			if(!in_array($group,$groupIds,true)){throw new \InvalidArgumentException('Выберите активную группу публичных пользователей');}
 			$authSettings=PublicAuthSettings::all();
@@ -175,7 +191,10 @@
 				self::saveExtraValues($id,$extra);
 				if($password!==''){(new UserRepository())->setPassword($id,$password);}
 				IdentityLinker::setAdminAccess($id,$adminAccess,$adminRole,(int)$currentSystemId);
-				if($password!==''||$active!=='1'){self::invalidateCustomerSessions($id);}
+				$securityChanged=$password!==''||$active!==(string)$current['user']['status']
+					||$group!==(int)$current['user']['user_group']||$email!==mb_strtolower(trim((string)$current['user']['email']))
+					||$phone!==(string)$current['user']['phone_normalized']||$userName!==(string)$current['user']['user_name'];
+				if($securityChanged){self::invalidateCustomerSessions($id);}
 				DB::commit();
 			}catch(\Throwable $e){DB::rollback();throw $e;}
 			return self::customer($id);

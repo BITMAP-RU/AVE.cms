@@ -7,6 +7,7 @@
 	<phrase data="btn_cancel">Отмена</phrase>
 	<phrase data="btn_close">Закрыть</phrase>
 	<phrase data="btn_confirm">Подтвердить</phrase>
+	<phrase data="btn_create">Создать</phrase>
 	<phrase data="btn_delete">Удалить</phrase>
 	<phrase data="btn_save">Сохранить</phrase>
 	<phrase data="btn_show">Показать</phrase>
@@ -34,6 +35,7 @@
 	<phrase data="topbar_theme">Тема</phrase>
 	<phrase data="ui_loading">Загрузка...</phrase>
 	<phrase data="ui_main">Основное</phrase>
+	<phrase data="ui_name">Название</phrase>
 	<phrase data="ui_nothing_found">Ничего не найдено</phrase>
 	<phrase data="ui_remove">Убрать</phrase>
 	<phrase data="ui_search">Поиск</phrase>

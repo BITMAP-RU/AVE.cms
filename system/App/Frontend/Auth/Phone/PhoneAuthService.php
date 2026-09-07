@@ -45,9 +45,10 @@
 			$options = ProviderRegistry::options($provider);
 			$phoneKey = hash('sha256', $phone);
 			$settings = PublicAuthSettings::all();
-			if (!empty($options['allow_registration'])
-				&& PublicAuthSettings::allowsRegistrationMethod('phone', $settings)
-				&& !$consent) {
+			$registrationEnabled = !empty($options['allow_registration'])
+				&& PublicAuthSettings::allowsRegistrationMethod('phone', $settings);
+			$existingUser = (new UserRepository())->findByPhone($phone);
+			if (!$existingUser && $registrationEnabled && !$consent) {
 				$this->recordProviderEvent($provider, 'request_rejected', array('phone' => $phone, 'reason' => 'Не подтверждено согласие с политикой'));
 				throw new \InvalidArgumentException('Подтвердите согласие с политикой конфиденциальности.');
 			}
@@ -66,9 +67,7 @@
 				throw new \InvalidArgumentException('Слишком много запросов кода. Попробуйте позже.');
 			}
 
-			$registrationEnabled = !empty($options['allow_registration'])
-				&& PublicAuthSettings::allowsRegistrationMethod('phone', $settings);
-			$deliver = $registrationEnabled || (new UserRepository())->findByPhone($phone) !== null;
+			$deliver = $registrationEnabled || $existingUser !== null;
 			$code = $this->code($options['code_length']);
 			$repository = new ChallengeRepository($provider->challengeTable());
 			$publicId = $repository->issue(
@@ -257,9 +256,11 @@
 		{
 			if (!is_object($provider) || !method_exists($provider, 'recordAuthEvent')) { return; }
 			try {
-				$provider->recordAuthEvent((string) $event, $context);
+				if ($provider->recordAuthEvent((string) $event, $context) === false) {
+					error_log('Phone auth history event was not recorded: ' . (string) $event);
+				}
 			} catch (\Throwable $e) {
-				// Журнал провайдера не должен мешать входу пользователя.
+				error_log('Phone auth history failed: ' . $e->getMessage());
 			}
 		}
 	}

@@ -72,8 +72,16 @@
       var params = new URLSearchParams(window.location.search);
       var rubricId = parseInt(params.get('templates'), 10) || 0;
       var editId = parseInt(params.get('edit'), 10) || 0;
+      var fieldsId = parseInt(params.get('fields'), 10) || 0;
       var create = params.get('create') === '1';
       var row;
+      if (fieldsId) {
+        row = document.querySelector('[data-rubric-row][data-id="' + fieldsId + '"]');
+        if (!row) { return; }
+        this.pendingFieldId = parseInt(params.get('field'), 10) || 0;
+        this.openFields(row);
+        return;
+      }
       if (rubricId) {
         row = document.querySelector('[data-rubric-row][data-id="' + rubricId + '"]');
         if (!row) { return; }
@@ -636,6 +644,7 @@
       this.form.reset();
       this.form.elements.id.value = '';
       this.form.elements.rubric_template_id.value = '1';
+	  if (this.form.elements.rubric_is_technical) { this.form.elements.rubric_is_technical.value = '0'; }
       var isDirectory = purpose === 'directory';
       if (this.form.elements.rubric_purpose) {
         this.form.elements.rubric_purpose.value = isDirectory ? 'directory' : 'content';
@@ -681,6 +690,7 @@
           self.form.elements.rubric_template_id.value = item.rubric_template_id || 1;
           if (self.form.elements.rubric_template_id.selectedIndex < 0) { self.form.elements.rubric_template_id.selectedIndex = 0; }
           self.form.elements.rubric_docs_active.value = String(item.rubric_docs_active || 0);
+		  if (self.form.elements.rubric_is_technical) { self.form.elements.rubric_is_technical.value = String(item.rubric_is_technical || 0); }
           self.form.elements.rubric_meta_gen.value = String(item.rubric_meta_gen || 0);
           self.form.elements.rubric_alias_history.value = String(item.rubric_alias_history || 0);
           self.form.elements.rubric_description.value = item.rubric_description || '';
@@ -1605,6 +1615,7 @@
 		  self.renderLinkedFieldSets();
           self.fillGroupSelect();
           if (Adminx.Drawer) { Adminx.Drawer.open('rubricFieldsDrawer'); }
+          if (self.pendingFieldId) { var fieldId = self.pendingFieldId; self.pendingFieldId = 0; self.selectBuilderField(fieldId); }
         });
     },
 

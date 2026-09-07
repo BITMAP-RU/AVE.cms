@@ -34,6 +34,18 @@
 	{
 		public function save($documentId, array $payload, $actorId, $source = 'api')
 		{
+			return $this->saveInternal($documentId, $payload, $actorId, $source, false);
+		}
+
+		/** Trusted partial edits of an existing document; not a public payload option. */
+		public function patch($documentId, array $payload, $actorId, $source = 'internal_patch')
+		{
+			if ((int) $documentId <= 0) { throw new DocumentSaveRejected('Документ не найден'); }
+			return $this->saveInternal($documentId, $payload, $actorId, $source, true);
+		}
+
+		protected function saveInternal($documentId, array $payload, $actorId, $source, $partial)
+		{
 			$documentId = (int) $documentId;
 			$existing = $documentId > 0 ? $this->document($documentId) : null;
 			if ($documentId > 0 && !$existing) { throw new DocumentSaveRejected('Документ не найден'); }
@@ -75,10 +87,11 @@
 			DocumentRubricCodeRunner::before($rubricId, $data, $fields, $documentId, $actorId, !$existing, $source);
 			$data = $this->normalizeData($data, $existing, $rubric, true);
 			$fields = ComputedFieldEvaluator::apply($definitions, $fields, $data);
+			$validationDefinitions = $partial ? $this->patchDefinitions($definitions, $incomingFields, $storedFields, $fields, $conditionsEnabled) : $definitions;
 			$errors = array_merge(
 				$fieldErrors,
 				$this->validate($data, $documentId, $rubricId),
-				FieldValidator::validateValues(array_values($definitions), $fields, $conditionsEnabled)
+				FieldValidator::validateValues(array_values($validationDefinitions), $fields, $conditionsEnabled)
 			);
 			if (!empty($errors)) { throw new DocumentSaveRejected('Проверьте данные документа', $errors); }
 
@@ -93,8 +106,17 @@
 				$identityState = $this->document($documentId);
 				DocumentRubricCodeRunner::after($rubricId, $data, $fields, $documentId, $actorId, !$existing, $source);
 				$data = $this->normalizeData($data, $this->document($documentId), $rubric, true);
+				$writeDefinitions = $definitions;
+				if ($partial) {
+					$fields = ComputedFieldEvaluator::apply($definitions, $fields, $data);
+					$validationDefinitions = $this->patchDefinitions($definitions, $incomingFields, $storedFields, $fields, $conditionsEnabled);
+					$errors = FieldValidator::validateValues(array_values($validationDefinitions), $fields, $conditionsEnabled);
+					if ($errors) { throw new DocumentSaveRejected('Проверьте данные документа', $errors); }
+					$writeDefinitions = array_filter($validationDefinitions, function ($field) { return empty($field['_condition_source']); });
+				}
+
 				$this->writeDocument($documentId, $data, $rubric, $actorId, $identityState ?: array(), false);
-				$this->writeFields($documentId, $data, $definitions, $fields);
+				$this->writeFields($documentId, $data, $writeDefinitions, $fields);
 				DocumentTerms::sync($documentId, $rubricId, $data['document_meta_keywords'], $data['document_tags']);
 				DocumentSaveEvents::persisted($operation, $source, $documentId, $rubricId, $actorId, $data, $fields, $existing ?: array());
 				if ($ownsTransaction) { DB::commit(); }
@@ -127,6 +149,24 @@
 				'snapshot' => $snapshot,
 				'snapshot_warning' => ContentCacheInvalidator::consumeError($documentId),
 			);
+		}
+
+		protected function patchDefinitions(array $definitions, array $incoming, array $stored, array $values, $conditionsEnabled)
+		{
+			$submitted = array();
+			$this->applyIncomingFields($incoming, $definitions, $submitted);
+			$before = $conditionsEnabled ? FieldConditionEvaluator::states(array_values($definitions), $stored) : array();
+			$after = $conditionsEnabled ? FieldConditionEvaluator::states(array_values($definitions), $values) : array();
+			foreach ($definitions as $id => &$field) {
+				$changed = array_key_exists($id, $submitted)
+					|| (isset($stored[$id]) ? $stored[$id] : '') !== (isset($values[$id]) ? $values[$id] : '')
+					|| (isset($before[$id]) ? $before[$id] : null) !== (isset($after[$id]) ? $after[$id] : null);
+				// Keep all aliases/group conditions available to the existing validator.
+				if (!$changed) { $field['_condition_source'] = true; }
+			}
+
+			unset($field);
+			return $definitions;
 		}
 
 		/**
@@ -439,12 +479,14 @@
 				'document_short_alias' => substr(trim((string) $value('short_alias', 'document_short_alias', '')), 0, 10),
 				'document_title' => $title, 'document_breadcrumb_title' => trim((string) $value('breadcrumb_title', 'document_breadcrumb_title', '')),
 				'document_published' => $published, 'document_expire' => $this->timestamp($value('expire_at', 'document_expire', 0), 0),
-				'document_author_id' => (int) $value('author_id', 'document_author_id', 1), 'document_in_search' => (string) $this->boolean($value('in_search', 'document_in_search', 1)),
+					'document_author_id' => (int) $value('author_id', 'document_author_id', 1), 'document_in_search' => (string) $this->boolean($value('in_search', 'document_in_search', 1)),
+					'document_is_technical' => $this->boolean($value('is_technical', 'document_is_technical', empty($base) && !empty($rubric['rubric_is_technical']) ? 1 : 0)),
 				'document_meta_keywords' => trim((string) $value('meta_keywords', 'document_meta_keywords', '')),
 				'document_meta_description' => trim((string) $value('meta_description', 'document_meta_description', '')),
 				'document_meta_robots' => $this->robots($value('meta_robots', 'document_meta_robots', 'index,follow')),
-				'document_sitemap_freq' => max(0, min(6, (int) $value('sitemap_frequency', 'document_sitemap_freq', 3))),
-				'document_sitemap_pr' => max(0, min(1, (float) $value('sitemap_priority', 'document_sitemap_pr', 0.5))),
+					'document_sitemap_freq' => max(0, min(6, (int) $value('sitemap_frequency', 'document_sitemap_freq', 3))),
+					'document_sitemap_pr' => max(0, min(1, (float) $value('sitemap_priority', 'document_sitemap_pr', 0.5))),
+					'document_in_sitemap' => $this->boolean($value('in_sitemap', 'document_in_sitemap', 1)),
 				'document_status' => (string) $this->boolean($status), 'document_linked_navi_id' => (int) $value('navigation_id', 'document_linked_navi_id', 0),
 				'document_excerpt' => trim((string) $excerpt), 'document_tags' => is_array($value('tags', 'document_tags', '')) ? implode(',', $value('tags', 'document_tags', '')) : (string) $value('tags', 'document_tags', ''),
 				'document_property' => (string) $value('property', 'document_property', ''), 'document_position' => (int) $value('position', 'document_position', 0),

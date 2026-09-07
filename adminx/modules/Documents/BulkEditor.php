@@ -34,7 +34,7 @@
 	 */
 	class BulkEditor
 	{
-		const VERSION = 1;
+		const VERSION = 2;
 		const MAX_DOCUMENTS = 5000;
 		const CHUNK_SIZE = 20;
 		const EXPIRES_AFTER = 7200;
@@ -50,6 +50,19 @@
 			'document_meta_keywords' => array('label' => 'Meta keywords', 'payload' => 'meta_keywords'),
 			'document_meta_description' => array('label' => 'Meta description', 'payload' => 'meta_description'),
 			'document_property' => array('label' => 'Свойство / артикул', 'payload' => 'property'),
+		);
+
+		protected static $stateOperations = array(
+			'search_include' => array('column'=>'document_in_search','payload'=>'in_search','value'=>'1','before'=>array('0'=>'Вне поиска','1'=>'В поиске')),
+			'search_exclude' => array('column'=>'document_in_search','payload'=>'in_search','value'=>'0','before'=>array('0'=>'Вне поиска','1'=>'В поиске')),
+			'robots_index' => array('column'=>'document_meta_robots','payload'=>'meta_robots','value'=>'index,follow','before'=>array()),
+			'robots_noindex' => array('column'=>'document_meta_robots','payload'=>'meta_robots','value'=>'noindex,nofollow','before'=>array()),
+			'sitemap_include' => array('column'=>'document_in_sitemap','payload'=>'in_sitemap','value'=>'1','before'=>array('0'=>'Не добавляется','1'=>'Добавляется')),
+			'sitemap_exclude' => array('column'=>'document_in_sitemap','payload'=>'in_sitemap','value'=>'0','before'=>array('0'=>'Не добавляется','1'=>'Добавляется')),
+			'technical' => array('column'=>'document_is_technical','payload'=>'is_technical','value'=>'1','before'=>array('0'=>'Обычный','1'=>'Служебный')),
+			'public' => array('column'=>'document_is_technical','payload'=>'is_technical','value'=>'0','before'=>array('0'=>'Обычный','1'=>'Служебный')),
+			'sitemap_frequency' => array('column'=>'document_sitemap_freq','payload'=>'sitemap_frequency','value_input'=>'sitemap_frequency','before'=>array('0'=>'always','1'=>'hourly','2'=>'daily','3'=>'weekly','4'=>'monthly','5'=>'yearly','6'=>'never')),
+			'sitemap_priority' => array('column'=>'document_sitemap_pr','payload'=>'sitemap_priority','value_input'=>'sitemap_priority','before'=>array()),
 		);
 
 		public static function options()
@@ -198,6 +211,14 @@
 			if (!$row) { return false; }
 
 			$type = $operation['type'];
+			if (isset($operation['target_type']) && $operation['target_type'] === 'state') {
+				if ($type === 'technical' && Model::isProtectedDocument($documentId)) { return false; }
+				$current = (string) $row[$operation['target']];
+				if ($current === (string) $operation['value']) { return false; }
+				$service->save($documentId, array($operation['payload'] => $operation['value']), $actorId, 'bulk_editor');
+				return true;
+			}
+
 			if ($type === 'publish' || $type === 'unpublish') {
 				if (Model::isProtectedDocument($documentId)) { return false; }
 				$status = $type === 'publish' ? 1 : 0;
@@ -250,12 +271,32 @@
 		protected static function operation(array $input, array $filters)
 		{
 			$type = isset($input['operation']) ? (string) $input['operation'] : '';
-			$allowed = array('fill', 'set', 'clear', 'replace', 'move', 'publish', 'unpublish', 'recalculate');
+			$allowed = array_merge(
+				array('fill', 'set', 'clear', 'replace', 'move', 'publish', 'unpublish', 'recalculate'),
+				array_keys(self::$stateOperations)
+			);
 			if (!in_array($type, $allowed, true)) {
 				throw new \InvalidArgumentException('Выберите действие');
 			}
 
 			$operation = array('type' => $type, 'label' => self::operationLabel($type));
+			if (isset(self::$stateOperations[$type])) {
+				$config = self::$stateOperations[$type];
+				$value = isset($config['value']) ? (string) $config['value'] : trim(isset($input[$config['value_input']]) ? (string) $input[$config['value_input']] : '');
+				if ($type === 'sitemap_frequency' && !array_key_exists($value, $config['before'])) {
+					throw new \InvalidArgumentException('Выберите частоту обновления sitemap');
+				}
+
+				if ($type === 'sitemap_priority' && (!is_numeric($value) || (float) $value < 0 || (float) $value > 1)) {
+					throw new \InvalidArgumentException('Приоритет sitemap должен быть от 0 до 1');
+				}
+
+				return array_merge($operation, $config, array(
+					'target_type' => 'state', 'target' => $config['column'], 'value' => $value,
+					'target_label' => self::operationTargetLabel($type),
+				));
+			}
+
 			if (in_array($type, array('move', 'publish', 'unpublish', 'recalculate'), true)) {
 				if ($type === 'move') {
 					$targetRubricId = isset($input['target_rubric_id']) ? (int) $input['target_rubric_id'] : 0;
@@ -346,9 +387,9 @@
 			$currentValues = array();
 			$ids = array();
 			foreach ($rows as $row) { $ids[] = (int) $row['Id']; }
-			if (isset($operation['target_type']) && $operation['target_type'] === 'document') {
+			if (isset($operation['target_type']) && in_array($operation['target_type'], array('document', 'state'), true)) {
 				$column = (string) $operation['target'];
-				if (!isset(self::$documentFields[$column])) {
+				if ($operation['target_type'] === 'document' && !isset(self::$documentFields[$column])) {
 					throw new \InvalidArgumentException('Поле документа недоступно для массового изменения');
 				}
 
@@ -406,6 +447,17 @@
 				return array('before' => (string) $row['rubric_title'], 'after' => (string) $operation['target_rubric_title'], 'changed' => (int) $row['rubric_id'] !== (int) $operation['target_rubric_id'], 'note' => 'Совпадающие поля переносятся по системному имени');
 			}
 
+			if ($operation['target_type'] === 'state') {
+				if ($operation['type'] === 'technical' && Model::isProtectedDocument((int) $row['Id'])) {
+					return array('before'=>'Системный документ','after'=>'Без изменений','changed'=>false,'note'=>'Главную и страницу 404 нельзя сделать служебными');
+				}
+
+				$current = self::currentValue($row, $operation);
+				$before = isset($operation['before'][$current]) ? $operation['before'][$current] : $current;
+				$after = isset($operation['before'][(string) $operation['value']]) ? $operation['before'][(string) $operation['value']] : (string) $operation['value'];
+				return array('before'=>$before,'after'=>$after,'changed'=>$current !== (string) $operation['value'],'note'=>'');
+			}
+
 			$current = self::currentValue($row, $operation);
 			$next = self::changedValue($current, $operation);
 			return array('before' => $current, 'after' => $next['value'], 'changed' => $next['changed'], 'note' => $next['changed'] ? '' : 'Значение уже соответствует действию');
@@ -417,7 +469,7 @@
 				return (string) $row['__bulk_current'];
 			}
 
-			if ($operation['target_type'] === 'document') {
+			if ($operation['target_type'] === 'document' || $operation['target_type'] === 'state') {
 				if (!array_key_exists($operation['target'], $row)) {
 					$value = DB::query(
 						'SELECT `' . $operation['target'] . '` FROM ' . ContentTables::table('documents') . ' WHERE Id=%i',
@@ -537,10 +589,27 @@
 			$labels = array(
 				'fill' => 'Заполнить пустые', 'set' => 'Установить значение', 'clear' => 'Очистить',
 				'replace' => 'Найти и заменить', 'move' => 'Перенести в рубрику',
-				'publish' => 'Опубликовать', 'unpublish' => 'Снять с публикации',
-				'recalculate' => 'Пересчитать поля и индексы',
-			);
+					'publish' => 'Опубликовать', 'unpublish' => 'Снять с публикации',
+					'recalculate' => 'Пересчитать поля и индексы',
+					'search_include' => 'Включить во внутренний поиск', 'search_exclude' => 'Исключить из внутреннего поиска',
+					'robots_index' => 'Разрешить индексацию поисковиками', 'robots_noindex' => 'Запретить индексацию поисковиками',
+					'sitemap_include' => 'Добавить в sitemap', 'sitemap_exclude' => 'Исключить из sitemap',
+					'technical' => 'Сделать служебными', 'public' => 'Сделать обычными',
+					'sitemap_frequency' => 'Изменить частоту sitemap', 'sitemap_priority' => 'Изменить приоритет sitemap',
+				);
 			return isset($labels[$type]) ? $labels[$type] : $type;
+		}
+
+		protected static function operationTargetLabel($type)
+		{
+			$labels = array(
+				'search_include'=>'Внутренний поиск','search_exclude'=>'Внутренний поиск',
+				'robots_index'=>'Meta robots','robots_noindex'=>'Meta robots',
+				'sitemap_include'=>'Участие в sitemap','sitemap_exclude'=>'Участие в sitemap',
+				'technical'=>'Публичный доступ','public'=>'Публичный доступ',
+				'sitemap_frequency'=>'Частота sitemap','sitemap_priority'=>'Приоритет sitemap',
+			);
+			return isset($labels[$type]) ? $labels[$type] : '';
 		}
 
 		protected static function shortValue($value)

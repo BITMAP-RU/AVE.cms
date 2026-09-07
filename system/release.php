@@ -17,5 +17,5 @@
 	return array(
 		'product' => 'AVE.cms',
 		'version' => '3.3',
-		'build' => '0.40',
+		'build' => '0.41',
 	);

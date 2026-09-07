@@ -50,7 +50,9 @@
 				$rubricHeader = $inheritRubricTemplates && is_object($document) && isset($document->rubric_header_template)
 					? (string) $document->rubric_header_template
 					: '';
-				$rubricOpenGraph = $inheritRubricTemplates && is_object($document) && isset($document->rubric_og_template)
+				// OpenGraph is document metadata and remains active even when a theme
+				// replaces legacy rubric header/footer presentation fragments.
+				$rubricOpenGraph = is_object($document) && isset($document->rubric_og_template)
 					? trim((string) $document->rubric_og_template)
 					: '';
 				if ($rubricOpenGraph !== '') { $rubricHeader = rtrim($rubricHeader) . "\n" . $rubricOpenGraph; }

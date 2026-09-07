@@ -22,7 +22,7 @@
 		protected static $allowed = array(
 			'users', 'users_session', 'roles', 'role_permissions', 'permissions',
 			'settings', 'audit_log', 'module_migrations', 'module_migration_attempts',
-			'modules', 'module_events', 'ip_blocks', 'referrer_log',
+			'modules', 'module_events', 'ip_blocks', 'user_agent_blocks', 'referrer_log',
 			'console_snippets', 'admin_todos', 'admin_kanban', 'admin_kanban_columns',
 			'admin_notes', 'admin_reminders', 'not_found_log',
 			'admin_saved_views',

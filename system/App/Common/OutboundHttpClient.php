@@ -75,6 +75,28 @@
 			) !== false;
 		}
 
+		/** Private ranges allowed only for an explicitly trusted local endpoint. */
+		public static function isPrivateNetworkIp($ip)
+		{
+			$ip = (string) $ip;
+			if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+				$long = ip2long($ip);
+				if ($long === false) { return false; }
+				$long = (float) sprintf('%u', $long);
+				return ($long >= 167772160 && $long <= 184549375)
+					|| ($long >= 2886729728 && $long <= 2887778303)
+					|| ($long >= 3232235520 && $long <= 3232301055);
+			}
+
+			if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+				$packed = @inet_pton($ip);
+				return is_string($packed) && strlen($packed) === 16
+					&& (ord($packed[0]) & 0xfe) === 0xfc;
+			}
+
+			return false;
+		}
+
 		protected static function request($method, $url, $body, array $options)
 		{
 			if (!function_exists('curl_init')) {
@@ -275,8 +297,9 @@
 				throw new \RuntimeException('Удалённый хост не имеет доступного адреса');
 			}
 
+			$trustedPrivateHost = in_array($host, $options['allowed_private_hosts'], true);
 			foreach ($ips as $ip) {
-				if (!self::isPublicIp($ip)) {
+				if (!self::isPublicIp($ip) && (!$trustedPrivateHost || !self::isPrivateNetworkIp($ip))) {
 					throw new \RuntimeException('Удалённый хост указывает на private или reserved сеть');
 				}
 			}
@@ -420,6 +443,7 @@
 				'source' => 'runtime',
 				'download_path' => '',
 				'allow_http_errors' => false,
+				'allowed_private_hosts' => array(),
 			), $options);
 			$options['allowed_schemes'] = array_values(array_intersect(array('http', 'https'), array_map('strtolower', (array) $options['allowed_schemes'])));
 			$options['allowed_ports'] = array_values(array_unique(array_map('intval', (array) $options['allowed_ports'])));
@@ -429,6 +453,9 @@
 			$options['max_bytes'] = max(1, min(104857600, (int) $options['max_bytes']));
 			$options['download_path'] = isset($options['download_path']) ? (string) $options['download_path'] : '';
 			$options['allow_http_errors'] = !empty($options['allow_http_errors']);
+			$options['allowed_private_hosts'] = array_values(array_unique(array_filter(array_map(function ($host) {
+				try { return self::asciiHost($host); } catch (\Throwable $e) { return ''; }
+			}, (array) $options['allowed_private_hosts']))));
 			$options['headers'] = self::headers((array) $options['headers']);
 			$options['source'] = substr(
 				preg_replace('/[^a-z0-9_.-]+/', '_', strtolower(trim((string) $options['source']))),

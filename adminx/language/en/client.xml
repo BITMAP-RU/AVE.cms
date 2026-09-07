@@ -7,6 +7,7 @@
 	<phrase data="btn_cancel">Cancel</phrase>
 	<phrase data="btn_close">Close</phrase>
 	<phrase data="btn_confirm">Confirm</phrase>
+	<phrase data="btn_create">Create</phrase>
 	<phrase data="btn_delete">Delete</phrase>
 	<phrase data="btn_save">Save</phrase>
 	<phrase data="btn_show">Show</phrase>
@@ -34,6 +35,7 @@
 	<phrase data="topbar_theme">Theme</phrase>
 	<phrase data="ui_loading">Loading...</phrase>
 	<phrase data="ui_main">General</phrase>
+	<phrase data="ui_name">Name</phrase>
 	<phrase data="ui_nothing_found">Nothing found</phrase>
 	<phrase data="ui_remove">Remove</phrase>
 	<phrase data="ui_search">Search</phrase>

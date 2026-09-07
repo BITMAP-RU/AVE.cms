@@ -37,6 +37,10 @@
 
 		public static function bootstrap()
 		{
+			if (self::check()) {
+				self::refreshAuthenticatedUser();
+			}
+
 			if (!self::check()) {
 				self::restoreRememberedUser();
 			}
@@ -152,7 +156,7 @@
 					. ' usr.status, usr.deleted, grp.user_group_permission'
 					. ' FROM `' . PublicUserTables::table('users') . '` usr'
 					. ' LEFT JOIN `' . PublicUserTables::table('user_groups') . '` grp ON grp.user_group = usr.user_group'
-					. ' WHERE usr.deleted != %s'
+					. ' WHERE COALESCE(usr.deleted,0) != %s'
 					. ' AND ((usr.email = %s1 AND (usr.email_verified_at>0 OR usr.user_name=%s1 OR usr.phone_verified_at=0))'
 					. ' OR usr.user_name = %s1 OR usr.phone_normalized = %s2) LIMIT 1',
 					'1',
@@ -168,7 +172,7 @@
 				. ' usr.status, usr.deleted, grp.user_group_permission'
 				. ' FROM `' . PublicUserTables::table('users') . '` usr'
 				. ' LEFT JOIN `' . PublicUserTables::table('user_groups') . '` grp ON grp.user_group = usr.user_group'
-				. ' WHERE usr.deleted != %s AND (usr.email = %s1 OR usr.user_name = %s1) LIMIT 1',
+				. ' WHERE COALESCE(usr.deleted,0) != %s AND (usr.email = %s1 OR usr.user_name = %s1) LIMIT 1',
 				'1',
 				(string) $identifier
 			)->getAssoc();
@@ -271,6 +275,35 @@
 			return password_needs_rehash((string) $hash, PASSWORD_BCRYPT, array('cost' => 12));
 		}
 
+		/** Keep an open public session in sync with account status and permissions. */
+		protected static function refreshAuthenticatedUser()
+		{
+			$user = self::findUserById((int) Session::get('user_id'));
+			$systemIdentity = !empty($_SESSION['user_system_identity']);
+			$passwordChanged = $user && !$systemIdentity
+				&& !hash_equals((string) $user['password'], (string) Session::get('user_pass'));
+			if (!$user || (string) $user['status'] !== '1' || (string) $user['deleted'] === '1' || $passwordChanged) {
+				self::forgetRememberCookie();
+				Session::regenerateId(true);
+				self::clearIdentity();
+				return false;
+			}
+
+			Session::del(self::permissionKeys());
+			Session::set('user_name', PublicUserNames::format($user['user_name'], $user['firstname'], $user['lastname']));
+			Session::set('user_firstname', (string) $user['firstname']);
+			Session::set('user_lastname', (string) $user['lastname']);
+			Session::set('user_pass', (string) $user['password']);
+			Session::set('user_group', (int) $user['user_group']);
+			Session::set('user_email', (string) $user['email']);
+			Session::set('user_country', strtoupper((string) $user['country']));
+			foreach (self::permissions((string) $user['user_group_permission']) as $permission) {
+				Session::set($permission, 1);
+			}
+
+			return true;
+		}
+
 		protected static function upgradePassword($userId, $password)
 		{
 			$hash = password_hash((string) $password, PASSWORD_BCRYPT, array('cost' => 12));
@@ -340,7 +373,7 @@
 				. ' LEFT JOIN `' . PublicUserTables::table('user_groups') . '` grp ON grp.user_group = usr.user_group'
 				. ' WHERE ses.hash = %s AND ses.token_version=2 AND ses.agent = %s'
 				. ' AND ses.expires_at >= %i AND ses.last_active >= %i'
-				. ' AND usr.status = %s AND usr.deleted != %s LIMIT 1',
+				. ' AND usr.status = %s AND COALESCE(usr.deleted,0) != %s LIMIT 1',
 				$tokenHash,
 				mb_substr(Request::userAgent(), 0, 255),
 				$now,

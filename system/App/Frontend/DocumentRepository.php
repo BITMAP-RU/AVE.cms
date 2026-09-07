@@ -173,9 +173,10 @@
                 rub.rubric_meta_gen,
                 rub.rubric_template_id,
                 rub.rubric_start_code,
-                rub.rubric_changed,
-                rub.rubric_changed_fields,
-                tpl.template_text
+				rub.rubric_changed,
+				rub.rubric_changed_fields,
+				rub.rubric_is_technical,
+				tpl.template_text
                 {$alternateSelect}
             FROM {$documents} AS doc
             JOIN {$rubrics} AS rub ON rub.Id = doc.rubric_id

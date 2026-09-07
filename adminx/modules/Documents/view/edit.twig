@@ -22,6 +22,7 @@
 </div>
 
 <div class="documents-editor-workspace" data-document-workspace data-active-panel="main" data-catalog-mode="{{ catalog_mode ? '1' : '0' }}" data-is-new="{{ is_new ? '1' : '0' }}">
+  {% if catalog_mode and product_context_links %}{% include '@catalog/_context-links.twig' with {context_links: product_context_links} %}{% endif %}
   <div class="documents-workspace-navigation">
     <div class="tabs documents-workspace-tabs" role="tablist" aria-label="{{ catalog_mode ? 'Разделы товара' : 'Разделы документа' }}">
       <button class="tab is-active" type="button" role="tab" aria-selected="true" data-document-workspace-tab="main"><i class="ti ti-file-description"></i>Основное</button>
@@ -301,7 +302,10 @@
         <div class="documents-card-body">
           <div class="form-grid">
             <label class="field col-6"><span class="field-label">Статус</span><select class="select" name="document_status"><option value="1"{{ document.document_status == 1 ? ' selected' : '' }}>Опубликован</option><option value="0"{{ document.document_status == 0 ? ' selected' : '' }}>Черновик</option></select></label>
-            <label class="field col-6"><span class="field-label">Поиск</span><select class="select" name="document_in_search"><option value="1"{{ document.document_in_search == 1 ? ' selected' : '' }}>В поиске</option><option value="0"{{ document.document_in_search == 0 ? ' selected' : '' }}>Скрыт</option></select></label>
+			<label class="field col-6"><span class="field-label">Поиск</span><select class="select" name="document_in_search"><option value="1"{{ document.document_in_search == 1 ? ' selected' : '' }}>В поиске</option><option value="0"{{ document.document_in_search == 0 ? ' selected' : '' }}>Скрыт</option></select></label>
+			<label class="field col-6"><span class="field-label">Публичный доступ</span><select class="select" name="document_is_technical"><option value="0"{{ not document.document_is_technical ? ' selected' : '' }}>Обычный документ</option><option value="1"{{ document.document_is_technical ? ' selected' : '' }}>Служебный документ</option></select><span class="field-hint">Служебный документ доступен полям, связям и запросам, но не открывается отдельной страницей.</span></label>
+			<label class="field col-6"><span class="field-label">Sitemap</span><select class="select" name="document_in_sitemap"><option value="1"{{ document.document_in_sitemap ? ' selected' : '' }}>Добавлять</option><option value="0"{{ not document.document_in_sitemap ? ' selected' : '' }}>Не добавлять</option></select></label>
+			{% if document.rubric_is_technical %}<div class="alert alert-info documents-technical-alert col-12"><i class="ti ti-tool alert-ic"></i><div><b class="alert-title">Рубрика служебная</b><span>Публичный URL этого документа скрыт настройкой рубрики независимо от переключателя выше.</span></div></div>{% endif %}
             <label class="field col-12"><span class="field-label">Автор</span><select class="select" name="document_author_id">{% for author in authors %}<option value="{{ author.id }}"{{ document.document_author_id == author.id ? ' selected' : '' }}>{{ author.name }}{% if not author.active %} · отключён{% endif %}</option>{% endfor %}</select></label>
             <div class="field col-12">
               <span class="field-label">Родительский документ</span>

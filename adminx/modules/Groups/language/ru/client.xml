@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <language>
+	<phrase data="auto_0f0b8f55edcc806d">Пользователи</phrase>
 	<phrase data="auto_1240ef2fb91174ca">» будет удалена вместе с назначением прав.</phrase>
 	<phrase data="auto_5ea67f9e32546482">Роль «</phrase>
 	<phrase data="auto_721da5d070ce0d16">Не удалось удалить</phrase>
@@ -8,4 +9,5 @@
 	<phrase data="auto_8b064896cc26e067">Удалить роль?</phrase>
 	<phrase data="auto_c00aca49199296d7">Ошибка сети</phrase>
 	<phrase data="auto_e02d4b658f2984f4">Новая роль</phrase>
+	<phrase data="runtime_845595d6e899ecb0">Пользователи</phrase>
 </language>

@@ -22,6 +22,7 @@
 	use App\Common\Permission;
 	use App\Common\Navigation;
 	use App\Common\AuditLog;
+	use App\Common\Cache;
 	use App\Common\Settings;
 	use App\Adminx\Support\CodeEditor;
 	use App\Adminx\Support\AdminLocale;
@@ -152,6 +153,35 @@
 			));
 
 			return $this->success('Настройки безопасности сохранены', array('reload' => true));
+		}
+
+		public function saveNotificationPreference(array $params = array())
+		{
+			if (($err = $this->guard()) !== null) {
+				return $err;
+			}
+
+			try {
+				$preference = ModuleExtensions::setNotificationPreference(
+					Request::postStr('module_code'),
+					Request::postStr('key'),
+					Request::postBool('enabled')
+				);
+			} catch (\InvalidArgumentException $e) {
+				return $this->error($e->getMessage(), array(), 404);
+			}
+
+			Cache::forget('adminx.notifications.' . (int) Auth::id() . '.' . md5((string) ADMINX_BASE));
+			AuditLog::record('settings.notification_preference_updated', array(
+				'actor_id' => Auth::id(),
+				'target_type' => 'settings',
+				'target_id' => $preference['module_code'] . ':' . $preference['key'],
+				'meta' => array('enabled' => !empty($preference['enabled'])),
+			));
+
+			return $this->success('Настройка уведомлений сохранена', array(
+				'data' => array('preference' => $preference),
+			));
 		}
 
 		public function pagination(array $params = array())

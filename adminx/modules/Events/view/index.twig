@@ -110,15 +110,15 @@
         <tbody>
           {% for row in rows %}
           <tr class="events-row {{ row.state_class }}">
-            <td class="mono text-muted">{{ row.time_display }}</td>
-            <td><span class="badge {{ row.source_type_badge }} events-source-kind">{{ row.source_type_label }}</span></td>
-            <td><div class="events-referrer-source">{{ row.source_name }}</div></td>
-            <td>
+            <td class="mono text-muted events-cell-time">{{ row.time_display }}</td>
+            <td class="events-cell-state"><span class="badge {{ row.source_type_badge }} events-source-kind">{{ row.source_type_label }}</span></td>
+            <td class="events-cell-actor"><span class="events-mobile-label">Источник</span><div class="events-referrer-source">{{ row.source_name }}</div></td>
+            <td class="events-cell-message">
               <div class="events-message mono">{{ row.message }}</div>
               {% if row.url %}<div class="text-muted text-xs events-referrer-url">{{ row.url }}</div>{% endif %}
             </td>
-            <td><span class="badge badge-gray events-hit-count">{{ row.hits }}</span></td>
-            <td>
+            <td class="events-cell-ip"><span class="events-mobile-label">Переходы</span><span class="badge badge-gray events-hit-count">{{ row.hits }}</span></td>
+            <td class="events-cell-actions">
               {% if row.details_text %}
               <button class="btn btn-ghost btn-icon btn-sm" type="button" data-events-details data-tooltip="Детали" aria-label="Детали"><i class="ti ti-chevron-down"></i></button>
               {% endif %}
@@ -170,15 +170,15 @@
           </tr>
           {% endif %}
           <tr class="events-row {{ row.state_class }}">
-            <td class="mono text-muted">{{ row.time_display }}</td>
-            <td><span class="badge {{ row.state_badge }} events-state"><i class="{{ row.state_icon }}"></i>{{ row.state_label }}</span></td>
-            <td>{{ row.actor }}</td>
-            <td>
+            <td class="mono text-muted events-cell-time">{{ row.time_display }}</td>
+            <td class="events-cell-state"><span class="badge {{ row.state_badge }} events-state"><i class="{{ row.state_icon }}"></i>{{ row.state_label }}</span></td>
+            <td class="events-cell-actor"><span class="events-mobile-label">Пользователь</span>{{ row.actor }}</td>
+            <td class="events-cell-message">
               <div class="events-message">{{ row.message }}</div>
               {% if row.url %}<div class="mono text-muted text-xs">{{ row.url }}</div>{% endif %}
             </td>
-            <td class="mono text-muted">{{ row.ip }}</td>
-            <td>
+            <td class="mono text-muted events-cell-ip">{% if row.ip %}<span class="events-mobile-label">IP</span>{{ row.ip }}{% endif %}</td>
+            <td class="events-cell-actions">
               {% if row.details_text %}
               <button class="btn btn-ghost btn-icon btn-sm" type="button" data-events-details data-tooltip="Детали" aria-label="Детали"><i class="ti ti-chevron-down"></i></button>
               {% endif %}

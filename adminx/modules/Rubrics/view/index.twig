@@ -159,7 +159,8 @@
                 {% if rubric.rubric_docs_active == 1 %}<span class="badge badge-green">активна</span>{% else %}<span class="badge badge-gray">выкл</span>{% endif %}
                 {% if rubric.rubric_meta_gen == '1' %}<span class="badge badge-cyan">meta</span>{% endif %}
                 {% if rubric.rubric_alias_history == '1' %}<span class="badge badge-violet">history</span>{% endif %}
-                {% if rubric.rubric_purpose == 'directory' %}<span class="badge badge-cyan">справочник</span>{% endif %}
+				{% if rubric.rubric_purpose == 'directory' %}<span class="badge badge-cyan">справочник</span>{% endif %}
+				{% if rubric.rubric_is_technical %}<span class="badge badge-gray"><i class="ti ti-tool"></i> служебная</span>{% endif %}
                 {% if rubric.Id == 1 %}<span class="badge badge-amber">system</span>{% endif %}
               </div>
             </td>
@@ -390,7 +391,8 @@
         <div class="rubrics-field-section-body">
           <div class="form-grid">
             <label class="field col-6"><span class="field-label">Шаблон сайта</span><select class="select" name="rubric_template_id">{% for t in templates %}<option value="{{ t.Id }}">{{ t.template_title }}</option>{% else %}<option value="1">Основной шаблон</option>{% endfor %}</select></label>
-            <label class="field col-6"><span class="field-label">Документы</span><select class="select" name="rubric_docs_active"><option value="1">Активны</option><option value="0">Скрыты</option></select></label>
+			<label class="field col-6"><span class="field-label">Документы</span><select class="select" name="rubric_docs_active"><option value="1">Активны</option><option value="0">Скрыты</option></select></label>
+			<label class="field col-6"><span class="field-label">Публичный доступ</span><select class="select" name="rubric_is_technical"><option value="0">Обычная рубрика</option><option value="1">Служебная рубрика</option></select><span class="field-hint">Служебные документы работают внутри системы, но их URL возвращают 404; они не попадают в поиск, sitemap и SEO-проверки.</span></label>
             <label class="field col-6"><span class="field-label">Meta</span><select class="select" name="rubric_meta_gen"><option value="0">Вручную</option><option value="1">Автоматически</option></select></label>
             <label class="field col-6"><span class="field-label">История алиасов</span><select class="select" name="rubric_alias_history"><option value="0">Выключена</option><option value="1">Включена</option></select></label>
           </div>
@@ -732,7 +734,7 @@
               <button class="btn btn-secondary btn-sm" type="button" data-rubric-og-default><i class="ti ti-wand"></i>Базовая разметка</button>
             </div>
             <div class="rubrics-template-fields">
-              <div class="alert alert-info rubrics-og-help"><span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-photo-share"></i></span><div><b>Изображение задаётся полем рубрики</b><p>Откройте палитру тегов, вставьте медиаполе и добавьте формат <code>[img]</code>: <code>&lt;meta property="og:image" content="[tag:rfld:photo][img]"&gt;</code>.</p></div></div>
+			  <div class="alert alert-info rubrics-og-help"><span class="icon-tile" style="--tile-bg:var(--cyan-100);--tile-fg:var(--cyan-600)"><i class="ti ti-photo-share"></i></span><div><b>Изображение задаётся полем рубрики</b><p>Выберите медиаполе в палитре и добавьте после него <code>[img]</code>. Исходник: <code>&lt;meta property="og:image" content="[tag:domain][tag:fld:ALIAS][img]"&gt;</code>. Версия, вписанная в 800 × 800 пикселей: <code>&lt;meta property="og:image" content="[tag:domain][tag:f800x800:[tag:fld:ALIAS][img]]"&gt;</code>. Для галереи берётся первое изображение.</p></div></div>
               {{ ui.code_field('OG-разметка', 'rubric_og_template', 420, '', true) }}
               <div class="rubrics-og-tags"><span><code>[tag:og:title]</code><small>Заголовок</small></span><span><code>[tag:og:description]</code><small>Meta description</small></span><span><code>[tag:og:url]</code><small>Канонический URL</small></span><span><code>[tag:og:sitename]</code><small>Название сайта</small></span></div>
             </div>

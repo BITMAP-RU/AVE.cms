@@ -35,9 +35,11 @@
       if (hidden) {
         details.removeAttribute('hidden');
         button.classList.add('active');
+		row.classList.add('has-open-details');
       } else {
         details.setAttribute('hidden', 'hidden');
         button.classList.remove('active');
+		row.classList.remove('has-open-details');
       }
     },
 

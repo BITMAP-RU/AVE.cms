@@ -17,7 +17,7 @@
 	return array(
 		'code' => 'rubrics',
 		'name' => 'Рубрики и поля',
-		'version' => '0.3.6',
+		'version' => '0.3.10',
 		'field_sets' => \App\Adminx\Rubrics\RubricFieldPresets::definitions(),
 		'hook_definitions' => array(
 			array(
@@ -84,6 +84,7 @@
 			array('id' => '014_rubric_purpose', 'file' => 'migrations/014_rubric_purpose.php'),
 			array('id' => '015_merge_directory_permissions', 'file' => 'migrations/015_merge_directory_permissions.php'),
 			array('id' => '016_rubric_trash', 'file' => 'migrations/016_rubric_trash.sql'),
+			array('id' => '017_rubric_public_visibility', 'file' => 'migrations/017_rubric_public_visibility.sql'),
 		),
 
 		'routes' => array(

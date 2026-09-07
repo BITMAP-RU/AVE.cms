@@ -1,0 +1,24 @@
+{% set selection = product_roles.selection %}
+{% set options = product_roles.selection_options %}
+<section class="catalog-selection-preview" data-product-selection>
+  <h4>{{ 'Проверка выборки'|admin_trans }}</h4>
+  <div class="catalog-selection-controls">
+    <label class="field"><span class="field-label">{{ 'Выборка'|admin_trans }}</span><select class="select" data-selection="context">{% for code,label in options.contexts %}<option value="{{ code }}"{{ selection.context == code ? ' selected' : '' }}>{{ label|admin_trans }}</option>{% endfor %}</select></label>
+    <label class="field" data-selection-context="catalog"{{ selection.context != 'catalog' ? ' hidden' : '' }}><span class="field-label">{{ 'Раздел'|admin_trans }}</span><select class="select" data-selection="category"><option value="0">{{ 'Не выбран'|admin_trans }}</option>{% for item in options.categories %}<option value="{{ item.id }}"{{ selection.category == item.id ? ' selected' : '' }}>{{ item.name }} #{{ item.id }}</option>{% endfor %}</select></label>
+    <label class="field" data-selection-context="feed"{{ selection.context != 'feed' ? ' hidden' : '' }}><span class="field-label">{{ 'Фид'|admin_trans }}</span><select class="select" data-selection="feed"><option value="0">{{ 'Не выбран'|admin_trans }}</option>{% for item in options.feeds %}<option value="{{ item.id }}"{{ selection.feed == item.id ? ' selected' : '' }}>{{ item.name }} #{{ item.id }}</option>{% endfor %}</select></label>
+    <label class="field" data-selection-context="search"{{ selection.context != 'search' ? ' hidden' : '' }}><span class="field-label">{{ 'Область поиска'|admin_trans }}</span><select class="select" data-selection="scope">{% for item in options.scopes %}<option value="{{ item.code }}"{{ selection.scope == item.code ? ' selected' : '' }}>{{ item.label|admin_trans }}</option>{% endfor %}</select></label>
+    <label class="field" data-selection-context="search"{{ selection.context != 'search' ? ' hidden' : '' }}><span class="field-label">{{ 'Поисковая строка'|admin_trans }}</span><input class="input" type="search" maxlength="200" value="{{ selection.query }}" data-selection="query"></label>
+    <label class="field" data-selection-context="recommendation"{{ selection.context != 'recommendation' ? ' hidden' : '' }}><span class="field-label">{{ 'Исходный товар #'|admin_trans }}</span><input class="input" type="number" min="1" value="{{ selection.source ?: '' }}" data-selection="source"></label>
+    <label class="field" data-selection-context="recommendation"{{ selection.context != 'recommendation' ? ' hidden' : '' }}><span class="field-label">{{ 'Лимит'|admin_trans }}</span><input class="input" type="number" min="1" max="24" value="{{ selection.limit ?: 8 }}" data-selection="limit"></label>
+    <button class="btn btn-secondary" type="button" data-product-selection-check><i class="ti ti-list-search" aria-hidden="true"></i>{{ 'Проверить выборку'|admin_trans }}</button>
+  </div>
+  <p class="text-secondary" data-selection-stale hidden>{{ 'Параметры изменены, результат не актуален'|admin_trans }}</p>
+  {% if product_roles.selection_result %}
+    {% set result = product_roles.selection_result %}
+    <div class="catalog-selection-result" data-selection-result>
+      <p><span class="badge {{ result.matched is same as(true) ? 'badge-green' : 'badge-gray' }}">{{ (result.matched is same as(true) ? 'Входит в выборку' : (result.matched is same as(false) ? 'Не входит в выборку' : 'Проверка не завершена'))|admin_trans }}</span></p>
+      <ul>{% for step in result.steps %}<li data-selection-step="{{ step.code }}"><i class="ti {{ step.pass is same as(true) ? 'ti-check text-success' : (step.pass is same as(false) ? 'ti-x text-danger' : 'ti-info-circle') }}" aria-hidden="true"></i><span>{{ step.label|admin_trans }}{% if step.detail != '' %}: <b>{{ step.detail }}</b>{% endif %}<span class="sr-only"> {{ (step.pass is same as(true) ? 'Да' : (step.pass is same as(false) ? 'Нет' : ''))|admin_trans }}</span></span></li>{% endfor %}</ul>
+      {% if result.note %}<p class="text-secondary text-sm">{{ result.note|admin_trans }}</p>{% endif %}
+    </div>
+  {% endif %}
+</section>

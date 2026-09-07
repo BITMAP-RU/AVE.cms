@@ -145,7 +145,7 @@
         <header>
           {% if can_manage %}<input type="checkbox" value="{{ item.Id }}" data-document-check aria-label="Выбрать документ #{{ item.Id }}">{% endif %}
           <div class="documents-admin-card-title"><a href="{{ ADMINX_BASE }}/documents/{{ item.Id }}/edit">{{ item.document_title }}</a><small>#{{ item.Id }}</small>{{ document_ui.public_link(item) }}</div>
-          <span class="badge badge-{{ item.state_badge }}">{{ item.state_label }}</span>
+		<span class="badge badge-{{ item.state_badge }}">{{ item.state_label }}</span>{% if item.is_technical_effective %}<span class="badge badge-gray"><i class="ti ti-tool"></i>Служебный</span>{% endif %}
         </header>
         <div class="documents-admin-card-body">
           {% if admin_view.mode == 'custom' %}
@@ -237,7 +237,8 @@
             </td>
             <td class="documents-cell-state">
               <div class="documents-badges">
-                <span class="badge badge-{{ item.state_badge }}">{{ item.state_label }}</span>
+				<span class="badge badge-{{ item.state_badge }}">{{ item.state_label }}</span>
+				{% if item.is_technical_effective %}<span class="badge badge-gray"><i class="ti ti-tool"></i>Служебный</span>{% endif %}
                 {% if item.document_in_search %}<span class="badge badge-blue documents-search-flag"><i class="ti ti-search"></i>В поиске</span>{% endif %}
                 {% if item.Id == 1 %}<span class="badge badge-amber">system</span>{% endif %}
               </div>

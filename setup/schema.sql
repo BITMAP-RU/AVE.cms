@@ -282,6 +282,20 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}_ip_blocks` (
   KEY `idx_expires` (`expires_at`)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS `{{prefix}}_user_agent_blocks` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `pattern_hash` CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `pattern` VARCHAR(500) NOT NULL,
+  `match_type` VARCHAR(16) CHARACTER SET ascii COLLATE ascii_general_ci NOT NULL DEFAULT 'contains',
+  `reason` VARCHAR(500) NOT NULL DEFAULT '',
+  `expires_at` INT UNSIGNED DEFAULT NULL,
+  `actor_id` INT UNSIGNED NOT NULL DEFAULT 0,
+  `created_at` INT UNSIGNED NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_user_agent_pattern` (`pattern_hash`),
+  KEY `idx_user_agent_expires` (`expires_at`)
+) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS `{{prefix}}_referrer_log` (
   `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `log_date` DATE NOT NULL,
@@ -316,6 +330,7 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}_not_found_log` (
   `query_string` VARCHAR(512) NOT NULL DEFAULT '',
   `referer` VARCHAR(512) NOT NULL DEFAULT '',
   `user_agent` VARCHAR(255) NOT NULL DEFAULT '',
+  `request_ip` VARCHAR(45) NOT NULL DEFAULT '',
   `hits` INT UNSIGNED NOT NULL DEFAULT 1,
   `resolved` TINYINT(1) NOT NULL DEFAULT 0,
   `first_seen_at` INT UNSIGNED NOT NULL,
@@ -613,6 +628,7 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}_rubrics` (
   `rubric_author_id` INT UNSIGNED NOT NULL DEFAULT 1,
   `rubric_created` INT UNSIGNED NOT NULL DEFAULT 0,
   `rubric_docs_active` TINYINT UNSIGNED NOT NULL DEFAULT 1,
+  `rubric_is_technical` TINYINT UNSIGNED NOT NULL DEFAULT 0,
   `rubric_start_code` TEXT NOT NULL,
   `rubric_code_start` TEXT NOT NULL,
   `rubric_code_end` TEXT NOT NULL,
@@ -807,11 +823,13 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}_documents` (
   `document_version` INT UNSIGNED NOT NULL DEFAULT 1,
   `document_author_id` MEDIUMINT UNSIGNED NOT NULL DEFAULT 1,
   `document_in_search` ENUM('1','0') NOT NULL DEFAULT '1',
+  `document_is_technical` TINYINT UNSIGNED NOT NULL DEFAULT 0,
   `document_meta_keywords` TEXT NOT NULL,
   `document_meta_description` TEXT NOT NULL,
   `document_meta_robots` ENUM('index,follow','index,nofollow','noindex,nofollow') NOT NULL DEFAULT 'index,follow',
   `document_sitemap_freq` TINYINT NOT NULL DEFAULT 3,
   `document_sitemap_pr` FLOAT DEFAULT 0.5,
+  `document_in_sitemap` TINYINT UNSIGNED NOT NULL DEFAULT 1,
   `document_status` ENUM('1','0') NOT NULL DEFAULT '1',
   `document_deleted` ENUM('0','1') NOT NULL DEFAULT '0',
   `document_count_print` INT UNSIGNED NOT NULL DEFAULT 0,
@@ -830,6 +848,7 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}_documents` (
   KEY `idx_status` (`document_status`),
   KEY `idx_published` (`document_published`),
   KEY `idx_expire` (`document_expire`),
+  KEY `idx_public_visibility` (`document_is_technical`,`document_in_sitemap`),
   KEY `idx_request` (`Id`, `rubric_id`, `document_status`, `document_deleted`),
   KEY `idx_public_listing` (`rubric_id`, `document_status`, `document_deleted`, `document_published`, `Id`)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARSET=utf8mb4;
@@ -1232,6 +1251,7 @@ CREATE TABLE IF NOT EXISTS `{{prefix}}_module_catalog_items` (
   `fields_use` TEXT DEFAULT NULL,
   `filters_use` TEXT DEFAULT NULL,
   `filters_settings` TEXT DEFAULT NULL,
+  `source_item_ids` TEXT DEFAULT NULL,
   `attribute_set_id` INT UNSIGNED NOT NULL DEFAULT 0,
   `attributes_runtime` VARCHAR(20) NOT NULL DEFAULT 'legacy',
   `filter_runtime` VARCHAR(20) NOT NULL DEFAULT 'legacy',

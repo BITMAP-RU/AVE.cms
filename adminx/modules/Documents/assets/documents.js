@@ -3669,7 +3669,8 @@
     var help = root.querySelector('[data-bulk-target-help]');
     if (!help || !target) { return; }
     var selected = target.options[target.selectedIndex];
-    var message = selected ? String(selected.getAttribute('data-help') || '') : '';
+    var editsField = operation && ['fill', 'set', 'clear', 'replace'].indexOf(operation.value) !== -1;
+    var message = editsField && selected ? String(selected.getAttribute('data-help') || '') : '';
     if (selected && selected.value === 'document_title' && scope && scope.value === 'products') {
       message = 'Это заголовок документа в панели. Название товара на сайте обычно берётся из поля рубрики, помеченного «витрина: название товара на сайте».';
     }
@@ -3704,8 +3705,11 @@
     var editsField = ['fill', 'set', 'clear', 'replace'].indexOf(value) !== -1;
     setVisibility('[data-bulk-target-wrap]', editsField);
     setVisibility('[data-bulk-search-wrap]', value === 'replace');
-    setVisibility('[data-bulk-value-wrap]', value === 'fill' || value === 'set' || value === 'replace');
-    setVisibility('[data-bulk-rubric-target-wrap]', value === 'move');
+	setVisibility('[data-bulk-value-wrap]', value === 'fill' || value === 'set' || value === 'replace');
+	setVisibility('[data-bulk-rubric-target-wrap]', value === 'move');
+	setVisibility('[data-bulk-sitemap-frequency-wrap]', value === 'sitemap_frequency');
+	setVisibility('[data-bulk-sitemap-priority-wrap]', value === 'sitemap_priority');
+	setVisibility('[data-bulk-technical-help]', value === 'technical' || value === 'public');
     updateTargetHelp();
   }
 

@@ -3,7 +3,7 @@
   <div class="static_page_inner">
     {% if page.description %}<p class="text-muted">{{ page.description }}</p>{% endif %}
     {% if errors._form %}<div class="alert alert-danger" role="alert">{{ errors._form }}</div>{% endif %}
-    <form method="post" action="{{ base }}{{ auth_urls.remember }}" class="system-public-auth-form system-public-auth-form--compact">
+    <form method="post" action="{{ base }}{{ auth_urls.remember }}" class="system-public-auth-form system-public-auth-form--compact" data-auth-remember>
       <input type="hidden" name="_csrf" value="{{ csrf|e }}">
       <div class="form-group"><label for="public-auth-email">Email</label><input class="form-control" id="public-auth-email" type="email" name="email" value="{{ values.email|default('')|e }}" autocomplete="email" required>{% if errors.email %}<small class="text-danger">{{ errors.email }}</small>{% endif %}</div>
       <div class="system-public-auth-actions"><button class="btn btn-primary" type="submit">{{ page.submit_label }}</button><a href="{{ base }}{{ auth_urls.login }}">Вернуться ко входу</a></div>

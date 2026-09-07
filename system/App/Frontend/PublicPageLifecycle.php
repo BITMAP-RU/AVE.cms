@@ -137,6 +137,8 @@
 
 		protected static function paginationIsOutOfRange()
 		{
+			// Deferred module pages own their query parameters and pagination.
+			if (PublicPageContext::hasDeferredPage()) { return false; }
 			if (!empty($_REQUEST['module'])) { return false; }
 			$id = isset($_REQUEST['id']) ? $_REQUEST['id'] : '';
 			foreach (array('page', 'apage', 'artpage') as $name) {

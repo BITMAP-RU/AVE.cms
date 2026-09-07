@@ -43,7 +43,7 @@
 				. ($orderJoin !== '' ? 'COALESCE(orders.orders_count,0)' : '0') . ' orders_count,'
 				. ($orderJoin !== '' ? 'COALESCE(orders.orders_total,0)' : '0') . ' orders_total,'
 				. ($orderJoin !== '' ? 'COALESCE(orders.last_order_at,0)' : '0') . ' last_order_at'
-				. ' FROM ' . $users . ' u' . $orderJoin . ' WHERE u.deleted!=%s';
+				. ' FROM ' . $users . ' u' . $orderJoin . ' WHERE COALESCE(u.deleted,0)!=%s';
 			$args = array('1');
 			if ($query !== '') {
 				$sql .= ' AND (u.email LIKE %ss OR u.firstname LIKE %ss OR u.lastname LIKE %ss OR u.user_name LIKE %ss OR u.phone LIKE %ss OR u.company LIKE %ss';
@@ -78,7 +78,7 @@
 			$users = PublicUserTables::table('users');
 			$orders = BasketTables::table('module_basket_history');
 			$result = array(
-				'total' => (int) DB::query('SELECT COUNT(*) FROM ' . $users . ' WHERE deleted!=%s', '1')->getValue(),
+				'total' => (int) DB::query('SELECT COUNT(*) FROM ' . $users . ' WHERE COALESCE(deleted,0)!=%s', '1')->getValue(),
 				'buyers' => 0, 'repeat' => 0, 'duplicates' => count(self::duplicateGroups()),
 			);
 			if (DatabaseSchema::tableExists($orders)) {
@@ -169,10 +169,10 @@
 		{
 			$table = PublicUserTables::table('users'); $groups = array();
 			$queries = array(
-				'email' => "SELECT LOWER(TRIM(email)) duplicate_value,GROUP_CONCAT(Id ORDER BY Id) ids,COUNT(*) amount FROM $table WHERE deleted!='1' AND email!='' GROUP BY LOWER(TRIM(email)) HAVING COUNT(*)>1 LIMIT 30",
+				'email' => "SELECT LOWER(TRIM(email)) duplicate_value,GROUP_CONCAT(Id ORDER BY Id) ids,COUNT(*) amount FROM $table WHERE COALESCE(deleted,0)!='1' AND email!='' GROUP BY LOWER(TRIM(email)) HAVING COUNT(*)>1 LIMIT 30",
 			);
 			if (DatabaseSchema::columnExists($table, 'phone_normalized')) {
-				$queries['phone'] = "SELECT phone_normalized duplicate_value,GROUP_CONCAT(Id ORDER BY Id) ids,COUNT(*) amount FROM $table WHERE deleted!='1' AND phone_normalized IS NOT NULL GROUP BY phone_normalized HAVING COUNT(*)>1 LIMIT 30";
+				$queries['phone'] = "SELECT phone_normalized duplicate_value,GROUP_CONCAT(Id ORDER BY Id) ids,COUNT(*) amount FROM $table WHERE COALESCE(deleted,0)!='1' AND phone_normalized IS NOT NULL GROUP BY phone_normalized HAVING COUNT(*)>1 LIMIT 30";
 			}
 
 			foreach ($queries as $kind => $sql) {

@@ -488,6 +488,53 @@
     }
   };
 
+	// ------------------------------------------------------------------ //
+	//  Видимость отдельных элементов в колокольчике.
+	// ------------------------------------------------------------------ //
+	Adminx.NotificationPreferences = {
+		init: function () {
+			document.addEventListener('click', function (event) {
+				var toggle = event.target.closest('[data-notification-settings-toggle]');
+				if (!toggle) { return; }
+				event.preventDefault();
+				event.stopPropagation();
+				var menu = toggle.closest('.notif-menu');
+				var panel = menu ? menu.querySelector('[data-notification-settings]') : null;
+				var list = menu ? menu.querySelector('.notif-list') : null;
+				if (!panel) { return; }
+				var opening = panel.hidden;
+				panel.hidden = !opening;
+				if (list) { list.hidden = opening; }
+				toggle.setAttribute('aria-expanded', opening ? 'true' : 'false');
+			});
+
+			document.addEventListener('change', function (event) {
+				var input = event.target.closest('[data-notification-preference]');
+				if (!input) { return; }
+				var previous = !input.checked;
+				var data = new FormData();
+				data.append('module_code', input.getAttribute('data-module-code') || '');
+				data.append('key', input.getAttribute('data-key') || '');
+				data.append('enabled', input.checked ? '1' : '0');
+				input.disabled = true;
+				Adminx.Ajax.post(Adminx.base() + '/settings/notifications', data).then(function (payload) {
+					var response = Adminx.Ajax.handle(payload);
+					if (!payload.ok || response.success === false) {
+						input.checked = previous;
+						return;
+					}
+
+					window.location.reload();
+				}).catch(function () {
+					input.checked = previous;
+					Adminx.Toast.show(Adminx.t('server_unavailable', 'Сервер недоступен. Повторите попытку.'), 'error');
+				}).then(function () {
+					input.disabled = false;
+				});
+			});
+		}
+	};
+
   // ------------------------------------------------------------------ //
   //  Меню пользователя в подвале сайдбара. Сайдбар имеет overflow:hidden,
   //  поэтому всплывающее меню позиционируем fixed вручную (над триггером),
@@ -977,6 +1024,7 @@
     Adminx.Sidebar.init();
     Adminx.Theme.init();
     Adminx.Dropdown.init();
+		Adminx.NotificationPreferences.init();
     Adminx.SidebarUser.init();
     Adminx.Tabs.init();
     Adminx.Drawer.init();

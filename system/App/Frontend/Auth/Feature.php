@@ -105,6 +105,20 @@
 			return PublicAuthSettings::allowsPasswordLogin(self::$config);
 		}
 
+		public static function passwordRecoveryEnabled()
+		{
+			return self::passwordLoginEnabled() && !empty(self::$config['password_reset_enabled']);
+		}
+
+		public static function passwordChangeEnabled(array $user)
+		{
+			if (!self::passwordLoginEnabled()) { return false; }
+			$email = mb_strtolower(trim((string) (isset($user['email']) ? $user['email'] : '')));
+			$userName = mb_strtolower(trim((string) (isset($user['user_name']) ? $user['user_name'] : '')));
+			return filter_var($email, FILTER_VALIDATE_EMAIL)
+				&& (!empty($user['email_verified_at']) || $email === $userName || empty($user['phone_verified_at']));
+		}
+
 		public static function page($key)
 		{
 			return isset(self::$config['pages'][$key]) ? self::$config['pages'][$key] : array();

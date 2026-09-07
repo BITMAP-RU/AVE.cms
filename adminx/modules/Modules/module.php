@@ -25,7 +25,7 @@
 	return array(
 		'code' => 'modules',
 		'name' => 'Модули',
-		'version' => '0.2.0',
+		'version' => '0.2.1',
 
 		'settings' => array(
 			'repository_enabled' => array('label' => 'Удалённый каталог модулей', 'type' => 'bool', 'default' => false, 'group' => 'modules_repository'),

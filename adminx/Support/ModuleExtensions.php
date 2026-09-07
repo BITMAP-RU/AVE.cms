@@ -106,10 +106,16 @@
 		public static function notifications($base, array $summary)
 		{
 			foreach (self::contributions('notifications') as $contribution) {
+				$moduleCode = isset($contribution['module_code']) ? (string) $contribution['module_code'] : '';
 				$data = isset($contribution['data']) ? $contribution['data'] : array();
 				$items = isset($data['items']) && is_array($data['items']) ? $data['items'] : (self::isList($data) ? $data : array());
 				foreach ($items as $item) {
 					if (!is_array($item) || empty($item['title'])) {
+						continue;
+					}
+
+					$key = isset($item['key']) ? trim((string) $item['key']) : '';
+					if ($key !== '' && !self::notificationEnabled($moduleCode, $key)) {
 						continue;
 					}
 
@@ -137,14 +143,87 @@
 						'title' => AdminLocale::translateMarkup(isset($item['title']) ? (string) $item['title'] : ''),
 					));
 					$summary['total'] += $count;
-					if (!empty($item['key'])) {
-						$key = (string) $item['key'];
+					if ($key !== '') {
 						$summary[$key] = isset($summary[$key]) ? (int) $summary[$key] + $count : $count;
 					}
 				}
 			}
 
 			return $summary;
+		}
+
+		/** Настраиваемые элементы колокольчика без запуска их провайдеров. */
+		public static function notificationPreferences()
+		{
+			self::boot();
+			$out = array();
+			foreach (self::$extensions as $code => $extension) {
+				$module = self::currentModule($code, $extension['module']);
+				if (empty($module['installed']) || empty($module['enabled'])) {
+					continue;
+				}
+
+				$config = $extension['config'];
+				if (empty($config['notifications'])) {
+					continue;
+				}
+
+				foreach (self::normalizeItems($config['notifications']) as $item) {
+					if (!is_array($item) || !self::allowed($item) || empty($item['preferences']) || !is_array($item['preferences'])) {
+						continue;
+					}
+
+					foreach ($item['preferences'] as $preference) {
+						if (!is_array($preference)) {
+							continue;
+						}
+
+						$key = isset($preference['key']) ? trim((string) $preference['key']) : '';
+						$label = isset($preference['label']) ? trim((string) $preference['label']) : '';
+						if (!preg_match('/^[a-z][a-z0-9_]{0,63}$/', $key) || $label === '') {
+							continue;
+						}
+
+						$default = !empty($preference['default']);
+						$out[] = array(
+							'module_code' => (string) $code,
+							'key' => $key,
+							'label' => AdminLocale::translateMarkup($label),
+							'description' => AdminLocale::translateMarkup(isset($preference['description']) ? (string) $preference['description'] : ''),
+							'enabled' => (bool) ModuleSettings::get(self::notificationSettingKey($key), $default, $code),
+							'default' => $default,
+							'sort_order' => isset($preference['sort_order']) ? (int) $preference['sort_order'] : 100,
+						);
+					}
+				}
+			}
+
+			usort($out, function ($left, $right) {
+				if ($left['sort_order'] === $right['sort_order']) {
+					return strcmp($left['label'], $right['label']);
+				}
+
+				return $left['sort_order'] <=> $right['sort_order'];
+			});
+			return $out;
+		}
+
+		/** Сохранить один объявленный модулем переключатель уведомлений. */
+		public static function setNotificationPreference($moduleCode, $key, $enabled)
+		{
+			$moduleCode = strtolower(trim((string) $moduleCode));
+			$key = strtolower(trim((string) $key));
+			foreach (self::notificationPreferences() as $preference) {
+				if ($preference['module_code'] !== $moduleCode || $preference['key'] !== $key) {
+					continue;
+				}
+
+				ModuleSettings::set(self::notificationSettingKey($key), (bool) $enabled, $moduleCode, 'bool');
+				$preference['enabled'] = (bool) $enabled;
+				return $preference;
+			}
+
+			throw new \InvalidArgumentException('Настройка уведомления не найдена');
 		}
 
 		public static function catalog()
@@ -409,5 +488,21 @@
 		protected static function presentationEnabled($code, $type)
 		{
 			return (bool) ModuleSettings::get('adminx_' . $type . '_enabled', true, $code);
+		}
+
+		protected static function notificationEnabled($moduleCode, $key)
+		{
+			foreach (self::notificationPreferences() as $preference) {
+				if ($preference['module_code'] === (string) $moduleCode && $preference['key'] === (string) $key) {
+					return !empty($preference['enabled']);
+				}
+			}
+
+			return true;
+		}
+
+		protected static function notificationSettingKey($key)
+		{
+			return 'adminx_notification_' . preg_replace('/[^a-z0-9_]+/', '_', strtolower((string) $key)) . '_enabled';
 		}
 	}

@@ -68,12 +68,18 @@
 @media (max-width: 520px) { .system-public-auth-oauth-list { grid-template-columns: 1fr; } }
 
 .system-public-auth-phone { width: min(560px, 100%); margin-top: 22px; }
+.system-public-auth-phone-heading { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+.system-public-auth-phone-heading > span { display: grid; width: 44px; height: 44px; flex: 0 0 44px; place-items: center; border-radius: 50%; background: #eef5fb; color: #17699a; font-size: 14px; font-weight: 700; }
+.system-public-auth-phone-heading h2 { margin: 0; font-size: 20px; line-height: 1.25; text-wrap: balance; }
+.system-public-auth-phone-heading p { margin: 4px 0 0; color: #68717d; font-size: 14px; line-height: 1.45; text-wrap: pretty; }
+.system-public-auth-phone-label { display: block; margin: 0 0 7px; font-size: 13px; font-weight: 700; }
 .system-public-auth-phone form[aria-busy="true"] { opacity: .58; pointer-events: none; }
 .system-public-auth-phone-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: stretch; }
 .system-public-auth-phone-row .form-control { min-height: 44px; margin: 0; }
 .system-public-auth-phone-row .btn { min-height: 44px; white-space: nowrap; }
-.system-public-auth-phone-consent, .system-public-auth-phone-remember { display: flex; align-items: flex-start; gap: 9px; margin: 12px 0 0; color: #68717d; font-size: 13px; font-weight: 400; line-height: 1.45; }
+.system-public-auth-phone-consent, .system-public-auth-phone-remember { display: flex; align-items: flex-start; gap: 9px; margin: 14px 0 0; color: #68717d; font-size: 13px; font-weight: 400; line-height: 1.45; }
 .system-public-auth-phone-consent input, .system-public-auth-phone-remember input { flex: 0 0 auto; margin-top: 3px; }
+.system-public-auth-phone-consent b { color: #20242b; }
 .system-public-auth-phone-consent a { font-weight: 600; text-decoration: none; }
 .system-public-auth-phone-message { margin-top: 10px; color: #16815d; font-size: 13px; font-weight: 600; }
 .system-public-auth-phone-message.is-error { color: #b42318; }
@@ -83,7 +89,7 @@
 .system-public-auth-phone-back:hover, .system-public-auth-phone-back:focus, .system-public-auth-phone-resend:hover, .system-public-auth-phone-resend:focus { text-decoration: none; }
 .system-public-auth-phone-resend:disabled { color: #87909c; cursor: default; }
 .system-public-auth-phone .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; white-space: nowrap; }
-@media (max-width: 520px) { .system-public-auth-phone-row { grid-template-columns: 1fr; } .system-public-auth-phone-row .btn { width: 100%; } }
+@media (max-width: 520px) { .system-public-auth-phone-heading { align-items: flex-start; } .system-public-auth-phone-row { grid-template-columns: 1fr; } .system-public-auth-phone-row .btn { width: 100%; } }
 
 .system-account-page { min-height: 70vh; padding: 48px 20px; background: #f5f6f8; color: #20242b; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; -webkit-font-smoothing: antialiased; }
 .system-account-page, .system-account-page * { box-sizing: border-box; }

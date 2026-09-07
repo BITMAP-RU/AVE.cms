@@ -16,6 +16,7 @@
 
 	defined('BASEPATH') || die('Direct access to this location is not allowed.');
 
+	use App\Helpers\Request;
 	use DB;
 
 	/**
@@ -24,6 +25,8 @@
 	 */
 	class NotFoundLog
 	{
+		protected static $requestIpColumn;
+
 		public static function table()
 		{
 			return SystemTables::table('not_found_log');
@@ -43,27 +46,49 @@
 				$query = (string) parse_url($uri, PHP_URL_QUERY);
 				$referer = isset($_SERVER['HTTP_REFERER']) ? (string) $_SERVER['HTTP_REFERER'] : '';
 				$ua = isset($_SERVER['HTTP_USER_AGENT']) ? (string) $_SERVER['HTTP_USER_AGENT'] : '';
+				$ip = Request::ip();
 				$now = time();
 
-				DB::query(
-					'INSERT INTO `' . self::table() . '`'
-					. ' (path_hash, path, query_string, referer, user_agent, hits, first_seen_at, last_seen_at)'
-					. ' VALUES (%s, %s, %s, %s, %s, 1, %i, %i)'
-					. ' ON DUPLICATE KEY UPDATE hits = hits + 1, last_seen_at = VALUES(last_seen_at),'
-					. ' referer = VALUES(referer), query_string = VALUES(query_string)',
-					hash('sha256', $path),
-					mb_substr($path, 0, 512),
-					mb_substr($query, 0, 512),
-					mb_substr($referer, 0, 512),
-					mb_substr($ua, 0, 255),
-					$now,
-					$now
-				);
+				if (self::hasRequestIpColumn()) {
+					DB::query(
+						'INSERT INTO `' . self::table() . '`'
+							. ' (path_hash, path, query_string, referer, user_agent, request_ip, hits, first_seen_at, last_seen_at)'
+							. ' VALUES (%s, %s, %s, %s, %s, %s, 1, %i, %i)'
+							. ' ON DUPLICATE KEY UPDATE hits = hits + 1, last_seen_at = VALUES(last_seen_at),'
+							. ' referer = VALUES(referer), query_string = VALUES(query_string),'
+							. ' user_agent = VALUES(user_agent), request_ip = VALUES(request_ip)',
+						hash('sha256', $path), mb_substr($path, 0, 512), mb_substr($query, 0, 512),
+						mb_substr($referer, 0, 512), mb_substr($ua, 0, 255), mb_substr($ip, 0, 45), $now, $now
+					);
+				} else {
+					DB::query(
+						'INSERT INTO `' . self::table() . '`'
+							. ' (path_hash, path, query_string, referer, user_agent, hits, first_seen_at, last_seen_at)'
+							. ' VALUES (%s, %s, %s, %s, %s, 1, %i, %i)'
+							. ' ON DUPLICATE KEY UPDATE hits = hits + 1, last_seen_at = VALUES(last_seen_at),'
+							. ' referer = VALUES(referer), query_string = VALUES(query_string), user_agent = VALUES(user_agent)',
+						hash('sha256', $path), mb_substr($path, 0, 512), mb_substr($query, 0, 512),
+						mb_substr($referer, 0, 512), mb_substr($ua, 0, 255), $now, $now
+					);
+				}
+
 				return true;
 			} catch (\Throwable $e) {
 				error_log('NotFound log write failed: ' . $e->getMessage());
 				return false;
 			}
+		}
+
+		protected static function hasRequestIpColumn()
+		{
+			if (self::$requestIpColumn !== null) { return self::$requestIpColumn; }
+			try {
+				self::$requestIpColumn = DatabaseSchema::columnExists(self::table(), 'request_ip');
+			} catch (\Throwable $e) {
+				self::$requestIpColumn = false;
+			}
+
+			return self::$requestIpColumn;
 		}
 
 		protected static function isNoise($path)
@@ -87,9 +112,11 @@
 			$where = array();
 			$args = array();
 			if ($query !== '') {
-				$where[] = '(path LIKE %ss OR referer LIKE %ss)';
-				$args[] = $query;
-				$args[] = $query;
+				$withIp = self::hasRequestIpColumn();
+				$where[] = $withIp
+					? '(path LIKE %ss OR referer LIKE %ss OR user_agent LIKE %ss OR request_ip LIKE %ss)'
+					: '(path LIKE %ss OR referer LIKE %ss OR user_agent LIKE %ss)';
+				$args = array_fill(0, $withIp ? 4 : 3, $query);
 			}
 
 			if ($onlyUnresolved) {
@@ -104,6 +131,32 @@
 			$sql .= ' ORDER BY resolved ASC, last_seen_at DESC, id DESC LIMIT ' . $limit;
 			$rows = call_user_func_array(array('DB', 'query'), array_merge(array($sql), $args))->getAll();
 			return $rows ?: array();
+		}
+
+		public static function exportChunk($query = '', $onlyUnresolved = false, $beforeId = 0, $limit = 500)
+		{
+			$query = trim((string) $query);
+			$limit = max(1, min(1000, (int) $limit));
+			$where = array();
+			$args = array();
+			if ($query !== '') {
+				$withIp = self::hasRequestIpColumn();
+				$where[] = $withIp
+					? '(path LIKE %ss OR referer LIKE %ss OR user_agent LIKE %ss OR request_ip LIKE %ss)'
+					: '(path LIKE %ss OR referer LIKE %ss OR user_agent LIKE %ss)';
+				$args = array_fill(0, $withIp ? 4 : 3, $query);
+			}
+
+			if ($onlyUnresolved) { $where[] = 'resolved = 0'; }
+			if ((int) $beforeId > 0) {
+				$where[] = 'id < %i';
+				$args[] = (int) $beforeId;
+			}
+
+			$sql = 'SELECT * FROM `' . self::table() . '`';
+			if ($where) { $sql .= ' WHERE ' . implode(' AND ', $where); }
+			$sql .= ' ORDER BY id DESC LIMIT ' . $limit;
+			return call_user_func_array(array('DB', 'query'), array_merge(array($sql), $args))->getAll() ?: array();
 		}
 
 		public static function stats()
@@ -140,6 +193,12 @@
 		public static function clearResolved()
 		{
 			DB::query('DELETE FROM `' . self::table() . '` WHERE resolved = 1');
+			return (int) DB::affectedRows();
+		}
+
+		public static function clearAll()
+		{
+			DB::query('DELETE FROM `' . self::table() . '`');
 			return (int) DB::affectedRows();
 		}
 	}

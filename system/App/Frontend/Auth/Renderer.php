@@ -32,6 +32,7 @@
 		{
 			$base = defined('ABS_PATH') ? rtrim((string) ABS_PATH, '/') : '';
 			$user = Auth::publicUser();
+			$fullUser = $user ? (new UserRepository())->find((int) $user['id']) : null;
 			$systemUser = Auth::systemUser();
 			$displayUser = $user ?: $systemUser;
 			$accountLinks = Hooks::filter('auth.account.links', array());
@@ -48,8 +49,9 @@
 				'can_admin' => Auth::systemUserCan('admin_panel'),
 				'admin_url' => AdminLocation::url('/'),
 				'registration_enabled' => Feature::registrationFormEnabled(),
-				'password_reset_enabled' => !empty(Feature::config()['password_reset_enabled']),
+				'password_reset_enabled' => Feature::passwordRecoveryEnabled(),
 				'password_login_enabled' => Feature::passwordLoginEnabled(),
+				'password_change_enabled' => $fullUser ? Feature::passwordChangeEnabled($fullUser) : false,
 				'auth_urls' => Feature::urls(),
 				'login_page' => Feature::page('login'),
 				'oauth_providers' => ProviderRegistry::publicItems(),
@@ -63,11 +65,14 @@
 				$html = Twig::twig()->render('@system_auth/panel.twig', $context);
 			}
 
+			$html = self::withProtection('login', $html, $context);
+
 			if (!$includeAssets) {
 				return $html;
 			}
 
 			return '<link rel="stylesheet" href="' . $base . '/system/App/Frontend/Auth/assets/auth.css?v=' . self::assetVersion('auth.css') . '">'
+				. '<script src="' . $base . '/system/App/Frontend/Auth/assets/phone-mask.js?v=' . self::assetVersion('phone-mask.js') . '" defer></script>'
 				. '<script src="' . $base . '/system/App/Frontend/Auth/assets/auth.js?v=' . self::assetVersion('auth.js') . '" defer></script>'
 				. $html;
 		}
@@ -91,6 +96,11 @@
 				'phone_registration_enabled' => Feature::phoneRegistrationEnabled(),
 				'registration_phone_providers' => Feature::phoneRegistrationProviders(),
 			), $data);
+			if (!array_key_exists('password_change_enabled', $context)) {
+				$context['password_change_enabled'] = isset($context['user']) && is_array($context['user'])
+					? Feature::passwordChangeEnabled($context['user']) : false;
+			}
+
 			$html = (new FormTemplateRepository())->render($template, $context);
 			if ($template === 'login' && empty($context['password_login_enabled'])
 				&& preg_match('/name\s*=\s*["\']user_login["\']/i', $html)) {
@@ -125,6 +135,9 @@
 
 			if (empty($context['preview'])) {
 				$html = self::withProtection($template, $html, $context);
+				if (($template === 'login' || $template === 'register') && strpos($html, 'data-phone-auth-request') !== false) {
+					$html = self::withProtection('phone', $html, $context);
+				}
 			}
 
 			if (!empty($context['preview'])) {
@@ -133,6 +146,7 @@
 			}
 
 			$html = '<link rel="stylesheet" href="' . $base . '/system/App/Frontend/Auth/assets/auth.css?v=' . self::assetVersion('auth.css') . '">'
+				. '<script src="' . $base . '/system/App/Frontend/Auth/assets/phone-mask.js?v=' . self::assetVersion('phone-mask.js') . '" defer></script>'
 				. '<script src="' . $base . '/system/App/Frontend/Auth/assets/auth.js?v=' . self::assetVersion('auth.js') . '" defer></script>'
 				. $html;
 			PublicModuleRuntime::deferPage($html, array(
@@ -164,6 +178,7 @@
 				'register' => 'registration',
 				'remember' => 'password_reset',
 				'reset' => 'password_reset',
+				'phone' => 'phone_auth',
 			);
 			if (!isset($profiles[$template]) || stripos((string) $html, '</form>') === false) {
 				return $html;
@@ -179,9 +194,21 @@
 				return $html;
 			}
 
+			$targets = array(
+				'login' => '/\bdata-auth-login\b|name\s*=\s*["\']user_login["\']/i',
+				'register' => '/\bdata-auth-register\b|name\s*=\s*["\']password_confirm["\']/i',
+				'remember' => '/\bdata-auth-remember\b/i',
+				'reset' => '/\bdata-auth-reset\b/i',
+				'phone' => '/\bdata-phone-auth-request\b/i',
+			);
+			$target = $targets[$template];
 			$fields = (string) $protection['html'];
-			return preg_replace_callback('/<\/form>/i', function () use ($fields) {
-				return $fields . '</form>';
-			}, (string) $html, 1);
+			$inserted = false;
+			return preg_replace_callback('/<form\b[^>]*>.*?<\/form>/is', function ($match) use ($target, $fields, &$inserted) {
+				if ($inserted || !preg_match($target, $match[0])) { return $match[0]; }
+				$inserted = true;
+				$position = strripos($match[0], '</form>');
+				return substr($match[0], 0, $position) . $fields . substr($match[0], $position);
+			}, (string) $html);
 		}
 	}

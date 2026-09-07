@@ -17,7 +17,7 @@
 	return array(
 		'code' => 'events',
 		'name' => 'Системные события',
-		'version' => '0.1.1',
+		'version' => '0.1.3',
 
 		'permissions' => array(
 			'key' => 'events',
@@ -49,7 +49,7 @@
 				'icon' => 'ti ti-history',
 				'permission' => 'view_events',
 				'group' => 'Система',
-				'sort_order' => 35,
+				'sort_order' => 99,
 				'match' => array(
 					'/events',
 				),

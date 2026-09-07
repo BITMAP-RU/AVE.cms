@@ -70,12 +70,31 @@
 			$errors = array();
 			foreach ($this->fields($context) as $field) {
 				$value = isset($values[(int) $field['id']]) ? $values[(int) $field['id']] : '';
-				if (!empty($field['is_required']) && trim(is_array($value) ? implode('', $value) : (string) $value) === '') {
-					$errors['extra_' . (int) $field['id']] = 'Заполните поле «' . (string) $field['name'] . '».';
+				$normalized = trim(is_array($value) ? implode(',', array_map('trim', $value)) : (string) $value);
+				$key = 'extra_' . (int) $field['id'];
+				$type = (string) $field['type'];
+				if (!empty($field['is_required']) && ($normalized === '' || ($type === 'checkbox' && $normalized !== '1'))) {
+					$errors[$key] = 'Заполните поле «' . (string) $field['name'] . '».';
+				} elseif ($normalized !== '' && $type === 'email' && !filter_var($normalized, FILTER_VALIDATE_EMAIL)) {
+					$errors[$key] = 'Укажите корректный email.';
+				} elseif ($normalized !== '' && $type === 'number' && !is_numeric($normalized)) {
+					$errors[$key] = 'Укажите число.';
+				} elseif ($normalized !== '' && $type === 'date' && !$this->validDate($normalized)) {
+					$errors[$key] = 'Укажите корректную дату.';
+				} elseif ($normalized !== '' && $type === 'select' && !in_array($normalized, $field['choices'], true)) {
+					$errors[$key] = 'Выберите значение из списка.';
 				}
 			}
 
 			return $errors;
+		}
+
+		protected function validDate($value)
+		{
+			$date = \DateTime::createFromFormat('!Y-m-d', (string) $value);
+			$errors = \DateTime::getLastErrors();
+			return $date !== false
+				&& ($errors === false || ((int) $errors['warning_count'] === 0 && (int) $errors['error_count'] === 0));
 		}
 
 		protected function choices($value)

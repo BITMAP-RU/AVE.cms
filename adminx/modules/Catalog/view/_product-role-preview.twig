@@ -1,0 +1,28 @@
+<div class="catalog-role-preview" data-product-role-preview data-error="{{ 'Не удалось проверить сопоставление'|admin_trans }}" aria-live="polite">
+  <h3>{{ 'Сохранённое сопоставление'|admin_trans }}</h3>
+  {% if product_roles.denied %}<p class="text-secondary">{{ 'Недостаточно прав'|admin_trans }}</p>{% else %}
+  <div class="form-grid">
+    <label class="field col-4"><span class="field-label">{{ 'Документ #'|admin_trans }}</span><input class="input" type="number" min="1" value="{{ product_roles.document_id ?: '' }}" data-product-role-document></label>
+    <div class="field col-4"><span class="field-label">{{ 'Образец товара'|admin_trans }}</span><button type="button" class="btn btn-secondary" data-product-role-refresh><i class="ti ti-refresh"></i>{{ 'Проверить'|admin_trans }}</button></div>
+  </div>
+  {% include '@catalog/_product-selection-preview.twig' %}
+  {% if product_roles.snapshot %}
+    {% set sample = product_roles.snapshot %}
+    <p>{% if product_roles.can_edit_product %}<a href="{{ ADMINX_BASE }}/catalog/products/{{ sample.id }}/edit">{{ sample.title }} · #{{ sample.id }}</a>{% else %}{{ sample.title }} · #{{ sample.id }}{% endif %}</p>
+    <p><span class="badge {{ sample.published ? 'badge-green' : 'badge-gray' }}">{{ (sample.published ? 'Опубликован' : 'Не доступен публично')|admin_trans }}</span> <span class="badge {{ sample.orderable ? 'badge-green' : 'badge-gray' }}">{{ (sample.orderable ? 'Доступен к покупке' : 'Покупка недоступна')|admin_trans }}</span></p>
+    {% for reason in product_roles.reasons %}<p class="text-secondary">{{ reason|admin_trans }}</p>{% endfor %}
+    {% if sample.exclude_from_price %}<p class="text-secondary">{{ 'Исключение из прайса включено.'|admin_trans }}</p>{% endif %}
+    <div class="table-wrap"><table class="table"><thead><tr><th>{{ 'Назначение'|admin_trans }}</th><th>{{ 'Поле'|admin_trans }}</th><th>{{ 'Значение'|admin_trans }}</th></tr></thead><tbody>
+      {% for role,definition in product_roles.definitions %}{% if not definition.optional or definition.field_id %}
+        <tr><td>{{ definition.label|admin_trans }}</td><td data-label="{{ 'Поле'|admin_trans }}">{% if definition.field %}<a href="{{ ADMINX_BASE }}/rubrics?fields={{ catalog.rubric_id }}&amp;field={{ definition.field_id }}">{{ definition.field.title ?: definition.field.alias }} · #{{ definition.field_id }}</a>{% else %}{{ 'Не назначено'|admin_trans }}{% endif %}</td><td data-label="{{ 'Значение'|admin_trans }}">{% set value = attribute(sample,role) %}{% if value is same as(true) %}{{ 'Да'|admin_trans }}{% elseif value is same as(false) %}{{ 'Нет'|admin_trans }}{% elseif value is iterable %}{% if value is empty %}{{ 'Не заполнено'|admin_trans }}{% else %}{{ value|slice(0, 3)|join(', ') }}{% if value|length > 3 %} · {{ 'ещё'|admin_trans }} {{ value|length - 3 }}{% endif %}{% endif %}{% elseif value is same as('') %}{{ 'Не заполнено'|admin_trans }}{% else %}{{ value }}{% endif %}</td></tr>
+      {% endif %}{% endfor %}
+    </tbody></table></div>
+  {% else %}<p class="text-secondary">{{ 'Документ этой рубрики не найден.'|admin_trans }}</p>{% endif %}
+  <div class="btn-group">
+    {% if settings.request_id and product_roles.can_requests %}<a class="btn btn-ghost" href="{{ ADMINX_BASE }}/requests/{{ settings.request_id }}"><i class="ti ti-filter"></i>{{ 'Условия запроса'|admin_trans }}</a>{% endif %}
+    {% if product_roles.can_rubrics %}<a class="btn btn-ghost" href="{{ ADMINX_BASE }}/rubrics?templates={{ catalog.rubric_id }}{% if product_roles.snapshot.document.rubric_tmpl_id %}&amp;template={{ product_roles.snapshot.document.rubric_tmpl_id }}{% endif %}"><i class="ti ti-template"></i>{{ 'Шаблон страницы'|admin_trans }}</a>{% endif %}
+    <a class="btn btn-ghost" href="{{ ADMINX_BASE }}/catalog/{% if product_roles.card_template_id %}card-templates?edit={{ product_roles.card_template_id }}{% else %}public-templates?template=product-card{% endif %}"><i class="ti ti-layout-cards"></i>{{ 'Карточка товара'|admin_trans }}</a>
+  </div>
+  {% for section in product_roles.sections %}<p><a href="{{ ADMINX_BASE }}/catalog/{{ section.rubric_id }}/{{ section.field_id }}?item={{ section.id }}&amp;tab=filters">{{ section.name }}: {{ 'фильтры'|admin_trans }}</a>{% if section.attribute_set_id %} · <a href="{{ ADMINX_BASE }}/catalog/attribute-sets/{{ section.attribute_set_id }}">{{ 'Набор характеристик'|admin_trans }} #{{ section.attribute_set_id }}</a>{% endif %}</p>{% endfor %}
+  {% endif %}
+</div>

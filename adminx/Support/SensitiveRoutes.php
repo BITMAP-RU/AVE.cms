@@ -31,6 +31,7 @@
 			'legacy_migration.write' => 'Изменение реквизитов исходной системы',
 			'legacy_migration.execute' => 'Очистка стартовых данных и миграция старой AVE.cms',
 			'database.restore' => 'Полная замена рабочей схемы данными из резервной копии',
+			'external_connection.write' => 'Изменение адреса или секрета внешнего подключения',
 		);
 		protected static $required = array(
 			'POST /modules/archive/install' => array('module.code', 'install_module_code'),

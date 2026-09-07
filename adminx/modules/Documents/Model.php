@@ -111,7 +111,7 @@
 			$countArgs = array_merge(array('SELECT COUNT(*) FROM ' . self::documentsTable() . ' d' . $where), $args);
 			$total = (int) call_user_func_array(array('DB', 'query'), $countArgs)->getValue();
 
-			$sql = 'SELECT d.*, r.rubric_title, r.rubric_alias,(' . $score . ') AS search_relevance'
+			$sql = 'SELECT d.*, r.rubric_title, r.rubric_alias,COALESCE(r.rubric_is_technical,0) rubric_is_technical,(' . $score . ') AS search_relevance'
 				. ' FROM ' . self::documentsTable() . ' d'
 				. ' LEFT JOIN ' . self::rubricsTable() . ' r ON r.Id = d.rubric_id'
 				. $where
@@ -190,7 +190,7 @@
 		public static function one($id)
 		{
 			$row = DB::query(
-				'SELECT d.*, r.rubric_title, r.rubric_alias FROM ' . self::documentsTable() . ' d'
+					'SELECT d.*, r.rubric_title, r.rubric_alias,COALESCE(r.rubric_is_technical,0) rubric_is_technical FROM ' . self::documentsTable() . ' d'
 				. ' LEFT JOIN ' . self::rubricsTable() . ' r ON r.Id = d.rubric_id'
 				. ' WHERE d.Id = %i LIMIT 1',
 				(int) $id
@@ -222,6 +222,8 @@
 				'guid' => '',
 				'document_status' => 1,
 				'document_in_search' => 1,
+				'document_is_technical' => $rubric && !empty($rubric['rubric_is_technical']) ? 1 : 0,
+				'document_in_sitemap' => 1,
 				'document_author_id' => 1,
 				'document_parent' => 0,
 				'rubric_tmpl_id' => 0,
@@ -624,8 +626,9 @@
 			foreach (array(
 				'document_title', 'document_alias', 'document_alias_header', 'document_alias_history',
 				'document_short_alias', 'document_breadcrumb_title', 'document_excerpt', 'document_meta_keywords',
-				'document_meta_description', 'document_meta_robots', 'document_sitemap_freq', 'document_sitemap_pr',
-				'document_tags', 'document_property', 'guid', 'document_status', 'document_in_search',
+					'document_meta_description', 'document_meta_robots', 'document_sitemap_freq', 'document_sitemap_pr',
+					'document_in_sitemap', 'document_tags', 'document_property', 'guid', 'document_status', 'document_in_search',
+					'document_is_technical',
 				'document_parent', 'rubric_tmpl_id', 'document_linked_navi_id', 'document_position',
 				'document_author_id',
 			) as $key) {
@@ -656,6 +659,10 @@
 				$data['document_short_alias'] = '';
 				$data['document_alias_history'] = '0';
 				$data['document_alias_header'] = 301;
+			}
+
+			if ($id > 0 && self::isProtectedDocument($id)) {
+				$data['document_is_technical'] = 0;
 			}
 
 			$data['rubric_id'] = $rubricId;
@@ -944,6 +951,7 @@
 			$source['document_deleted'] = '0';
 			$source['document_count_print'] = 0;
 			$source['document_count_view'] = 0;
+			$source['module_catalog'] = '';
 			$source['document_author_id'] = self::legacyAuthorId($authorId);
 			$source['document_changed'] = time();
 			$source['document_version'] = 1;
@@ -1458,13 +1466,15 @@
 				'document_meta_keywords' => trim($get('document_meta_keywords')),
 				'document_meta_description' => trim($get('document_meta_description')),
 				'document_meta_robots' => self::robotsValue($get('document_meta_robots')),
-				'document_sitemap_freq' => self::sitemapFreqValue($get('document_sitemap_freq')),
-				'document_sitemap_pr' => self::sitemapPrValue($get('document_sitemap_pr')),
+					'document_sitemap_freq' => self::sitemapFreqValue($get('document_sitemap_freq')),
+					'document_sitemap_pr' => self::sitemapPrValue($get('document_sitemap_pr')),
+					'document_in_sitemap' => (int) $get('document_in_sitemap') === 1 ? 1 : 0,
 				'document_tags' => trim($get('document_tags')),
 				'document_property' => trim($get('document_property')),
 				'guid' => substr(trim($get('guid')), 0, 100),
-				'document_status' => (int) $get('document_status') === 1 ? '1' : '0',
-				'document_in_search' => (int) $get('document_in_search') === 1 ? '1' : '0',
+					'document_status' => (int) $get('document_status') === 1 ? '1' : '0',
+					'document_in_search' => (int) $get('document_in_search') === 1 ? '1' : '0',
+					'document_is_technical' => (int) $get('document_is_technical') === 1 ? 1 : 0,
 				'document_parent' => (int) $get('document_parent'),
 				'rubric_tmpl_id' => (int) $get('rubric_tmpl_id'),
 				'document_linked_navi_id' => (int) $get('document_linked_navi_id'),
@@ -1662,6 +1672,10 @@
 			$row['document_status'] = (int) $row['document_status'];
 			$row['document_deleted'] = (int) $row['document_deleted'];
 			$row['document_in_search'] = (int) $row['document_in_search'];
+			$row['document_is_technical'] = isset($row['document_is_technical']) ? (int) $row['document_is_technical'] : 0;
+			$row['document_in_sitemap'] = isset($row['document_in_sitemap']) ? (int) $row['document_in_sitemap'] : 1;
+			$row['rubric_is_technical'] = isset($row['rubric_is_technical']) ? (int) $row['rubric_is_technical'] : 0;
+			$row['is_technical_effective'] = $row['document_is_technical'] || $row['rubric_is_technical'];
 			$row['document_published'] = (int) $row['document_published'];
 			$row['document_expire'] = (int) $row['document_expire'];
 			$row['document_changed'] = (int) $row['document_changed'];
@@ -2711,11 +2725,16 @@
 
 		protected static function clearDocumentCache($documentId)
 		{
-			ContentCacheInvalidator::document($documentId, false);
+			DB::afterCommit(function () use ($documentId) { ContentCacheInvalidator::document($documentId, false); });
 		}
 
 		protected static function buildDocumentSnapshot($documentId)
 		{
+			if (DB::$transaction_in_progress) {
+				DB::afterCommit(function () use ($documentId) { ContentCacheInvalidator::document($documentId, true); });
+				return null;
+			}
+
 			return ContentCacheInvalidator::document($documentId, true);
 		}
 

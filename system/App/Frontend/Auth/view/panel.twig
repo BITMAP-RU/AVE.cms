@@ -14,7 +14,7 @@
         {% if not system_identity %}
           <li><a href="{{ base }}{{ auth_urls.overview }}">Личный кабинет</a></li>
           <li><a href="{{ base }}{{ auth_urls.profile }}">Изменить данные</a></li>
-          <li><a href="{{ base }}{{ auth_urls.password }}">Смена пароля</a></li>
+          {% if password_change_enabled %}<li><a href="{{ base }}{{ auth_urls.password }}">Смена пароля</a></li>{% endif %}
           <li><a href="{{ base }}/personal/orders">История заказов</a></li>
           <li><a href="{{ base }}/personal/favorites">Избранное</a></li>
           {% for link in account_extension_links %}<li><a href="{{ base }}{{ link.url }}">{{ link.label }}</a></li>{% endfor %}

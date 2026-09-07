@@ -2,12 +2,14 @@
   'use strict';
   var Adminx = window.Adminx || (window.Adminx = {});
   Adminx.Catalog = {
-    itemForm: null, settingsForm: null, dragItem: null, dragGroup: [], dragPlaceholder: null, dragGhost: null, dragPointerId: null, dragStartX: 0, dragStartY: 0, dragStarted: false, dragOrderSnapshot: '', orderSaving: false, filterOrder: [], itemSaveTimer: null, settingsSaveTimer: null, conditionContext: null,
+    itemForm: null, settingsForm: null, dragItem: null, dragGroup: [], dragPlaceholder: null, dragGhost: null, dragPointerId: null, dragStartX: 0, dragStartY: 0, dragStarted: false, dragOrderSnapshot: '', orderSaving: false, filterOrder: [], sourceItemIds: [], sourceOptionsData: null, itemSaveTimer: null, settingsSaveTimer: null, conditionContext: null,
     init: function () {
       this.itemForm = document.getElementById('catalogItemForm');
       this.settingsForm = document.getElementById('catalogSettingsForm');
       var self = this;
       document.addEventListener('click', function (e) {
+        if (e.target.closest('[data-product-role-refresh]')) { self.refreshRolePreview(false); return; }
+        if (e.target.closest('[data-product-selection-check]')) { self.refreshRolePreview(true); return; }
         var pageTab = e.target.closest('[data-catalog-page-tab]');
         if (pageTab) { self.tab('[data-catalog-page-tab]', '[data-catalog-page-panel]', pageTab.getAttribute('data-catalog-page-tab')); }
         var drawerTab = e.target.closest('[data-catalog-drawer-tab]');
@@ -27,6 +29,8 @@
         if (treeRow && !e.target.closest('button, input, label, a, select')) { self.editItem(treeRow.getAttribute('data-catalog-builder-item')); return; }
         if (e.target.closest('[data-catalog-document-pick]')) { self.openDocumentPicker(); }
         if (e.target.closest('[data-catalog-document-clear]')) { self.setDocument(null); self.scheduleItemSave(); }
+        if (e.target.closest('[data-catalog-source-open]')) { self.openSourcePicker(); }
+        if (e.target.closest('[data-catalog-source-clear]')) { self.setSources([]); self.scheduleItemSave(); }
         var conditionView = e.target.closest('[data-catalog-condition-view]');
         if (conditionView) { self.showCondition(conditionView.getAttribute('data-catalog-condition-view')); }
         var conditionSync = e.target.closest('[data-catalog-condition-sync]');
@@ -37,9 +41,11 @@
         if (e.target.closest('[data-catalog-recompile-all]')) { self.recompileAll(); }
       });
       document.addEventListener('input', function (e) {
+        if (e.target.closest('[data-product-role-preview]')) { self.selectionChanged(); return; }
         if (e.target.matches('[data-catalog-tree-search]')) { self.search(e.target.value); }
       });
       document.addEventListener('change', function (e) {
+        if (e.target.closest('[data-product-role-preview]')) { self.selectionChanged(); return; }
         if (e.target.matches('[data-catalog-item-status]')) { self.setTreeStatus(e.target); return; }
         if (self.itemForm && e.target.closest('#catalogItemForm')) {
           if (e.target.matches('[name="filters_use[]"]')) { self.syncFilterOrderSelection(); }
@@ -59,6 +65,44 @@
       document.addEventListener('pointercancel', function () { self.treeDragEnd(); });
       this.normalizeTreeHierarchy();
 			this.openRequestedItem();
+      if (window.location.hash === '#settings') { this.tab('[data-catalog-page-tab]', '[data-catalog-page-panel]', 'settings'); }
+    },
+    selectionChanged: function () {
+      this.rolePreviewSequence = (this.rolePreviewSequence || 0) + 1;
+      var root = document.querySelector('[data-product-role-preview]');
+      if (!root) { return; }
+      var context = root.querySelector('[data-selection="context"]');
+      root.querySelectorAll('[data-selection-context]').forEach(function (el) { el.hidden = !context || el.getAttribute('data-selection-context') !== context.value; });
+      var result = root.querySelector('[data-selection-result]'), stale = root.querySelector('[data-selection-stale]');
+      if (result) { result.hidden = true; if (stale) { stale.hidden = false; } }
+    },
+    refreshRolePreview: function (check) {
+      var input = document.querySelector('[data-product-role-document]');
+      if (!input || !input.checkValidity()) { if (input) { input.reportValidity(); } return; }
+      var root = input.closest('[data-product-role-preview]');
+      var invalid = Array.prototype.find.call(root.querySelectorAll('[data-selection-context]:not([hidden]) input'), function (el) { return !el.checkValidity(); });
+      if (invalid) { invalid.reportValidity(); return; }
+      var self = this, sequence = (this.rolePreviewSequence || 0) + 1;
+      var errorMessage = root.getAttribute('data-error');
+      this.rolePreviewSequence = sequence;
+      var url = new URL(this.url() + '/product-preview', window.location.origin);
+      url.searchParams.set('product_preview', input.value || '0');
+      url.searchParams.set('selection_check', check === true ? '1' : '0');
+      root.querySelectorAll('[data-selection]').forEach(function (el) { url.searchParams.set('selection_' + el.getAttribute('data-selection'), el.value); });
+      root.setAttribute('aria-busy', 'true');
+      root.querySelectorAll('button').forEach(function (el) { el.disabled = true; });
+      fetch(url.toString(), { credentials: 'same-origin' }).then(function (response) {
+        if (!response.ok) { throw new Error(errorMessage); }
+        return response.text();
+      }).then(function (html) {
+        if (sequence !== self.rolePreviewSequence) { return; }
+        var preview = new DOMParser().parseFromString(html, 'text/html').querySelector('[data-product-role-preview]');
+        var current = document.querySelector('[data-product-role-preview]');
+        if (!preview || !current) { throw new Error(errorMessage); }
+        current.replaceWith(preview);
+      }).catch(function (error) { if (sequence === self.rolePreviewSequence) { Adminx.Toast.show(error.message, 'error'); } }).finally(function () {
+        root.removeAttribute('aria-busy'); root.querySelectorAll('button').forEach(function (el) { el.disabled = false; });
+      });
     },
     base: function () { return (this.itemForm || this.settingsForm).getAttribute('data-base'); },
     rubric: function () { return (this.itemForm || this.settingsForm).getAttribute('data-rubric'); },
@@ -76,6 +120,7 @@
       document.querySelectorAll(panels).forEach(function (el) { el.hidden = el.getAttribute(panels.indexOf('drawer') >= 0 ? 'data-catalog-drawer-panel' : 'data-catalog-page-panel') !== value; });
     },
     newItem: function (parentId) {
+      this.renderContextLinks([]);
       this.itemForm.reset(); this.itemForm.querySelector('[name="id"]').value = ''; this.itemForm.querySelector('[name="status"]').checked = true;
       this.itemForm.querySelectorAll('[name="parent_id"] option').forEach(function (option) { option.disabled = false; });
       var parent = this.itemForm.querySelector('[name="parent_id"]');
@@ -84,7 +129,7 @@
       this.checkValues('fields_use[]', defaultFields); this.checkValues('filters_use[]', defaultFilters);
       defaultFilters.forEach(function (id) { var source = this.settingsForm.querySelector('[name="filter_style[' + id + ']"]'), target = this.itemForm.querySelector('[name="filter_style[' + id + ']"]'); if (source && target) { target.value = source.value; } }, this);
       this.filterOrder = defaultFilters.slice(); this.syncFilterOrderInput();
-      this.setDocument(null); this.setState('item', ''); this.renderConditionContext(null);
+      this.setDocument(null); this.setSources([]); this.setState('item', ''); this.renderConditionContext(null);
       document.querySelector('[data-catalog-drawer-title]').textContent = 'Новый раздел'; this.tab('[data-catalog-drawer-tab]', '[data-catalog-drawer-panel]', 'main'); this.updateCounts();
       Adminx.Drawer.open('catalogItemDrawer');
     },
@@ -105,10 +150,12 @@
 			this.editItem(itemId, params.get('tab') || 'main');
 		},
     fill: function (item) {
+      this.renderContextLinks(item.context_links || []);
       this.itemForm.reset(); this.itemForm.querySelector('[name="id"]').value = item.id || ''; this.itemForm.querySelector('[name="name"]').value = item.name || '';
       this.itemForm.querySelectorAll('[name="parent_id"] option').forEach(function (option) { option.disabled = false; });
       this.itemForm.querySelector('[name="parent_id"]').value = item.parent_id || 0; this.itemForm.querySelector('[name="status"]').checked = Number(item.status) === 1;
       this.setDocument(item.document_id ? { id: item.document_id, title: item.document_title || '', alias: item.document_alias || '' } : null);
+      this.setSources(item.source_item_ids || []);
       this.filterOrder = (item.filters_use || []).map(function (id) { return String(id); }); this.syncFilterOrderInput(); this.checkValues('fields_use[]', item.fields_use || []); this.checkValues('filters_use[]', item.filters_use || []);
       Object.keys(item.filter_styles || {}).forEach(function (id) { var select = this.itemForm.querySelector('[name="filter_style[' + id + ']"]'); if (select) { select.value = item.filter_styles[id]; } }, this);
       var own = this.itemForm.querySelector('[name="parent_id"] option[value="' + item.id + '"]'); if (own) { own.disabled = true; }
@@ -125,6 +172,20 @@
     syncFilterOrderSelection: function () { var selected = {}, next = []; this.itemForm.querySelectorAll('[name="filters_use[]"]:checked').forEach(function (input) { selected[input.value] = true; }); this.filterOrder.forEach(function (id) { if (selected[id]) { next.push(id); delete selected[id]; } }); this.itemForm.querySelectorAll('[name="filters_use[]"]:checked').forEach(function (input) { if (selected[input.value]) { next.push(input.value); delete selected[input.value]; } }); this.filterOrder = next; this.syncFilterOrderInput(); },
     syncFilterOrderInput: function () { var input = this.itemForm && this.itemForm.querySelector('[name="filters_order"]'); if (input) { input.value = this.filterOrder.join(','); } },
     openFilterOrder: function () { var self = this; this.syncFilterOrderSelection(); if (this.filterOrder.length < 2) { return; } var overlay = document.createElement('div'), rows = ''; this.filterOrder.forEach(function (id) { var input = self.itemForm.querySelector('[name="filters_use[]"][value="' + id + '"]'), row = input.closest('.catalog-filter-row'), title = row.querySelector('.catalog-choice-copy b').textContent.trim(), type = row.querySelector('.catalog-field-type b').textContent.trim(); rows += '<div class="catalog-filter-order-row" data-filter-order-id="' + self.esc(id) + '"><button class="catalog-filter-order-handle" type="button" draggable="true" aria-label="Перетащить"><i class="ti ti-grip-vertical"></i></button><span><b>' + self.esc(title) + '</b><small>' + self.esc(type) + ' · #' + self.esc(id) + '</small></span></div>'; }); overlay.className = 'overlay catalog-filter-order-overlay'; overlay.innerHTML = '<div class="modal catalog-filter-order-modal" role="dialog" aria-modal="true"><div class="modal-header"><span class="dialog-icon info"><i class="ti ti-arrows-sort"></i></span><div><h3>Порядок фильтров</h3><p class="text-secondary">' + this.filterOrder.length + ' включённых фильтров.</p></div><button class="modal-close" type="button" data-filter-order-close aria-label="Закрыть"><i class="ti ti-x"></i></button></div><div class="modal-body"><div class="catalog-filter-order-list">' + rows + '</div></div><div class="modal-footer"><button class="btn btn-ghost" type="button" data-filter-order-close>Закрыть</button><button class="btn btn-primary" type="button" data-filter-order-save><i class="ti ti-device-floppy"></i>Сохранить порядок</button></div></div>'; document.body.appendChild(overlay); requestAnimationFrame(function () { overlay.classList.add('show'); }); var dragged = null, close = function () { overlay.classList.remove('show'); setTimeout(function () { overlay.remove(); }, 160); }; overlay.addEventListener('dragstart', function (e) { var handle = e.target.closest('.catalog-filter-order-handle'), row = handle ? handle.closest('[data-filter-order-id]') : null; if (!row) { e.preventDefault(); return; } dragged = row; row.classList.add('is-dragging'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', row.getAttribute('data-filter-order-id')); }); overlay.addEventListener('dragover', function (e) { var target = e.target.closest('[data-filter-order-id]'); if (!dragged || !target || target === dragged) { return; } e.preventDefault(); var rect = target.getBoundingClientRect(), reference = e.clientY < rect.top + rect.height / 2 ? target : target.nextSibling; if (reference !== dragged && dragged.nextSibling !== reference) { target.parentNode.insertBefore(dragged, reference); } }); overlay.addEventListener('dragend', function () { if (dragged) { dragged.classList.remove('is-dragging'); dragged = null; } }); overlay.addEventListener('click', function (e) { if (e.target === overlay || e.target.closest('[data-filter-order-close]')) { close(); return; } if (e.target.closest('[data-filter-order-save]')) { self.filterOrder = Array.prototype.map.call(overlay.querySelectorAll('[data-filter-order-id]'), function (row) { return row.getAttribute('data-filter-order-id'); }); self.syncFilterOrderInput(); self.scheduleItemSave(); close(); } }); },
+    renderContextLinks: function (links) {
+      var panel = this.itemForm && this.itemForm.querySelector('[data-catalog-context-links]');
+      if (!panel) { return; }
+      var list = panel.querySelector('nav');
+      list.textContent = '';
+      (links || []).forEach(function (link) {
+        var anchor = document.createElement('a'), icon = document.createElement('i'), label = document.createElement('span');
+        anchor.href = link.url; anchor.target = '_blank'; anchor.rel = 'noopener'; anchor.setAttribute('data-context-kind', link.kind);
+        icon.className = 'ti ti-external-link'; icon.setAttribute('aria-hidden', 'true'); label.textContent = link.label;
+        if (link.scope) { var scope = document.createElement('small'); scope.textContent = link.scope; label.appendChild(scope); }
+        anchor.appendChild(icon); anchor.appendChild(label); list.appendChild(anchor);
+      });
+      panel.hidden = !list.children.length;
+    },
     renderConditionContext: function (context) {
       this.conditionContext = context || { request: { id: 0, title: '' }, states: {}, summary: { synced: 0, staged: 0, missing: 0, different: 0, unsupported: 0 } };
       var request = this.conditionContext.request || {}, summary = this.conditionContext.summary || {}, requestEl = document.querySelector('[data-catalog-condition-request]'), summaryEl = document.querySelector('[data-catalog-condition-summary]'), bulk = document.querySelector('[data-catalog-conditions-sync]');
@@ -172,16 +233,61 @@
     saveItem: function (auto) {
       var id = this.itemForm.querySelector('[name="id"]').value; var self = this;
       this.ajax(this.url() + '/items' + (id ? '/' + id : ''), new FormData(this.itemForm), function (payload) {
+        if (payload.data && payload.data.context_links) { self.renderContextLinks(payload.data.context_links); }
         if (auto) { self.setState('item', 'Сохранено', 'ok'); self.syncTreeRow(id); if (payload.data && payload.data.condition_context) { self.renderConditionContext(payload.data.condition_context); } return; }
         Adminx.Toast.show(payload.message, 'success'); if (Adminx.Drawer) { Adminx.Drawer.close('catalogItemDrawer'); } window.location.reload();
       }, { quiet: !!auto, fail: function () { self.setState('item', 'Не сохранено', 'error'); } });
     },
-    saveSettings: function (auto) { var self = this; this.ajax(this.url() + '/settings', new FormData(this.settingsForm), function (payload) { if (auto) { self.setState('settings', 'Сохранено', 'ok'); } else { self.setState('settings', 'Сохранено', 'ok'); Adminx.Toast.show(payload.message, 'success'); } }, { quiet: !!auto, fail: function () { self.setState('settings', 'Не сохранено', 'error'); } }); },
+    saveSettings: function (auto) { var self = this; this.ajax(this.url() + '/settings', new FormData(this.settingsForm), function (payload) { self.refreshRolePreview(); if (auto) { self.setState('settings', 'Сохранено', 'ok'); } else { self.setState('settings', 'Сохранено', 'ok'); Adminx.Toast.show(payload.message, 'success'); } }, { quiet: !!auto, fail: function () { self.setState('settings', 'Не сохранено', 'error'); } }); },
     setState: function (type, message, state) { var el = document.querySelector('[data-catalog-' + type + '-state]'); if (!el) { return; } el.textContent = message || ''; el.classList.toggle('is-ok', state === 'ok'); el.classList.toggle('is-error', state === 'error'); },
     syncTreeRow: function (id) { var row = document.querySelector('[data-catalog-item][data-id="' + id + '"]'); if (!row) { return; } var toggle = row.querySelector('[data-catalog-item-status]'), active = this.itemForm.querySelector('[name="status"]').checked, filterCount = this.itemForm.querySelectorAll('[name="filters_use[]"]:checked').length, name = row.querySelector('.catalog-tree-name b'); if (toggle) { toggle.checked = active; this.updateTreeStatus(toggle); } if (name) { name.textContent = this.itemForm.querySelector('[name="name"]').value || 'Без названия'; } row.setAttribute('data-filter-count', String(filterCount)); var count = row.querySelector('.catalog-tree-count'); if (count) { count.textContent = this.itemForm.querySelectorAll('[name="fields_use[]"]:checked').length + ' / ' + filterCount; } },
     updateTreeStatus: function (input) { var item = input.closest('[data-catalog-item]'), active = input.checked, label = item.querySelector('[data-catalog-item-status-label]'), control = input.closest('.switch'); item.classList.toggle('is-inactive', !active); if (label) { label.textContent = active ? 'активен' : 'скрыт'; } input.setAttribute('aria-label', active ? 'Скрыть раздел' : 'Включить раздел'); if (control) { control.setAttribute('data-tooltip', active ? 'Скрыть раздел' : 'Включить раздел'); } },
     setTreeStatus: function (input) { var self = this, id = input.getAttribute('data-catalog-item-status'), previous = !input.checked, data = new FormData(); this.updateTreeStatus(input); input.disabled = true; data.append('_csrf', this.csrf()); data.append('status', input.checked ? '1' : '0'); this.ajax(this.url() + '/items/' + encodeURIComponent(id) + '/status', data, function (payload) { input.checked = Number(payload.data.status) === 1; input.disabled = false; self.updateTreeStatus(input); }, { quiet: true, fail: function () { input.checked = previous; input.disabled = false; self.updateTreeStatus(input); } }); },
     setDocument: function (item) { if (!this.itemForm) { return; } var input = this.itemForm.querySelector('[name="document_id"]'); var label = this.itemForm.querySelector('[data-catalog-document-label]'); var clear = this.itemForm.querySelector('[data-catalog-document-clear]'); var id = item && item.id ? Number(item.id) : 0; input.value = id || ''; if (label) { label.textContent = id ? ('#' + id + ' · ' + (item.title || item.alias || 'Без названия')) : 'Документ не выбран'; } if (clear) { clear.disabled = !id; } },
+    sourceOptions: function () {
+      if (this.sourceOptionsData !== null) { return this.sourceOptionsData; }
+      var node = document.querySelector('[data-catalog-source-options]');
+      try { this.sourceOptionsData = node ? JSON.parse(node.textContent || '[]') : []; }
+      catch (e) { this.sourceOptionsData = []; }
+      return this.sourceOptionsData;
+    },
+    setSources: function (values) {
+      if (!this.itemForm) { return; }
+      var ownId = Number(this.itemForm.querySelector('[name="id"]').value) || 0, allowed = {}, selected = [];
+      this.sourceOptions().forEach(function (item) { if (Number(item.id) !== ownId) { allowed[String(item.id)] = item; } });
+      (values || []).forEach(function (id) { id = String(Number(id) || 0); if (allowed[id] && selected.indexOf(id) === -1) { selected.push(id); } });
+      this.sourceItemIds = selected;
+      var inputs = this.itemForm.querySelector('[data-catalog-source-inputs]'), label = this.itemForm.querySelector('[data-catalog-source-label]'), clear = this.itemForm.querySelector('[data-catalog-source-clear]');
+      if (inputs) {
+        inputs.innerHTML = '';
+        selected.forEach(function (id) { var input = document.createElement('input'); input.type = 'hidden'; input.name = 'source_item_ids[]'; input.value = id; inputs.appendChild(input); });
+      }
+      if (label) {
+        var names = selected.map(function (id) { return allowed[id].name; });
+        label.textContent = names.length === 0 ? 'Товары только из этого раздела' : (names.slice(0, 2).join(', ') + (names.length > 2 ? ' · ещё ' + (names.length - 2) : ''));
+      }
+      if (clear) { clear.disabled = selected.length === 0; }
+    },
+    openSourcePicker: function () {
+      var self = this, ownId = Number(this.itemForm.querySelector('[name="id"]').value) || 0;
+      var options = this.sourceOptions().filter(function (item) { return Number(item.id) !== ownId; });
+      var selected = {}; this.sourceItemIds.forEach(function (id) { selected[String(id)] = true; });
+      var overlay = document.createElement('div'), rows = '';
+      options.forEach(function (item) {
+        var id = String(item.id), search = (id + ' ' + (item.path || item.name || '')).toLowerCase();
+        rows += '<label class="catalog-source-option" data-catalog-source-option data-search="' + self.esc(search) + '"><input type="checkbox" value="' + self.esc(id) + '"' + (selected[id] ? ' checked' : '') + '><span><b>' + self.esc(item.name || 'Без названия') + '</b><small>' + self.esc(item.path || ('Раздел #' + id)) + '</small></span><em class="badge ' + (Number(item.status) === 1 ? 'badge-green' : 'badge-gray') + '">' + (Number(item.status) === 1 ? 'активен' : 'скрыт') + '</em></label>';
+      });
+      overlay.className = 'overlay catalog-source-overlay';
+      overlay.innerHTML = '<div class="modal catalog-source-modal" role="dialog" aria-modal="true"><div class="modal-header"><span class="dialog-icon info"><i class="ti ti-folders"></i></span><div><h3>Источники товаров</h3><p class="text-secondary">Товары выбранных разделов появятся на текущей странице.</p></div><button class="modal-close" type="button" data-catalog-source-close aria-label="Закрыть"><i class="ti ti-x"></i></button></div><div class="modal-body"><label class="input-wrap"><i class="ti ti-search"></i><input class="input" type="search" placeholder="Найти раздел по названию или ID" data-catalog-source-search></label><div class="catalog-source-options">' + rows + '</div><div class="catalog-source-empty" data-catalog-source-empty' + (options.length ? ' hidden' : '') + '>Подходящих разделов нет</div></div><div class="modal-footer"><span class="mf-left text-secondary text-sm" data-catalog-source-count></span><button class="btn btn-ghost" type="button" data-catalog-source-close>Закрыть</button><button class="btn btn-primary" type="button" data-catalog-source-save><i class="ti ti-check"></i>Применить</button></div></div>';
+      document.body.appendChild(overlay); requestAnimationFrame(function () { overlay.classList.add('show'); });
+      var search = overlay.querySelector('[data-catalog-source-search]'), count = overlay.querySelector('[data-catalog-source-count]'), empty = overlay.querySelector('[data-catalog-source-empty]');
+      var update = function () { var checked = overlay.querySelectorAll('[data-catalog-source-option] input:checked').length; count.textContent = checked ? ('Выбрано: ' + checked) : 'Источники не выбраны'; };
+      var filter = function () { var query = (search.value || '').trim().toLowerCase(), visible = 0; overlay.querySelectorAll('[data-catalog-source-option]').forEach(function (row) { var show = !query || row.getAttribute('data-search').indexOf(query) !== -1; row.hidden = !show; if (show) { visible++; } }); empty.hidden = visible > 0; };
+      var close = function () { overlay.classList.remove('show'); setTimeout(function () { overlay.remove(); }, 160); };
+      overlay.addEventListener('change', update);
+      overlay.addEventListener('click', function (e) { if (e.target === overlay || e.target.closest('[data-catalog-source-close]')) { close(); return; } if (e.target.closest('[data-catalog-source-save]')) { self.setSources(Array.prototype.map.call(overlay.querySelectorAll('[data-catalog-source-option] input:checked'), function (input) { return input.value; })); self.scheduleItemSave(); close(); } });
+      search.addEventListener('input', filter); update(); search.focus();
+    },
     openDocumentPicker: function () {
       var self = this, overlay = document.createElement('div');
       overlay.className = 'overlay catalog-document-overlay';

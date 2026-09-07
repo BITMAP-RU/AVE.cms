@@ -121,6 +121,8 @@
 			if (!Permission::check('view_products')) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403); }
 			if (!Model::hasCommerceCatalogs()) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Товарные каталоги не настроены'), 404); }
 			$this->assets();
+			$state = Request::getStr('state', 'active');
+			if (!in_array($state, array('active', 'inactive', 'all'), true)) { $state = 'active'; }
 			$stats = Model::productQualityStats();
 			$issues = Model::productQualityIssues($stats);
 			$allowed = array();
@@ -130,11 +132,15 @@
 			$filters = array(
 				'q' => Request::getStr('q', ''),
 				'issue' => $issue,
+				'state' => $state,
 				'page' => Request::getInt('page', 1),
 				'per_page' => Request::getInt('per_page', 25),
 				'include_quality' => true,
-				'quality_scope' => true,
+				'quality_scope' => $state === 'active',
 			);
+			$aiModule = ModuleManager::get('ai_assistant');
+			$aiAvailable = $aiModule && !empty($aiModule['installed']) && !empty($aiModule['enabled'])
+				&& class_exists('\App\Modules\AiAssistant\Repository') && Permission::check('manage_ai_assistant');
 			return $this->render('@products/product-quality.twig', array(
 				'result' => Model::products($filters),
 				'stats' => $stats,
@@ -142,6 +148,8 @@
 				'filters' => $filters,
 				'saved_views' => SavedViews::all('catalog_quality', Auth::id(), $this->savedViewFields('quality')),
 				'can_manage' => Permission::check('manage_products'),
+				'can_toggle' => Permission::check('manage_products') && Permission::check('manage_documents'),
+				'ai_available' => (bool) $aiAvailable,
 			));
 		}
 
@@ -1367,6 +1375,7 @@
 					'shipping_profile' => $shippingProfile,
 					'package_templates' => ShippingPackageTemplates::all(),
 					'native_attributes' => $nativeAttributes,
+					'product_context_links' => EditorContextLinks::product($document, $nativeAttributes),
 					'product_readiness' => ProductReadiness::build($product, $nativeAttributes, $shippingProfile, $variantGroup),
 					'product_promotions_available' => Promotions::available(),
 					'product_promotions' => Promotions::forProduct($id),
@@ -1692,9 +1701,12 @@
 			$settings['filters_default_ids'] = $this->ids(isset($settings['filters_default']) ? $settings['filters_default'] : '');
 			$styles = @unserialize(isset($settings['filters_default_settings']) ? (string) $settings['filters_default_settings'] : '', array('allowed_classes' => false));
 			$settings['filter_styles'] = is_array($styles) ? $styles : array();
+			$flat = Model::items($rubricId, $fieldId);
 			return $this->render('@catalog/edit.twig', array(
 				'catalog' => $catalog, 'settings' => $settings,
-				'tree' => Model::tree($rubricId, $fieldId), 'flat' => Model::items($rubricId, $fieldId),
+				'tree' => Model::tree($rubricId, $fieldId), 'flat' => $flat,
+				'source_options' => Model::sourceOptions($rubricId, $fieldId),
+				'source_schema_available' => Model::sourceItemsAvailable(),
 				'fields' => $fields,
 				'field_groups' => array_values($fieldGroups),
 				'request_options' => Model::requestOptions(),
@@ -1704,7 +1716,32 @@
 				'filter_template_options' => $filterTemplatesAvailable ? FilterTemplates::options() : array(),
 				'filter_templates_available' => $filterTemplatesAvailable,
 				'products_available' => $productsAvailable,
+				'product_roles' => $productsAvailable ? \App\Adminx\Packages\Products\ProductRoleSettings::view($rubricId, $settings, Request::getInt('product_preview', 0)) : array(),
 				'can_manage' => Permission::check('manage_catalog'),
+			));
+		}
+
+		public function productPreview(array $params = array())
+		{
+			$rubricId = isset($params['rubric']) ? (int) $params['rubric'] : 0;
+			$fieldId = isset($params['field']) ? (int) $params['field'] : 0;
+			if (!Permission::check('view_catalog') || !$this->productsAvailable()
+				|| !\App\Adminx\Packages\Products\ProductRoleSettings::canReadRubric($rubricId)) {
+				return $this->renderStatus('@adminx/404.twig', array('title' => 'Недостаточно прав'), 403);
+			}
+
+			$catalog = Model::catalog($rubricId, $fieldId);
+			if (!$catalog) { return $this->renderStatus('@adminx/404.twig', array('title' => 'Каталог не найден'), 404); }
+			$settings = Model::settings($rubricId, $fieldId);
+			$selection = array();
+			foreach (array('context', 'category', 'feed', 'scope', 'query', 'source', 'limit') as $key) {
+				$selection[$key] = Request::getStr('selection_' . $key, $key === 'context' ? 'catalog' : ($key === 'limit' ? '8' : ''));
+			}
+
+			return $this->partial('@catalog/_product-role-preview.twig', array(
+				'catalog' => $catalog, 'settings' => $settings,
+				'product_roles' => \App\Adminx\Packages\Products\ProductRoleSettings::view($rubricId, $settings,
+					Request::getInt('product_preview', 0), $selection, Request::getInt('selection_check', 0) === 1),
 			));
 		}
 
@@ -1712,7 +1749,11 @@
 		{
 			if (!Permission::check('view_catalog')) { return $this->error('Недостаточно прав', array(), 403); }
 			$item = Model::item(isset($params['id']) ? (int) $params['id'] : 0);
-			if ($item) { $item['condition_context'] = Model::conditionContext($item['id']); }
+			if ($item) {
+				$item['condition_context'] = Model::conditionContext($item['id']);
+				$item['context_links'] = EditorContextLinks::section($item, $this->productsAvailable());
+			}
+
 			return $item ? $this->success('', array('data' => $item)) : $this->error('Раздел не найден', array(), 404);
 		}
 
@@ -1818,6 +1859,7 @@
 			return $this->success($id > 0 ? 'Раздел сохранён' : 'Раздел создан', array('data' => array(
 				'id' => $saved,
 				'condition_context' => Model::conditionContext($saved),
+				'context_links' => EditorContextLinks::section(Model::item($saved), $this->productsAvailable()),
 			)));
 		}
 
@@ -1893,7 +1935,7 @@
 		protected function savedViewFields($scope)
 		{
 			return $scope === 'quality'
-				? array('q', 'issue', 'per_page')
+				? array('q', 'issue', 'state', 'per_page')
 				: array('q', 'state', 'issue', 'payment', 'per_page', 'view');
 		}
 
@@ -1934,6 +1976,7 @@
 		{
 			AdminAssets::addStyle($this->base() . '/modules/Catalog/assets/catalog.css', 50);
 			AdminAssets::addStyle($this->base() . '/modules/Catalog/assets/catalog-drawer.css', 51);
+			AdminAssets::addStyle($this->base() . '/modules/Catalog/assets/context-links.css', 52);
 			AdminAssets::addScript($this->base() . '/modules/Catalog/assets/catalog.js', 50);
 			if ($this->productsAvailable()) {
 				if (is_file(BASEPATH . '/modules/products/admin/assets/products.css')) {

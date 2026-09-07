@@ -14,7 +14,7 @@
 
 	defined('BASEPATH') || die('Direct access to this location is not allowed.');
 	return array(
-		'code' => 'catalog', 'name' => 'Каталог', 'version' => '0.3.5',
+		'code' => 'catalog', 'name' => 'Каталог', 'version' => '0.3.9',
 		'permissions' => array('key' => 'catalog', 'items' => array(
 			array(
 				'code' => 'view_catalog',
@@ -51,6 +51,7 @@
 			array('GET', '/catalog/documents', array(\App\Adminx\Catalog\Controller::class, 'documents')),
 			array('GET', '/catalog/items/{id}', array(\App\Adminx\Catalog\Controller::class, 'item')),
 			array('GET', '/catalog/{rubric}/{field}', array(\App\Adminx\Catalog\Controller::class, 'edit')),
+			array('GET', '/catalog/{rubric}/{field}/product-preview', array(\App\Adminx\Catalog\Controller::class, 'productPreview'), array('permission' => 'view_products')),
 			array('POST', '/catalog/{rubric}/{field}/items', array(\App\Adminx\Catalog\Controller::class, 'storeItem')),
 			array('POST', '/catalog/{rubric}/{field}/items/{id}', array(\App\Adminx\Catalog\Controller::class, 'updateItem')),
 			array('POST', '/catalog/{rubric}/{field}/items/{id}/conditions/sync', array(\App\Adminx\Catalog\Controller::class, 'syncMissingConditions')),
@@ -63,6 +64,7 @@
 		),
 		'migrations' => array(
 			array('id' => '005_add_catalog_purpose', 'file' => 'migrations/005_add_catalog_purpose.sql'),
+			array('id' => '006_add_item_sources', 'file' => 'migrations/006_add_item_sources.php'),
 		),
 		'view_globals' => array('module_code' => 'catalog'),
 	);

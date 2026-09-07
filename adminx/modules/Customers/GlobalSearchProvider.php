@@ -25,7 +25,7 @@
 		{
 			$query = trim((string) $query); if ($query === '') { return array(); }
 			$sql = 'SELECT Id,email,firstname,lastname,user_name,phone,company,status FROM ' . PublicUserTables::table('users')
-				. ' WHERE deleted!=%s AND (email LIKE %ss OR firstname LIKE %ss OR lastname LIKE %ss OR user_name LIKE %ss OR phone LIKE %ss OR company LIKE %ss';
+				. ' WHERE COALESCE(deleted,0)!=%s AND (email LIKE %ss OR firstname LIKE %ss OR lastname LIKE %ss OR user_name LIKE %ss OR phone LIKE %ss OR company LIKE %ss';
 			$args = array('1', $query, $query, $query, $query, $query, $query);
 			if (ctype_digit($query)) { $sql .= ' OR Id=%i'; $args[] = (int) $query; }
 			$sql .= ') ORDER BY status DESC,Id DESC LIMIT ' . max(1, min(12, (int) $limit));

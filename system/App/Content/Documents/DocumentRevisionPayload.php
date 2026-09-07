@@ -26,8 +26,8 @@
 			'document_title', 'document_alias', 'document_alias_header', 'document_alias_history',
 			'document_short_alias', 'document_breadcrumb_title', 'document_excerpt',
 			'document_meta_keywords', 'document_meta_description', 'document_meta_robots',
-			'document_sitemap_freq', 'document_sitemap_pr', 'document_tags', 'document_property',
-			'guid', 'document_status', 'document_in_search', 'document_parent', 'rubric_tmpl_id',
+			'document_sitemap_freq', 'document_sitemap_pr', 'document_in_sitemap', 'document_tags', 'document_property',
+			'guid', 'document_status', 'document_in_search', 'document_is_technical', 'document_parent', 'rubric_tmpl_id',
 			'document_linked_navi_id', 'document_position', 'document_published', 'document_expire',
 			'document_author_id',
 		);

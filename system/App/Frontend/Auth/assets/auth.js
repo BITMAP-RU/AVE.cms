@@ -59,41 +59,6 @@
     message.classList.toggle('is-error', !!error);
   }
 
-  function phoneDigits(value) {
-    var digits = String(value || '').replace(/\D/g, '');
-    if (digits.charAt(0) === '8') { digits = '7' + digits.slice(1); }
-    if (digits.charAt(0) !== '7') { digits = '7' + digits; }
-    return digits.slice(0, 11);
-  }
-
-  function formatPhone(value) {
-    var digits = phoneDigits(value);
-    var local = digits.slice(1);
-    var result = '+7';
-    if (local.length > 0) { result += ' ' + local.slice(0, 3); }
-    if (local.length > 3) { result += ' ' + local.slice(3, 6); }
-    if (local.length > 6) { result += '-' + local.slice(6, 8); }
-    if (local.length > 8) { result += '-' + local.slice(8, 10); }
-    return result;
-  }
-
-  function applyPhoneMask(input) {
-    if (!input) { return; }
-    input.value = formatPhone(input.value);
-  }
-
-  document.addEventListener('focusin', function (event) {
-    var input = event.target.closest('[data-phone-mask]');
-    if (!input) { return; }
-    applyPhoneMask(input);
-  });
-
-  document.addEventListener('input', function (event) {
-    var input = event.target.closest('[data-phone-mask]');
-    if (!input) { return; }
-    applyPhoneMask(input);
-  });
-
   function phoneCountdown(root, seconds) {
     var button = root.querySelector('[data-phone-auth-resend]');
     var remaining = Math.max(0, Number(seconds) || 0);

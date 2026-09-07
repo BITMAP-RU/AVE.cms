@@ -19,6 +19,51 @@ with tree sections.
 If the product module is not installed, the interface should not offer products
 entities or an empty list of “product catalogs”.
 
+## Product Field Roles
+
+Open a product catalog and select **Settings → Product Field Roles**. Assign
+fields from that rubric to the name, SKU, price, stock, images and other roles.
+**Automatic** preserves legacy alias matching; **Not Assigned** disables a role
+without renaming fields or modifying documents. Optional project fields are not
+required. Payment-program columns remain in the default quick editor when those
+roles are mapped; an ordinary rubric does not add them. Description, warranty,
+registration document text and registration number also have dedicated roles.
+
+Under **Saved Mapping**, enter a document ID from this rubric and select
+**Check**. The preview reads saved values and shows mapped fields, price, stock
+and availability reasons. Selecting a sample does not save settings. Publication
+dates apply only when the site's publication-date setting is enabled. A missing
+optional registration field does not block purchase; price-list exclusion is
+separate from purchase availability.
+
+Use **Selection Check** for a particular catalog section, search scope and query,
+feed, or recommendation source product and limit. Select **Check Selection** to
+run it. Changing parameters or automatically saving roles does not run this
+check; changing parameters hides an outdated result.
+
+Native repositories evaluate saved settings. Catalog checks include category
+sources, request conditions, the individual variant and its group. A variant
+missing as a separate card does not imply its group is missing. Hiding a menu
+item does not exclude its published SEO category page. Catalog and search checks
+run before pagination, without visitor catalog filters. Search uses the native
+pipeline with synonyms and typo correction and shows the effective query.
+Ambiguous corrections are not selected, just as on the site. Search statistics
+are not changed. Recommendations use the actual ranked and cached result with the
+selected limit. Feed checks cover allowed categories, publication, price and
+price-list exclusion without generating XML. An empty allowed category set never
+expands to the whole catalog. An index error means an incomplete check, not a
+negative selection result.
+
+Reading values requires product and document permissions plus rubric read access;
+restricted roles use the linked public account's group. Search, feed and request
+condition checks additionally require the corresponding module permission.
+Preview links open the
+native field, request, template, section-filter and attribute-set editors. The
+card link respects the published template and the theme fallback. Saving changed
+roles refreshes commercial index values. Switching to a regular catalog removes
+only derived projections, preserving native attributes, variants and shipping
+data. Enabling product mode may take time because it rebuilds the rubric index.
+
 ## Product catalog overview
 
 The scheduler refreshes the product quality summary hourly. Its latest snapshot
@@ -700,6 +745,33 @@ unfinished appeal. The full API and state descriptions are in
 `docs/development/product-demands.md`.
 
 ## Safe change
+
+### Related product and section settings
+
+The native product editor and section drawer contain **Related Settings** links
+to section filters, attribute sets, catalog card templates and page templates.
+Links open in a separate tab without closing the editor. Only destinations
+allowed by your permissions are shown. Drawer editors require the corresponding
+management permission.
+
+Product attribute sets come from the actual loaded attribute groups and are
+deduplicated. Filters and cards identify their section because one product can
+belong to several sections. Native filters open the attribute filter editor;
+legacy filters open the section's Filters tab. A section's page template belongs
+to its **linked document**, which may use a different rubric. There is no page
+template link when no document is linked.
+
+A published native list presentation takes precedence over a product card
+template. Otherwise the link opens the published card template or the active
+theme's standard template. Missing or empty alternate page templates fall back
+to the rubric's main template. Individual collections and requests may override
+the card appearance outside this section.
+
+Links reflect **saved** settings. After changing a product's template or
+attributes, save and reopen the editor. Section links refresh after saving;
+new sections receive links after their first save.
+
+### Checking changes
 
 1. First change the structure and fields in the test section.
 2. Check to save the document and reopen the editor.

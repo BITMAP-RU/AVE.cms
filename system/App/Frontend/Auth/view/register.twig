@@ -4,14 +4,14 @@
     {% if page.description %}<p class="text-muted">{{ page.description }}</p>{% endif %}
     {% if errors._form %}<div class="alert alert-danger" role="alert">{{ errors._form }}</div>{% endif %}
     {% if email_registration_enabled %}
-    <form method="post" action="{{ base }}{{ auth_urls.register }}" class="system-public-auth-form">
+    <form method="post" action="{{ base }}{{ auth_urls.register }}" class="system-public-auth-form" data-auth-register>
       <input type="hidden" name="_csrf" value="{{ csrf|e }}">
       <div class="form-row">
         <div class="form-group col-md-6"><label for="register-firstname">Имя</label><input class="form-control" id="register-firstname" name="firstname" value="{{ values.firstname|default('')|e }}" autocomplete="given-name" {{ config.require_firstname ? 'required' : '' }}>{% if errors.firstname %}<small class="text-danger">{{ errors.firstname }}</small>{% endif %}</div>
         {% if config.show_lastname %}<div class="form-group col-md-6"><label for="register-lastname">Фамилия</label><input class="form-control" id="register-lastname" name="lastname" value="{{ values.lastname|default('')|e }}" autocomplete="family-name" {{ config.require_lastname ? 'required' : '' }}>{% if errors.lastname %}<small class="text-danger">{{ errors.lastname }}</small>{% endif %}</div>{% endif %}
       </div>
       {% if config.show_phone or config.show_company %}<div class="form-row">
-        {% if config.show_phone %}<div class="form-group col-md-6"><label for="register-phone">Телефон</label><input class="form-control" id="register-phone" type="tel" name="phone" value="{{ values.phone|default('')|e }}" autocomplete="tel" {{ config.require_phone ? 'required' : '' }}>{% if errors.phone %}<small class="text-danger">{{ errors.phone }}</small>{% endif %}</div>{% endif %}
+        {% if config.show_phone %}<div class="form-group col-md-6"><label for="register-phone">Телефон</label><input class="form-control" id="register-phone" type="tel" name="phone" value="{{ values.phone|default('')|e }}" autocomplete="tel" inputmode="tel" placeholder="+7 (000) 000-00-00" maxlength="18" data-phone-mask {{ config.require_phone ? 'required' : '' }}>{% if errors.phone %}<small class="text-danger">{{ errors.phone }}</small>{% endif %}</div>{% endif %}
         {% if config.show_company %}<div class="form-group col-md-6"><label for="register-company">Компания</label><input class="form-control" id="register-company" name="company" value="{{ values.company|default('')|e }}" autocomplete="organization" {{ config.require_company ? 'required' : '' }}>{% if errors.company %}<small class="text-danger">{{ errors.company }}</small>{% endif %}</div>{% endif %}
       </div>{% endif %}
       <div class="form-group"><label for="register-email">Email</label><input class="form-control" id="register-email" type="email" name="email" value="{{ values.email|default('')|e }}" autocomplete="email" required>{% if errors.email %}<small class="text-danger">{{ errors.email }}</small>{% endif %}</div>

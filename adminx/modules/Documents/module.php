@@ -17,7 +17,7 @@
 	return array(
 		'code' => 'documents',
 		'name' => 'Документы',
-		'version' => '0.3.9',
+		'version' => '0.4.2',
 
 		'permissions' => array(
 			'key' => 'documents',
@@ -131,6 +131,7 @@
 			array('id' => '014_document_relation_edges', 'file' => 'migrations/014_document_relation_edges.sql'),
 			array('id' => '015_document_creation_presets', 'file' => 'migrations/015_document_creation_presets.sql'),
 			array('id' => '016_reconcile_document_content_columns', 'file' => 'migrations/016_reconcile_document_content_columns.php'),
+			array('id' => '017_document_public_visibility', 'file' => 'migrations/017_document_public_visibility.sql'),
 		),
 
 		'view_globals' => array(

@@ -53,14 +53,25 @@
         {% if notifications.total > 0 %}<span class="topbar-badge">{{ notifications.total > 99 ? '99+' : notifications.total }}</span>{% endif %}
       </button>
       <div class="dropdown-menu right notif-menu" role="menu">
-        <div class="notif-head"><b>{{ lang.topbar_notifications|default('Уведомления') }}</b>{% if notifications.total > 0 %}<span class="text-muted text-xs">{{ notifications.total > 99 ? '99+' : notifications.total }}</span>{% endif %}</div>
+        <div class="notif-head"><b>{{ lang.topbar_notifications|default('Уведомления') }}</b><span class="notif-head-actions">{% if notifications.total > 0 %}<span class="text-muted text-xs">{{ notifications.total > 99 ? '99+' : notifications.total }}</span>{% endif %}{% if can_manage_notification_preferences and notification_preferences %}<button class="btn btn-ghost btn-icon btn-sm" type="button" data-notification-settings-toggle aria-expanded="false" aria-label="Настроить уведомления" data-tooltip="Настроить уведомления"><i class="ti ti-adjustments"></i></button>{% endif %}</span></div>
         <div class="notif-list">
           {% for item in notifications.items %}
-          <a class="notif-item" href="{{ item.url }}"><span class="icon-tile" style="--tile-bg:{{ item.bg }};--tile-fg:{{ item.fg }}"><i class="{{ item.icon }}"></i></span><span class="notif-body"><b>{{ item.title }}</b><small>{{ item.text }}</small></span><span class="notif-count">{{ item.count > 99 ? '99+' : item.count }}</span></a>
+          <a class="notif-item" href="{{ item.url }}"{% if item.key %} data-notification-key="{{ item.key|e('html_attr') }}"{% endif %}><span class="icon-tile" style="--tile-bg:{{ item.bg }};--tile-fg:{{ item.fg }}"><i class="{{ item.icon }}"></i></span><span class="notif-body"><b>{{ item.title }}</b><small>{{ item.text }}</small></span><span class="notif-count">{{ item.count > 99 ? '99+' : item.count }}</span></a>
           {% else %}
           <div class="notif-empty"><i class="ti ti-checks"></i>{{ lang.topbar_no_notifications|default('Нет новых уведомлений') }}</div>
           {% endfor %}
         </div>
+        {% if can_manage_notification_preferences and notification_preferences %}
+        <div class="notif-settings" data-notification-settings hidden>
+          <div class="notif-settings-copy"><b>Что показывать</b><small>Проверки продолжат работать, меняется только список в колокольчике.</small></div>
+          {% for preference in notification_preferences %}
+          <label class="notif-setting-row">
+            <span><b>{{ preference.label }}</b>{% if preference.description %}<small>{{ preference.description }}</small>{% endif %}</span>
+            <span class="switch"><input type="checkbox" data-notification-preference data-module-code="{{ preference.module_code|e('html_attr') }}" data-key="{{ preference.key|e('html_attr') }}"{{ preference.enabled ? ' checked' : '' }}><span></span></span>
+          </label>
+          {% endfor %}
+        </div>
+        {% endif %}
       </div>
     </div>
     <div class="dropdown" id="userMenu">

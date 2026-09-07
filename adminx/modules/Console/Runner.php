@@ -17,6 +17,7 @@
 	defined('BASEPATH') || die('Direct access to this location is not allowed.');
 
 	use App\Adminx\Support\PhpCode;
+	use App\Common\PublicConfiguration;
 	use App\Common\TemporaryDirectory;
 
 	class Runner
@@ -31,7 +32,8 @@
 				return filter_var($value, FILTER_VALIDATE_BOOLEAN);
 			}
 
-			return false;
+			$config = PublicConfiguration::value('admin_console', array());
+			return is_array($config) && !empty($config['enabled']);
 		}
 
 		public static function execute($code)
@@ -142,6 +144,11 @@
 			$configured = trim((string) getenv('ADMINX_PHP_BINARY'));
 			if ($configured !== '') {
 				$candidates[] = $configured;
+			}
+
+			$config = PublicConfiguration::value('admin_console', array());
+			if (is_array($config) && !empty($config['php_binary'])) {
+				$candidates[] = trim((string) $config['php_binary']);
 			}
 
 			if (defined('PHP_BINDIR') && PHP_BINDIR !== '') {

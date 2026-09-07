@@ -21,18 +21,26 @@
 	/** Shared defensive headers for public and administrative responses. */
 	class ResponseSecurityHeaders
 	{
-		public static function all()
+		public static function all(array $extraConnectSources = array())
 		{
+			$connectSources = "'self' https: wss:";
+			foreach ($extraConnectSources as $source) {
+				$source = trim((string) $source);
+				if ($source !== '' && preg_match('#^https?://(?:localhost|127\.0\.0\.1)(?::\*)?$#i', $source)) {
+					$connectSources .= ' ' . $source;
+				}
+			}
+
 			return array(
 				'X-Content-Type-Options: nosniff',
 				'X-Frame-Options: SAMEORIGIN',
 				'Referrer-Policy: strict-origin-when-cross-origin',
 				'Permissions-Policy: camera=(), microphone=(), geolocation=()',
-				"Content-Security-Policy: default-src 'self' data: blob: https:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: http: https:; font-src 'self' data: https:; connect-src 'self' https: wss:; frame-src 'self' https:",
+				"Content-Security-Policy: default-src 'self' data: blob: https:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: http: https:; font-src 'self' data: https:; connect-src " . $connectSources . "; frame-src 'self' https:",
 			);
 		}
 
-		public static function apply()
+		public static function apply(array $extraConnectSources = array())
 		{
 			if (function_exists('header_remove')) {
 				@header_remove('X-Powered-By');
@@ -43,6 +51,6 @@
 				@header_remove('X-Engine-Site');
 			}
 
-			Request::setHeaders(self::all());
+			Request::setHeaders(self::all($extraConnectSources));
 		}
 	}

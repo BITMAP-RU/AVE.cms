@@ -17,6 +17,7 @@
 	defined('BASEPATH') || die('Direct access to this location is not allowed.');
 
 	use App\Common\Auth;
+	use App\Common\AuditLog;
 	use App\Common\ModuleManager;
 	use App\Common\RateLimiter;
 	use App\Common\Session;
@@ -67,6 +68,10 @@
 			}
 
 			if (!Auth::publicAttempt($identifier, $password, Request::postBool('keep_in', false))) {
+				AuditLog::record('auth.public_login_failed', array(
+					'target_type' => 'public_auth',
+					'meta' => array('identifier_hash' => substr(hash('sha256', mb_strtolower($identifier)), 0, 16)),
+				));
 				return $this->loginError('Неверный логин или пароль.', 422);
 			}
 
@@ -273,7 +278,7 @@
 				return $this->redirect('/');
 			}
 
-			if (empty(Feature::config()['password_reset_enabled'])) {
+			if (!Feature::passwordRecoveryEnabled()) {
 				return Renderer::page('message', array('title' => 'Восстановление недоступно', 'message' => 'Обратитесь к администратору сайта.'));
 			}
 
@@ -282,7 +287,7 @@
 
 		public function remember(array $params = array())
 		{
-			if (empty(Feature::config()['password_reset_enabled'])) { return $this->error('Восстановление пароля отключено.', 403); }
+			if (!Feature::passwordRecoveryEnabled()) { return $this->error('Восстановление пароля отключено.', 403); }
 			if (!$this->verifyCsrf()) { return $this->formError('remember', 'Сессия устарела. Обновите страницу.', 403); }
 			if (!$this->verifyProtection('password_reset')) { return $this->formError('remember', 'Проверка защиты не пройдена. Обновите форму и попробуйте снова.', 422); }
 			$email = trim(Request::postStr('email', ''));
@@ -305,7 +310,7 @@
 
 		public function resetForm(array $params = array())
 		{
-			if (empty(Feature::config()['password_reset_enabled'])) {
+			if (!Feature::passwordRecoveryEnabled()) {
 				return Renderer::page('message', array('title' => 'Восстановление недоступно', 'message' => 'Обратитесь к администратору сайта.'));
 			}
 
@@ -314,7 +319,7 @@
 
 		public function reset(array $params = array())
 		{
-			if (empty(Feature::config()['password_reset_enabled'])) { return $this->error('Восстановление пароля отключено.', 403); }
+			if (!Feature::passwordRecoveryEnabled()) { return $this->error('Восстановление пароля отключено.', 403); }
 			if (!$this->verifyCsrf()) { return $this->formError('reset', 'Сессия устарела. Обновите страницу.', 403); }
 			if (!$this->verifyProtection('password_reset')) { return $this->formError('reset', 'Проверка защиты не пройдена. Обновите форму и попробуйте снова.', 422); }
 			$token = Request::postStr('token', '');
@@ -371,7 +376,7 @@
 			$extra = is_array($extra) ? $extra : array();
 			$profiles = new ProfileRepository();
 			$errors = $profiles->validate($extra);
-			if ($data['firstname'] === '') { $errors['firstname'] = 'Укажите имя.'; }
+			if (!empty(Feature::config()['require_firstname']) && $data['firstname'] === '') { $errors['firstname'] = 'Укажите имя.'; }
 			if (!empty($errors)) {
 				http_response_code(422);
 				return Renderer::page('profile', array('user' => array_merge($user, $data), 'fields' => $profiles->fields(), 'extra_values' => $extra, 'errors' => $errors, 'saved' => false, 'oauth_connections' => $this->oauthConnections((int) $user['Id'])));
@@ -408,7 +413,12 @@
 		public function passwordForm(array $params = array())
 		{
 			$preview = $this->isPreview();
-			if (!$this->authenticatedUser() && !$preview) { return $this->redirectToLogin(Feature::url('password')); }
+			$user = $this->authenticatedUser();
+			if (!$user && !$preview) { return $this->redirectToLogin(Feature::url('password')); }
+			if (!$preview && !Feature::passwordChangeEnabled($user)) {
+				return Renderer::page('message', array('title' => 'Смена пароля недоступна', 'message' => 'Для этого аккаунта используется вход по коду из SMS.'));
+			}
+
 			return Renderer::page('password', array('errors' => array(), 'preview' => $preview));
 		}
 
@@ -416,7 +426,12 @@
 		{
 			$user = $this->authenticatedUser();
 			if (!$user) { return $this->redirectToLogin(Feature::url('password')); }
+			if (!Feature::passwordChangeEnabled($user)) { return $this->error('Для этого аккаунта используется вход по коду из SMS.', 403); }
 			if (!$this->verifyCsrf()) { return $this->formError('password', 'Сессия устарела. Обновите страницу.', 403); }
+			if (!RateLimiter::attempt('public-password-change:' . (int) $user['Id'] . ':' . Request::ip(), 5, 300)) {
+				return $this->formError('password', 'Слишком много попыток. Попробуйте позже.', 429);
+			}
+
 			$repository = new UserRepository();
 			if (!$repository->verifyPassword($user, Request::postStr('current_password', ''))) {
 				return $this->renderForm('password', array(), array('current_password' => 'Текущий пароль указан неверно.'), 422);

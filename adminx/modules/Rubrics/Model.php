@@ -21,6 +21,8 @@
 	use App\Content\ContentTables;
 	use App\Content\PublicUserTables;
 	use App\Common\AuditLog;
+	use App\Common\Cache;
+	use App\Common\CacheKey;
 	use App\Common\FileCacheInvalidator;
 	use App\Content\Fields\FieldConditionEvaluator;
 	use App\Content\Fields\FieldRegistry;
@@ -970,7 +972,8 @@
 				'rubric_title' => trim(isset($input['rubric_title']) ? (string) $input['rubric_title'] : ''),
 				'rubric_alias' => trim(isset($input['rubric_alias']) ? (string) $input['rubric_alias'] : ''),
 				'rubric_template_id' => max(1, (int) (isset($input['rubric_template_id']) ? $input['rubric_template_id'] : 1)),
-				'rubric_docs_active' => !empty($input['rubric_docs_active']) ? 1 : 0,
+					'rubric_docs_active' => !empty($input['rubric_docs_active']) ? 1 : 0,
+					'rubric_is_technical' => !empty($input['rubric_is_technical']) ? 1 : 0,
 				'rubric_meta_gen' => !empty($input['rubric_meta_gen']) ? '1' : '0',
 				'rubric_alias_history' => !empty($input['rubric_alias_history']) ? '1' : '0',
 				'rubric_description' => isset($input['rubric_description']) ? (string) $input['rubric_description'] : '',
@@ -1383,6 +1386,7 @@
 			$row['templates_count'] = isset($row['templates_count']) ? (int) $row['templates_count'] : 0;
 			$row['site_template_title'] = isset($row['site_template_title']) ? trim((string) $row['site_template_title']) : '';
 			$row['form_conditions_enabled'] = !empty($row['rubric_form_conditions']);
+			$row['rubric_is_technical'] = !empty($row['rubric_is_technical']) ? 1 : 0;
 			$row['rubric_purpose'] = isset($row['rubric_purpose']) && (string) $row['rubric_purpose'] === 'directory'
 				? 'directory'
 				: 'content';
@@ -1524,6 +1528,8 @@
 		protected static function clearRubricCache($rubricId)
 		{
 			FileCacheInvalidator::rubric($rubricId);
+			Cache::forgetTag(CacheKey::tag('search'));
+			Cache::forgetTag(CacheKey::tag('catalog-admin-stats'));
 		}
 
 		protected static function nextPosition($table, $field)

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<language>
+  <phrase data="catalog_context_title">Related Settings</phrase>
+  <phrase data="catalog_context_filters">Section Filters</phrase>
+  <phrase data="catalog_context_attribute_set">Attribute Set</phrase>
+  <phrase data="catalog_context_card">Catalog Card Template</phrase>
+  <phrase data="catalog_context_page">Page Template</phrase>
+</language>

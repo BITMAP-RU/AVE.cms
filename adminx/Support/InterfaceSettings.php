@@ -75,6 +75,46 @@
 			return $saved;
 		}
 
+		/** Синхронизировать переключатель из карточки модуля с общей раскладкой главной. */
+		public static function setModuleDashboardVisibility($moduleCode, $visible, array $definitions)
+		{
+			$moduleCode = (string) $moduleCode;
+			$targetCodes = array();
+			foreach ($definitions as $definition) {
+				if (!is_array($definition) || !isset($definition['module_code'], $definition['layout_code'])) {
+					continue;
+				}
+
+				if ((string) $definition['module_code'] === $moduleCode) {
+					$targetCodes[(string) $definition['layout_code']] = true;
+				}
+			}
+
+			if (!$targetCodes) {
+				return self::config('dashboard');
+			}
+
+			$config = self::config('dashboard');
+			$seen = array();
+			foreach ($config as &$row) {
+				$code = (string) $row['code'];
+				if (isset($targetCodes[$code])) {
+					$row['visible'] = (bool) $visible;
+					$seen[$code] = true;
+				}
+			}
+
+			unset($row);
+			foreach (array_keys($targetCodes) as $code) {
+				if (!isset($seen[$code])) {
+					$config[] = array('code' => $code, 'visible' => (bool) $visible);
+				}
+			}
+
+			Settings::set(self::key('dashboard'), $config, 'json');
+			return $config;
+		}
+
 		protected static function prepare(array $items, $codeKey)
 		{
 			$prepared = array();

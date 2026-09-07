@@ -1,0 +1,20 @@
+<section class="catalog-commerce-fields" data-catalog-commerce-fields>
+  <div class="catalog-behavior-head"><span class="icon-tile catalog-behavior-icon is-green"><i class="ti ti-shopping-bag"></i></span><h3>{{ 'Назначение полей товара'|admin_trans }}</h3></div>
+  <div class="form-grid">
+    {% for role,definition in product_roles.definitions %}{% if not definition.optional %}
+      <label class="field col-4"><span class="field-label">{{ definition.label|admin_trans }}</span><select class="select" name="product_roles[{{ role }}]">
+        <option value="-1"{{ definition.selected == -1 ? ' selected' : '' }}>{{ 'Автоматически:'|admin_trans }} {{ definition.alias }}</option><option value="0"{{ definition.selected == 0 ? ' selected' : '' }}>{{ 'Не назначено'|admin_trans }}</option>
+        {% for group in field_groups %}{% for field in group.items %}<option value="{{ field.id }}"{{ definition.selected == field.id ? ' selected' : '' }}>{{ field.title ?: field.alias }} · #{{ field.id }}</option>{% endfor %}{% endfor %}
+      </select></label>
+    {% endif %}{% endfor %}
+  </div>
+  <details><summary>{{ 'Дополнительные поля проекта'|admin_trans }}</summary><div class="form-grid">
+    {% for role,definition in product_roles.definitions %}{% if definition.optional %}
+      <label class="field col-4"><span class="field-label">{{ definition.label|admin_trans }}</span><select class="select" name="product_roles[{{ role }}]">
+        <option value="-1"{{ definition.selected == -1 ? ' selected' : '' }}>{{ 'Автоматически:'|admin_trans }} {{ definition.alias }}</option><option value="0"{{ definition.selected == 0 ? ' selected' : '' }}>{{ 'Не назначено'|admin_trans }}</option>
+        {% for group in field_groups %}{% for field in group.items %}<option value="{{ field.id }}"{{ definition.selected == field.id ? ' selected' : '' }}>{{ field.title ?: field.alias }} · #{{ field.id }}</option>{% endfor %}{% endfor %}
+      </select></label>
+    {% endif %}{% endfor %}
+  </div></details>
+  {% include '@catalog/_product-role-preview.twig' %}
+</section>

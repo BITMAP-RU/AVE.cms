@@ -23,6 +23,7 @@
 		const MISSING = 'missing';
 		const DELETED = 'deleted';
 		const DELAYED = 'delayed';
+		const TECHNICAL = 'technical';
 
 		public function status($document, $notFoundDocumentId, $usePublicationWindow = null, $now = null)
 		{
@@ -36,6 +37,10 @@
 
 			if (isset($document->document_deleted) && (int) $document->document_deleted === 1) {
 				return self::DELETED;
+			}
+
+			if (\App\Content\Documents\DocumentVisibility::isTechnical($document)) {
+				return self::TECHNICAL;
 			}
 
 			$usePublicationWindow = $usePublicationWindow === null

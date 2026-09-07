@@ -18,7 +18,6 @@
 
 	use DB;
 	use App\Content\BasketTables;
-	use App\Common\FileCacheInvalidator;
 	use App\Helpers\Hooks;
 
 	/** Product eligibility and runtime availability for alternative payment programs. */
@@ -47,7 +46,7 @@
 				$productId, $code, $enabled ? 1 : 0, '{}', $now, $now
 			);
 			self::syncDocumentField($productId, $code, $enabled);
-			FileCacheInvalidator::document($productId);
+			ProductDerivedCacheInvalidator::invalidate(array($productId));
 			return (bool) $enabled;
 		}
 
@@ -93,6 +92,7 @@
 			if (!self::exists($code)) { throw new \InvalidArgumentException('Платёжная программа не найдена'); }
 			DB::Update(self::programsTable(), array('status' => $active ? 1 : 0, 'updated_at' => time()), 'code=%s', $code);
 			DB::Update(BasketTables::table('module_basket_payment'), array('payment_active' => $active ? 1 : 0), 'payment_program=%s', $code);
+			ProductDerivedCacheInvalidator::invalidate();
 			return (bool) $active;
 		}
 

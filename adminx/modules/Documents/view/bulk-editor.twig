@@ -79,9 +79,19 @@
           <option value="clear">Очистить значение</option>
           <option value="replace">Найти и заменить</option>
           <option value="move">Перенести в другую рубрику</option>
-          <option value="publish">Опубликовать</option>
-          <option value="unpublish">Снять с публикации</option>
-          <option value="recalculate">Пересчитать поля и индексы</option>
+		  <option value="publish">Опубликовать</option>
+		  <option value="unpublish">Снять с публикации</option>
+		  <option value="technical">Сделать служебными</option>
+		  <option value="public">Сделать обычными</option>
+		  <option value="search_include">Включить во внутренний поиск</option>
+		  <option value="search_exclude">Исключить из внутреннего поиска</option>
+		  <option value="robots_index">Разрешить индексацию поисковиками</option>
+		  <option value="robots_noindex">Запретить индексацию поисковиками</option>
+		  <option value="sitemap_include">Добавить в sitemap</option>
+		  <option value="sitemap_exclude">Исключить из sitemap</option>
+		  <option value="sitemap_frequency">Изменить частоту sitemap</option>
+		  <option value="sitemap_priority">Изменить приоритет sitemap</option>
+		  <option value="recalculate">Пересчитать поля и индексы</option>
         </select></label>
 
         <label class="field" data-bulk-target-wrap hidden><span>Поле</span><select class="select" name="target" data-bulk-target>
@@ -96,16 +106,25 @@
         <label class="field" data-bulk-search-wrap hidden><span>Что найти</span><input class="input" type="text" name="search" placeholder="Точное вхождение"></label>
         <label class="field documents-bulk-value" data-bulk-value-wrap hidden><span>Новое значение</span><textarea class="textarea" name="value" rows="3" placeholder="Введите значение"></textarea></label>
 
-        <label class="field" data-bulk-rubric-target-wrap hidden><span>Новая рубрика</span><select class="select" name="target_rubric_id">
+		<label class="field" data-bulk-rubric-target-wrap hidden><span>Новая рубрика</span><select class="select" name="target_rubric_id">
           <option value="0">Выберите рубрику</option>
           {% for rubric in bulk_options.rubrics %}
           <option value="{{ rubric.Id }}">{{ rubric.rubric_title }}</option>
           {% endfor %}
-        </select></label>
+		</select></label>
+
+		<label class="field" data-bulk-sitemap-frequency-wrap hidden><span>Частота обновления</span><select class="select" name="sitemap_frequency">
+		  <option value="0">always</option><option value="1">hourly</option><option value="2">daily</option>
+		  <option value="3" selected>weekly</option><option value="4">monthly</option><option value="5">yearly</option><option value="6">never</option>
+		</select></label>
+		<label class="field" data-bulk-sitemap-priority-wrap hidden><span>Приоритет</span><select class="select" name="sitemap_priority">
+		  {% for pr in [0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1] %}<option value="{{ pr }}"{{ pr == 0.5 ? ' selected' : '' }}>{{ pr }}</option>{% endfor %}
+		</select></label>
       </div>
-      <div class="documents-bulk-target-help" data-bulk-target-help hidden>
+	  <div class="documents-bulk-target-help" data-bulk-target-help hidden>
         <i class="ti ti-info-circle"></i><span></span>
-      </div>
+	  </div>
+	  <div class="alert alert-info documents-bulk-technical-help" data-bulk-technical-help hidden><i class="ti ti-tool alert-ic"></i><div><b class="alert-title">Служебный документ не удаляется</b><span>Он остаётся доступен запросам, полям и связям, но не открывается отдельной страницей и автоматически исключается из поиска, sitemap и SEO-проверок.</span></div></div>
       <div class="documents-bulk-step-footer">
         <span class="text-secondary"><i class="ti ti-info-circle"></i>Ничего не сохранится до подтверждения результата проверки.</span>
         <button class="btn btn-primary" type="submit" data-bulk-preview><i class="ti ti-eye"></i>Проверить изменения</button>

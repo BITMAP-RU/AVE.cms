@@ -30,9 +30,11 @@
 			'document_meta_robots',
 			'document_sitemap_freq',
 			'document_sitemap_pr',
+			'document_in_sitemap',
 			'document_tags',
 			'document_status',
 			'document_in_search',
+			'document_is_technical',
 		);
 
 		protected static $assetFieldTypes = array(
@@ -95,6 +97,7 @@
 			$documentDefaults = array(
 				'document_status' => !empty($input['create_published']) ? 1 : 0,
 				'document_in_search' => !empty($input['include_search']) ? (int) $document['document_in_search'] : 1,
+				'document_is_technical' => !empty($document['document_is_technical']) ? 1 : 0,
 			);
 			if (!empty($input['include_excerpt'])) {
 				$documentDefaults['document_excerpt'] = (string) $document['document_excerpt'];
@@ -103,7 +106,7 @@
 			if (!empty($input['include_seo'])) {
 				foreach (array(
 					'document_meta_keywords', 'document_meta_description', 'document_meta_robots',
-					'document_sitemap_freq', 'document_sitemap_pr', 'document_tags',
+					'document_sitemap_freq', 'document_sitemap_pr', 'document_in_sitemap', 'document_tags',
 				) as $key) {
 					$documentDefaults[$key] = $document[$key];
 				}

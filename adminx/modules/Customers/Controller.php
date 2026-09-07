@@ -102,7 +102,9 @@
 		public function toggle(array $params=array())
 		{
 			if(($e=$this->guard())!==null){return $e;}
-			try{$active=Model::toggle(isset($params['id'])?$params['id']:0,Auth::id());}catch(\InvalidArgumentException $e){return $this->error($e->getMessage(),array(),422);}
+			$id=isset($params['id'])?(int)$params['id']:0;
+			try{$active=Model::toggle($id,Auth::id());}catch(\InvalidArgumentException $e){return $this->error($e->getMessage(),array(),422);}
+			AuditLog::record('customers.status_changed',array('actor_id'=>Auth::id(),'target_type'=>'public_user','target_id'=>$id,'meta'=>array('active'=>$active)));
 			return $this->success($active?'Пользователь включён':'Пользователь отключён');
 		}
 
@@ -119,6 +121,7 @@
 			$id=isset($params['id'])?(int)$params['id']:0;$input=Request::postAll();
 			if(!Permission::check('manage_users')){$current=Model::customer($id,Auth::id());$input['admin_access']=!empty($current['system']['is_active'])?'1':'';$input['admin_role']=!empty($current['system']['role'])?(string)$current['system']['role']:'manager';}
 			try{$customer=Model::updateCustomer($id,$input,Auth::id());}catch(\InvalidArgumentException $e){return $this->error($e->getMessage(),array(),422);}catch(\Throwable $e){return $this->error('Не удалось сохранить пользователя',array(),500);}
+			AuditLog::record('customers.updated',array('actor_id'=>Auth::id(),'target_type'=>'public_user','target_id'=>$id));
 			return $this->success('Профиль пользователя сохранён',array('data'=>$customer));
 		}
 
@@ -128,13 +131,16 @@
 				return $e;
 			}
 
+			$id = isset($params['id']) ? (int) $params['id'] : 0;
 			try {
-				Model::deleteCustomer(isset($params['id']) ? $params['id'] : 0, Auth::id());
+				Model::deleteCustomer($id, Auth::id());
 			} catch (\InvalidArgumentException $e) {
 				return $this->error($e->getMessage(), array(), 422);
 			} catch (\Throwable $e) {
 				return $this->error('Не удалось удалить пользователя', array(), 500);
 			}
+
+			AuditLog::record('customers.deleted', array('actor_id' => Auth::id(), 'target_type' => 'public_user', 'target_id' => $id));
 
 			return $this->success('Пользователь удалён', array('reload' => true));
 		}
@@ -143,10 +149,10 @@
 		public function deleteField(array $params=array()){if(($e=$this->guard())!==null){return $e;}Model::deleteField(isset($params['id'])?$params['id']:0);return $this->success('Поле удалено',array('reload'=>true));}
 		public function toggleField(array $params=array()){if(($e=$this->guard())!==null){return $e;}$active=Model::toggleField(isset($params['id'])?$params['id']:0);return $this->success($active?'Поле включено':'Поле скрыто',array('data'=>array('is_active'=>$active?1:0)));}
 		public function reorderFields(array $params=array()){if(($e=$this->guard())!==null){return $e;}$ids=json_decode(Request::postStr('order','[]'),true);if(!is_array($ids)){return $this->error('Некорректный порядок полей',array(),422);}$count=Model::reorderFields($ids);return $this->success('Порядок полей сохранён',array('data'=>array('count'=>$count)));}
-		public function saveAuthSettings(array $params=array()){if(($e=$this->guard())!==null){return $e;}try{$settings=Model::saveAuthSettings(Request::postAll());}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}return $this->success('Настройки регистрации сохранены',array('data'=>array('settings'=>$settings)));}
-		public function saveAuthPages(array $params=array()){if(($e=$this->guard())!==null){return $e;}try{$settings=Model::saveAuthPages(Request::postAll());}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}return $this->success('Страницы входа сохранены',array('data'=>array('settings'=>$settings)));}
+		public function saveAuthSettings(array $params=array()){if(($e=$this->guard())!==null){return $e;}try{$settings=Model::saveAuthSettings(Request::postAll());}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}AuditLog::record('customers.auth_settings_updated',array('actor_id'=>Auth::id(),'target_type'=>'public_auth'));return $this->success('Настройки регистрации сохранены',array('data'=>array('settings'=>$settings)));}
+		public function saveAuthPages(array $params=array()){if(($e=$this->guard())!==null){return $e;}try{$settings=Model::saveAuthPages(Request::postAll());}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}AuditLog::record('customers.auth_pages_updated',array('actor_id'=>Auth::id(),'target_type'=>'public_auth'));return $this->success('Страницы входа сохранены',array('data'=>array('settings'=>$settings)));}
 		public function authForm(array $params=array()){if(!Permission::check('view_customers')){return $this->error('Недостаточно прав',array(),403);}try{$form=Model::authForm(isset($params['key'])?(string)$params['key']:'');}catch(\Throwable $e){return $this->error($e->getMessage(),array(),404);}return $this->success('',array('data'=>$form));}
-		public function saveAuthForm(array $params=array()){if(($e=$this->guard())!==null){return $e;}try{$template=Model::saveAuthForm(isset($params['key'])?(string)$params['key']:'',Request::postStr('template',''),Auth::id());}catch(\Throwable $e){return $this->error($e->getMessage(),array('template'=>$e->getMessage()),422);}return $this->success('Шаблон формы сохранён',array('data'=>array('template'=>$template,'customized'=>1)));}
-		public function resetAuthForm(array $params=array()){if(($e=$this->guard())!==null){return $e;}try{$template=Model::resetAuthForm(isset($params['key'])?(string)$params['key']:'');}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}return $this->success('Восстановлен штатный шаблон формы',array('data'=>array('template'=>$template,'customized'=>0)));}
+		public function saveAuthForm(array $params=array()){if(($e=$this->guard())!==null){return $e;}$key=isset($params['key'])?(string)$params['key']:'';try{$template=Model::saveAuthForm($key,Request::postStr('template',''),Auth::id());}catch(\Throwable $e){return $this->error($e->getMessage(),array('template'=>$e->getMessage()),422);}AuditLog::record('customers.auth_form_updated',array('actor_id'=>Auth::id(),'target_type'=>'public_auth_form','meta'=>array('form'=>$key)));return $this->success('Шаблон формы сохранён',array('data'=>array('template'=>$template,'customized'=>1)));}
+		public function resetAuthForm(array $params=array()){if(($e=$this->guard())!==null){return $e;}$key=isset($params['key'])?(string)$params['key']:'';try{$template=Model::resetAuthForm($key);}catch(\Throwable $e){return $this->error($e->getMessage(),array(),422);}AuditLog::record('customers.auth_form_reset',array('actor_id'=>Auth::id(),'target_type'=>'public_auth_form','meta'=>array('form'=>$key)));return $this->success('Восстановлен штатный шаблон формы',array('data'=>array('template'=>$template,'customized'=>0)));}
 		protected function guard(){return $this->guardPermission('manage_customers');}
 	}
